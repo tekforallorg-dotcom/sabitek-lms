@@ -60,11 +60,10 @@ export default function CourseManagementPage() {
         fetchCourseData()
       }
     }
-  }, [user, userProfile, loading, params.slug])
+  }, [user, userProfile, loading, params.slug, router])
 
   const fetchCourseData = async () => {
     try {
-      // Fetch course details
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
         .select('*')
@@ -80,7 +79,6 @@ export default function CourseManagementPage() {
 
       setCourse(courseData)
 
-      // Fetch lessons
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
         .select('*')
@@ -122,7 +120,6 @@ export default function CourseManagementPage() {
       }
 
       if (editingLesson) {
-        // Update existing lesson
         const { error } = await supabase
           .from('lessons')
           .update(lessonData)
@@ -133,7 +130,6 @@ export default function CourseManagementPage() {
           setEditingLesson(null)
         }
       } else {
-        // Add new lesson
         const { error } = await supabase
           .from('lessons')
           .insert(lessonData)
@@ -144,7 +140,6 @@ export default function CourseManagementPage() {
         }
       }
 
-      // Reset form and refresh lessons
       setLessonForm({
         title: '',
         content: '',
@@ -232,7 +227,6 @@ export default function CourseManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Course Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -278,7 +272,6 @@ export default function CourseManagementPage() {
           </div>
         </div>
 
-        {/* Lessons Section */}
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -297,7 +290,6 @@ export default function CourseManagementPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Add/Edit Lesson Form */}
             {(isAddingLesson || editingLesson) && (
               <div className="border rounded-lg p-4 mb-6 bg-gray-50">
                 <h3 className="font-semibold mb-4">
@@ -338,7 +330,7 @@ export default function CourseManagementPage() {
                       </label>
                       <RichTextEditor
                         content={lessonForm.content}
-                        onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
+                        onChange={(newContent: string) => setLessonForm({ ...lessonForm, content: newContent })}
                         placeholder="Enter lesson content. Use the toolbar to format text, add images, and embed videos..."
                       />
                     </div>
@@ -357,24 +349,29 @@ export default function CourseManagementPage() {
                     </div>
                   )}
 
-{lessonForm.content_type === 'pdf' && (
-  <FileUploader
-    label="Upload PDF Document"
-    accept=".pdf"
-    folder="pdfs"
-    currentUrl={lessonForm.pdf_url}
-    onUpload={(url: string) => setLessonForm({ ...lessonForm, pdf_url: url })}
-  />
-)}
-  {lessonForm.content_type === 'powerpoint' && (
-  <FileUploader
-    label="Upload PowerPoint Presentation"
-    accept=".ppt,.pptx"
-    folder="presentations"
-    currentUrl={lessonForm.powerpoint_url}
-    onUpload={(url: string) => setLessonForm({ ...lessonForm, powerpoint_url: url })}
-  />
-)}
+                  {lessonForm.content_type === 'pdf' && (
+                    <div>
+                      <FileUploader
+                        label="Upload PDF Document"
+                        accept=".pdf"
+                        folder="pdfs"
+                        currentUrl={lessonForm.pdf_url}
+                        onUpload={(url: string) => setLessonForm({ ...lessonForm, pdf_url: url })}
+                      />
+                    </div>
+                  )}
+
+                  {lessonForm.content_type === 'powerpoint' && (
+                    <div>
+                      <FileUploader
+                        label="Upload PowerPoint Presentation"
+                        accept=".ppt,.pptx"
+                        folder="presentations"
+                        currentUrl={lessonForm.powerpoint_url}
+                        onUpload={(url: string) => setLessonForm({ ...lessonForm, powerpoint_url: url })}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -419,7 +416,6 @@ export default function CourseManagementPage() {
               </div>
             )}
 
-            {/* Lessons List */}
             {lessons.length > 0 ? (
               <div className="space-y-3">
                 {lessons.map((lesson, index) => (
