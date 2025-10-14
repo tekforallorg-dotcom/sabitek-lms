@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Sabitek LMS - Learn Anything, Anywhere',
+  title: 'Sabitek - Learn Anything, Anywhere',
   description: 'Empowering African education through technology',
 }
 
