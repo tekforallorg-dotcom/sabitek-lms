@@ -61,7 +61,7 @@ export default function RegisterPage() {
             <Link href="/" className="inline-block">
               <h1 className="text-4xl font-bold">
                 <span className="text-black">Sabitek</span>
-                <span className="text-red-500 ml-2">LMS</span>
+                <span className="text-red-500 ml-2"></span>
               </h1>
             </Link>
             <p className="text-gray-600 mt-2">Start your learning journey today</p>

@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-lg font-bold text-black mb-3">Sabitek LMS</h3>
+            <h3 className="text-lg font-bold text-black mb-3">Sabitek</h3>
             <p className="text-sm text-gray-600">
               Empowering African education through technology
             </p>
@@ -45,7 +45,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-gray-200">
           <p className="text-center text-sm text-gray-600">
-            © 2025 Sabitek LMS by TEK4ALL. All rights reserved.
+            © 2025 Sabitek by TEK4ALL. All rights reserved.
           </p>
         </div>
       </div>

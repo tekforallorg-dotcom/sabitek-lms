@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/components/providers/auth-provider'
+import { Sparkles } from 'lucide-react'
 
 export default function Header() {
   const router = useRouter()
@@ -61,10 +62,10 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-black">Sabitek</span>
-              <span className="text-xs text-red-500 font-semibold">LMS</span>
-            </Link>
+     <Link href="/" className="flex items-center gap-1">
+  <span className="text-2xl font-bold text-gray-900">Sabitek</span>
+  <Sparkles className="w-4 h-4 text-red-500 mb-2" />
+</Link>
           </div>
 
           {/* Desktop Navigation */}
