@@ -12,7 +12,10 @@ export interface UserProfile {
   full_name: string
   role: 'learner' | 'instructor' | 'admin'
   bio?: string
-  profile_image_url?: string
+  avatar_url?: string
+  phone?: string
+  location?: string
+  website?: string
   created_at: string
   updated_at?: string
 }

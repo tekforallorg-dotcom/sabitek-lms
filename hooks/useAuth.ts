@@ -3,20 +3,14 @@ import { useEffect, useState, useCallback } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-
-interface UserProfile {
-  id: string
-  email: string
-  full_name: string
-  role: 'learner' | 'instructor' | 'admin'
-}
+import { UserProfile } from '@/types'
 
 interface AuthReturn {
   user: User | null
   userProfile: UserProfile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any; needsVerification?: boolean }>
   signOut: () => Promise<void>
 }
 
@@ -148,7 +142,8 @@ export function useAuth(): AuthReturn {
           data: {
             full_name: fullName,
             role: role,
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth/login`,
         }
       })
 
@@ -157,13 +152,24 @@ export function useAuth(): AuthReturn {
         return { error }
       }
 
-      if (data.user) {
+      // Check if email confirmation is required
+      const needsVerification = data.user && !data.session
+
+      if (needsVerification) {
+        // User needs to verify email - don't redirect
+        setLoading(false)
+        return { error: null, needsVerification: true }
+      }
+
+      // If no verification needed (auto-login), redirect
+      if (data.user && data.session) {
         setUser(data.user)
+        await fetchUserProfile(data.user.id)
         router.push('/dashboard')
       }
 
       setLoading(false)
-      return { error: null }
+      return { error: null, needsVerification: false }
     } catch (error) {
       setLoading(false)
       return { error }

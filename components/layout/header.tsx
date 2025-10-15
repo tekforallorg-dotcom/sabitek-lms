@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/components/providers/auth-provider'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, User, Settings, LogOut, ChevronDown } from 'lucide-react'
 
 export default function Header() {
   const router = useRouter()
@@ -13,6 +13,7 @@ export default function Header() {
   const { user, signOut } = useAuthContext()
   const [userProfile, setUserProfile] = useState<any>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -41,6 +42,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await signOut()
+      setIsUserMenuOpen(false)
     } catch (error) {
       console.error('Error logging out:', error)
     }
@@ -62,10 +64,10 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-     <Link href="/" className="flex items-center gap-1">
-  <span className="text-2xl font-bold text-gray-900">Sabitek</span>
-  <Sparkles className="w-4 h-4 text-red-500 mb-2" />
-</Link>
+            <Link href="/" className="flex items-center gap-1">
+              <span className="text-2xl font-bold text-gray-900">Sabitek</span>
+              <Sparkles className="w-4 h-4 text-red-500 mb-2" />
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -99,22 +101,96 @@ export default function Header() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <div className="hidden md:block text-sm text-gray-600">
-                  <span className="font-medium">{userProfile?.full_name || user.email}</span>
-                  {userProfile?.role && (
-                    <span className="ml-2 px-2 py-1 bg-gray-100 text-xs rounded-full">
-                      {userProfile.role}
-                    </span>
+              <div className="flex items-center space-x-3">
+                {/* User Avatar & Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    {/* Avatar */}
+                    {userProfile?.avatar_url ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt={userProfile.full_name}
+                        className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center border-2 border-gray-200">
+                        <span className="text-sm font-semibold text-red-600">
+                          {userProfile?.full_name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* User Info */}
+                    <div className="hidden md:block text-left">
+                      <p className="text-sm font-medium text-gray-900">
+                        {userProfile?.full_name || user.email}
+                      </p>
+                      {userProfile?.role && (
+                        <p className="text-xs text-gray-500 capitalize">
+                          {userProfile.role}
+                        </p>
+                      )}
+                    </div>
+
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsUserMenuOpen(false)}
+                      />
+
+                      {/* Menu */}
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                        {/* User Info in Dropdown */}
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <p className="text-sm font-medium text-gray-900">
+                            {userProfile?.full_name || 'User'}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        {/* Menu Items */}
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          <span>My Profile</span>
+                        </Link>
+
+                        <Link
+                          href={getDashboardLink()}
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Dashboard</span>
+                        </Link>
+
+                        <hr className="my-2 border-gray-100" />
+
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-50"
-                >
-                  Logout
-                </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
@@ -151,6 +227,37 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
+              {/* User Info Mobile */}
+              {user && (
+                <div className="px-3 py-3 bg-gray-50 rounded-lg mb-2">
+                  <div className="flex items-center space-x-3">
+                    {userProfile?.avatar_url ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt={userProfile.full_name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <span className="text-lg font-semibold text-red-600">
+                          {userProfile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {userProfile?.full_name || user.email}
+                      </p>
+                      {userProfile?.role && (
+                        <p className="text-xs text-gray-500 capitalize">
+                          {userProfile.role}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Link 
                 href="/courses" 
                 className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
@@ -159,13 +266,22 @@ export default function Header() {
                 Courses
               </Link>
               {user && (
-                <Link 
-                  href={getDashboardLink()} 
-                  className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
+                <>
+                  <Link 
+                    href={getDashboardLink()} 
+                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/profile" 
+                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                </>
               )}
               {userProfile?.role === 'instructor' && (
                 <Link 
