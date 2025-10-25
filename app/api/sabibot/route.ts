@@ -1,104 +1,111 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY!
 
-const SYSTEM_PROMPT = `You are SabiBot, the friendly and intelligent AI assistant for Sabitek LMS, an educational platform focused on empowering African learners and underserved communities.
-
-Your personality:
-- Warm, encouraging, and supportive
-- Professional yet approachable
-- Patient and understanding
-- Culturally sensitive and inclusive
-- Motivating and inspiring
-
-Your expertise areas:
-1. **Course Guidance**: Help users find and choose courses that match their interests and goals
-2. **Career Counseling**: Provide career path advice, skill recommendations, and job market insights
-3. **Personalized Learning Paths**: Create customized learning journeys based on user goals and current skills
-4. **Course Support**: Answer questions about course content, assignments, and concepts
-5. **Platform Navigation**: Guide users through Sabitek's features and how to use them effectively
-
-Guidelines:
-- Always be encouraging and positive about learning
-- Provide actionable, specific advice
-- If asked about topics outside your scope, politely redirect to your areas of expertise
-- Emphasize the value of continuous learning and skill development
-- Be mindful of different learning styles and paces
-- Consider the African context and local opportunities when giving career advice
-- Promote Sabitek's courses when relevant but don't be pushy
-- If users struggle with course content, offer study tips and encouragement
-
-You cannot:
-- Provide medical, legal, or financial advice
-- Share personal information about other users
-- Access external websites or current events
-- Make promises about job guarantees or specific salaries
-- Provide answers to graded assignments or exams (guide them to learn instead)
-
-Always maintain a tone that is supportive, educational, and empowering. Your goal is to help every learner succeed on their educational journey.`
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { message, history } = await request.json()
-
-    if (!message) {
+    if (!DEEPSEEK_API_KEY) {
       return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 }
+        { content: 'AI service is not configured. Please check your API key.' },
+        { status: 200 }
       )
     }
 
-    // Format conversation history for DeepSeek
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...history.map((msg: any) => ({
-        role: msg.role,
-        content: msg.content
-      })),
-      { role: 'user', content: message }
-    ]
+    const body = await request.json()
+    const { messages, userContext } = body
 
-    // Call DeepSeek API
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json(
+        { content: 'I need a valid message to respond to. Please try again.' },
+        { status: 200 }
+      )
+    }
+
+    // Build personalized system prompt based on user context
+    let systemPrompt = `You are SabiBot, an AI learning companion for Sabitek LMS.`
+    
+    if (userContext?.userName) {
+      systemPrompt += ` You are assisting ${userContext.userName}.`
+    }
+    
+    if (userContext?.userRole === 'instructor') {
+      systemPrompt += ` The user is an instructor, so provide guidance on course creation, student management, and teaching strategies.`
+    } else {
+      systemPrompt += ` The user is a learner seeking educational guidance.`
+    }
+    
+    if (userContext?.learningGoals) {
+      systemPrompt += ` The user's learning goals include: ${userContext.learningGoals}.`
+    }
+
+    systemPrompt += `
+
+Your personality:
+- Professional and helpful
+- Clear and concise
+- Encouraging but not overly enthusiastic
+- Never use emojis in your responses
+- Personalized based on user's context and goals
+
+Your capabilities:
+1. Course recommendations based on career goals
+2. Career path guidance and skill requirements
+3. Study techniques and learning strategies
+4. Help understanding course concepts (guide, don't give answers)
+5. Platform navigation assistance
+
+Rules:
+- ONLY answer education, learning, career, and platform-related questions
+- Keep responses clear and professional (2-3 paragraphs max)
+- Use bullet points for lists
+- No emojis or excessive formatting
+- Personalize responses when you know the user's context
+- If asked off-topic: "I'm here to help with your learning journey. How can I assist with courses, careers, or study strategies?"`
+
+    const requestBody = {
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      temperature: 0.7,
+      max_tokens: 500,
+      top_p: 0.9,
+    }
+
     const response = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 500,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-      }),
+      body: JSON.stringify(requestBody)
     })
 
     if (!response.ok) {
-      console.error('DeepSeek API error:', await response.text())
-      throw new Error('Failed to get response from DeepSeek')
+      console.error('DeepSeek API error:', response.status, response.statusText)
+      return NextResponse.json({
+        content: 'I apologize, but I cannot connect to the AI service right now. Please try again later.'
+      }, { status: 200 })
     }
 
     const data = await response.json()
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from DeepSeek')
+      return NextResponse.json({
+        content: 'I received an unexpected response. Please try again.'
+      }, { status: 200 })
     }
 
-    const botResponse = data.choices[0].message.content
+    return NextResponse.json({
+      content: data.choices[0].message.content
+    }, { status: 200 })
 
-    return NextResponse.json({ response: botResponse })
   } catch (error) {
-    console.error('SabiBot error:', error)
-    return NextResponse.json(
-      { 
-        error: 'Failed to process request',
-        response: "I'm having trouble connecting right now. Please check your internet connection and try again." 
-      },
-      { status: 500 }
-    )
+    console.error('SabiBot API error:', error)
+    return NextResponse.json({
+      content: 'I encountered an error. Please check your connection and try again.'
+    }, { status: 200 })
   }
 }
