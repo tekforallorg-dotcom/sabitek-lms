@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
 import { AuthProvider } from '@/components/providers/auth-provider'
+import SabiBot from '@/components/chat/sabibot'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <SabiBot />
         </AuthProvider>
       </body>
     </html>
