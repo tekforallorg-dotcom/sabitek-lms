@@ -28,13 +28,11 @@ export default function SabiBot() {
   // Reset chat when user changes
   useEffect(() => {
     if (user?.id !== previousUserId.current) {
-      // User has changed, reset everything
       setMessages([])
       setIsOpen(false)
       setIsMinimized(false)
       previousUserId.current = user?.id || null
       
-      // Load user profile if logged in
       if (user?.id) {
         loadUserProfile()
       } else {
@@ -48,15 +46,20 @@ export default function SabiBot() {
     if (!user?.id) return
 
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, role, learning_goals')
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('full_name, role')
         .eq('id', user.id)
         .single()
 
+      if (error) {
+        console.error('Error loading user profile:', error)
+        setDefaultWelcome()
+        return
+      }
+
       setUserProfile(profile)
       
-      // Set personalized welcome message
       const welcomeMessage: Message = {
         id: 'welcome',
         role: 'assistant',
@@ -69,14 +72,13 @@ I can help you with:
 - Understanding course content
 - Navigating the platform
 
-${profile?.learning_goals ? `I see you're interested in ${profile.learning_goals}. ` : ''}How can I assist your learning journey today?`,
+How can I assist your learning journey today?`,
         timestamp: new Date()
       }
       
       setMessages([welcomeMessage])
     } catch (error) {
       console.error('Error loading profile:', error)
-      // Set default welcome message
       setDefaultWelcome()
     }
   }
@@ -108,7 +110,6 @@ How can I assist your learning journey today?`,
       } else if (!user?.id) {
         setDefaultWelcome()
       } else if (userProfile) {
-        // User profile already loaded, set personalized welcome
         const welcomeMessage: Message = {
           id: 'welcome',
           role: 'assistant',
@@ -121,7 +122,7 @@ I can help you with:
 - Understanding course content
 - Navigating the platform
 
-${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learning_goals}. ` : ''}How can I assist your learning journey today?`,
+How can I assist your learning journey today?`,
           timestamp: new Date()
         }
         setMessages([welcomeMessage])
@@ -159,7 +160,6 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
     setIsTyping(true)
 
     try {
-      // Include user context in the API call
       const response = await fetch('/api/sabibot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -172,7 +172,6 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
             userId: user?.id,
             userName: userProfile?.full_name,
             userRole: userProfile?.role || 'learner',
-            learningGoals: userProfile?.learning_goals,
             isAuthenticated: !!user
           }
         })
@@ -190,7 +189,6 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
         setMessages(prev => [...prev, assistantMessage])
         setIsTyping(false)
 
-        // Optionally save conversation to database for this user
         if (user?.id) {
           saveConversation(userMessage, assistantMessage)
         }
@@ -211,19 +209,25 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
     }
   }
 
-  // Save conversation to database (optional)
+  // Save conversation to database - only if table exists
   const saveConversation = async (userMsg: Message, assistantMsg: Message) => {
     if (!user?.id) return
 
     try {
-      await supabase.from('chat_history').insert({
+      const { error } = await supabase.from('chat_history').insert({
         user_id: user.id,
         user_message: userMsg.content,
         assistant_message: assistantMsg.content,
         created_at: new Date().toISOString()
       })
+      
+      if (error && error.code === '42P01') {
+        console.log('Chat history table not found, skipping save')
+      } else if (error) {
+        console.error('Error saving conversation:', error)
+      }
     } catch (error) {
-      console.error('Error saving conversation:', error)
+      console.log('Chat history not configured')
     }
   }
 
@@ -247,23 +251,108 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
     { icon: Target, label: 'Get Started', prompt: 'How do I start learning on Sabitek?' },
   ]
 
+  const animatedButtonStyles = `
+    @keyframes blink {
+      0%, 90%, 100% { opacity: 1; }
+      95% { opacity: 0.2; }
+    }
+    
+    .robot-eye {
+      animation: blink 4s infinite;
+    }
+    
+    .robot-eye-left {
+      animation-delay: 0.1s;
+    }
+    
+    @keyframes antenna-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    
+    .robot-antenna {
+      animation: antenna-pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes mouth-speak {
+      0%, 100% { width: 8px; }
+      50% { width: 6px; }
+    }
+    
+    .robot-mouth {
+      animation: mouth-speak 2s infinite;
+    }
+    
+    .animation-delay-200 {
+      animation-delay: 200ms;
+    }
+    
+    .animation-delay-400 {
+      animation-delay: 400ms;
+    }
+  `
+
   return (
     <>
-      {/* Floating Chat Button */}
+      {/* Floating Chat Button - Animated Robot Head (Option 4) */}
       <button
         onClick={() => setIsOpen(true)}
         className={`${
           isOpen ? 'scale-0' : 'scale-100'
         } fixed bottom-6 right-6 z-50 transition-all duration-200`}
-        aria-label="Open Chat"
+        aria-label="Open SabiBot"
       >
-        <div className="relative w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all">
-          <MessageCircle className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-          <span className="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+        <div className="relative w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 group">
+          {/* Animated Robot Icon */}
+          <svg
+            className="w-9 h-9 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            viewBox="0 0 40 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Head */}
+            <rect x="12" y="14" width="16" height="14" rx="3" fill="white" opacity="0.95"/>
+            
+            {/* Eyes with Blink Animation */}
+            <rect x="15" y="18" width="3" height="4" rx="1" fill="#ef4444" className="robot-eye robot-eye-left"/>
+            <rect x="22" y="18" width="3" height="4" rx="1" fill="#ef4444" className="robot-eye"/>
+            
+            {/* Antenna with Pulse */}
+            <line x1="20" y1="14" x2="20" y2="9" stroke="white" strokeWidth="2"/>
+            <circle cx="20" cy="8" r="2" fill="white" className="robot-antenna"/>
+            
+            {/* Mouth - Speaking Animation */}
+            <rect x="16" y="24" width="8" height="2" rx="1" fill="#ef4444" className="robot-mouth"/>
+            
+            {/* Chat Indicator Dots */}
+            <circle cx="28" cy="14" r="1" fill="white" opacity="0.6">
+              <animate
+                attributeName="opacity"
+                values="0.6;1;0.6"
+                dur="1s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle cx="32" cy="12" r="1.5" fill="white" opacity="0.8">
+              <animate
+                attributeName="opacity"
+                values="0.8;0.4;0.8"
+                dur="1s"
+                begin="0.3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </svg>
+          
+          {/* Online Status */}
+          <span className="absolute top-0 right-0 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-white"></span>
+          </span>
         </div>
       </button>
 
-      {/* Chat Widget */}
+      {/* Chat Widget - Professional Design */}
       <div className={`${
         isOpen ? 'visible' : 'invisible'
       } fixed bottom-0 right-0 z-50 transition-all duration-200`}>
@@ -278,7 +367,7 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
             isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-6`}
         >
-          {/* Header */}
+          {/* Header - Clean Design */}
           <div className="bg-red-500 p-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
@@ -315,7 +404,7 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
 
           {!isMinimized && (
             <>
-              {/* Messages Area */}
+              {/* Messages Area - Clean Styling */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
                 {messages.map((message) => (
                   <div
@@ -370,7 +459,7 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
                   </div>
                 ))}
                 
-                {/* Typing Indicator */}
+                {/* Typing Indicator - Simple */}
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="flex items-center gap-2">
@@ -391,7 +480,7 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Actions */}
+              {/* Quick Actions - Simple Design */}
               {messages.length === 1 && (
                 <div className="px-4 py-3 bg-white border-t border-gray-200">
                   <p className="text-xs text-gray-600 mb-2">Quick actions</p>
@@ -410,7 +499,7 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
                 </div>
               )}
 
-              {/* Input Area */}
+              {/* Input Area - Minimal Design */}
               <div className="p-3 bg-white border-t border-gray-200">
                 <div className="flex gap-2">
                   <input
@@ -445,14 +534,8 @@ ${userProfile?.learning_goals ? `I see you're interested in ${userProfile.learni
         </div>
       </div>
 
-      <style jsx>{`
-        .animation-delay-200 {
-          animation-delay: 200ms;
-        }
-        .animation-delay-400 {
-          animation-delay: 400ms;
-        }
-      `}</style>
+      {/* Add animation styles */}
+      <style jsx>{animatedButtonStyles}</style>
     </>
   )
 }
