@@ -3,8 +3,16 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
+import { 
+  BookOpen, 
+  Award, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle,
+  ArrowRight,
+  Sparkles
+} from 'lucide-react'
 
 interface EnrolledCourse {
   id: string
@@ -16,9 +24,21 @@ interface EnrolledCourse {
     description: string
     instructor_id: string
     slug: string
+    cover_image_url?: string
     instructor?: {
       full_name: string
     }
+  }
+}
+
+interface Certificate {
+  id: string
+  certificate_number: string
+  grade_percentage: number
+  issued_at: string
+  course: {
+    title: string
+    cover_image_url?: string
   }
 }
 
@@ -26,6 +46,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, userProfile, loading } = useAuth()
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([])
+  const [certificates, setCertificates] = useState<Certificate[]>([])
   const [coursesLoading, setCoursesLoading] = useState(true)
 
   useEffect(() => {
@@ -35,14 +56,17 @@ export default function DashboardPage() {
       } else if (userProfile?.role === 'instructor') {
         router.push('/instructor')
       } else {
-        fetchEnrolledCourses()
+        fetchDashboardData()
       }
     }
   }, [user, userProfile, loading, router])
 
-  const fetchEnrolledCourses = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const { data, error } = await supabase
+      console.log('Fetching dashboard data for user:', user?.id)
+      
+      // Fetch enrollments with better error handling
+      const { data: coursesData, error: coursesError } = await supabase
         .from('course_enrollments')
         .select(`
           *,
@@ -54,10 +78,78 @@ export default function DashboardPage() {
         .eq('user_id', user?.id)
         .order('enrolled_at', { ascending: false })
 
-      if (error) throw error
-      setEnrolledCourses(data || [])
+      if (coursesError) {
+        console.error('Error fetching enrollments:', coursesError)
+        
+        // If 406 or RLS error, try alternative approach
+        if (coursesError.code === 'PGRST116' || coursesError.message.includes('policy')) {
+          console.log('RLS policy issue detected - trying alternative query')
+          
+          // Try simpler query without nested relations
+          const { data: simpleEnrollments, error: simpleError } = await supabase
+            .from('course_enrollments')
+            .select('*')
+            .eq('user_id', user?.id)
+          
+          if (simpleError) {
+            console.error('Simple enrollment query also failed:', simpleError)
+            setEnrolledCourses([])
+          } else {
+            console.log('Simple enrollment query succeeded, fetching courses separately')
+            
+            // Fetch course details separately
+            const courseIds = simpleEnrollments?.map(e => e.course_id) || []
+            if (courseIds.length > 0) {
+              const { data: courseDetails } = await supabase
+                .from('courses')
+                .select(`
+                  *,
+                  instructor:users!courses_instructor_id_fkey(full_name)
+                `)
+                .in('id', courseIds)
+              
+              // Combine enrollments with course details
+              const combined = simpleEnrollments.map(enrollment => ({
+                ...enrollment,
+                course: courseDetails?.find(c => c.id === enrollment.course_id) || null
+              }))
+              
+              setEnrolledCourses(combined.filter(e => e.course !== null))
+            }
+          }
+        } else {
+          setEnrolledCourses([])
+        }
+      } else {
+        console.log('Enrollments fetched successfully:', coursesData?.length || 0)
+        setEnrolledCourses(coursesData || [])
+      }
+
+      // Fetch certificates
+      const { data: certsData, error: certsError } = await supabase
+        .from('certificates')
+        .select(`
+          *,
+          course:courses(
+            title,
+            cover_image_url
+          )
+        `)
+        .eq('user_id', user?.id)
+        .order('issued_at', { ascending: false })
+        .limit(3)
+
+      if (certsError) {
+        console.error('Error fetching certificates:', certsError)
+        setCertificates([])
+      } else {
+        console.log('Certificates fetched successfully:', certsData?.length || 0)
+        setCertificates(certsData || [])
+      }
     } catch (error) {
-      console.error('Error fetching enrolled courses:', error)
+      console.error('Unexpected error fetching dashboard data:', error)
+      setEnrolledCourses([])
+      setCertificates([])
     } finally {
       setCoursesLoading(false)
     }
@@ -67,129 +159,275 @@ export default function DashboardPage() {
     router.push(`/courses/${courseSlug}`)
   }
 
+  const completedCount = enrolledCourses.filter(c => c.progress_percentage === 100).length
+  const inProgressCount = enrolledCourses.filter(c => c.progress_percentage > 0 && c.progress_percentage < 100).length
+
   if (loading || coursesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-700 font-medium">Loading your dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Dashboard Header - No duplicate navigation */}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Learning Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back, {userProfile?.full_name || user?.email}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Learner'}!
+            </h1>
+          </div>
+          <p className="text-gray-600 text-lg">Continue your learning journey</p>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Enrolled Courses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-500">{enrolledCourses.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">In Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-yellow-500">
-                {enrolledCourses.filter(c => c.progress_percentage < 100).length}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {/* Total Courses */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                <BookOpen className="w-5 h-5 text-gray-700" />
               </div>
-            </CardContent>
-          </Card>
+              <TrendingUp className="w-4 h-4 text-gray-400" />
+            </div>
+            <p className="text-sm text-gray-600 font-medium mb-1">Total Courses</p>
+            <p className="text-3xl font-bold text-gray-900">{enrolledCourses.length}</p>
+          </div>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-500">
-                {enrolledCourses.filter(c => c.progress_percentage === 100).length}
+          {/* In Progress */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                <Clock className="w-5 h-5 text-orange-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            </div>
+            <p className="text-sm text-gray-600 font-medium mb-1">In Progress</p>
+            <p className="text-3xl font-bold text-gray-900">{inProgressCount}</p>
+          </div>
+
+          {/* Completed */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <p className="text-sm text-gray-600 font-medium mb-1">Completed</p>
+            <p className="text-3xl font-bold text-green-600">{completedCount}</p>
+          </div>
+
+          {/* Certificates - Red accent */}
+          <div className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-red-600 hover:shadow-xl transition-all cursor-pointer group"
+               onClick={() => router.push('/certificates')}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors">
+                <Award className="w-5 h-5 text-white" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-red-600 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <p className="text-sm text-gray-600 font-medium mb-1">Certificates</p>
+            <p className="text-3xl font-bold text-red-600">{certificates.length}</p>
+          </div>
         </div>
 
-        {/* Enrolled Courses */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>My Courses</CardTitle>
-                <CardDescription>Continue where you left off</CardDescription>
-              </div>
+        {/* Certificates Showcase - ALWAYS VISIBLE */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Award className="w-6 h-6 text-red-600" />
+              Your Certificates
+            </h2>
+            {certificates.length > 0 && (
+              <Button
+                onClick={() => router.push('/certificates')}
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 hover:bg-red-50"
+              >
+                View All
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
+
+          {certificates.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {certificates.map((cert) => (
+                <div
+                  key={cert.id}
+                  className="bg-white rounded-xl p-5 border border-gray-200 hover:border-red-600 hover:shadow-lg transition-all cursor-pointer group"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <Award className="w-8 h-8 text-gray-700 group-hover:text-red-600 group-hover:scale-110 transition-all" />
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium border border-gray-200">
+                      {cert.grade_percentage}%
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
+                    {cert.course.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Issued {new Date(cert.issued_at).toLocaleDateString()}
+                  </p>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        router.push(`/certificates/${cert.id}`)
+                      }}
+                      className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors text-xs font-medium text-gray-700"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        router.push(`/certificates/${cert.id}?download=true`)
+                      }}
+                      className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium"
+                    >
+                      Download
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+              <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Certificates Yet</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Complete courses and pass quizzes to earn certificates that showcase your achievements!
+              </p>
               <Button
                 onClick={() => router.push('/courses')}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Browse More Courses
+                Start Learning
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            {enrolledCourses.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">You haven't enrolled in any courses yet.</p>
-                <Button
-                  onClick={() => router.push('/courses')}
-                  className="bg-red-500 hover:bg-red-600 text-white"
-                >
-                  Explore Courses
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {enrolledCourses.map((enrollment) => (
-                  <Card key={enrollment.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{enrollment.course.title}</CardTitle>
-                      <CardDescription className="text-sm">
-                        By {enrollment.course.instructor?.full_name}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {enrollment.course.description}
-                      </p>
-                      
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="flex justify-between text-sm text-gray-600 mb-1">
-                          <span>Progress</span>
-                          <span>{enrollment.progress_percentage || 0}%</span>
+          )}
+        </div>
+
+        {/* My Courses Section */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-gray-700" />
+              My Courses
+            </h2>
+            <Button
+              onClick={() => router.push('/courses')}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Browse More
+            </Button>
+          </div>
+
+          {enrolledCourses.length === 0 ? (
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Start Your Learning Journey</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                You haven't enrolled in any courses yet. Explore our courses and start learning today!
+              </p>
+              <Button
+                onClick={() => router.push('/courses')}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Explore Courses
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {enrolledCourses.map((enrollment) => {
+                const progress = enrollment.progress_percentage || 0
+                const isCompleted = progress === 100
+                const isStarted = progress > 0
+
+                return (
+                  <div
+                    key={enrollment.id}
+                    className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-red-600 hover:shadow-xl transition-all cursor-pointer flex flex-col"
+                    onClick={() => continueLearning(enrollment.course.slug)}
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative h-32 bg-gray-100 overflow-hidden">
+                      {enrollment.course.cover_image_url ? (
+                        <img
+                          src={enrollment.course.cover_image_url}
+                          alt={enrollment.course.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <BookOpen className="w-12 h-12 text-gray-300" />
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                      )}
+                      
+                      {/* Progress Badge */}
+                      <div className="absolute top-2 right-2">
+                        {isCompleted ? (
+                          <span className="px-2 py-1 bg-green-600 text-white text-xs rounded-full font-medium flex items-center gap-1 border-2 border-white shadow-lg">
+                            <CheckCircle className="w-3 h-3" />
+                            Complete
+                          </span>
+                        ) : isStarted ? (
+                          <span className="px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                            {progress}%
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-gray-700 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg">
+                            Start
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 flex flex-col flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition-colors">
+                        {enrollment.course.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-3">
+                        By {enrollment.course.instructor?.full_name}
+                      </p>
+
+                      {/* Progress Bar */}
+                      <div className="mb-3">
+                        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                           <div
-                            className="bg-red-500 h-2 rounded-full transition-all"
-                            style={{ width: `${enrollment.progress_percentage || 0}%` }}
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isCompleted ? 'bg-green-500' : isStarted ? 'bg-orange-500' : 'bg-gray-300'
+                            }`}
+                            style={{ width: `${progress}%` }}
                           />
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => continueLearning(enrollment.course.slug)}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white"
+                      {/* Continue Button */}
+                      <button
+                        className="w-full py-2 bg-gray-900 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium flex items-center justify-center gap-2 group-hover:shadow-md mt-auto"
                       >
-                        Continue Learning
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        {isCompleted ? 'Review' : isStarted ? 'Continue' : 'Start'} Learning
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

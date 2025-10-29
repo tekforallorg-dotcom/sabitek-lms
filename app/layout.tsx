@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/layout/header'
-import Footer from '@/components/layout/footer'
 import { AuthProvider } from '@/components/providers/auth-provider'
-import SabiBot from '@/components/chat/sabibot'
+import ConditionalLayout from '@/components/layout/ConditionalLayout'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -24,14 +22,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} min-h-screen`}>
         <AuthProvider>
-          <Header />
-          <main className="flex-grow">
+          <ConditionalLayout>
             {children}
-          </main>
-          <Footer />
-          <SabiBot />
+          </ConditionalLayout>
         </AuthProvider>
       </body>
     </html>

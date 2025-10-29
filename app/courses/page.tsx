@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+import { BookOpen, Clock, User, Search, Filter } from 'lucide-react'
 
 interface Course {
   id: string
@@ -66,7 +66,6 @@ export default function CoursesPage() {
   useEffect(() => {
     let filtered = courses
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(course =>
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,12 +73,10 @@ export default function CoursesPage() {
       )
     }
 
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(course => course.category === selectedCategory)
     }
 
-    // Filter by level
     if (selectedLevel !== 'all') {
       filtered = filtered.filter(course => course.difficulty_level === selectedLevel)
     }
@@ -92,19 +89,19 @@ export default function CoursesPage() {
 
   const getDifficultyColor = (level: string) => {
     switch (level) {
-      case 'beginner': return 'bg-green-100 text-green-800'
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800'
-      case 'advanced': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'beginner': return 'bg-green-50 text-green-700 border-green-200'
+      case 'intermediate': return 'bg-orange-50 text-orange-700 border-orange-200'
+      case 'advanced': return 'bg-red-50 text-red-700 border-red-200'
+      default: return 'bg-gray-50 text-gray-700 border-gray-200'
     }
   }
 
   if (loading || coursesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading courses...</p>
+          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading courses...</p>
         </div>
       </div>
     )
@@ -115,29 +112,31 @@ export default function CoursesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Discover Courses</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Discover Courses</h1>
           <p className="mt-2 text-gray-600">Find the perfect course to advance your skills</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 placeholder="Search courses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
+                className="pl-10 border-gray-300 focus:border-red-500 focus:ring-red-500"
               />
             </div>
 
             {/* Category Filter */}
-            <div>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>
@@ -152,7 +151,7 @@ export default function CoursesPage() {
               <select
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white"
               >
                 {levels.map(level => (
                   <option key={level} value={level}>
@@ -164,71 +163,91 @@ export default function CoursesPage() {
           </div>
         </div>
 
+        {/* Results Count */}
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'}
+        </div>
+
         {/* Courses Grid */}
         {filteredCourses.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No courses found matching your criteria.</p>
+          <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No courses found</h3>
+            <p className="text-gray-600">Try adjusting your filters or search terms</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredCourses.map((course) => (
-              <Card 
-                key={course.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+              <div
+                key={course.id}
+                className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-red-500 hover:shadow-lg transition-all cursor-pointer flex flex-col"
                 onClick={() => router.push(`/courses/${course.slug}`)}
               >
-                {/* Course Cover Image */}
-                {course.cover_image_url ? (
-                  <div className="h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                {/* Course Cover */}
+                <div className="relative h-40 bg-gray-100 overflow-hidden">
+                  {course.cover_image_url ? (
                     <img
                       src={course.cover_image_url}
                       alt={course.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                  </div>
-                ) : (
-                  <div className="h-48 bg-gradient-to-br from-red-400 to-red-600 rounded-t-lg flex items-center justify-center">
-                    <span className="text-white text-4xl font-bold">
-                      {course.title.charAt(0)}
-                    </span>
-                  </div>
-                )}
-
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">{course.title}</CardTitle>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(course.difficulty_level)}`}>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-100 flex items-center justify-center">
+                      <BookOpen className="w-12 h-12 text-gray-300" />
+                    </div>
+                  )}
+                  
+                  {/* Difficulty Badge */}
+                  <div className="absolute top-2 right-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getDifficultyColor(course.difficulty_level)}`}>
                       {course.difficulty_level}
                     </span>
                   </div>
-                  <CardDescription className="mt-2 line-clamp-2">
-                    {course.description}
-                  </CardDescription>
-                </CardHeader>
+                </div>
 
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span>By {course.instructor?.full_name}</span>
-                    <span>{course.lessons?.length || 0} lessons</span>
+                {/* Content - Flex column with flex-1 */}
+                <div className="p-4 flex flex-col flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
+                    {course.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2 flex-1">
+                    {course.description}
+                  </p>
+
+                  {/* Meta Info */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <div className="flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      <span className="truncate max-w-[100px]">{course.instructor?.full_name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <BookOpen className="w-3 h-3" />
+                      <span>{course.lessons?.length || 0} lessons</span>
+                    </div>
                   </div>
+
+                  {/* Category Badge */}
                   {course.category && (
-                    <div className="mt-2">
+                    <div className="mb-3">
                       <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
                         {course.category}
                       </span>
                     </div>
                   )}
-                  <Button 
-                    className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white"
+
+                  {/* View Button - mt-auto pushes to bottom */}
+                  <button
+                    className="w-full py-2 bg-gray-900 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium group-hover:shadow-md mt-auto"
                     onClick={(e) => {
                       e.stopPropagation()
                       router.push(`/courses/${course.slug}`)
                     }}
                   >
                     View Course
-                  </Button>
-                </CardContent>
-              </Card>
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}

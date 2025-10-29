@@ -2,191 +2,276 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/components/providers/auth-provider'
+import { useAuth } from '@/hooks/useAuth'
+import { 
+  BookOpen, 
+  Users, 
+  Clock, 
+  PlayCircle,
+  CheckCircle,
+  Award,
+  ArrowRight,
+  PartyPopper,
+  X
+} from 'lucide-react'
+
+interface Course {
+  id: string
+  title: string
+  description: string
+  instructor_id: string
+  cover_image_url?: string
+  instructor?: {
+    full_name: string
+  }
+}
 
 interface Lesson {
   id: string
   title: string
   slug: string
   lesson_order: number
-  content_type: string
   duration_minutes?: number
-}
-
-interface Course {
-  id: string
-  title: string
-  slug: string
-  description: string
-  difficulty_level: string
-  instructor_id: string
-  status: string
-  cover_image_url?: string
-  category?: string
-  users?: {
-    full_name: string
-    email: string
-  }
-  lessons?: Lesson[]
+  content_type: string
 }
 
 export default function CourseDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user, loading: authLoading } = useAuthContext()
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const { user, loading: authLoading } = useAuth()
   const [course, setCourse] = useState<Course | null>(null)
+  const [lessons, setLessons] = useState<Lesson[]>([])
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set())
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
+  const [finishingCourse, setFinishingCourse] = useState(false)
+  const [showCongratsModal, setShowCongratsModal] = useState(false)
+  const [generatedCertificateId, setGeneratedCertificateId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Wait for auth to load
-    if (authLoading) return
-
-    // Only redirect if truly not authenticated
-    if (!authLoading && !user) {
-      router.push('/auth/login')
-      return
+    if (!authLoading) {
+      fetchCourseData()
     }
+  }, [authLoading, params.slug])
 
-    // If user is authenticated, fetch course and profile
-    if (user) {
-      fetchUserProfile(user.id)
-      fetchCourseDetails()
-    }
-  }, [user, authLoading, params.slug])
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      
-      if (!error && data) {
-        setUserProfile(data)
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    }
-  }
-
-  const fetchCourseDetails = async () => {
-    if (!user) return
-
+  const fetchCourseData = async () => {
     try {
       setLoading(true)
-      
-      // Fetch course with lessons and instructor info - Fixed query
+
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
         .select(`
           *,
-          users!instructor_id(full_name, email),
-          lessons(id, title, slug, lesson_order, content_type, duration_minutes)
+          instructor:users!courses_instructor_id_fkey(full_name)
         `)
         .eq('slug', params.slug)
         .single()
 
-      if (courseError) {
-        console.error('Error fetching course:', courseError)
-        return
-      }
-
+      if (courseError) throw courseError
       setCourse(courseData)
 
-      // Check enrollment status (but instructors don't need to be enrolled in their own courses)
-      if (courseData.instructor_id !== user.id) {
+      const { data: lessonsData } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('course_id', courseData.id)
+        .order('lesson_order')
+
+      setLessons(lessonsData || [])
+
+      if (user) {
         const { data: enrollment } = await supabase
           .from('course_enrollments')
           .select('id')
           .eq('user_id', user.id)
           .eq('course_id', courseData.id)
-          .single()
+          .maybeSingle()
 
         setIsEnrolled(!!enrollment)
-      } else {
-        // Instructor can view their own course
-        setIsEnrolled(true)
+
+        if (enrollment) {
+          const { data: progress } = await supabase
+            .from('user_progress')
+            .select('lesson_id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseData.id)
+            .not('completed_at', 'is', null)
+
+          const completed = new Set(progress?.map(p => p.lesson_id) || [])
+          setCompletedLessons(completed)
+        }
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching course:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleEnrollment = async () => {
-    if (!user || !course) return
-
-    // Instructors can't enroll in their own courses
-    if (course.instructor_id === user.id) {
-      alert("You can't enroll in your own course. You can preview it as the instructor.")
+  const handleEnroll = async () => {
+    if (!user) {
+      router.push('/auth/login')
       return
     }
 
-    setEnrolling(true)
     try {
+      setEnrolling(true)
+      
       const { error } = await supabase
         .from('course_enrollments')
         .insert({
           user_id: user.id,
-          course_id: course.id,
-          enrolled_at: new Date().toISOString()
+          course_id: course?.id,
+          progress_percentage: 0
         })
 
-      if (error) {
-        console.error('Enrollment error:', error)
-        alert('Failed to enroll. Please try again.')
-      } else {
-        setIsEnrolled(true)
-        alert('Successfully enrolled!')
-      }
-    } catch (error) {
+      if (error) throw error
+      
+      setIsEnrolled(true)
+      alert('Successfully enrolled!')
+    } catch (error: any) {
       console.error('Error enrolling:', error)
+      alert(error.message || 'Failed to enroll')
     } finally {
       setEnrolling(false)
     }
   }
 
-  const viewLesson = (lesson: Lesson) => {
-    // Allow viewing if enrolled OR if user is the instructor
-    if (isEnrolled || course?.instructor_id === user?.id) {
-      router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
-    } else {
-      alert('Please enroll in this course to view lessons')
+  const handleFinishCourse = async () => {
+    if (!user || !course) return
+
+    try {
+      setFinishingCourse(true)
+
+      console.log('🎓 Starting course completion check...')
+
+      // Check if certificate already exists
+      const { data: existingCert } = await supabase
+        .from('certificates')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .maybeSingle()
+
+      if (existingCert) {
+        alert('You already have a certificate for this course!')
+        router.push(`/certificates/${existingCert.id}`)
+        return
+      }
+
+      // Check if all lessons completed
+      if (completedLessons.size < lessons.length) {
+        alert(`Please complete all lessons first. You've completed ${completedLessons.size} out of ${lessons.length} lessons.`)
+        return
+      }
+
+      console.log('✅ All lessons completed')
+
+      // Check if course has quizzes
+      const lessonIds = lessons.map(l => l.id)
+      const { data: courseQuizzes } = await supabase
+        .from('quizzes')
+        .select('id')
+        .in('lesson_id', lessonIds)
+
+      const courseHasQuizzes = courseQuizzes && courseQuizzes.length > 0
+      console.log(`🎯 Course has ${courseQuizzes?.length || 0} quizzes`)
+
+      let avgScore = 100
+
+      if (courseHasQuizzes) {
+        // Check quiz scores
+        const { data: quizAttempts } = await supabase
+          .from('quiz_attempts')
+          .select('score_percentage, passed')
+          .eq('user_id', user.id)
+          .eq('course_id', course.id)
+          .eq('passed', true)
+
+        if (!quizAttempts || quizAttempts.length === 0) {
+          alert('Please pass all quizzes with at least 70% to earn your certificate.')
+          return
+        }
+
+        avgScore = Math.round(
+          quizAttempts.reduce((sum, attempt) => sum + attempt.score_percentage, 0) / quizAttempts.length
+        )
+
+        if (avgScore < 70) {
+          alert(`Your average quiz score is ${avgScore}%. You need at least 70% to earn a certificate.`)
+          return
+        }
+
+        console.log(`✅ Average quiz score: ${avgScore}%`)
+      } else {
+        console.log('✅ No quizzes in course - awarding 100%')
+      }
+
+      // Generate certificate
+      const courseAbbrev = course.title
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 5)
+      const timestamp = Date.now()
+      const certificateNumber = `SABITEK-${courseAbbrev}-${timestamp}`
+
+      console.log(`🎖️ Generating certificate: ${certificateNumber}`)
+
+      const now = new Date().toISOString()
+
+      const { data: newCert, error: certError } = await supabase
+        .from('certificates')
+        .insert({
+          user_id: user.id,
+          course_id: course.id,
+          certificate_number: certificateNumber,
+          grade_percentage: avgScore,
+          issued_at: now,
+          completion_date: now  // ✅ FIXED: Added completion_date
+        })
+        .select()
+        .single()
+
+      if (certError) throw certError
+
+      console.log('🎉 Certificate generated successfully!')
+
+      // Update enrollment
+      await supabase
+        .from('course_enrollments')
+        .update({
+          progress_percentage: 100,
+          completed_at: now
+        })
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+
+      setGeneratedCertificateId(newCert.id)
+      setShowCongratsModal(true)
+
+    } catch (error: any) {
+      console.error('Error finishing course:', error)
+      alert(error.message || 'Failed to complete course')
+    } finally {
+      setFinishingCourse(false)
     }
   }
 
-  const getDifficultyColor = (level: string) => {
-    switch (level) {
-      case 'beginner': return 'bg-green-100 text-green-800'
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800'
-      case 'advanced': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+  const totalDuration = lessons.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0)
+  const progressPercentage = lessons.length > 0 
+    ? Math.round((completedLessons.size / lessons.length) * 100) 
+    : 0
 
-  const getContentTypeIcon = (type: string) => {
-    switch (type) {
-      case 'youtube': return '📺'
-      case 'pdf': return '📄'
-      case 'powerpoint': return '📊'
-      case 'text': return '📝'
-      default: return '📚'
-    }
-  }
-
-  if (authLoading || loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading course details...</p>
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading course...</p>
         </div>
       </div>
     )
@@ -196,212 +281,242 @@ export default function CourseDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Course not found</h2>
-          <Button onClick={() => router.push('/courses')} className="bg-red-500 hover:bg-red-600 text-white">
-            Back to Courses
+          <p className="text-gray-600">Course not found</p>
+          <Button onClick={() => router.push('/courses')} className="mt-4">
+            Browse Courses
           </Button>
         </div>
       </div>
     )
   }
 
-  const isInstructor = course.instructor_id === user?.id
-
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Course Header - No duplicate navigation */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-          {course.cover_image_url ? (
-            <div className="h-64 bg-gray-200">
-              <img
-                src={course.cover_image_url}
-                alt={course.title}
-                className="w-full h-full object-cover"
-              />
+    <div className="min-h-screen bg-gray-50">
+      {/* Congratulations Modal */}
+      {showCongratsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-8 relative animate-in fade-in zoom-in duration-300">
+            <button
+              onClick={() => setShowCongratsModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <PartyPopper className="w-10 h-10 text-green-600" />
+              </div>
+              
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                🎉 Congratulations!
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                You've successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
+              </p>
+              
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-6">
+                <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <p className="text-sm font-medium text-green-800">
+                  Your certificate has been generated and is ready to view!
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    setShowCongratsModal(false)
+                    router.push(`/certificates/${generatedCertificateId}`)
+                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <Award className="w-4 h-4 mr-2" />
+                  View Certificate
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    setShowCongratsModal(false)
+                    router.push('/dashboard')
+                  }}
+                  variant="outline"
+                  className="w-full border-gray-300"
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="h-64 bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
-              <h1 className="text-4xl font-bold text-white">{course.title}</h1>
+          </div>
+        </div>
+      )}
+
+      {/* Course Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {course.cover_image_url && (
+            <img
+              src={course.cover_image_url}
+              alt={course.title}
+              className="w-full h-64 object-cover rounded-xl mb-6"
+            />
+          )}
+          
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{course.title}</h1>
+          
+          <div className="flex items-center gap-6 text-gray-600 mb-4">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              <span>{course.instructor?.full_name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              <span>{lessons.length} Lessons</span>
+            </div>
+            {totalDuration > 0 && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                <span>{totalDuration} minutes</span>
+              </div>
+            )}
+          </div>
+
+          {course.description && (
+            <p className="text-gray-700 max-w-3xl">{course.description}</p>
+          )}
+
+          {isEnrolled && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Progress</span>
+                <span className="text-sm font-medium text-gray-700">{progressPercentage}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-red-600 h-2 rounded-full transition-all"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
             </div>
           )}
 
-          <div className="p-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{course.title}</h1>
-                <p className="text-gray-600">{course.description}</p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(course.difficulty_level)}`}>
-                  {course.difficulty_level}
-                </span>
-                {course.category && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
-                    {course.category}
-                  </span>
-                )}
-                {isInstructor && (
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    Your Course
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                <p>Instructor: <span className="font-medium">{course.users?.full_name || 'Unknown'}</span></p>
-                <p>{course.lessons?.length || 0} lessons</p>
-              </div>
-
-              {isInstructor ? (
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => router.push(`/instructor/courses/${course.slug}`)}
-                    variant="outline"
-                    className="border-gray-300"
-                  >
-                    Manage Course
-                  </Button>
-                  <Button
-                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                    disabled
-                  >
-                    Instructor Preview Mode
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  onClick={handleEnrollment}
-                  disabled={isEnrolled || enrolling}
-                  className={`${
-                    isEnrolled 
-                      ? 'bg-green-500 hover:bg-green-600' 
-                      : 'bg-red-500 hover:bg-red-600'
-                  } text-white`}
-                >
-                  {enrolling ? 'Enrolling...' : isEnrolled ? '✓ Enrolled' : 'Enroll in Course'}
-                </Button>
-              )}
-            </div>
-          </div>
+          {!isEnrolled && (
+            <Button
+              onClick={handleEnroll}
+              disabled={enrolling}
+              className="mt-6 bg-red-600 hover:bg-red-700 text-white"
+              size="lg"
+            >
+              {enrolling ? 'Enrolling...' : 'Enroll in Course'}
+            </Button>
+          )}
         </div>
+      </div>
 
-        {/* Course Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lessons List */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Curriculum</CardTitle>
-                <CardDescription>
-                  {isInstructor 
-                    ? "Preview your course content as an instructor"
-                    : isEnrolled 
-                      ? "Start learning from the lessons below" 
-                      : "Enroll to access all lessons"
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {course.lessons && course.lessons.length > 0 ? (
-                  <div className="space-y-3">
-                    {course.lessons
-                      .sort((a, b) => a.lesson_order - b.lesson_order)
-                      .map((lesson, index) => (
-                        <div
-                          key={lesson.id}
-                          className={`border rounded-lg p-4 ${
-                            isEnrolled || isInstructor
-                              ? 'hover:bg-gray-50 cursor-pointer' 
-                              : 'opacity-60'
-                          }`}
-                          onClick={() => (isEnrolled || isInstructor) && viewLesson(lesson)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-lg font-medium text-gray-500">
-                                {index + 1}
-                              </span>
-                              <div>
-                                <h3 className="font-medium text-gray-900">{lesson.title}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span title={lesson.content_type}>
-                                    {getContentTypeIcon(lesson.content_type)}
-                                  </span>
-                                  {lesson.duration_minutes && (
-                                    <span className="text-sm text-gray-500">
-                                      {lesson.duration_minutes} min
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            {(isEnrolled || isInstructor) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-red-500 text-red-500 hover:bg-red-50"
-                              >
-                                View Lesson →
-                              </Button>
+      {/* Lessons List */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Course Lessons</span>
+              {isEnrolled && (
+                <span className="text-sm text-gray-600">
+                  {completedLessons.size} / {lessons.length} completed
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!isEnrolled ? (
+              <p className="text-center text-gray-600 py-8">
+                Enroll in this course to start learning from the lessons below
+              </p>
+            ) : lessons.length === 0 ? (
+              <p className="text-center text-gray-600 py-8">
+                No lessons available yet
+              </p>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {lessons.map((lesson, index) => {
+                    const isCompleted = completedLessons.has(lesson.id)
+                    
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)}
+                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                      >
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-gray-300">
+                            {isCompleted ? (
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <span className="text-sm font-medium text-gray-700">{index + 1}</span>
                             )}
                           </div>
+                          
+                          <div className="flex-1 min-w-0 text-left">
+                            <h3 className="font-medium text-gray-900 group-hover:text-red-600 transition-colors truncate">
+                              {lesson.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              {lesson.content_type === 'youtube' && <span>📺 YouTube</span>}
+                              {lesson.content_type === 'video' && <span>🎥 Video</span>}
+                              {lesson.content_type === 'pdf' && <span>📄 PDF</span>}
+                              {lesson.content_type === 'powerpoint' && <span>📊 PowerPoint</span>}
+                              {lesson.content_type === 'text' && <span>📝 Text</span>}
+                              {lesson.duration_minutes && (
+                                <span>• {lesson.duration_minutes}m</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">
-                    No lessons available yet.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                        
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                      </button>
+                    )
+                  })}
+                </div>
 
-          {/* Course Info Sidebar */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">Duration</h4>
-                  <p className="text-sm text-gray-600">
-                    {course.lessons?.reduce((acc, l) => acc + (l.duration_minutes || 0), 0) || 0} minutes total
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">Level</h4>
-                  <p className="text-sm text-gray-600 capitalize">{course.difficulty_level}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-1">Lessons</h4>
-                  <p className="text-sm text-gray-600">{course.lessons?.length || 0} lessons</p>
-                </div>
-                {course.category && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Category</h4>
-                    <p className="text-sm text-gray-600 capitalize">{course.category}</p>
+                {/* Finish Course Button */}
+                {isEnrolled && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <Button
+                      onClick={handleFinishCourse}
+                      disabled={finishingCourse || completedLessons.size < lessons.length}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      size="lg"
+                    >
+                      {finishingCourse ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          Processing...
+                        </>
+                      ) : completedLessons.size < lessons.length ? (
+                        <>
+                          <CheckCircle className="w-6 h-6 mr-2" />
+                          Complete All Lessons to Finish Course ({completedLessons.size}/{lessons.length})
+                        </>
+                      ) : (
+                        <>
+                          <Award className="w-6 h-6 mr-2" />
+                          Finish Course & Get Certificate
+                        </>
+                      )}
+                    </Button>
+                    
+                    {completedLessons.size === lessons.length && (
+                      <p className="text-center text-sm text-gray-600 mt-3">
+                        🎉 You've completed all lessons! Click above to generate your certificate.
+                      </p>
+                    )}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Instructor Card - Fixed */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>About Instructor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-medium text-gray-900">{course.users?.full_name || 'Instructor Name'}</p>
-                <p className="text-sm text-gray-600 mt-1">{course.users?.email || 'No email provided'}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

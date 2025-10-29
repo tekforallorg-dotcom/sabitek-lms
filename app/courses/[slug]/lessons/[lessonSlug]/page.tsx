@@ -9,7 +9,19 @@ import { useAuthContext } from '@/components/providers/auth-provider'
 import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
 import QuizTaker from '@/components/quiz/quiz-taker'
-import { Save, BookOpen, Clock, CheckCircle, PlayCircle } from 'lucide-react'
+import { 
+  Save, 
+  BookOpen, 
+  Clock, 
+  CheckCircle, 
+  PlayCircle, 
+  ChevronLeft, 
+  ChevronRight,
+  FileText,
+  Award,
+  X,
+  AlertCircle
+} from 'lucide-react'
 
 interface Lesson {
   id: string
@@ -82,7 +94,6 @@ export default function LessonViewerPage() {
     totalQuestions: number
   } | null>(null)
 
-  // Redirect if not authenticated after auth loads
   useEffect(() => {
     if (!authLoading && !user) {
       console.log('No user found after auth loaded, redirecting to login')
@@ -90,7 +101,6 @@ export default function LessonViewerPage() {
     }
   }, [authLoading, user, router])
 
-  // Fetch lesson data when user is authenticated
   useEffect(() => {
     if (user && !authLoading) {
       console.log('User authenticated, fetching lesson data')
@@ -104,7 +114,6 @@ export default function LessonViewerPage() {
     try {
       setLoading(true)
       
-      // Fetch course data
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
         .select(`
@@ -122,14 +131,12 @@ export default function LessonViewerPage() {
 
       setCourse(courseData)
 
-      // Check if user is the instructor
       const isInstructor = courseData.instructor_id === user.id
       
       if (isInstructor) {
         console.log('User is instructor, granting access')
         setEnrollmentStatus(true)
       } else {
-        // Check enrollment for learners
         const { data: enrollment, error: enrollError } = await supabase
           .from('course_enrollments')
           .select('id')
@@ -141,7 +148,6 @@ export default function LessonViewerPage() {
         setEnrollmentStatus(!!enrollment)
       }
 
-      // Fetch all lessons
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
         .select('*')
@@ -170,7 +176,6 @@ export default function LessonViewerPage() {
       
       setLessons(mappedLessons)
 
-      // Find current lesson
       const currentLesson = mappedLessons.find(l => l.slug === params.lessonSlug)
       if (!currentLesson) {
         console.error('Lesson not found')
@@ -179,7 +184,6 @@ export default function LessonViewerPage() {
       }
       setLesson(currentLesson)
 
-      // Check if completed
       const { data: progress } = await supabase
         .from('user_progress')
         .select('completed_at')
@@ -189,7 +193,6 @@ export default function LessonViewerPage() {
 
       setIsCompleted(!!progress?.completed_at)
       
-      // Fetch notes for this lesson
       console.log('Fetching notes for lesson:', currentLesson.id, 'and user:', user.id)
       
       const { data: notesData, error: notesError } = await supabase
@@ -202,7 +205,6 @@ export default function LessonViewerPage() {
       console.log('Notes fetch result:', notesData, 'Error:', notesError)
       
       if (notesData) {
-        // Try different column names since 'notes' might not exist
         const noteText = notesData.notes || notesData.content || notesData.note_content || ''
         setNotesContent(noteText)
         setNotesId(notesData.id)
@@ -211,7 +213,6 @@ export default function LessonViewerPage() {
         console.log('No existing notes found for this lesson')
       }
       
-      // Fetch quiz for this lesson (created by instructor)
       console.log('Fetching quiz for lesson ID:', currentLesson.id)
       
       const { data: quizData, error: quizError } = await supabase
@@ -228,7 +229,6 @@ export default function LessonViewerPage() {
         console.log('Questions type:', typeof quizData.questions)
         console.log('Questions value:', quizData.questions)
         
-        // Parse questions if they're stored as a string
         let parsedQuestions = quizData.questions
         if (typeof quizData.questions === 'string') {
           try {
@@ -240,7 +240,6 @@ export default function LessonViewerPage() {
           }
         }
         
-        // Ensure questions is an array
         if (!Array.isArray(parsedQuestions)) {
           console.log('Questions is not an array, converting...')
           parsedQuestions = []
@@ -256,12 +255,11 @@ export default function LessonViewerPage() {
         if (parsedQuestions.length > 0) {
           setQuiz(quizWithParsedQuestions)
           
-          // Fetch number of attempts
           const { data: attemptsData } = await supabase
             .from('quiz_attempts')
             .select('id')
             .eq('user_id', user.id)
-            .eq('quiz_id', quizData.id)
+            .eq('lesson_id', currentLesson.id)
           
           setQuizAttempts(attemptsData?.length || 0)
         } else {
@@ -279,10 +277,20 @@ export default function LessonViewerPage() {
   }
 
   const markAsComplete = async () => {
-    if (!lesson || !user) return
+    if (!lesson || !user) {
+      console.error('❌ Missing required data:', { lesson: !!lesson, user: !!user })
+      return
+    }
 
     try {
-      const { error } = await supabase
+      console.log('🔍 Attempting to mark complete:', {
+        user_id: user.id,
+        lesson_id: lesson.id,
+        course_id: course?.id,
+        timestamp: new Date().toISOString()
+      })
+      
+      const { data, error } = await supabase
         .from('user_progress')
         .upsert({
           user_id: user.id,
@@ -292,27 +300,54 @@ export default function LessonViewerPage() {
         }, {
           onConflict: 'user_id,lesson_id'
         })
+        .select()
 
-      if (!error) {
-        setIsCompleted(true)
-        
-        const { data: completedLessons } = await supabase
-          .from('user_progress')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', course?.id)
-          .not('completed_at', 'is', null)
+      console.log('📊 Upsert response:', { data, error })
 
-        const progress = Math.round((completedLessons?.length || 0) / lessons.length * 100)
+      if (error) {
+        console.error('❌ Database error:', error)
         
-        await supabase
-          .from('course_enrollments')
-          .update({ progress_percentage: progress })
-          .eq('user_id', user.id)
-          .eq('course_id', course?.id)
+        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('policy')) {
+          alert(`⚠️ Permission Error\n\nYou don't have permission to mark lessons as complete. This is a database security issue.\n\nError: ${error.message}\n\nPlease contact support or check your Supabase RLS policies.`)
+        } else {
+          alert(`Error marking lesson as complete: ${error.message}`)
+        }
+        return
       }
+
+      console.log('✅ Progress saved successfully')
+      setIsCompleted(true)
+      
+      const { data: completedLessons, error: progressError } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course?.id)
+        .not('completed_at', 'is', null)
+
+      if (progressError) {
+        console.error('Error fetching progress:', progressError)
+      }
+
+      const progress = Math.round((completedLessons?.length || 0) / lessons.length * 100)
+      
+      console.log('📈 Updating enrollment progress:', progress + '%')
+      
+      const { error: enrollError } = await supabase
+        .from('course_enrollments')
+        .update({ progress_percentage: progress })
+        .eq('user_id', user.id)
+        .eq('course_id', course?.id)
+
+      if (enrollError) {
+        console.error('Error updating enrollment:', enrollError)
+      }
+      
+      console.log(`✅ Lesson marked complete - Course progress: ${progress}%`)
+      
     } catch (error) {
-      console.error('Error marking as complete:', error)
+      console.error('💥 Unexpected error:', error)
+      alert(`An unexpected error occurred: ${error}`)
     }
   }
 
@@ -331,7 +366,6 @@ export default function LessonViewerPage() {
     setNotesSaved(false)
     
     try {
-      // Check if a note already exists for this lesson
       const { data: existingNote, error: fetchError } = await supabase
         .from('lesson_notes')
         .select('*')
@@ -342,14 +376,12 @@ export default function LessonViewerPage() {
       console.log('Existing note check:', { existingNote, fetchError })
       
       if (existingNote) {
-        // Update existing note - try different column names
         console.log('Updating existing note with ID:', existingNote.id)
         
         const updateData: any = {
           updated_at: new Date().toISOString()
         }
         
-        // Try to update the correct column
         if ('notes' in existingNote) {
           updateData.notes = notesContent.trim()
         } else if ('content' in existingNote) {
@@ -357,7 +389,6 @@ export default function LessonViewerPage() {
         } else if ('note_content' in existingNote) {
           updateData.note_content = notesContent.trim()
         } else {
-          // Default to 'content' if we can't determine the column
           updateData.content = notesContent.trim()
         }
         
@@ -379,14 +410,12 @@ export default function LessonViewerPage() {
           setTimeout(() => setNotesSaved(false), 3000)
         }
       } else {
-        // Create new note
         console.log('Creating new note...')
         
-        // Try to insert with 'content' column first
         const noteData = {
           user_id: user.id,
           lesson_id: lesson.id,
-          content: notesContent.trim(), // Using 'content' instead of 'notes'
+          content: notesContent.trim(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
@@ -402,11 +431,10 @@ export default function LessonViewerPage() {
         if (insertError) {
           console.error('Insert failed with content column:', insertError)
           
-          // Try with 'notes' column if 'content' failed
           const altNoteData = {
             user_id: user.id,
             lesson_id: lesson.id,
-            notes: notesContent.trim(), // Try 'notes' column
+            notes: notesContent.trim(),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -449,9 +477,8 @@ export default function LessonViewerPage() {
   }
 
   const submitQuiz = async () => {
-    if (!quiz || !user || !lesson) return
+    if (!quiz || !user || !lesson || !course) return
     
-    // Check if all questions are answered
     const answeredCount = Object.keys(selectedAnswers).length
     if (answeredCount < quiz.questions.length) {
       alert(`Please answer all questions. You've answered ${answeredCount} out of ${quiz.questions.length} questions.`)
@@ -459,7 +486,6 @@ export default function LessonViewerPage() {
     }
     
     try {
-      // Calculate score
       let correctCount = 0
       const answers = quiz.questions.map((question, index) => {
         const questionId = question.id || `q-${index}`
@@ -479,20 +505,17 @@ export default function LessonViewerPage() {
       const score = Math.round((correctCount / quiz.questions.length) * 100)
       const passed = score >= quiz.pass_percentage
       
-      // Prepare attempt data
       const attemptData = {
         user_id: user.id,
-        quiz_id: quiz.id,
         lesson_id: lesson.id,
-        score: score,
+        course_id: course.id,
+        score_percentage: score,
         passed: passed,
-        answers: answers,
-        completed_at: new Date().toISOString()
+        answers: answers
       }
       
       console.log('Submitting quiz attempt:', attemptData)
       
-      // Save to database
       const { data: attemptResult, error: attemptError } = await supabase
         .from('quiz_attempts')
         .insert([attemptData])
@@ -507,7 +530,6 @@ export default function LessonViewerPage() {
       
       console.log('Quiz attempt saved:', attemptResult)
       
-      // Update local state
       setQuizResults({
         score,
         passed,
@@ -517,7 +539,6 @@ export default function LessonViewerPage() {
       setQuizSubmitted(true)
       setQuizAttempts(prev => prev + 1)
       
-      // If passed and lesson not completed, mark as complete
       if (passed && !isCompleted) {
         await markAsComplete()
       }
@@ -539,7 +560,6 @@ export default function LessonViewerPage() {
     router.push(`/courses/${params.slug}/lessons/${nextLesson.slug}`)
   }
 
-  // Memoize the YouTube embed URL to prevent recalculation
   const getYouTubeEmbedUrl = useCallback((url: string) => {
     if (!url) return ''
     const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)?.[1]
@@ -552,7 +572,7 @@ export default function LessonViewerPage() {
     switch (lesson.content_type) {
       case 'youtube':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-lg overflow-hidden shadow-xl">
+          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-lg">
             {lesson.youtube_url?.includes('<iframe') ? (
               <div 
                 className="w-full h-full"
@@ -560,7 +580,7 @@ export default function LessonViewerPage() {
               />
             ) : (
               <iframe
-                key={lesson.id} // Add key to prevent re-render
+                key={lesson.id}
                 src={getYouTubeEmbedUrl(lesson.youtube_url || '')}
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -572,7 +592,7 @@ export default function LessonViewerPage() {
 
       case 'video':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-lg overflow-hidden shadow-xl">
+          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-lg">
             <video
               key={lesson.id}
               src={lesson.video_url}
@@ -587,7 +607,7 @@ export default function LessonViewerPage() {
       case 'pdf':
         return (
           <div className="w-full">
-            <div className="relative aspect-video w-full bg-gray-100 rounded-lg overflow-hidden shadow-xl">
+            <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
               <iframe
                 key={lesson.id}
                 src={`${lesson.pdf_url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
@@ -596,11 +616,12 @@ export default function LessonViewerPage() {
                 allow="fullscreen"
               />
             </div>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 onClick={() => window.open(lesson.pdf_url, '_blank')}
                 variant="outline"
                 size="sm"
+                className="text-xs"
               >
                 Open in New Tab
               </Button>
@@ -613,6 +634,7 @@ export default function LessonViewerPage() {
                 }}
                 variant="outline"
                 size="sm"
+                className="text-xs"
               >
                 Download PDF
               </Button>
@@ -626,7 +648,7 @@ export default function LessonViewerPage() {
             {lesson.powerpoint_url?.includes('docs.google.com/presentation') || 
              lesson.powerpoint_url?.includes('onedrive.live.com') || 
              lesson.powerpoint_url?.includes('office.com') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-lg overflow-hidden shadow-xl">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
                 <iframe
                   key={lesson.id}
                   src={lesson.powerpoint_url.replace('/edit', '/embed').replace('/view', '/embed')}
@@ -637,7 +659,7 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : lesson.powerpoint_url?.includes('.ppt') || lesson.powerpoint_url?.includes('.pptx') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-lg overflow-hidden shadow-xl">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
                 <iframe
                   key={lesson.id}
                   src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.powerpoint_url)}`}
@@ -647,21 +669,22 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
                 <p className="text-gray-600 mb-4">PowerPoint preview loading...</p>
                 <Button
                   onClick={() => window.open(lesson.powerpoint_url, '_blank')}
-                  className="bg-red-500 hover:bg-red-600 text-white"
+                  className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Open Presentation
                 </Button>
               </div>
             )}
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 onClick={() => window.open(lesson.powerpoint_url, '_blank')}
                 variant="outline"
                 size="sm"
+                className="text-xs"
               >
                 Open in New Tab
               </Button>
@@ -675,6 +698,7 @@ export default function LessonViewerPage() {
                   }}
                   variant="outline"
                   size="sm"
+                  className="text-xs"
                 >
                   Download PowerPoint
                 </Button>
@@ -686,9 +710,9 @@ export default function LessonViewerPage() {
       case 'text':
       default:
         return (
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
             <div 
-              className="prose prose-lg max-w-none"
+              className="prose prose-sm md:prose-base max-w-none"
               dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
             />
           </div>
@@ -696,13 +720,12 @@ export default function LessonViewerPage() {
     }
   }
 
-  // Show loading while checking auth or fetching data
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">
+          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">
             {authLoading ? 'Checking authentication...' : 'Loading lesson...'}
           </p>
         </div>
@@ -710,10 +733,9 @@ export default function LessonViewerPage() {
     )
   }
 
-  // Check enrollment after loading
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle>Enrollment Required</CardTitle>
@@ -724,7 +746,7 @@ export default function LessonViewerPage() {
             </p>
             <Button 
               onClick={() => router.push(`/courses/${params.slug}`)}
-              className="w-full bg-red-500 hover:bg-red-600 text-white"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
             >
               Go to Course Page
             </Button>
@@ -741,40 +763,46 @@ export default function LessonViewerPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <Button
                 variant="outline"
                 onClick={() => router.push(`/courses/${params.slug}`)}
-                className="border-gray-300"
+                size="sm"
+                className="border-gray-300 flex-shrink-0"
               >
-                ← Back to Course
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
-              <div>
-                <p className="text-sm text-gray-500">{course?.title}</p>
-                <h1 className="text-xl font-bold">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-gray-500 truncate">{course?.title}</p>
+                <h1 className="text-sm md:text-base font-bold text-gray-900 truncate">
                   Lesson {currentIndex + 1}: {lesson?.title}
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {lesson?.duration_minutes && (
-                <span className="text-sm text-gray-500">
-                  {lesson.duration_minutes} min
+                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+                  <Clock className="w-3 h-3" />
+                  {lesson.duration_minutes}m
                 </span>
               )}
               {isCompleted ? (
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  ✓ Completed
+                <span className="px-2 md:px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-medium flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="hidden sm:inline">Completed</span>
                 </span>
               ) : (
                 <Button
                   onClick={markAsComplete}
-                  className="bg-red-500 hover:bg-red-600 text-white"
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs"
                 >
-                  Mark as Complete
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Complete
                 </Button>
               )}
             </div>
@@ -783,63 +811,67 @@ export default function LessonViewerPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Lesson Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             {renderContent()}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
+            <div className="flex justify-between gap-3">
               <Button
                 variant="outline"
                 onClick={() => previousLesson && navigateToLesson(previousLesson)}
                 disabled={!previousLesson}
-                className="border-gray-300"
+                className="border-gray-300 hover:bg-gray-50"
               >
-                ← Previous Lesson
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
               </Button>
               <Button
                 onClick={() => nextLesson && navigateToLesson(nextLesson)}
                 disabled={!nextLesson}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Next Lesson →
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             {/* My Notes Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center">
-                    <BookOpen className="w-5 h-5 mr-2" />
+            <Card className="border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-base">
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-gray-600" />
                     My Notes
                   </span>
                   {notesSaved && (
-                    <span className="text-sm text-green-600 font-normal">
-                      Saved!
+                    <span className="text-xs text-green-600 font-normal flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Saved
                     </span>
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
                 <Textarea
                   value={notesContent}
                   onChange={(e) => setNotesContent(e.target.value)}
-                  placeholder="Take notes while watching the lesson..."
-                  rows={8}
-                  className="w-full mb-4 resize-none"
+                  placeholder="Take notes while learning..."
+                  rows={6}
+                  className="w-full resize-none text-sm border-gray-300 focus:border-red-500 focus:ring-red-500"
                 />
                 <Button 
                   onClick={saveNotes} 
                   disabled={savingNotes || !notesContent.trim()}
-                  className="w-full bg-black hover:bg-gray-800 text-white"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white text-sm"
+                  size="sm"
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-3 h-3 mr-2" />
                   {savingNotes ? 'Saving...' : 'Save Notes'}
                 </Button>
               </CardContent>
@@ -847,37 +879,37 @@ export default function LessonViewerPage() {
 
             {/* Instructor Quiz Card */}
             {quiz && quiz.questions && quiz.questions.length > 0 && (
-              <Card className="mt-4">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <CheckCircle className="w-5 h-5 mr-2" />
+              <Card className="border-gray-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Award className="w-4 h-4 text-red-600" />
                     {quiz.title}
                   </CardTitle>
                   {quiz.description && (
-                    <CardDescription>{quiz.description}</CardDescription>
+                    <CardDescription className="text-xs">{quiz.description}</CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center justify-between text-sm">
+                  <div className="space-y-2 mb-4 text-xs">
+                    <div className="flex items-center justify-between">
                       <span className="text-gray-600">Questions:</span>
                       <span className="font-medium">{quiz.questions.length}</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between">
                       <span className="text-gray-600">Pass Score:</span>
                       <span className="font-medium">{quiz.pass_percentage}%</span>
                     </div>
                     {quiz.time_limit && (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between">
                         <span className="text-gray-600">Time Limit:</span>
-                        <span className="font-medium flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
+                        <span className="font-medium flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
                           {quiz.time_limit} min
                         </span>
                       </div>
                     )}
                     {quizAttempts > 0 && (
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between">
                         <span className="text-gray-600">Your Attempts:</span>
                         <span className="font-medium">{quizAttempts}</span>
                       </div>
@@ -889,20 +921,20 @@ export default function LessonViewerPage() {
                       {!quizSubmitted ? (
                         <>
                           {/* Display quiz questions */}
-                          <div className="space-y-4">
+                          <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               return (
-                                <div key={questionId} className="p-4 border rounded-lg">
-                                  <p className="font-medium mb-3">
+                                <div key={questionId} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
+                                  <p className="font-medium text-sm mb-2">
                                     {index + 1}. {question.question}
                                   </p>
                                   <div className="space-y-2">
                                     {question.options.map((option, optIndex) => (
                                       <label 
                                         key={optIndex} 
-                                        className={`flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
-                                          selectedAnswers[questionId] === optIndex ? 'bg-blue-50 border-blue-300 border' : ''
+                                        className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-white transition-colors ${
+                                          selectedAnswers[questionId] === optIndex ? 'bg-red-50 border-red-300 border' : 'border border-transparent'
                                         }`}
                                       >
                                         <input 
@@ -910,9 +942,9 @@ export default function LessonViewerPage() {
                                           name={`question-${questionId}`}
                                           checked={selectedAnswers[questionId] === optIndex}
                                           onChange={() => handleAnswerSelect(questionId, optIndex)}
-                                          className="text-blue-600"
+                                          className="mt-0.5 text-red-600 focus:ring-red-500"
                                         />
-                                        <span>{option}</span>
+                                        <span className="text-sm">{option}</span>
                                       </label>
                                     ))}
                                   </div>
@@ -924,11 +956,12 @@ export default function LessonViewerPage() {
                           {/* Submit and Cancel buttons */}
                           <div className="space-y-2">
                             <Button 
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                              className="w-full bg-green-600 hover:bg-green-700 text-white text-sm"
                               onClick={submitQuiz}
+                              size="sm"
                               disabled={Object.keys(selectedAnswers).length === 0}
                             >
-                              Submit Quiz ({Object.keys(selectedAnswers).length}/{quiz.questions.length} answered)
+                              Submit Quiz ({Object.keys(selectedAnswers).length}/{quiz.questions.length})
                             </Button>
                             <Button
                               variant="outline"
@@ -936,7 +969,8 @@ export default function LessonViewerPage() {
                                 setShowQuiz(false)
                                 setSelectedAnswers({})
                               }}
-                              className="w-full"
+                              className="w-full text-sm"
+                              size="sm"
                             >
                               Cancel
                             </Button>
@@ -944,56 +978,51 @@ export default function LessonViewerPage() {
                         </>
                       ) : (
                         /* Quiz Results */
-                        <div className="space-y-4">
-                          <div className={`p-4 rounded-lg text-center ${
-                            quizResults?.passed ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500'
-                          } border-2`}>
-                            <h3 className={`text-2xl font-bold mb-2 ${
+                        <div className="space-y-3">
+                          <div className={`p-4 rounded-lg text-center border-2 ${
+                            quizResults?.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+                          }`}>
+                            <h3 className={`text-xl font-bold mb-1 ${
                               quizResults?.passed ? 'text-green-800' : 'text-red-800'
                             }`}>
-                              {quizResults?.passed ? '🎉 Congratulations!' : '📚 Keep Learning!'}
+                              {quizResults?.passed ? '🎉 Passed!' : '📚 Keep Learning!'}
                             </h3>
                             <p className="text-lg font-semibold">
-                              Your Score: {quizResults?.score}%
+                              Score: {quizResults?.score}%
                             </p>
-                            <p className="text-sm mt-1">
+                            <p className="text-xs mt-1">
                               {quizResults?.correctAnswers} out of {quizResults?.totalQuestions} correct
-                            </p>
-                            <p className="text-sm mt-2">
-                              {quizResults?.passed 
-                                ? `You passed! (Required: ${quiz.pass_percentage}%)`
-                                : `You need ${quiz.pass_percentage}% to pass. Try again!`}
                             </p>
                           </div>
                           
                           {/* Review Answers */}
-                          <div className="space-y-4">
-                            <h4 className="font-semibold">Review Your Answers:</h4>
+                          <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                            <h4 className="font-semibold text-sm sticky top-0 bg-white py-2">Review Answers:</h4>
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               const selectedAnswer = selectedAnswers[questionId]
                               const isCorrect = selectedAnswer === question.correct_answer
                               
                               return (
-                                <div key={questionId} className={`p-4 border rounded-lg ${
+                                <div key={questionId} className={`p-3 border rounded-lg text-sm ${
                                   isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
                                 }`}>
-                                  <p className="font-medium mb-2">
+                                  <p className="font-medium mb-1">
                                     {index + 1}. {question.question}
                                   </p>
-                                  <div className="space-y-1 text-sm">
+                                  <div className="space-y-1 text-xs">
                                     <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
-                                      Your answer: {question.options[selectedAnswer]}
+                                      Your: {question.options[selectedAnswer]}
                                       {isCorrect ? ' ✓' : ' ✗'}
                                     </p>
                                     {!isCorrect && (
                                       <p className="text-green-700">
-                                        Correct answer: {question.options[question.correct_answer]}
+                                        Correct: {question.options[question.correct_answer]}
                                       </p>
                                     )}
                                     {question.explanation && (
-                                      <p className="text-gray-600 italic mt-2">
-                                        Explanation: {question.explanation}
+                                      <p className="text-gray-600 italic mt-1">
+                                        {question.explanation}
                                       </p>
                                     )}
                                   </div>
@@ -1006,12 +1035,13 @@ export default function LessonViewerPage() {
                           <div className="space-y-2">
                             {!quizResults?.passed && (
                               <Button 
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
                                 onClick={() => {
                                   setSelectedAnswers({})
                                   setQuizSubmitted(false)
                                   setQuizResults(null)
                                 }}
+                                size="sm"
                               >
                                 Try Again
                               </Button>
@@ -1019,7 +1049,8 @@ export default function LessonViewerPage() {
                             <Button
                               variant="outline"
                               onClick={resetQuiz}
-                              className="w-full"
+                              className="w-full text-sm"
+                              size="sm"
                             >
                               Close
                             </Button>
@@ -1035,10 +1066,11 @@ export default function LessonViewerPage() {
                         setQuizResults(null)
                         setSelectedAnswers({})
                       }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
+                      size="sm"
                     >
                       <PlayCircle className="w-4 h-4 mr-2" />
-                      {quizAttempts > 0 ? `Retake Quiz (Attempt ${quizAttempts + 1})` : 'Start Quiz'}
+                      {quizAttempts > 0 ? `Retake Quiz (#${quizAttempts + 1})` : 'Start Quiz'}
                     </Button>
                   )}
                 </CardContent>
@@ -1048,14 +1080,14 @@ export default function LessonViewerPage() {
             {/* AI Tools */}
             {lesson?.content_type === 'text' && lesson?.content && (
               <>
-                <div className="mt-4">
+                <div>
                   <LessonSummary
                     lessonId={lesson.id}
                     lessonContent={lesson.content}
                     contentType={lesson.content_type}
                   />
                 </div>
-                <div className="mt-4">
+                <div>
                   <LessonQA
                     lessonId={lesson.id}
                     lessonContent={lesson.content}
@@ -1067,13 +1099,13 @@ export default function LessonViewerPage() {
             
             {lesson && lesson.content_type !== 'text' && (
               <>
-                <div className="mt-4">
+                <div>
                   <LessonSummary
                     lessonId={lesson.id}
                     contentType={lesson.content_type}
                   />
                 </div>
-                <div className="mt-4">
+                <div>
                   <LessonQA
                     lessonId={lesson.id}
                     contentType={lesson.content_type}
@@ -1084,10 +1116,10 @@ export default function LessonViewerPage() {
 
             {/* Practice Quiz Component (fallback if no instructor quiz) */}
             {!quiz && (
-              <Card className="mt-4">
-                <CardHeader>
-                  <CardTitle>Practice Quiz</CardTitle>
-                  <CardDescription>
+              <Card className="border-gray-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Practice Quiz</CardTitle>
+                  <CardDescription className="text-xs">
                     Test your understanding with AI-generated questions
                   </CardDescription>
                 </CardHeader>
@@ -1103,37 +1135,40 @@ export default function LessonViewerPage() {
             )}
 
             {/* Course Lessons */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Course Lessons</CardTitle>
+            <Card className="border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-gray-600" />
+                  Course Lessons
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                   {lessons.map((l, index) => {
                     const isActive = l.id === lesson?.id
                     return (
                       <button
                         key={l.id}
                         onClick={() => navigateToLesson(l)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                        className={`w-full text-left p-2 rounded-lg transition-colors text-sm ${
                           isActive
                             ? 'bg-red-50 border-2 border-red-500'
                             : 'hover:bg-gray-50 border-2 border-transparent'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm text-gray-500">Lesson {index + 1}</p>
-                            <p className={`font-medium ${isActive ? 'text-red-600' : ''}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-gray-500">Lesson {index + 1}</p>
+                            <p className={`font-medium truncate ${isActive ? 'text-red-600' : 'text-gray-900'}`}>
                               {l.title}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {l.content_type === 'youtube' && <span title="YouTube">📺</span>}
-                            {l.content_type === 'video' && <span title="Video">🎥</span>}
-                            {l.content_type === 'pdf' && <span title="PDF">📄</span>}
-                            {l.content_type === 'powerpoint' && <span title="PowerPoint">📊</span>}
-                            {l.content_type === 'text' && <span title="Text">📝</span>}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {l.content_type === 'youtube' && <span title="YouTube" className="text-xs">📺</span>}
+                            {l.content_type === 'video' && <span title="Video" className="text-xs">🎥</span>}
+                            {l.content_type === 'pdf' && <span title="PDF" className="text-xs">📄</span>}
+                            {l.content_type === 'powerpoint' && <span title="PowerPoint" className="text-xs">📊</span>}
+                            {l.content_type === 'text' && <span title="Text" className="text-xs">📝</span>}
                             {l.duration_minutes && (
                               <span className="text-xs text-gray-500">{l.duration_minutes}m</span>
                             )}
@@ -1147,12 +1182,12 @@ export default function LessonViewerPage() {
             </Card>
 
             {/* Instructor Info */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Instructor</CardTitle>
+            <Card className="border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Instructor</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-medium">{course?.instructor?.full_name}</p>
+                <p className="font-medium text-sm text-gray-900">{course?.instructor?.full_name}</p>
               </CardContent>
             </Card>
           </div>
