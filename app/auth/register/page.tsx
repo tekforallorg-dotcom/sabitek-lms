@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Sparkles } from 'lucide-react'
 
 const registerSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -59,68 +60,67 @@ export default function RegisterPage() {
   }
 
   // Show verification success screen
- // Show verification success screen
-if (registeredEmail) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
-      <div className="max-w-md w-full">
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-6">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <CardTitle className="text-2xl font-bold text-black">Check Your Email</CardTitle>
-            <CardDescription className="text-gray-600 mt-2">
-              We've sent a verification link to
-            </CardDescription>
-            <p className="text-black font-semibold mt-1">{registeredEmail}</p>
-          </CardHeader>
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
+        <div className="max-w-md w-full">
+          <Card className="shadow-xl border-0">
+            <CardHeader className="text-center pb-6">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <CardTitle className="text-2xl font-bold text-black">Check Your Email</CardTitle>
+              <CardDescription className="text-gray-600 mt-2">
+                We've sent a verification link to
+              </CardDescription>
+              <p className="text-black font-semibold mt-1">{registeredEmail}</p>
+            </CardHeader>
 
-          <CardContent className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm font-semibold text-blue-900 mb-3">Next steps:</p>
-              <ul className="space-y-2 text-sm text-blue-800">
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Check your inbox for the verification email</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Click the verification link in the email</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Sign in to start learning</span>
-                </li>
-              </ul>
-            </div>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-blue-900 mb-3">Next steps:</p>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Check your inbox for the verification email</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Click the verification link in the email</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>Sign in to start learning</span>
+                  </li>
+                </ul>
+              </div>
 
-            <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                Didn't receive the email? Check your spam folder or try again.
-              </p>
-            </div>
+              <div className="text-center space-y-2">
+                <p className="text-sm text-gray-600">
+                  Didn't receive the email? Check your spam folder or try again.
+                </p>
+              </div>
 
-            <Link href="/auth/login" className="block">
-              <Button className="w-full h-11 bg-red-500 hover:bg-red-600 text-white font-medium">
-                Back to Login
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+              <Link href="/auth/login" className="block">
+                <Button className="w-full h-11 bg-red-500 hover:bg-red-600 text-white font-medium">
+                  Back to Login
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Need help?{' '}
-          <a href="mailto:support@sabitek.store" className="text-red-500 hover:text-red-600">
-            Contact support
-          </a>
-        </p>
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Need help?{' '}
+            <a href="mailto:support@sabitek.store" className="text-red-500 hover:text-red-600">
+              Contact support
+            </a>
+          </p>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   // Show registration form
   return (
@@ -130,9 +130,14 @@ if (registeredEmail) {
         <div className="max-w-md w-full">
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-1 justify-center">
-              <span className="text-4xl font-bold text-black">Sabitek</span>
-              <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-0.5 mb-6"></div>
+            <Link href="/" className="inline-flex items-center gap-2 justify-center">
+              <h1 className="text-4xl font-bold flex items-center gap-1">
+                <span className="text-black">Sabitek</span>
+                <span className="relative">
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
+                </span>
+              </h1>
             </Link>
             <p className="text-gray-600 mt-2">Start your learning journey today</p>
           </div>

@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Sparkles } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
@@ -49,10 +50,13 @@ export default function LoginPage() {
         <div className="max-w-md w-full">
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
-              <h1 className="text-4xl font-bold">
+            <Link href="/" className="inline-flex items-center gap-2 justify-center">
+              <h1 className="text-4xl font-bold flex items-center gap-1">
                 <span className="text-black">Sabitek</span>
-                <span className="text-red-500 ml-2"></span>
+                <span className="relative">
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
+                </span>
               </h1>
             </Link>
             <p className="text-gray-600 mt-2">Welcome back to learning</p>
