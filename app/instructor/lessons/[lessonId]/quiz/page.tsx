@@ -54,7 +54,6 @@ export default function QuizPage({ params }: PageProps) {
     questions: []
   })
 
-  // Unwrap params promise in Next.js 15
   const resolvedParams = use(params)
 
   useEffect(() => {
@@ -67,7 +66,6 @@ export default function QuizPage({ params }: PageProps) {
       setLoading(true)
       setError(null)
 
-      // Fetch lesson details
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
         .select('title, course_id')
@@ -77,7 +75,6 @@ export default function QuizPage({ params }: PageProps) {
       if (lessonError) throw lessonError
       setLessonTitle(lessonData.title)
 
-      // Check if user is the instructor
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const { data: courseData } = await supabase
@@ -92,7 +89,6 @@ export default function QuizPage({ params }: PageProps) {
         }
       }
 
-      // Fetch existing quiz if it exists
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
         .select('*')
@@ -110,7 +106,7 @@ export default function QuizPage({ params }: PageProps) {
       }
     } catch (error: any) {
       console.error('Error fetching data:', error)
-      if (error.code !== 'PGRST116') { // Not found error is ok for new quiz
+      if (error.code !== 'PGRST116') {
         setError(error.message)
       }
     } finally {
@@ -164,7 +160,6 @@ export default function QuizPage({ params }: PageProps) {
       setSaving(true)
       setError(null)
 
-      // Validation
       if (!quiz.title) {
         setError('Quiz title is required')
         return
@@ -175,7 +170,6 @@ export default function QuizPage({ params }: PageProps) {
         return
       }
 
-      // Validate each question
       for (let i = 0; i < quiz.questions.length; i++) {
         const q = quiz.questions[i]
         if (!q.question) {
@@ -198,7 +192,6 @@ export default function QuizPage({ params }: PageProps) {
       }
 
       if (quiz.id) {
-        // Update existing quiz
         const { error: updateError } = await supabase
           .from('quizzes')
           .update(quizData)
@@ -209,7 +202,6 @@ export default function QuizPage({ params }: PageProps) {
           throw updateError
         }
       } else {
-        // Create new quiz
         const { data: newQuizData, error: insertError } = await supabase
           .from('quizzes')
           .insert(quizData)
@@ -221,14 +213,12 @@ export default function QuizPage({ params }: PageProps) {
           throw insertError
         }
         
-        // Update the quiz state with the new ID
         if (newQuizData) {
           setQuiz(prev => ({ ...prev, id: newQuizData.id }))
         }
       }
 
       alert('Quiz saved successfully!')
-      // Stay on the page after saving
     } catch (error: any) {
       console.error('Error saving quiz:', error)
       alert(`Failed to save quiz: ${error.message || 'Unknown error'}`)
@@ -281,7 +271,7 @@ export default function QuizPage({ params }: PageProps) {
             <Input
               id="title"
               value={quiz.title}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuiz(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => setQuiz(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Enter quiz title"
             />
           </div>
@@ -298,7 +288,7 @@ export default function QuizPage({ params }: PageProps) {
                 min="0"
                 max="100"
                 value={quiz.pass_percentage}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuiz(prev => ({ 
+                onChange={(e) => setQuiz(prev => ({ 
                   ...prev, 
                   pass_percentage: parseInt(e.target.value) || 70 
                 }))}
@@ -315,7 +305,7 @@ export default function QuizPage({ params }: PageProps) {
                 type="number"
                 min="0"
                 value={quiz.time_limit_minutes || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuiz(prev => ({ 
+                onChange={(e) => setQuiz(prev => ({ 
                   ...prev, 
                   time_limit_minutes: e.target.value ? parseInt(e.target.value) : null 
                 }))}
@@ -365,7 +355,7 @@ export default function QuizPage({ params }: PageProps) {
                 <Label>Answer Options</Label>
                 <RadioGroup
                   value={question.correct_answer.toString()}
-                  onValueChange={(value: string) => updateQuestion(qIndex, 'correct_answer', parseInt(value))}
+                  onValueChange={(value) => updateQuestion(qIndex, 'correct_answer', parseInt(value))}
                 >
                   {question.options.map((option, oIndex) => (
                     <div key={oIndex} className="flex items-center space-x-2">
