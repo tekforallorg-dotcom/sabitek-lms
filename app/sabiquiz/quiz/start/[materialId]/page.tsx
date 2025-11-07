@@ -48,7 +48,7 @@ export default function QuizStartPage() {
         .eq('status', 'in_progress')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error checking for in-progress quiz:', error)

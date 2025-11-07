@@ -22,6 +22,36 @@ export interface QuizResponse {
   time_seconds: number
 }
 
+/**
+ * Shuffle array using Fisher-Yates algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+/**
+ * Shuffle question options and update correct answer index
+ */
+function shuffleQuestionOptions(question: Question): Question {
+  const optionsWithIndex = question.options.map((option, index) => ({
+    option,
+    wasCorrect: index === question.correct_answer,
+  }))
+
+  const shuffled = shuffleArray(optionsWithIndex)
+
+  return {
+    ...question,
+    options: shuffled.map(item => item.option),
+    correct_answer: shuffled.findIndex(item => item.wasCorrect),
+  }
+}
+
 export async function createQuizAttempt(
   materialId: string,
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed',
@@ -73,7 +103,7 @@ export async function getQuizQuestions(
     query = query.eq('difficulty', difficulty)
   }
 
-  const { data, error } = await query.limit(limit)
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching questions:', error)
@@ -84,7 +114,18 @@ export async function getQuizQuestions(
     throw new Error('No questions available for this material')
   }
 
-  return data
+  // 1. Shuffle questions
+  const shuffledQuestions = shuffleArray(data)
+
+  // 2. Take only the limit we need
+  const selectedQuestions = shuffledQuestions.slice(0, limit)
+
+  // 3. Shuffle answer options for each question
+  const questionsWithShuffledOptions = selectedQuestions.map(shuffleQuestionOptions)
+
+  console.log(`🎲 Randomized ${questionsWithShuffledOptions.length} questions with shuffled options`)
+
+  return questionsWithShuffledOptions
 }
 
 export async function submitAnswer(
