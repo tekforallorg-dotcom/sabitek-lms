@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Loader2, CheckCircle, XCircle, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { generateAndSaveQuestions, getQuestionsForMaterial } from '@/lib/sabiquiz/question-generator'
@@ -60,13 +60,12 @@ export default function GeneratePage() {
 
     setGenerating(true)
     setError(null)
-    setProgress('Preparing to generate questions...')
+    setResult(null)
+    setProgress('🤖 SabiBot is generating questions...')
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-
-      setProgress('🤖 Calling Gemini AI...')
       
       const generationResult = await generateAndSaveQuestions(
         material.extracted_text,
@@ -94,7 +93,7 @@ export default function GeneratePage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       </div>
     )
@@ -194,12 +193,23 @@ export default function GeneratePage() {
         </Card>
       )}
 
-      {progress && (
+      {progress && generating && (
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 animate-spin text-red-600" />
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
               <p className="text-sm text-gray-700">{progress}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {progress && !generating && (
+        <Card className="mb-6 bg-green-50 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <p className="text-sm text-green-800 font-medium">{progress}</p>
             </div>
           </CardContent>
         </Card>
@@ -213,7 +223,7 @@ export default function GeneratePage() {
       >
         {generating ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
             Generating Questions...
           </>
         ) : (
