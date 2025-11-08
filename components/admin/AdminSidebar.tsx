@@ -13,14 +13,21 @@ import {
   X,
   Sparkles,
   LogOut,
-  ChevronLeft
+  ChevronLeft,
+  Brain,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  MessageSquare,
+  TrendingUp
 } from 'lucide-react'
 import { useAuthContext } from '@/components/providers/auth-provider'
 
 interface NavItem {
   label: string
-  href: string
+  href?: string
   icon: any
+  children?: NavItem[]
 }
 
 const navigation: NavItem[] = [
@@ -28,12 +35,22 @@ const navigation: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Courses', href: '/admin/courses', icon: BookOpen },
   { label: 'Certificates', href: '/admin/certificates', icon: Award },
+  { 
+    label: 'SabiQuiz', 
+    icon: Brain,
+    children: [
+      { label: 'Materials', href: '/admin/sabiquiz/materials', icon: FileText },
+      { label: 'Questions', href: '/admin/sabiquiz/questions', icon: MessageSquare },
+      { label: 'Analytics', href: '/admin/sabiquiz/analytics', icon: TrendingUp },
+    ]
+  },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
 export default function AdminSidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>('SabiQuiz') // Open by default
   const pathname = usePathname()
   const { signOut } = useAuthContext()
 
@@ -50,6 +67,10 @@ export default function AdminSidebar() {
     } catch (error) {
       console.error('Error logging out:', error)
     }
+  }
+
+  const toggleSubmenu = (label: string) => {
+    setOpenSubmenu(openSubmenu === label ? null : label)
   }
 
   return (
@@ -94,12 +115,69 @@ export default function AdminSidebar() {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const Icon = item.icon
-            const active = isActive(item.href)
+            const hasChildren = item.children && item.children.length > 0
+            const isSubmenuOpen = openSubmenu === item.label
+            const active = item.href ? isActive(item.href) : false
             
+            if (hasChildren) {
+              return (
+                <div key={item.label}>
+                  {/* Parent Item */}
+                  <button
+                    onClick={() => toggleSubmenu(item.label)}
+                    className={`
+                      w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg
+                      transition-colors duration-200
+                      text-gray-300 hover:bg-gray-800 hover:text-white
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.label}</span>
+                    </div>
+                    {isSubmenuOpen ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {/* Children */}
+                  {isSubmenuOpen && (
+                    <div className="mt-1 ml-4 space-y-1">
+                      {item.children?.map((child) => {
+                        const ChildIcon = child.icon
+                        const childActive = child.href ? isActive(child.href) : false
+                        
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href!}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={`
+                              flex items-center gap-3 px-4 py-2 rounded-lg text-sm
+                              transition-colors duration-200
+                              ${childActive 
+                                ? 'bg-red-500 text-white' 
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                              }
+                            `}
+                          >
+                            <ChildIcon className="w-4 h-4" />
+                            <span className="font-medium">{child.label}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={item.href!}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg
