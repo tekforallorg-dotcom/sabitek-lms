@@ -1,9 +1,10 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase } from 'lucide-react'
+import { MessageCircle, X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase, Globe, BarChart3 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import LearningStats from './learning-stats'
 
 interface Message {
   id: string
@@ -11,6 +12,16 @@ interface Message {
   content: string
   timestamp: Date
 }
+
+type Language = 'english' | 'pidgin' | 'yoruba' | 'hausa' | 'igbo'
+
+const LANGUAGES = [
+  { value: 'english', label: 'English', flag: '🇬🇧' },
+  { value: 'pidgin', label: 'Nigerian Pidgin', flag: '🇳🇬' },
+  { value: 'yoruba', label: 'Yorùbá', flag: '🇳🇬' },
+  { value: 'hausa', label: 'Hausa', flag: '🇳🇬' },
+  { value: 'igbo', label: 'Igbo', flag: '🇳🇬' },
+]
 
 export default function SabiBot() {
   const { user } = useAuth()
@@ -21,9 +32,30 @@ export default function SabiBot() {
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [userProfile, setUserProfile] = useState<any>(null)
+  const [preferredLanguage, setPreferredLanguage] = useState<Language>('english')
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false)
+  const [showLearningStats, setShowLearningStats] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const previousUserId = useRef<string | null>(null)
+  const languageMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close language menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setShowLanguageMenu(false)
+      }
+    }
+
+    if (showLanguageMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showLanguageMenu])
 
   // Reset chat when user changes
   useEffect(() => {
@@ -37,18 +69,19 @@ export default function SabiBot() {
         loadUserProfile()
       } else {
         setUserProfile(null)
+        setPreferredLanguage('english')
       }
     }
   }, [user?.id])
 
-  // Load user profile for personalization
+  // Load user profile and language preference
   const loadUserProfile = async () => {
     if (!user?.id) return
 
     try {
       const { data: profile, error } = await supabase
         .from('users')
-        .select('full_name, role')
+        .select('full_name, role, preferred_language')
         .eq('id', user.id)
         .single()
 
@@ -60,19 +93,18 @@ export default function SabiBot() {
 
       setUserProfile(profile)
       
+      // Set language preference
+      if (profile?.preferred_language) {
+        setPreferredLanguage(profile.preferred_language as Language)
+      }
+      
+      // Get language-specific welcome message
+      const welcomeContent = getWelcomeMessage(profile?.full_name, profile?.preferred_language || 'english')
+      
       const welcomeMessage: Message = {
         id: 'welcome',
         role: 'assistant',
-        content: `Welcome back${profile?.full_name ? ', ' + profile.full_name : ''}! I'm SabiBot, your personal AI learning assistant.
-
-I can help you with:
-- Course recommendations tailored to your goals
-- Career guidance and learning paths
-- Study strategies and techniques
-- Understanding course content
-- Navigating the platform
-
-How can I assist your learning journey today?`,
+        content: welcomeContent,
         timestamp: new Date()
       }
       
@@ -83,17 +115,95 @@ How can I assist your learning journey today?`,
     }
   }
 
+  const getWelcomeMessage = (userName: string | null, lang: string) => {
+    const name = userName ? `, ${userName}` : ''
+    
+    switch (lang) {
+      case 'pidgin':
+        return `Wetin dey happen${name}! I be SabiBot, your personal AI learning companion.
+
+I fit help you with:
+- Course recommendations wey fit match your goals
+- Career guidance and learning paths (tech, teaching, any field)
+- Tech career transition advice (which area dey pay well)
+- Online teaching opportunities (earn in dollars)
+- Study strategies and exam preparation
+- Professional certifications and adult education
+- Understanding course content
+
+How I fit assist your learning journey today?`
+      
+      case 'yoruba':
+        return `Bawo ni${name}! I'm SabiBot, your personal AI learning companion.
+
+I can help you with (Mo le ran e lowo pelu):
+- Course recommendations for your goals
+- Career guidance and learning paths
+- Tech career transitions and specializations
+- Online teaching opportunities
+- Study strategies and exam preparation
+- Professional certifications
+- Navigating the platform
+
+How can I assist your learning journey today?`
+      
+      case 'hausa':
+        return `Sannu${name}! I'm SabiBot, your personal AI learning companion.
+
+I can help you with (Zan iya taimaka ka da):
+- Course recommendations for your goals
+- Career guidance and learning paths
+- Tech career transitions and specializations
+- Online teaching opportunities
+- Study strategies and exam preparation
+- Professional certifications
+- Navigating the platform
+
+How can I assist your learning journey today?`
+      
+      case 'igbo':
+        return `Kedu${name}! I'm SabiBot, your personal AI learning companion.
+
+I can help you with (Enwere m ike inyere gi aka):
+- Course recommendations for your goals
+- Career guidance and learning paths
+- Tech career transitions and specializations
+- Online teaching opportunities
+- Study strategies and exam preparation
+- Professional certifications
+- Navigating the platform
+
+How can I assist your learning journey today?`
+      
+      default: // english
+        return `Welcome back${name}! I'm SabiBot, your personal AI learning companion.
+
+I can help you with:
+- Course recommendations tailored to your goals
+- Career guidance and strategic planning (all ages, all fields)
+- Tech career transitions (which specializations pay most)
+- Online teaching opportunities (earn in dollars from Nigeria)
+- Study strategies and exam preparation (JAMB, WAEC, professional certs)
+- Adult education pathways and certifications
+- Understanding course content
+
+How can I assist your learning journey today?`
+    }
+  }
+
   const setDefaultWelcome = () => {
     const welcomeMessage: Message = {
       id: 'welcome',
       role: 'assistant',
-      content: `Welcome to Sabitek. I'm SabiBot, your AI learning assistant.
+      content: `Welcome to Sabitek. I'm SabiBot, your AI learning companion.
 
 I can help you with:
 - Course recommendations tailored to your goals
-- Career guidance and learning paths
-- Study strategies and techniques
-- Understanding course content
+- Career guidance and strategic planning
+- Tech career transitions and specializations
+- Online teaching opportunities
+- Study strategies and exam preparation
+- Professional certifications
 - Navigating the platform
 
 How can I assist your learning journey today?`,
@@ -110,19 +220,11 @@ How can I assist your learning journey today?`,
       } else if (!user?.id) {
         setDefaultWelcome()
       } else if (userProfile) {
+        const welcomeContent = getWelcomeMessage(userProfile?.full_name, preferredLanguage)
         const welcomeMessage: Message = {
           id: 'welcome',
           role: 'assistant',
-          content: `Welcome back${userProfile?.full_name ? ', ' + userProfile.full_name : ''}! I'm SabiBot, your personal AI learning assistant.
-
-I can help you with:
-- Course recommendations tailored to your goals
-- Career guidance and learning paths
-- Study strategies and techniques
-- Understanding course content
-- Navigating the platform
-
-How can I assist your learning journey today?`,
+          content: welcomeContent,
           timestamp: new Date()
         }
         setMessages([welcomeMessage])
@@ -143,6 +245,48 @@ How can I assist your learning journey today?`,
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen, isMinimized])
+
+  // Handle language change
+  const handleLanguageChange = async (newLanguage: Language) => {
+    setPreferredLanguage(newLanguage)
+    setShowLanguageMenu(false)
+
+    // Save to database if user is authenticated
+    if (user?.id) {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .update({ preferred_language: newLanguage })
+          .eq('id', user.id)
+
+        if (error) {
+          console.error('Error saving language preference:', error)
+        } else {
+          // Update welcome message with new language
+          const welcomeContent = getWelcomeMessage(userProfile?.full_name, newLanguage)
+          const welcomeMessage: Message = {
+            id: 'welcome-' + Date.now(),
+            role: 'assistant',
+            content: welcomeContent,
+            timestamp: new Date()
+          }
+          setMessages([welcomeMessage])
+        }
+      } catch (error) {
+        console.error('Error updating language:', error)
+      }
+    } else {
+      // For non-authenticated users, just update the welcome message
+      const welcomeContent = getWelcomeMessage(null, newLanguage)
+      const welcomeMessage: Message = {
+        id: 'welcome-' + Date.now(),
+        role: 'assistant',
+        content: welcomeContent,
+        timestamp: new Date()
+      }
+      setMessages([welcomeMessage])
+    }
+  }
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -172,7 +316,8 @@ How can I assist your learning journey today?`,
             userId: user?.id,
             userName: userProfile?.full_name,
             userRole: userProfile?.role || 'learner',
-            isAuthenticated: !!user
+            isAuthenticated: !!user,
+            preferredLanguage: preferredLanguage
           }
         })
       })
@@ -191,6 +336,9 @@ How can I assist your learning journey today?`,
 
         if (user?.id) {
           saveConversation(userMessage, assistantMessage)
+          
+          // Update study streak and extract insights
+          updateMemory(user.id, userMessage.content, assistantMessage.content)
         }
       }, 500)
 
@@ -228,6 +376,35 @@ How can I assist your learning journey today?`,
       }
     } catch (error) {
       console.log('Chat history not configured')
+    }
+  }
+
+  // Update memory: streak and insights
+  const updateMemory = async (userId: string, userMsg: string, assistantMsg: string) => {
+    try {
+      // Update study streak
+      fetch('/api/sabibot/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          action: 'update_streak'
+        })
+      }).catch(err => console.log('Streak update failed:', err))
+
+      // Extract insights from conversation
+      fetch('/api/sabibot/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          action: 'extract_insights',
+          userMessage: userMsg,
+          assistantMessage: assistantMsg
+        })
+      }).catch(err => console.log('Insight extraction failed:', err))
+    } catch (error) {
+      console.log('Memory update error:', error)
     }
   }
 
@@ -294,7 +471,7 @@ How can I assist your learning journey today?`,
 
   return (
     <>
-      {/* Floating Chat Button - Animated Robot Head (Option 4) */}
+      {/* Floating Chat Button - Animated Robot Head */}
       <button
         onClick={() => setIsOpen(true)}
         className={`${
@@ -367,21 +544,71 @@ How can I assist your learning journey today?`,
             isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-6`}
         >
-          {/* Header - Clean Design */}
-          <div className="bg-red-500 p-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          {/* Header - Minimalist Sabitek Red Gradient Design */}
+          <div className="relative bg-gradient-to-r from-red-500/90 from-0% via-red-500/90 via-75% to-pink-300/90 to-100% backdrop-blur-md p-3.5 flex items-center justify-between">
+            {/* Minimalist accent line */}
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            
+            {/* Subtle geometric accent */}
+            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5"></div>
+            <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5"></div>
+            
+            <div className="flex items-center gap-3 relative z-10">
               <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div className="text-white">
                 <h3 className="font-semibold text-sm">SabiBot</h3>
                 <p className="text-xs opacity-90">
-                  {user ? 'Personal Assistant' : 'Learning Assistant'}
+                  Learning Assistant
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 relative z-10">
+              {/* Language Selector */}
+              <div className="relative z-50" ref={languageMenuRef}>
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                  aria-label="Change language"
+                  title="Change language"
+                >
+                  <Globe className="w-4 h-4 text-white" />
+                </button>
+                
+                {/* Language Dropdown */}
+                {showLanguageMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.value}
+                        onClick={() => handleLanguageChange(lang.value as Language)}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                          preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
+                        }`}
+                      >
+                        <span>{lang.label}</span>
+                        <span className="text-lg">{lang.flag}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Learning Stats Button - White to match theme */}
+              {user && (
+                <button
+                  onClick={() => setShowLearningStats(true)}
+                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                  aria-label="View learning stats"
+                  title="Your learning journey"
+                >
+                  <BarChart3 className="w-4 h-4 text-white" />
+                </button>
+              )}
+              
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
                 className="p-1.5 hover:bg-white/10 rounded transition-colors"
@@ -423,7 +650,7 @@ How can I assist your learning journey today?`,
                           message.role === 'user' 
                             ? 'bg-gray-800 text-white' 
                             : 'bg-white text-gray-800 border border-gray-200'
-                        } rounded-lg px-3.5 py-2.5`}>
+                        } rounded-lg px-3.5 py-2.5 break-words`}>
                           {message.role === 'assistant' ? (
                             <div className="text-sm">
                               <ReactMarkdown
@@ -491,31 +718,31 @@ How can I assist your learning journey today?`,
                         onClick={() => handleQuickAction(action.prompt)}
                         className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs text-gray-700 transition-colors"
                       >
-                        <action.icon className="w-3.5 h-3.5" />
-                        {action.label}
+                        <action.icon className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{action.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Input Area - Minimal Design */}
+              {/* Input Area - Fixed Alignment */}
               <div className="p-3 bg-white border-t border-gray-200">
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <input
                     ref={inputRef}
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder={user ? "Type your question..." : "Login to chat with SabiBot"}
-                    className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-500 disabled:opacity-50"
+                    placeholder={user ? "Type your question..." : "Login to chat"}
+                    className="flex-1 px-3 py-2.5 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-500 disabled:opacity-50 min-w-0"
                     disabled={isLoading || !user}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading || !user}
-                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     aria-label="Send"
                   >
                     {isLoading ? (
@@ -533,6 +760,12 @@ How can I assist your learning journey today?`,
           )}
         </div>
       </div>
+
+      {/* Learning Stats Modal */}
+      <LearningStats 
+        isOpen={showLearningStats} 
+        onClose={() => setShowLearningStats(false)} 
+      />
 
       {/* Add animation styles */}
       <style jsx>{animatedButtonStyles}</style>
