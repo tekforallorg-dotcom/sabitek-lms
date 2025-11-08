@@ -17,7 +17,7 @@ type Language = 'english' | 'pidgin' | 'yoruba' | 'hausa' | 'igbo'
 
 const LANGUAGES = [
   { value: 'english', label: 'English', flag: '🇬🇧' },
-  { value: 'pidgin', label: 'Nigerian Pidgin', flag: '🇳🇬' },
+  { value: 'pidgin', label: 'Pidgin', flag: '🇳🇬' },
   { value: 'yoruba', label: 'Yorùbá', flag: '🇳🇬' },
   { value: 'hausa', label: 'Hausa', flag: '🇳🇬' },
   { value: 'igbo', label: 'Igbo', flag: '🇳🇬' },
@@ -544,90 +544,89 @@ How can I assist your learning journey today?`,
             isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-6`}
         >
-          {/* Header - Minimalist Sabitek Red Gradient Design */}
-          <div className="relative bg-gradient-to-r from-red-500/90 from-0% via-red-500/90 via-75% to-pink-300/90 to-100% backdrop-blur-md p-3.5 flex items-center justify-between">
-            {/* Minimalist accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            
-            {/* Subtle geometric accent */}
-            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5"></div>
-            <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5"></div>
-            
-            <div className="flex items-center gap-3 relative z-10">
-              <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="text-white">
-                <h3 className="font-semibold text-sm">SabiBot</h3>
-                <p className="text-xs opacity-90">
-                  Learning Assistant
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1 relative z-10">
-              {/* Language Selector */}
-              <div className="relative z-50" ref={languageMenuRef}>
-                <button
-                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
-                  aria-label="Change language"
-                  title="Change language"
-                >
-                  <Globe className="w-4 h-4 text-white" />
-                </button>
-                
-                {/* Language Dropdown */}
-                {showLanguageMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.value}
-                        onClick={() => handleLanguageChange(lang.value as Language)}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                          preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                        }`}
-                      >
-                        <span>{lang.label}</span>
-                        <span className="text-lg">{lang.flag}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              {/* Learning Stats Button - White to match theme */}
-              {user && (
-                <button
-                  onClick={() => setShowLearningStats(true)}
-                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
-                  aria-label="View learning stats"
-                  title="Your learning journey"
-                >
-                  <BarChart3 className="w-4 h-4 text-white" />
-                </button>
-              )}
-              
-              <button
-                onClick={() => setIsMinimized(!isMinimized)}
-                className="p-1.5 hover:bg-white/10 rounded transition-colors"
-                aria-label="Minimize"
-              >
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
-              </button>
-              <button
-                onClick={() => {
-                  setIsOpen(false)
-                  setIsMinimized(false)
-                }}
-                className="p-1.5 hover:bg-white/10 rounded transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          </div>
+         {/* Header - Solid Sabitek Red */}
+<div className="relative bg-red-600 p-3.5 flex items-center justify-between">
+  {/* Subtle accent line */}
+  <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10"></div>
+  <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10"></div>
+  
+  {/* Logo and Title */}
+  <div className="flex items-center gap-3 relative z-10">
+    <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+      <Bot className="w-5 h-5 text-white" />
+    </div>
+    <div className="text-white">
+      <h3 className="font-semibold text-sm">SabiBot</h3>
+      <p className="text-xs opacity-90">Learning Assistant</p>
+    </div>
+  </div>
+  
+  {/* Icon Buttons */}
+  <div className="flex items-center gap-1 relative z-10">
+    {/* Language Selector */}
+    <div className="relative z-50" ref={languageMenuRef}>
+      <button
+        onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+        aria-label="Change language"
+        title="Change language"
+      >
+        <Globe className="w-4 h-4 text-white" />
+      </button>
+      
+      {/* Language Dropdown */}
+      {showLanguageMenu && (
+        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.value}
+              onClick={() => handleLanguageChange(lang.value as Language)}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
+              }`}
+            >
+              <span>{lang.label}</span>
+              <span className="text-lg">{lang.flag}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+    
+    {/* Learning Stats Button */}
+    {user && (
+      <button
+        onClick={() => setShowLearningStats(true)}
+        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+        aria-label="View learning stats"
+        title="Your learning journey"
+      >
+        <BarChart3 className="w-4 h-4 text-white" />
+      </button>
+    )}
+    
+    {/* Minimize Button */}
+    <button
+      onClick={() => setIsMinimized(!isMinimized)}
+      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+      aria-label="Minimize"
+    >
+      <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
+    </button>
+    
+    {/* Close Button */}
+    <button
+      onClick={() => {
+        setIsOpen(false)
+        setIsMinimized(false)
+      }}
+      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+      aria-label="Close"
+    >
+      <X className="w-4 h-4 text-white" />
+    </button>
+  </div>
+</div>
 
           {!isMinimized && (
             <>
@@ -650,7 +649,7 @@ How can I assist your learning journey today?`,
                           message.role === 'user' 
                             ? 'bg-gray-800 text-white' 
                             : 'bg-white text-gray-800 border border-gray-200'
-                        } rounded-lg px-3.5 py-2.5 break-words`}>
+                        } rounded-lg px-3.5 py-2.5`}>
                           {message.role === 'assistant' ? (
                             <div className="text-sm">
                               <ReactMarkdown
@@ -718,31 +717,31 @@ How can I assist your learning journey today?`,
                         onClick={() => handleQuickAction(action.prompt)}
                         className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs text-gray-700 transition-colors"
                       >
-                        <action.icon className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="truncate">{action.label}</span>
+                        <action.icon className="w-3.5 h-3.5" />
+                        {action.label}
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Input Area - Fixed Alignment */}
+              {/* Input Area - Minimal Design */}
               <div className="p-3 bg-white border-t border-gray-200">
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                   <input
                     ref={inputRef}
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder={user ? "Type your question..." : "Login to chat"}
-                    className="flex-1 px-3 py-2.5 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-500 disabled:opacity-50 min-w-0"
+                    placeholder={user ? "Type your question..." : "Login to chat with SabiBot"}
+                    className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-500 disabled:opacity-50"
                     disabled={isLoading || !user}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading || !user}
-                    className="p-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send"
                   >
                     {isLoading ? (
