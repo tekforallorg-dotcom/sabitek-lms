@@ -379,34 +379,23 @@ How can I assist your learning journey today?`,
     }
   }
 
-  // Update memory: streak and insights
   const updateMemory = async (userId: string, userMsg: string, assistantMsg: string) => {
-    try {
-      // Update study streak
-      fetch('/api/sabibot/memory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          action: 'update_streak'
-        })
-      }).catch(err => console.log('Streak update failed:', err))
-
-      // Extract insights from conversation
-      fetch('/api/sabibot/memory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          action: 'extract_insights',
-          userMessage: userMsg,
-          assistantMessage: assistantMsg
-        })
-      }).catch(err => console.log('Insight extraction failed:', err))
-    } catch (error) {
-      console.log('Memory update error:', error)
-    }
+  try {
+    // Update study streak only
+    fetch('/api/sabibot/memory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        action: 'update_streak'
+      })
+    }).catch(err => console.log('Streak update failed:', err))
+    
+    // Note: Insight extraction happens automatically in /api/sabibot/route.ts
+  } catch (error) {
+    console.log('Memory update error:', error)
   }
+}
 
   const handleQuickAction = (prompt: string) => {
     setInput(prompt)

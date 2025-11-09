@@ -373,23 +373,22 @@ Remember: You're a calm maestro consultant - patient, strategic, knowledgeable. 
       }, { status: 200 })
     }
 
-    // ✅ EXTRACT INSIGHTS FROM THE CONVERSATION (NEW CODE)
-    if (userContext?.userId && messages.length > 0) {
-      const lastUserMessage = messages[messages.length - 1]
-      
-      if (lastUserMessage.role === 'user' && lastUserMessage.content) {
-        // Call extract-insights endpoint asynchronously (don't wait for it to complete)
-        fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/extract-insights`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: userContext.userId,
-            messageContent: lastUserMessage.content,
-            aiResponse: data.choices[0].message.content
-          })
-        }).catch(err => console.log('Insight extraction failed:', err))
-      }
-    }
+    // ✅ EXTRACT INSIGHTS FROM THE CONVERSATION
+if (userContext?.userId && messages.length > 0) {
+  const lastUserMessage = messages[messages.length - 1]
+  
+  if (lastUserMessage.role === 'user' && lastUserMessage.content) {
+    fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/extract-insights`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: userContext.userId,
+        messageContent: lastUserMessage.content,
+        aiResponse: data.choices[0].message.content
+      })
+    }).catch(err => console.log('Insight extraction failed:', err))
+  }
+}
 
     return NextResponse.json({
       content: data.choices[0].message.content
