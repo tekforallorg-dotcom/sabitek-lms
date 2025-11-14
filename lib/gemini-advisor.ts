@@ -2,6 +2,14 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
+// REQUEST CACHE - Prevent duplicate calls
+const requestCache = new Map<string, { promise: Promise<any>, timestamp: number }>()
+const CACHE_TTL = 300000 // 5 minutes cache
+
+// RATE LIMITER - Prevent burst requests
+let lastRequestTime = 0
+const MIN_REQUEST_INTERVAL = 3000 // 3 seconds between requests
+
 export interface CareerTrack {
   name: string
   confidence: number
@@ -451,17 +459,41 @@ export async function getCareerRecommendations(
       throw new Error('GEMINI_API_KEY is not configured')
     }
 
+    // Create cache key from survey answers
+    const cacheKey = JSON.stringify(surveyAnswers)
+    
+    // Check cache first
+    const cached = requestCache.get(cacheKey)
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      console.log('✅ Returning cached recommendation (avoiding API call)')
+      return await cached.promise
+    }
+
+    // RATE LIMITING - Prevent burst requests
+    const now = Date.now()
+    const timeSinceLastRequest = now - lastRequestTime
+    
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+      const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest
+      console.log(`⏱️  Rate limiting: waiting ${waitTime}ms before next request`)
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+    
+    lastRequestTime = Date.now()
+
     console.log('Initializing Gemini with API key:', process.env.GEMINI_API_KEY.substring(0, 10) + '...')
 
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-lite', // Changed from gemini-2.0-flash-lite
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4096,
-      }
-    })
+    // Create the request promise
+    const requestPromise = (async () => {
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.0-flash-lite',
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+        },
+      })
 
-    const prompt = `SURVEY RESPONSES:
+      const prompt = `SURVEY RESPONSES:
 ${JSON.stringify(surveyAnswers, null, 2)}
 
 Based on these responses, recommend tech career tracks for this Nigerian learner using TIERED RECOMMENDATIONS:
@@ -474,65 +506,80 @@ Include 4 actionable next_steps blocks with icons.
 Return ONLY valid JSON with no markdown formatting, no backticks, no explanations.
 Keep all string values on single lines without line breaks.`
 
-    console.log('Calling Gemini API...')
+      console.log('🚀 Calling Gemini API...')
+      
+      const result = await model.generateContent([SYSTEM_PROMPT, prompt])
+      const response = await result.response
+      let text = response.text()
+
+      console.log('✅ Gemini API response received')
+
+      // Strip markdown code blocks if present
+      text = text.replace(/```json\n?/g, '')
+                 .replace(/```\n?/g, '')
+                 .trim()
+
+      // Sanitize the JSON string to handle control characters
+      text = sanitizeJsonString(text)
+
+      // Parse and validate
+      const parsed = JSON.parse(text)
+      
+      // Validate structure
+      if (!parsed.primary_tracks || !Array.isArray(parsed.primary_tracks) || parsed.primary_tracks.length === 0) {
+        throw new Error('Invalid response structure: missing or empty primary_tracks')
+      }
+
+      if (!parsed.alternative_tracks || !Array.isArray(parsed.alternative_tracks)) {
+        throw new Error('Invalid response structure: missing alternative_tracks')
+      }
+
+      if (!parsed.roadmap_6m || !parsed.roadmap_6m.months) {
+        throw new Error('Invalid response structure: missing roadmap_6m')
+      }
+
+      // Ensure we have exactly 3 primary tracks
+      if (parsed.primary_tracks.length > 3) {
+        parsed.primary_tracks = parsed.primary_tracks.slice(0, 3)
+      }
+
+      // Ensure we have exactly 2 alternative tracks
+      if (parsed.alternative_tracks.length > 2) {
+        parsed.alternative_tracks = parsed.alternative_tracks.slice(0, 2)
+      }
+
+      // Ensure we have 6 months in roadmap
+      if (parsed.roadmap_6m.months.length > 6) {
+        parsed.roadmap_6m.months = parsed.roadmap_6m.months.slice(0, 6)
+      }
+
+      console.log('✅ Successfully parsed recommendations')
+
+      return parsed as CareerRecommendation
+    })()
+
+    // Cache the promise with timestamp
+    requestCache.set(cacheKey, { promise: requestPromise, timestamp: Date.now() })
     
-    const result = await model.generateContent([SYSTEM_PROMPT, prompt])
-    const response = await result.response
-    let text = response.text()
+    // Auto-clear cache after TTL
+    setTimeout(() => {
+      requestCache.delete(cacheKey)
+      console.log('🗑️  Cache cleared for request')
+    }, CACHE_TTL)
 
-    console.log('Raw Gemini response (first 500 chars):', text.substring(0, 500))
+    return await requestPromise
 
-    // Strip markdown code blocks if present
-    text = text.replace(/```json\n?/g, '')
-               .replace(/```\n?/g, '')
-               .trim()
-
-    // Sanitize the JSON string to handle control characters
-    text = sanitizeJsonString(text)
-
-    // Parse and validate
-    const parsed = JSON.parse(text)
-    
-    // Validate structure
-    if (!parsed.primary_tracks || !Array.isArray(parsed.primary_tracks) || parsed.primary_tracks.length === 0) {
-      throw new Error('Invalid response structure: missing or empty primary_tracks')
-    }
-
-    if (!parsed.alternative_tracks || !Array.isArray(parsed.alternative_tracks)) {
-      throw new Error('Invalid response structure: missing alternative_tracks')
-    }
-
-    if (!parsed.roadmap_6m || !parsed.roadmap_6m.months) {
-      throw new Error('Invalid response structure: missing roadmap_6m')
-    }
-
-    // Ensure we have exactly 3 primary tracks
-    if (parsed.primary_tracks.length > 3) {
-      parsed.primary_tracks = parsed.primary_tracks.slice(0, 3)
-    }
-
-    // Ensure we have exactly 2 alternative tracks
-    if (parsed.alternative_tracks.length > 2) {
-      parsed.alternative_tracks = parsed.alternative_tracks.slice(0, 2)
-    }
-
-    // Ensure we have 6 months in roadmap
-    if (parsed.roadmap_6m.months.length > 6) {
-      parsed.roadmap_6m.months = parsed.roadmap_6m.months.slice(0, 6)
-    }
-
-    console.log('Successfully parsed recommendations')
-
-    return parsed as CareerRecommendation
   } catch (error: any) {
-    console.error('Gemini API Error Details:', {
+    console.error('❌ Gemini API Error:', {
       message: error.message,
-      details: error.toString(),
-      hint: error.message?.includes('fetch') ? 'Network connection issue - check if @google/generative-ai package is installed' : '',
       code: error.code || ''
     })
     
-    // Provide more specific error messages
+    // Handle rate limit errors specifically
+    if (error.message?.includes('429') || error.message?.includes('Resource exhausted') || error.message?.includes('Too Many Requests')) {
+      throw new Error('Rate limit reached. Please wait 60 seconds and try again. This helps us manage server costs.')
+    }
+    
     if (error.message?.includes('fetch')) {
       throw new Error('Network error: Unable to connect to Gemini API. Please check your internet connection.')
     }

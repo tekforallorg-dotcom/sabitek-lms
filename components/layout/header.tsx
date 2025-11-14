@@ -1,44 +1,18 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/components/providers/auth-provider'
-import { Sparkles, User, Settings, LogOut, ChevronDown, Zap } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { Sparkles, User, Settings, LogOut, ChevronDown, Zap, Briefcase } from 'lucide-react'
 
 export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, signOut } = useAuthContext()
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const { user, userProfile, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isSabiToolsOpen, setIsSabiToolsOpen] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile(user.id)
-    } else {
-      setUserProfile(null)
-    }
-  }, [user])
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      
-      if (!error && data) {
-        setUserProfile(data)
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    }
-  }
 
   const handleLogout = async () => {
     try {
@@ -111,6 +85,15 @@ export default function Header() {
                       >
                         <Sparkles className="w-4 h-4 text-red-500" />
                         <span>SabiQuiz</span>
+                      </Link>
+
+                      <Link
+                        href="/sabiadvisor"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsSabiToolsOpen(false)}
+                      >
+                        <Briefcase className="w-4 h-4 text-red-500" />
+                        <span>SabiAdvisor</span>
                       </Link>
                     </div>
                   )}
@@ -306,7 +289,7 @@ export default function Header() {
                     </button>
 
                     {isSabiToolsOpen && (
-                      <div className="ml-4 mt-2">
+                      <div className="ml-4 mt-2 space-y-1">
                         <Link
                           href="/sabiquiz"
                           className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
@@ -314,6 +297,15 @@ export default function Header() {
                         >
                           <Sparkles className="w-4 h-4 text-red-500" />
                           <span>SabiQuiz</span>
+                        </Link>
+                        
+                        <Link
+                          href="/sabiadvisor"
+                          className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                          onClick={closeAllMenus}
+                        >
+                          <Briefcase className="w-4 h-4 text-red-500" />
+                          <span>SabiAdvisor</span>
                         </Link>
                       </div>
                     )}
