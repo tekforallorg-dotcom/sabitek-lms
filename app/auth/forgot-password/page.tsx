@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -86,9 +87,13 @@ export default function ForgotPasswordPage() {
         <div className="max-w-md w-full">
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
-              <h1 className="text-4xl font-bold">
+            <Link href="/" className="inline-flex items-center gap-2 justify-center">
+              <h1 className="text-4xl font-bold flex items-center gap-1">
                 <span className="text-black">Sabitek</span>
+                <span className="relative">
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
+                </span>
               </h1>
             </Link>
             <p className="text-gray-600 mt-2">Reset your password</p>

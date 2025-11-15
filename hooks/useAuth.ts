@@ -143,7 +143,7 @@ export function useAuth(): AuthReturn {
             full_name: fullName,
             role: role,
           },
-          emailRedirectTo: `${window.location.origin}/auth/login`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         }
       })
 
