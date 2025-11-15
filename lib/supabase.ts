@@ -22,7 +22,7 @@ const getSupabaseClient = (): SupabaseClient => {
         detectSessionInUrl: true,
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
         storageKey: 'sabitek-auth', // Unique key for your app
-        flowType: 'pkce', // More secure auth flow
+        flowType: 'pkce', // PKCE for OAuth, token_hash for email-based auth
       },
       global: {
         headers: {

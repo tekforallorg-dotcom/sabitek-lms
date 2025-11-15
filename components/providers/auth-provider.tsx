@@ -52,6 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         // Handle sign in
         else if (event === 'SIGNED_IN' && pathname?.startsWith('/auth/')) {
+          // Don't auto-redirect from reset-password page - user needs to update password first
+          if (pathname === '/auth/reset-password') {
+            console.log('Auth event: SIGNED_IN on reset-password page, skipping auto-redirect')
+            return
+          }
+
           // Get user role and redirect accordingly
           if (session?.user) {
             const { data: profile } = await supabase
