@@ -21,9 +21,21 @@ export default function MaterialsPage() {
   async function fetchMaterials() {
     try {
       setLoading(true)
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        console.error('No user logged in')
+        setMaterials([])
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('sabiquiz_materials')
         .select('*')
+        .eq('user_id', user.id)  // Filter by current user
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -39,12 +51,23 @@ export default function MaterialsPage() {
     if (!confirm('Delete this material? This cannot be undone.')) return
 
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        alert('You must be logged in to delete materials')
+        return
+      }
+
+      // Delete from storage
       await supabase.storage.from('sabiquiz-materials').remove([filePath])
 
+      // Delete from database (with user_id check for security)
       const { error } = await supabase
         .from('sabiquiz_materials')
         .delete()
         .eq('id', id)
+        .eq('user_id', user.id)  // Ensure user can only delete their own materials
 
       if (error) throw error
 
