@@ -101,30 +101,52 @@ export default function HomePage() {
             </p>
             
             {user ? (
-              <div className="space-x-4">
-                <Link href="/dashboard">
-                  <Button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 text-lg">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-                <Link href="/courses">
-                  <Button variant="outline" className="border-gray-300 px-8 py-3 text-lg">
-                    Browse Courses
-                  </Button>
-                </Link>
+              <div className="space-y-5">
+                <div className="animate-pulse-subtle">
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-red-50/80 to-pink-50/80 hover:from-red-100 hover:to-pink-100 border border-red-200/60 rounded-full text-red-600 hover:text-red-700 font-medium text-base transition-all hover:scale-105 shadow-sm hover:shadow-md group backdrop-blur-sm"
+                  >
+                    Learn more about Sabitek
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+                <div className="space-x-4">
+                  <Link href="/dashboard">
+                    <Button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 text-lg">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/courses">
+                    <Button variant="outline" className="border-gray-300 px-8 py-3 text-lg">
+                      Browse Courses
+                    </Button>
+                  </Link>
+                </div>
               </div>
             ) : (
-              <div className="space-x-4">
-                <Link href="/auth/register">
-                  <Button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 text-lg">
-                    Get Started Free
-                  </Button>
-                </Link>
-                <Link href="/auth/login">
-                  <Button variant="outline" className="border-gray-300 px-8 py-3 text-lg">
-                    Sign In
-                  </Button>
-                </Link>
+              <div className="space-y-5">
+                <div className="animate-pulse-subtle">
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-red-50/80 to-pink-50/80 hover:from-red-100 hover:to-pink-100 border border-red-200/60 rounded-full text-red-600 hover:text-red-700 font-medium text-base transition-all hover:scale-105 shadow-sm hover:shadow-md group backdrop-blur-sm"
+                  >
+                    Learn more about Sabitek
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+                <div className="space-x-4">
+                  <Link href="/auth/register">
+                    <Button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 text-lg">
+                      Get Started Free
+                    </Button>
+                  </Link>
+                  <Link href="/auth/login">
+                    <Button variant="outline" className="border-gray-300 px-8 py-3 text-lg">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -297,17 +319,34 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-red-500">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="relative py-20 overflow-hidden bg-red-500">
+        {/* Dot pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.4) 2px, transparent 2px)',
+            backgroundSize: '30px 30px'
+          }}
+        ></div>
+
+        {/* Wave pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'repeating-radial-gradient(circle at 0 0, transparent 0, rgba(255, 255, 255, 0.15) 40px, transparent 80px)'
+          }}
+        ></div>
+
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
             Ready to Start Learning?
           </h2>
-          <p className="text-xl text-white mb-8 opacity-90">
+          <p className="text-xl text-white/95 mb-8 max-w-2xl mx-auto drop-shadow">
             Join thousands of learners advancing their careers with Sabitek
           </p>
           {!user && (
             <Link href="/auth/register">
-              <Button className="bg-white text-red-500 hover:bg-gray-100 px-8 py-3 text-lg">
+              <Button className="bg-white text-red-600 hover:bg-gray-50 px-8 py-3 text-lg font-semibold shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
                 Sign Up for Free
               </Button>
             </Link>
