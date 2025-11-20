@@ -11,7 +11,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-black mb-3">Sabitek</h3>
             <p className="text-sm text-gray-600">
-              Empowering African education through technology
+             Your AI-powered and future-ready classroom for every learner.
             </p>
           </div>
 
