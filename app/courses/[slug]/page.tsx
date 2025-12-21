@@ -231,7 +231,7 @@ export default function CourseDetailPage() {
           certificate_number: certificateNumber,
           grade_percentage: avgScore,
           issued_at: now,
-          completion_date: now  // ✅ FIXED: Added completion_date
+          completion_date: now
         })
         .select()
         .single()
@@ -308,17 +308,17 @@ export default function CourseDetailPage() {
                 <PartyPopper className="w-10 h-10 text-green-600" />
               </div>
               
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 🎉 Congratulations!
               </h2>
               
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
                 You've successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
               </p>
               
               <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-6">
                 <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-sm font-medium text-green-800">
+                <p className="text-xs sm:text-sm font-medium text-green-800">
                   Your certificate has been generated and is ready to view!
                 </p>
               </div>
@@ -353,43 +353,43 @@ export default function CourseDetailPage() {
 
       {/* Course Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {course.cover_image_url && (
             <img
               src={course.cover_image_url}
               alt={course.title}
-              className="w-full h-64 object-cover rounded-xl mb-6"
+              className="w-full h-48 sm:h-64 object-cover rounded-xl mb-4 sm:mb-6"
             />
           )}
           
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{course.title}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">{course.title}</h1>
           
-          <div className="flex items-center gap-6 text-gray-600 mb-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm sm:text-base text-gray-600 mb-4">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>{course.instructor?.full_name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>{lessons.length} Lessons</span>
             </div>
             {totalDuration > 0 && (
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                <span>{totalDuration} minutes</span>
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>{totalDuration} min</span>
               </div>
             )}
           </div>
 
           {course.description && (
-            <p className="text-gray-700 max-w-3xl">{course.description}</p>
+            <p className="text-sm sm:text-base text-gray-700 max-w-3xl">{course.description}</p>
           )}
 
           {isEnrolled && (
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Progress</span>
-                <span className="text-sm font-medium text-gray-700">{progressPercentage}%</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-700">Progress</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-700">{progressPercentage}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -414,25 +414,25 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Lessons List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="flex items-center justify-between text-lg sm:text-xl">
               <span>Course Lessons</span>
               {isEnrolled && (
-                <span className="text-sm text-gray-600">
+                <span className="text-xs sm:text-sm font-normal text-gray-600">
                   {completedLessons.size} / {lessons.length} completed
                 </span>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {!isEnrolled ? (
-              <p className="text-center text-gray-600 py-8">
+              <p className="text-center text-sm sm:text-base text-gray-600 py-8">
                 Enroll in this course to start learning from the lessons below
               </p>
             ) : lessons.length === 0 ? (
-              <p className="text-center text-gray-600 py-8">
+              <p className="text-center text-sm sm:text-base text-gray-600 py-8">
                 No lessons available yet
               </p>
             ) : (
@@ -445,26 +445,26 @@ export default function CourseDetailPage() {
                       <button
                         key={lesson.id}
                         onClick={() => router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)}
-                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                        className="w-full flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
                       >
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-gray-300">
+                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                          <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center border-2 border-gray-300">
                             {isCompleted ? (
-                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                             ) : (
-                              <span className="text-sm font-medium text-gray-700">{index + 1}</span>
+                              <span className="text-xs sm:text-sm font-medium text-gray-700">{index + 1}</span>
                             )}
                           </div>
                           
                           <div className="flex-1 min-w-0 text-left">
-                            <h3 className="font-medium text-gray-900 group-hover:text-red-600 transition-colors truncate">
+                            <h3 className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-red-600 transition-colors line-clamp-2 sm:line-clamp-1">
                               {lesson.title}
                             </h3>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                               {lesson.content_type === 'youtube' && <span>📺 YouTube</span>}
                               {lesson.content_type === 'video' && <span>🎥 Video</span>}
                               {lesson.content_type === 'pdf' && <span>📄 PDF</span>}
-                              {lesson.content_type === 'powerpoint' && <span>📊 PowerPoint</span>}
+                              {lesson.content_type === 'powerpoint' && <span>📊 PPT</span>}
                               {lesson.content_type === 'text' && <span>📝 Text</span>}
                               {lesson.duration_minutes && (
                                 <span>• {lesson.duration_minutes}m</span>
@@ -473,7 +473,7 @@ export default function CourseDetailPage() {
                           </div>
                         </div>
                         
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
                       </button>
                     )
                   })}
@@ -481,33 +481,35 @@ export default function CourseDetailPage() {
 
                 {/* Finish Course Button */}
                 {isEnrolled && (
-                  <div className="mt-8 pt-6 border-t border-gray-200">
+                  <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
                     <Button
                       onClick={handleFinishCourse}
                       disabled={finishingCourse || completedLessons.size < lessons.length}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-5 sm:py-6 text-sm sm:text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                       size="lg"
                     >
                       {finishingCourse ? (
                         <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          Processing...
+                          <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          <span>Processing...</span>
                         </>
                       ) : completedLessons.size < lessons.length ? (
                         <>
-                          <CheckCircle className="w-6 h-6 mr-2" />
-                          Complete All Lessons to Finish Course ({completedLessons.size}/{lessons.length})
+                          <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                          <span className="sm:hidden">Complete All ({completedLessons.size}/{lessons.length})</span>
+                          <span className="hidden sm:inline">Complete All Lessons to Finish Course ({completedLessons.size}/{lessons.length})</span>
                         </>
                       ) : (
                         <>
-                          <Award className="w-6 h-6 mr-2" />
-                          Finish Course & Get Certificate
+                          <Award className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                          <span className="sm:hidden">Get Certificate</span>
+                          <span className="hidden sm:inline">Finish Course & Get Certificate</span>
                         </>
                       )}
                     </Button>
                     
                     {completedLessons.size === lessons.length && (
-                      <p className="text-center text-sm text-gray-600 mt-3">
+                      <p className="text-center text-xs sm:text-sm text-gray-600 mt-3">
                         🎉 You've completed all lessons! Click above to generate your certificate.
                       </p>
                     )}

@@ -777,9 +777,9 @@ export default function LessonViewerPage() {
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-500 truncate">{course?.title}</p>
-                <h1 className="text-sm md:text-base font-bold text-gray-900 truncate">
-                  Lesson {currentIndex + 1}: {lesson?.title}
+                <p className="text-xs text-gray-500 break-words">{course?.title}</p>
+               <h1 className="text-sm md:text-base font-bold text-gray-900 break-words">
+                    Lesson {currentIndex + 1}: {lesson?.title}
                 </h1>
               </div>
             </div>
