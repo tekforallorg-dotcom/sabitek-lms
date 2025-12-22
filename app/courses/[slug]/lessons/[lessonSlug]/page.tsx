@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/components/providers/auth-provider'
 import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
+import { useEntitlements } from '@/hooks/useEntitlements'
+import { Lock, Crown } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
 import { 
   Save, 
@@ -87,6 +89,7 @@ export default function LessonViewerPage() {
   const [quizAttempts, setQuizAttempts] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({})
   const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const { isProUser, loading: entitlementsLoading } = useEntitlements()
   const [quizResults, setQuizResults] = useState<{
     score: number
     passed: boolean
@@ -1077,41 +1080,65 @@ export default function LessonViewerPage() {
               </Card>
             )}
 
-            {/* AI Tools */}
-            {lesson?.content_type === 'text' && lesson?.content && (
+{/* AI Tools - Pro Feature */}
+            {isProUser ? (
               <>
-                <div>
-                  <LessonSummary
-                    lessonId={lesson.id}
-                    lessonContent={lesson.content}
-                    contentType={lesson.content_type}
-                  />
-                </div>
-                <div>
-                  <LessonQA
-                    lessonId={lesson.id}
-                    lessonContent={lesson.content}
-                    contentType={lesson.content_type}
-                  />
-                </div>
+                {lesson?.content_type === 'text' && lesson?.content && (
+                  <>
+                    <div>
+                      <LessonSummary
+                        lessonId={lesson.id}
+                        lessonContent={lesson.content}
+                        contentType={lesson.content_type}
+                      />
+                    </div>
+                    <div>
+                      <LessonQA
+                        lessonId={lesson.id}
+                        lessonContent={lesson.content}
+                        contentType={lesson.content_type}
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {lesson && lesson.content_type !== 'text' && (
+                  <>
+                    <div>
+                      <LessonSummary
+                        lessonId={lesson.id}
+                        contentType={lesson.content_type}
+                      />
+                    </div>
+                    <div>
+                      <LessonQA
+                        lessonId={lesson.id}
+                        contentType={lesson.content_type}
+                      />
+                    </div>
+                  </>
+                )}
               </>
-            )}
-            
-            {lesson && lesson.content_type !== 'text' && (
-              <>
-                <div>
-                  <LessonSummary
-                    lessonId={lesson.id}
-                    contentType={lesson.content_type}
-                  />
-                </div>
-                <div>
-                  <LessonQA
-                    lessonId={lesson.id}
-                    contentType={lesson.content_type}
-                  />
-                </div>
-              </>
+            ) : (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+                  </div>
+                  <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-1">AI Study Tools</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-4">
+                    Get AI-powered summaries and ask questions about this lesson
+                  </p>
+                  <Button
+                    onClick={() => router.push('/pricing')}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
+                    Upgrade to Pro
+                  </Button>
+                </CardContent>
+              </Card>
             )}
 
             {/* Practice Quiz Component (fallback if no instructor quiz) */}

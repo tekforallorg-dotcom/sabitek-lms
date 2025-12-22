@@ -486,7 +486,7 @@ export async function getCareerRecommendations(
     // Create the request promise
     const requestPromise = (async () => {
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.0-flash-lite',
+        model: 'gemini-2.5-flash-lite',
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 4096,
