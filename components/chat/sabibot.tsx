@@ -288,7 +288,7 @@ How can I assist your learning journey today?`,
     }
   }
 
-  const handleSend = async () => {
+ const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
@@ -302,6 +302,8 @@ How can I assist your learning journey today?`,
     setInput('')
     setIsLoading(true)
     setIsTyping(true)
+
+    const assistantMessageId = (Date.now() + 1).toString()
 
     try {
       const response = await fetch('/api/sabibot', {
@@ -322,36 +324,103 @@ How can I assist your learning journey today?`,
         })
       })
 
-      const data = await response.json()
+      const contentType = response.headers.get('content-type') || ''
       
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: data.content || 'I apologize, but I could not generate a response. Please try again.',
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, assistantMessage])
-        setIsTyping(false)
+      if (contentType.includes('text/event-stream') || contentType.includes('stream')) {
+        const reader = response.body?.getReader()
+        const decoder = new TextDecoder()
+        let fullContent = ''
+        let messageAdded = false
 
-        if (user?.id) {
-          saveConversation(userMessage, assistantMessage)
-          
-          // Update study streak and extract insights
-          updateMemory(user.id, userMessage.content, assistantMessage.content)
+        if (reader) {
+          try {
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+
+              const chunk = decoder.decode(value, { stream: true })
+              const lines = chunk.split('\n')
+
+              for (const line of lines) {
+                const trimmedLine = line.trim()
+                if (!trimmedLine || trimmedLine === 'data: [DONE]') continue
+                if (!trimmedLine.startsWith('data: ')) continue
+
+                try {
+                  const jsonStr = trimmedLine.slice(6)
+                  const json = JSON.parse(jsonStr)
+                  if (json.content) {
+                    fullContent += json.content
+                    
+                    // Add message on first content chunk, then update
+                    if (!messageAdded) {
+                      setIsTyping(false)
+                      setMessages(prev => [...prev, {
+                        id: assistantMessageId,
+                        role: 'assistant',
+                        content: fullContent,
+                        timestamp: new Date()
+                      }])
+                      messageAdded = true
+                    } else {
+                      setMessages(prev => prev.map(m => 
+                        m.id === assistantMessageId 
+                          ? { ...m, content: fullContent }
+                          : m
+                      ))
+                    }
+                  }
+                } catch (e) {
+                  // Skip malformed JSON
+                }
+              }
+            }
+          } finally {
+            reader.releaseLock()
+          }
         }
-      }, 500)
+
+        // If no content received, show error
+        if (!fullContent) {
+          setIsTyping(false)
+          setMessages(prev => [...prev, {
+            id: assistantMessageId,
+            role: 'assistant',
+            content: 'I could not generate a response. Please try again.',
+            timestamp: new Date()
+          }])
+        } else if (user?.id) {
+          saveConversation(userMessage, { id: assistantMessageId, role: 'assistant', content: fullContent, timestamp: new Date() })
+          updateMemory(user.id, userMessage.content, fullContent)
+        }
+      } else {
+        // Handle non-streaming JSON response
+        const data = await response.json()
+        setIsTyping(false)
+        
+        const content = data.content || 'I apologize, but I could not generate a response. Please try again.'
+        setMessages(prev => [...prev, {
+          id: assistantMessageId,
+          role: 'assistant',
+          content,
+          timestamp: new Date()
+        }])
+
+        if (user?.id && content) {
+          saveConversation(userMessage, { id: assistantMessageId, role: 'assistant', content, timestamp: new Date() })
+          updateMemory(user.id, userMessage.content, content)
+        }
+      }
 
     } catch (error) {
-      console.error('Error:', error)
-      const errorMessage: Message = {
-        id: Date.now().toString(),
+      console.error('SabiBot Error:', error)
+      setIsTyping(false)
+      setMessages(prev => [...prev, {
+        id: assistantMessageId,
         role: 'assistant',
         content: 'I encountered a connection issue. Please check your internet and try again.',
         timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setIsTyping(false)
+      }])
     } finally {
       setIsLoading(false)
     }
