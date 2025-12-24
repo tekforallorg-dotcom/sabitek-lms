@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { 
+  sendSubscriptionReceiptEmail, 
+  sendCourseReceiptEmail, 
+  sendPaymentFailedEmail 
+} from '@/lib/email'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,9 +40,16 @@ export async function POST(request: NextRequest) {
         break
 
       case 'subscription.create':
+        await handleSubscriptionCreate(event.data)
+        break
+
       case 'subscription.not_renew':
       case 'subscription.disable':
-        await handleSubscriptionUpdate(event.data, event.event)
+        await handleSubscriptionCancel(event.data, event.event)
+        break
+
+      case 'invoice.payment_failed':
+        await handlePaymentFailed(event.data)
         break
 
       default:
@@ -56,9 +68,11 @@ async function handleChargeSuccess(data: any) {
   const userId = data.metadata?.user_id
   const planId = data.metadata?.plan_id
   const planCode = data.metadata?.plan_code
+  const transactionType = data.metadata?.transaction_type || 'subscription'
+  const courseId = data.metadata?.course_id
 
-  if (!userId || !planId) {
-    console.error('Missing metadata in charge.success')
+  if (!userId) {
+    console.error('Missing user_id in charge.success metadata')
     return
   }
 
@@ -82,6 +96,27 @@ async function handleChargeSuccess(data: any) {
     })
     .eq('provider_tx_ref', reference)
 
+  const { data: user } = await supabaseAdmin
+    .from('users')
+    .select('email, full_name')
+    .eq('id', userId)
+    .single()
+
+  if (transactionType === 'course_purchase' && courseId) {
+    await handleCoursePurchase(data, userId, courseId, reference, user)
+  } else if (planId) {
+    await handleSubscriptionPurchase(data, userId, planId, planCode, reference, user)
+  }
+}
+
+async function handleSubscriptionPurchase(
+  data: any, 
+  userId: string, 
+  planId: string, 
+  planCode: string,
+  reference: string,
+  user: any
+) {
   const periodStart = new Date()
   const periodEnd = new Date()
   periodEnd.setMonth(periodEnd.getMonth() + 1)
@@ -121,10 +156,114 @@ async function handleChargeSuccess(data: any) {
     }
   }
 
-  console.log(`Webhook: Subscription activated for user ${userId}`)
+  const { data: plan } = await supabaseAdmin
+    .from('plans')
+    .select('name, price, currency')
+    .eq('id', planId)
+    .single()
+
+  if (user?.email) {
+    await sendSubscriptionReceiptEmail({
+      to: user.email,
+      userName: user.full_name || 'Learner',
+      planName: plan?.name || 'Pro',
+      amount: plan?.price || data.amount / 100,
+      currency: plan?.currency || 'NGN',
+      transactionRef: reference,
+      billingPeriodEnd: periodEnd,
+    })
+  }
+
+  console.log('Webhook: Subscription activated for user', userId)
 }
 
-async function handleSubscriptionUpdate(data: any, eventType: string) {
+async function handleCoursePurchase(
+  data: any,
+  userId: string,
+  courseId: string,
+  reference: string,
+  user: any
+) {
+  const { data: existingPurchase } = await supabaseAdmin
+    .from('course_purchases')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .single()
+
+  if (existingPurchase) {
+    console.log('Course already purchased:', courseId)
+    return
+  }
+
+  await supabaseAdmin
+    .from('course_purchases')
+    .insert({
+      user_id: userId,
+      course_id: courseId,
+      transaction_id: reference,
+      amount: data.amount / 100,
+      currency: data.currency || 'NGN',
+      status: 'successful',
+    })
+
+  await supabaseAdmin
+    .from('course_enrollments')
+    .upsert({
+      user_id: userId,
+      course_id: courseId,
+      enrolled_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,course_id',
+    })
+
+  const { data: course } = await supabaseAdmin
+    .from('courses')
+    .select('title, slug, price, currency')
+    .eq('id', courseId)
+    .single()
+
+  if (user?.email && course) {
+    await sendCourseReceiptEmail({
+      to: user.email,
+      userName: user.full_name || 'Learner',
+      courseName: course.title,
+      amount: course.price || data.amount / 100,
+      currency: course.currency || 'NGN',
+      transactionRef: reference,
+      courseSlug: course.slug,
+    })
+  }
+
+  console.log('Webhook: Course purchased by user', userId)
+}
+
+async function handleSubscriptionCreate(data: any) {
+  const customerCode = data.customer?.customer_code
+  const subscriptionCode = data.subscription_code
+
+  if (!customerCode) return
+
+  const { data: subscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('id, user_id')
+    .eq('provider_customer_id', customerCode)
+    .single()
+
+  if (subscription) {
+    await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        provider_subscription_id: subscriptionCode,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', subscription.id)
+
+    console.log('Subscription code updated for user', subscription.user_id)
+  }
+}
+
+async function handleSubscriptionCancel(data: any, eventType: string) {
   const customerCode = data.customer?.customer_code
 
   if (!customerCode) return
@@ -137,16 +276,74 @@ async function handleSubscriptionUpdate(data: any, eventType: string) {
 
   if (!subscription) return
 
-  if (eventType === 'subscription.disable' || eventType === 'subscription.not_renew') {
-    await supabaseAdmin
-      .from('subscriptions')
-      .update({
-        status: 'cancelled',
-        cancel_at_period_end: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', subscription.id)
+  await supabaseAdmin
+    .from('subscriptions')
+    .update({
+      status: 'cancelled',
+      cancel_at_period_end: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', subscription.id)
 
-    console.log(`Subscription cancelled for user ${subscription.user_id}`)
+  console.log('Subscription cancelled for user', subscription.user_id)
+}
+
+async function handlePaymentFailed(data: any) {
+  const customerCode = data.customer?.customer_code
+
+  if (!customerCode) return
+
+  const { data: subscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('id, user_id, plan_id')
+    .eq('provider_customer_id', customerCode)
+    .single()
+
+  if (!subscription) return
+
+  const { data: user } = await supabaseAdmin
+    .from('users')
+    .select('email, full_name')
+    .eq('id', subscription.user_id)
+    .single()
+
+  const { data: plan } = await supabaseAdmin
+    .from('plans')
+    .select('name, price, currency')
+    .eq('id', subscription.plan_id)
+    .single()
+
+  await supabaseAdmin
+    .from('subscriptions')
+    .update({
+      status: 'past_due',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', subscription.id)
+
+  await supabaseAdmin
+    .from('transactions')
+    .insert({
+      user_id: subscription.user_id,
+      plan_id: subscription.plan_id,
+      amount: plan?.price || data.amount / 100,
+      currency: plan?.currency || 'NGN',
+      provider: 'paystack',
+      provider_tx_ref: 'failed_' + Date.now(),
+      status: 'failed',
+      transaction_type: 'subscription_renewal',
+      raw_event: data,
+    })
+
+  if (user?.email && plan) {
+    await sendPaymentFailedEmail({
+      to: user.email,
+      userName: user.full_name || 'Learner',
+      planName: plan.name,
+      amount: plan.price,
+      currency: plan.currency,
+    })
   }
+
+  console.log('Payment failed for user', subscription.user_id)
 }

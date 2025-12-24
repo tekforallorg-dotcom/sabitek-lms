@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { Sparkles, User, Settings, LogOut, ChevronDown, Zap, Briefcase } from 'lucide-react'
+import { Sparkles, User, Settings, LogOut, ChevronDown, Zap, Briefcase, CreditCard } from 'lucide-react'
 
 export default function Header() {
   const router = useRouter()
@@ -182,6 +182,15 @@ export default function Header() {
                           <span>Dashboard</span>
                         </Link>
 
+                        <Link
+                          href="/account/billing"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          <span>Billing</span>
+                        </Link>
+
                         <hr className="my-2 border-gray-100" />
 
                         <button
@@ -317,6 +326,15 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     My Profile
+                  </Link>
+
+                  <Link 
+                    href="/account/billing" 
+                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded flex items-center space-x-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>Billing</span>
                   </Link>
                 </>
               )}

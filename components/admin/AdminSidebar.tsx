@@ -19,7 +19,8 @@ import {
   ChevronRight,
   FileText,
   MessageSquare,
-  TrendingUp
+  TrendingUp,
+  CreditCard
 } from 'lucide-react'
 import { useAuthContext } from '@/components/providers/auth-provider'
 
@@ -35,6 +36,7 @@ const navigation: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Courses', href: '/admin/courses', icon: BookOpen },
   { label: 'Certificates', href: '/admin/certificates', icon: Award },
+  { label: 'Billing', href: '/admin/billing', icon: CreditCard },
   { 
     label: 'SabiQuiz', 
     icon: Brain,

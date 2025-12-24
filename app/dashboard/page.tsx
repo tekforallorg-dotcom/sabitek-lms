@@ -65,7 +65,6 @@ export default function DashboardPage() {
     try {
       console.log('Fetching dashboard data for user:', user?.id)
       
-      // Fetch enrollments with better error handling
       const { data: coursesData, error: coursesError } = await supabase
         .from('course_enrollments')
         .select(`
@@ -81,11 +80,9 @@ export default function DashboardPage() {
       if (coursesError) {
         console.error('Error fetching enrollments:', coursesError)
         
-        // If 406 or RLS error, try alternative approach
         if (coursesError.code === 'PGRST116' || coursesError.message.includes('policy')) {
           console.log('RLS policy issue detected - trying alternative query')
           
-          // Try simpler query without nested relations
           const { data: simpleEnrollments, error: simpleError } = await supabase
             .from('course_enrollments')
             .select('*')
@@ -97,7 +94,6 @@ export default function DashboardPage() {
           } else {
             console.log('Simple enrollment query succeeded, fetching courses separately')
             
-            // Fetch course details separately
             const courseIds = simpleEnrollments?.map(e => e.course_id) || []
             if (courseIds.length > 0) {
               const { data: courseDetails } = await supabase
@@ -108,7 +104,6 @@ export default function DashboardPage() {
                 `)
                 .in('id', courseIds)
               
-              // Combine enrollments with course details
               const combined = simpleEnrollments.map(enrollment => ({
                 ...enrollment,
                 course: courseDetails?.find(c => c.id === enrollment.course_id) || null
@@ -125,7 +120,6 @@ export default function DashboardPage() {
         setEnrolledCourses(coursesData || [])
       }
 
-      // Fetch certificates
       const { data: certsData, error: certsError } = await supabase
         .from('certificates')
         .select(`
@@ -166,8 +160,8 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-sm sm:text-base text-gray-700 font-medium">Loading your dashboard...</p>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-xs sm:text-sm text-gray-700 font-medium">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -179,11 +173,11 @@ export default function DashboardPage() {
         {/* Hero Section */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-2 mb-1 sm:mb-2">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Learner'}!
             </h1>
           </div>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Continue your learning journey</p>
+          <p className="text-gray-600 text-xs sm:text-sm lg:text-base">Continue your learning journey</p>
         </div>
 
         {/* Stats Grid */}
@@ -196,8 +190,8 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium mb-0.5 sm:mb-1">Total Courses</p>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{enrolledCourses.length}</p>
+            <p className="text-xs text-gray-600 font-medium mb-0.5 sm:mb-1">Total Courses</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{enrolledCourses.length}</p>
           </div>
 
           {/* In Progress */}
@@ -208,8 +202,8 @@ export default function DashboardPage() {
               </div>
               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium mb-0.5 sm:mb-1">In Progress</p>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{inProgressCount}</p>
+            <p className="text-xs text-gray-600 font-medium mb-0.5 sm:mb-1">In Progress</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{inProgressCount}</p>
           </div>
 
           {/* Completed */}
@@ -220,11 +214,11 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium mb-0.5 sm:mb-1">Completed</p>
-            <p className="text-2xl sm:text-3xl font-bold text-green-600">{completedCount}</p>
+            <p className="text-xs text-gray-600 font-medium mb-0.5 sm:mb-1">Completed</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{completedCount}</p>
           </div>
 
-          {/* Certificates - Red accent */}
+          {/* Certificates */}
           <div className="bg-white rounded-xl p-3 sm:p-5 border-2 border-gray-200 hover:border-red-600 hover:shadow-xl transition-all cursor-pointer group"
                onClick={() => router.push('/certificates')}>
             <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -233,16 +227,16 @@ export default function DashboardPage() {
               </div>
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 group-hover:translate-x-1 transition-transform" />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium mb-0.5 sm:mb-1">Certificates</p>
-            <p className="text-2xl sm:text-3xl font-bold text-red-600">{certificates.length}</p>
+            <p className="text-xs text-gray-600 font-medium mb-0.5 sm:mb-1">Certificates</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">{certificates.length}</p>
           </div>
         </div>
 
-        {/* Certificates Showcase - ALWAYS VISIBLE */}
+        {/* Certificates Showcase */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Award className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
               Your Certificates
             </h2>
             {certificates.length > 0 && (
@@ -250,10 +244,10 @@ export default function DashboardPage() {
                 onClick={() => router.push('/certificates')}
                 variant="outline"
                 size="sm"
-                className="border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 hover:bg-red-50 text-xs sm:text-sm"
+                className="border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 hover:bg-red-50 text-xs"
               >
                 View All
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                <ArrowRight className="w-3 h-3 ml-1" />
               </Button>
             )}
           </div>
@@ -263,18 +257,18 @@ export default function DashboardPage() {
               {certificates.map((cert) => (
                 <div
                   key={cert.id}
-                  className="bg-white rounded-xl p-4 sm:p-5 border border-gray-200 hover:border-red-600 hover:shadow-lg transition-all cursor-pointer group"
+                  className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:border-red-600 hover:shadow-lg transition-all cursor-pointer group"
                 >
-                  <div className="flex items-start justify-between mb-2 sm:mb-3">
-                    <Award className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700 group-hover:text-red-600 group-hover:scale-110 transition-all" />
-                    <span className="px-2 py-0.5 sm:py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium border border-gray-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <Award className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 group-hover:text-red-600 group-hover:scale-110 transition-all" />
+                    <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full font-medium border border-gray-200">
                       {cert.grade_percentage}%
                     </span>
                   </div>
-                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1 sm:mb-2 line-clamp-1">
+                  <h3 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 line-clamp-1">
                     {cert.course.title}
                   </h3>
-                  <p className="text-xs text-gray-500 mb-2 sm:mb-3">
+                  <p className="text-xs text-gray-500 mb-2">
                     Issued {new Date(cert.issued_at).toLocaleDateString()}
                   </p>
                   <div className="flex gap-2">
@@ -283,7 +277,7 @@ export default function DashboardPage() {
                         e.stopPropagation()
                         router.push(`/certificates/${cert.id}`)
                       }}
-                      className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors text-xs font-medium text-gray-700"
+                      className="flex-1 px-2 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors text-xs font-medium text-gray-700"
                     >
                       View
                     </button>
@@ -292,7 +286,7 @@ export default function DashboardPage() {
                         e.stopPropagation()
                         router.push(`/certificates/${cert.id}?download=true`)
                       }}
-                      className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium"
+                      className="flex-1 px-2 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium"
                     >
                       Download
                     </button>
@@ -301,15 +295,15 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 sm:p-8 lg:p-12 text-center">
-              <Award className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-2">No Certificates Yet</h3>
-              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto">
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 sm:p-8 text-center">
+              <Award className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
+              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-2">No Certificates Yet</h3>
+              <p className="text-xs text-gray-600 mb-4 max-w-md mx-auto">
                 Complete courses and pass quizzes to earn certificates that showcase your achievements!
               </p>
               <Button
                 onClick={() => router.push('/courses')}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm"
+                className="bg-red-600 hover:bg-red-700 text-white text-xs"
                 size="sm"
               >
                 Start Learning
@@ -320,32 +314,32 @@ export default function DashboardPage() {
 
         {/* My Courses Section */}
         <div>
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
               My Courses
             </h2>
             <Button
               onClick={() => router.push('/courses')}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
+              className="bg-red-600 hover:bg-red-700 text-white text-xs"
               size="sm"
             >
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <Sparkles className="w-3 h-3 mr-1" />
               <span className="hidden sm:inline">Browse More</span>
               <span className="sm:hidden">Browse</span>
             </Button>
           </div>
 
           {enrolledCourses.length === 0 ? (
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 sm:p-8 lg:p-12 text-center">
-              <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-2">Start Your Learning Journey</h3>
-              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto">
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 sm:p-8 text-center">
+              <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
+              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-2">Start Your Learning Journey</h3>
+              <p className="text-xs text-gray-600 mb-4 max-w-md mx-auto">
                 You haven't enrolled in any courses yet. Explore our courses and start learning today!
               </p>
               <Button
                 onClick={() => router.push('/courses')}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm"
+                className="bg-red-600 hover:bg-red-700 text-white text-xs"
                 size="sm"
               >
                 Explore Courses
@@ -365,7 +359,7 @@ export default function DashboardPage() {
                     onClick={() => continueLearning(enrollment.course.slug)}
                   >
                     {/* Thumbnail */}
-                    <div className="relative h-28 sm:h-32 bg-gray-100 overflow-hidden">
+                    <div className="relative h-24 sm:h-28 bg-gray-100 overflow-hidden">
                       {enrollment.course.cover_image_url ? (
                         <img
                           src={enrollment.course.cover_image_url}
@@ -374,24 +368,23 @@ export default function DashboardPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300" />
+                          <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300" />
                         </div>
                       )}
                       
                       {/* Progress Badge */}
                       <div className="absolute top-2 right-2">
                         {isCompleted ? (
-                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-600 text-white text-xs rounded-full font-medium flex items-center gap-1 border-2 border-white shadow-lg">
+                          <span className="px-1.5 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium flex items-center gap-1 border-2 border-white shadow-lg">
                             <CheckCircle className="w-3 h-3" />
-                            <span className="hidden sm:inline">Complete</span>
                           </span>
                         ) : isStarted ? (
-                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-orange-500 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg flex items-center gap-1">
+                          <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg flex items-center gap-1">
                             <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                             {progress}%
                           </span>
                         ) : (
-                          <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-700 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg">
+                          <span className="px-1.5 py-0.5 bg-gray-700 text-white text-xs rounded-full font-medium border-2 border-white shadow-lg">
                             Start
                           </span>
                         )}
@@ -399,17 +392,17 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Content */}
-                    <div className="p-3 sm:p-4 flex flex-col flex-1">
-                      <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition-colors">
+                    <div className="p-3 flex flex-col flex-1">
+                      <h3 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition-colors">
                         {enrollment.course.title}
                       </h3>
-                      <p className="text-xs text-gray-500 mb-2 sm:mb-3">
+                      <p className="text-xs text-gray-500 mb-2">
                         By {enrollment.course.instructor?.full_name}
                       </p>
 
                       {/* Progress Bar */}
-                      <div className="mb-2 sm:mb-3">
-                        <div className="w-full bg-gray-100 rounded-full h-1 sm:h-1.5 overflow-hidden">
+                      <div className="mb-2">
+                        <div className="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               isCompleted ? 'bg-green-500' : isStarted ? 'bg-orange-500' : 'bg-gray-300'
@@ -421,10 +414,10 @@ export default function DashboardPage() {
 
                       {/* Continue Button */}
                       <button
-                        className="w-full py-1.5 sm:py-2 bg-gray-900 text-white rounded-lg hover:bg-red-600 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1 sm:gap-2 group-hover:shadow-md mt-auto"
+                        className="w-full py-1.5 bg-gray-900 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-medium flex items-center justify-center gap-1 group-hover:shadow-md mt-auto"
                       >
                         {isCompleted ? 'Review' : isStarted ? 'Continue' : 'Start'}
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </div>
