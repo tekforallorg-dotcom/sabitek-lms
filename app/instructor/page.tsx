@@ -66,8 +66,9 @@ export default function InstructorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div className="min-h-screen bg-gray-50">
+      <div className="w-full safe-x py-4 sm:py-6 lg:py-8">
+        <div className="max-w-7xl mx-auto">
         {/* Dashboard Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -215,6 +216,7 @@ export default function InstructorDashboard() {
           </CardContent>
         </Card>
       </div>
+    </div>
     </div>
   )
 }
