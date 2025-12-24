@@ -1,3 +1,4 @@
+
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -14,7 +15,8 @@ import {
   Award,
   ArrowRight,
   PartyPopper,
-  X
+  X,
+  ShoppingCart
 } from 'lucide-react'
 
 interface Course {
@@ -23,6 +25,9 @@ interface Course {
   description: string
   instructor_id: string
   cover_image_url?: string
+  price?: number
+  is_free?: boolean
+  currency?: string
   instructor?: {
     full_name: string
   }
@@ -47,6 +52,8 @@ export default function CourseDetailPage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
+  const [purchasing, setPurchasing] = useState(false)
+  const [hasPurchased, setHasPurchased] = useState(false)
   const [finishingCourse, setFinishingCourse] = useState(false)
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [generatedCertificateId, setGeneratedCertificateId] = useState<string | null>(null)
@@ -90,6 +97,21 @@ export default function CourseDetailPage() {
           .maybeSingle()
 
         setIsEnrolled(!!enrollment)
+
+        // Check if user has purchased the course (for paid courses)
+        if (!courseData.is_free && courseData.price > 0) {
+          const { data: purchase } = await supabase
+            .from('course_purchases')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseData.id)
+            .eq('status', 'successful')
+            .maybeSingle()
+          
+          setHasPurchased(!!purchase)
+        } else {
+          setHasPurchased(true) // Free courses don't need purchase
+        }
 
         if (enrollment) {
           const { data: progress } = await supabase
@@ -136,6 +158,44 @@ export default function CourseDetailPage() {
       alert(error.message || 'Failed to enroll')
     } finally {
       setEnrolling(false)
+    }
+  }
+
+  const handlePurchase = async () => {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
+    if (!course) return
+
+    try {
+      setPurchasing(true)
+
+      const response = await fetch('/api/billing/purchase-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          courseId: course.id,
+          email: user.email
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to initialize purchase')
+      }
+
+      // Redirect to Paystack
+      window.location.href = data.authorization_url
+
+    } catch (error: any) {
+      console.error('Purchase error:', error)
+      alert(error.message || 'Failed to start purchase')
+    } finally {
+      setPurchasing(false)
     }
   }
 
@@ -266,6 +326,9 @@ export default function CourseDetailPage() {
     ? Math.round((completedLessons.size / lessons.length) * 100) 
     : 0
 
+  // Helper to check if course is free
+  const isFree = course?.is_free || course?.price === 0 || !course?.price
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -362,7 +425,24 @@ export default function CourseDetailPage() {
             />
           )}
           
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">{course.title}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-3 sm:mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">{course.title}</h1>
+            
+            {/* Price Badge */}
+            {!isEnrolled && (
+              <div className="flex-shrink-0">
+                {isFree ? (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                    Free
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-lg font-bold bg-red-100 text-red-800">
+                    ₦{course.price?.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           
           <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm sm:text-base text-gray-600 mb-4">
             <div className="flex items-center gap-2">
@@ -400,15 +480,39 @@ export default function CourseDetailPage() {
             </div>
           )}
 
+          {/* Enroll / Purchase Button */}
           {!isEnrolled && (
-            <Button
-              onClick={handleEnroll}
-              disabled={enrolling}
-              className="mt-6 bg-red-600 hover:bg-red-700 text-white"
-              size="lg"
-            >
-              {enrolling ? 'Enrolling...' : 'Enroll in Course'}
-            </Button>
+            <div className="mt-6">
+              {isFree ? (
+                <Button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  size="lg"
+                >
+                  {enrolling ? 'Enrolling...' : 'Enroll for Free'}
+                </Button>
+              ) : hasPurchased ? (
+                <Button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  size="lg"
+                >
+                  {enrolling ? 'Enrolling...' : 'Start Learning'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handlePurchase}
+                  disabled={purchasing}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  size="lg"
+                >
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -428,9 +532,27 @@ export default function CourseDetailPage() {
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
             {!isEnrolled ? (
-              <p className="text-center text-sm sm:text-base text-gray-600 py-8">
-                Enroll in this course to start learning from the lessons below
-              </p>
+              <div className="text-center py-8">
+                <p className="text-sm sm:text-base text-gray-600 mb-4">
+                  {isFree 
+                    ? 'Enroll in this course to start learning from the lessons below'
+                    : hasPurchased 
+                      ? 'Click "Start Learning" above to begin this course'
+                      : 'Purchase this course to access all lessons'
+                  }
+                </p>
+                {!isFree && !hasPurchased && (
+                  <Button
+                    onClick={handlePurchase}
+                    disabled={purchasing}
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
+                  </Button>
+                )}
+              </div>
             ) : lessons.length === 0 ? (
               <p className="text-center text-sm sm:text-base text-gray-600 py-8">
                 No lessons available yet

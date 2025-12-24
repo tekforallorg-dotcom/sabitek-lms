@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,34 +8,26 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
-            })
-          },
-        },
-      }
-    )
+    const { planCode, userId, email } = await request.json()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    // Validate required fields
+    if (!userId || !email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { planCode } = await request.json()
-
     if (!planCode || planCode === 'free') {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+    }
+
+    // Verify user exists
+    const { data: userExists } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (!userExists) {
+      return NextResponse.json({ error: 'User not found' }, { status: 401 })
     }
 
     const { data: plan, error: planError } = await supabaseAdmin
@@ -51,18 +41,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
 
-    const { data: profile } = await supabaseAdmin
-      .from('users')
-      .select('email, full_name')
-      .eq('id', user.id)
-      .single()
-
-    const txRef = `sabitek_${planCode}_${user.id}_${Date.now()}`
+    const txRef = `sabitek_${planCode}_${userId}_${Date.now()}`
 
     const { error: txError } = await supabaseAdmin
       .from('transactions')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         plan_id: plan.id,
         amount: plan.price,
         currency: plan.currency,
@@ -84,15 +68,16 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: profile?.email || user.email,
+        email: email,
         amount: plan.price * 100,
         currency: plan.currency,
         reference: txRef,
         callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'}/billing/verify`,
         metadata: {
-          user_id: user.id,
+          user_id: userId,
           plan_id: plan.id,
           plan_code: plan.code,
+          transaction_type: 'subscription',
           custom_fields: [
             {
               display_name: 'Plan',

@@ -58,7 +58,6 @@ export default function PricingPage() {
       router.push('/auth/login?redirect=/pricing')
       return
     }
-
     if (planCode === 'free') return
 
     setLoading(planCode)
@@ -68,7 +67,11 @@ export default function PricingPage() {
       const res = await fetch('/api/billing/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planCode }),
+        body: JSON.stringify({ 
+          planCode,
+          userId: user.id,
+          email: user.email
+        }),
       })
 
       const data = await res.json()
@@ -88,60 +91,60 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8 lg:py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2 sm:mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
             Choose Your Plan
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
             Start learning for free or upgrade to Pro for full access to AI-powered tools
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm text-center">
-            {error}
+          <div className="max-w-md mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
           {plans.map((plan) => (
             <Card
               key={plan.code}
-              className={`relative border-2 ${
-                plan.popular ? 'border-red-500 shadow-lg' : 'border-gray-200'
+              className={`relative ${
+                plan.popular
+                  ? 'border-2 border-red-500 shadow-lg'
+                  : 'border border-gray-200'
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-red-500 text-white text-xs font-medium px-2 sm:px-3 py-1 rounded-full">
+                  <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     Most Popular
                   </span>
                 </div>
               )}
 
-              <CardHeader className="p-4 sm:p-5 lg:p-6 pb-2 sm:pb-3">
-                <CardTitle className="text-lg sm:text-xl text-black">{plan.name}</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">{plan.description}</CardDescription>
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-xl sm:text-2xl">{plan.name}</CardTitle>
+                <CardDescription className="text-sm">{plan.description}</CardDescription>
               </CardHeader>
 
-              <CardContent className="p-4 sm:p-5 lg:p-6 pt-0">
-                <div className="mb-4 sm:mb-6">
-                  <span className="text-3xl sm:text-4xl font-bold text-black">
+              <CardContent className="pt-0">
+                <div className="text-center mb-6">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
                     {plan.currency}{plan.price.toLocaleString()}
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-500 ml-1">
-                    /{plan.interval}
-                  </span>
+                  <span className="text-gray-500 text-sm sm:text-base">/{plan.interval}</span>
                 </div>
 
-                <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                  {plan.features.map((feature) => (
-                    <li key={feature.name} className="flex items-start gap-2">
+                <ul className="space-y-3 mb-6">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2 text-sm sm:text-base">
                       {feature.included ? (
-                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
                       ) : (
-                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 flex-shrink-0" />
                       )}
-                      <span className={`text-xs sm:text-sm ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}>
+                      <span className={feature.included ? 'text-gray-700' : 'text-gray-400'}>
                         {feature.name}
                       </span>
                     </li>
@@ -151,15 +154,16 @@ export default function PricingPage() {
                 <Button
                   onClick={() => handleSubscribe(plan.code)}
                   disabled={loading === plan.code || plan.code === 'free'}
-                  className={`w-full text-xs sm:text-sm ${
+                  className={`w-full ${
                     plan.popular
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      ? 'bg-red-600 hover:bg-red-700 text-white'
                       : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                   }`}
+                  size="lg"
                 >
                   {loading === plan.code ? (
                     <>
-                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Processing...
                     </>
                   ) : (
@@ -173,10 +177,7 @@ export default function PricingPage() {
 
         <div className="mt-8 sm:mt-10 lg:mt-12 text-center">
           <p className="text-xs sm:text-sm text-gray-500">
-            Paid courses require separate purchase regardless of plan.
-          </p>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Cancel anytime. No hidden fees.
+            Secure payments powered by Paystack. Cancel anytime.
           </p>
         </div>
       </div>
