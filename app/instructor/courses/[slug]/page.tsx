@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -78,6 +79,7 @@ export default function CourseManagementPage() {
     powerpoint_url: '',
     duration_minutes: 0
   })
+  const [isSavingOrder, setIsSavingOrder] = useState(false)
   const [isAddingLesson, setIsAddingLesson] = useState(false)
 
   useEffect(() => { 
@@ -218,7 +220,7 @@ export default function CourseManagementPage() {
         pdf_url: lessonForm.pdf_url || null,
         powerpoint_url: lessonForm.powerpoint_url || null,
         duration_minutes: lessonForm.duration_minutes || null,
-        lesson_order: editingLesson ? editingLesson.lesson_order : lessons.length + 1
+        lesson_order: editingLesson ? editingLesson.lesson_order : (lessons.length + 1) * 10
       }
 
       if (editingLesson) {
@@ -312,6 +314,56 @@ export default function CourseManagementPage() {
     } catch (error) {
       console.error('Error unpublishing course:', error)
       alert('Failed to unpublish course')
+    }
+  }
+
+  // ============ LESSON REORDERING ============
+  const moveLesson = async (lessonId: string, direction: 'up' | 'down') => {
+    const currentIndex = lessons.findIndex(l => l.id === lessonId)
+    if (currentIndex === -1) return
+    
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= lessons.length) return
+
+    // Optimistic UI: swap lessons locally
+    const newLessons = [...lessons]
+    const temp = newLessons[currentIndex]
+    newLessons[currentIndex] = newLessons[targetIndex]
+    newLessons[targetIndex] = temp
+
+    // Recalculate lesson_order values (use 10, 20, 30... for spacing)
+    const updatedLessons = newLessons.map((lesson, idx) => ({
+      ...lesson,
+      lesson_order: (idx + 1) * 10
+    }))
+
+    setLessons(updatedLessons)
+    setIsSavingOrder(true)
+
+    try {
+      // Batch update all lesson orders
+      const updates = updatedLessons.map(lesson => 
+        supabase
+          .from('lessons')
+          .update({ lesson_order: lesson.lesson_order })
+          .eq('id', lesson.id)
+      )
+
+      const results = await Promise.all(updates)
+      const hasError = results.some(r => r.error)
+
+      if (hasError) {
+        console.error('Error saving lesson order')
+        // Rollback: re-fetch from DB
+        fetchCourseData()
+        alert('Failed to save lesson order. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error reordering lessons:', error)
+      fetchCourseData()
+      alert('Failed to save lesson order. Please try again.')
+    } finally {
+      setIsSavingOrder(false)
     }
   }
 
@@ -534,8 +586,18 @@ export default function CourseManagementPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Course Lessons</CardTitle>
-                <CardDescription>Manage your course content</CardDescription>
+                <CardTitle>
+                  Course Lessons
+                  {isSavingOrder && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">Saving order...</span>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Manage your course content
+                  {!isSavingOrder && lessons.length > 1 && (
+                    <span className="text-xs text-gray-400 ml-2">• Use arrows to reorder</span>
+                  )}
+                </CardDescription>
               </div>
               {!isAddingLesson && !editingLesson && (
                 <Button
@@ -675,15 +737,45 @@ export default function CourseManagementPage() {
                 {lessons.map((lesson, index) => (
                   <div key={lesson.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">
-                          {index + 1}. {lesson.title}
-                        </h4>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                          <span>Type: {lesson.content_type}</span>
-                          {lesson.duration_minutes && (
-                            <span>Duration: {lesson.duration_minutes} min</span>
-                          )}
+                      <div className="flex items-center gap-3">
+                        {/* Reorder Buttons */}
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => moveLesson(lesson.id, 'up')}
+                            disabled={index === 0 || isSavingOrder}
+                            className={`p-1 rounded transition-colors ${
+                              index === 0 || isSavingOrder
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                            }`}
+                            title="Move up"
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => moveLesson(lesson.id, 'down')}
+                            disabled={index === lessons.length - 1 || isSavingOrder}
+                            className={`p-1 rounded transition-colors ${
+                              index === lessons.length - 1 || isSavingOrder
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                            }`}
+                            title="Move down"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </div>
+                        {/* Lesson Info */}
+                        <div>
+                          <h4 className="font-medium">
+                            {index + 1}. {lesson.title}
+                          </h4>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                            <span>Type: {lesson.content_type}</span>
+                            {lesson.duration_minutes && (
+                              <span>Duration: {lesson.duration_minutes} min</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
