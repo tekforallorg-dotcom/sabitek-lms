@@ -4,7 +4,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { Sparkles, User, Settings, LogOut, ChevronDown, Zap, Briefcase, CreditCard } from 'lucide-react'
+import { User, Settings, LogOut, ChevronDown, Zap, CreditCard } from 'lucide-react'
+import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
 
 export default function Header() {
   const router = useRouter()
@@ -44,10 +45,11 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-1">
               <span className="text-2xl font-bold text-gray-900">Sabitek</span>
-              <Sparkles className="w-4 h-4 text-red-500 mb-2" />
+              <Zap className="w-4 h-4 text-red-500 mb-2" />
             </Link>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
               href="/courses" 
@@ -65,36 +67,62 @@ export default function Header() {
                   Dashboard
                 </Link>
 
+                {/* SabiTools Dropdown - Desktop */}
                 <div 
                   className="relative"
                   onMouseEnter={() => setIsSabiToolsOpen(true)}
                   onMouseLeave={() => setIsSabiToolsOpen(false)}
                 >
-                  <button className="flex items-center space-x-1 text-gray-700 hover:text-red-500 transition-colors py-2">
+                  <button 
+                    className="flex items-center space-x-1 text-gray-700 hover:text-red-500 transition-colors py-2"
+                    onClick={() => setIsSabiToolsOpen(!isSabiToolsOpen)}
+                  >
                     <Zap className="w-4 h-4" />
                     <span>SabiTools</span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${isSabiToolsOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isSabiToolsOpen && (
-                    <div className="absolute left-0 top-full w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 mt-0">
+                    <div className="absolute left-0 top-full w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 mt-0">
+                      {/* View All link at top */}
                       <Link
-                        href="/sabiquiz"
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        href="/sabitools"
+                        className="flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:text-red-500 border-b border-gray-100 mb-1"
                         onClick={() => setIsSabiToolsOpen(false)}
                       >
-                        <Sparkles className="w-4 h-4 text-red-500" />
-                        <span>SabiQuiz</span>
+                        <span>View all tools</span>
+                        <ChevronDown className="w-3 h-3 -rotate-90" />
                       </Link>
-
-                      <Link
-                        href="/sabiadvisor"
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={() => setIsSabiToolsOpen(false)}
-                      >
-                        <Briefcase className="w-4 h-4 text-red-500" />
-                        <span>SabiAdvisor</span>
-                      </Link>
+                      
+                      {sabitoolsCatalog.map((tool) => {
+                        const IconComponent = tool.icon
+                        return (
+                          <Link
+                            key={tool.id}
+                            href={tool.href}
+                            className="flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
+                            onClick={() => setIsSabiToolsOpen(false)}
+                          >
+                            <IconComponent className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{tool.name}</span>
+                                {tool.status === 'new' && (
+                                  <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded-full">
+                                    NEW
+                                  </span>
+                                )}
+                                {tool.status === 'popular' && (
+                                  <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-medium rounded-full">
+                                    HOT
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500">{tool.shortDescription}</p>
+                            </div>
+                          </Link>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -220,6 +248,7 @@ export default function Header() {
               </div>
             )}
 
+            {/* Mobile menu button */}
             <button
               className="md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -235,6 +264,7 @@ export default function Header() {
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
@@ -275,6 +305,7 @@ export default function Header() {
               >
                 Courses
               </Link>
+              
               {user && (
                 <>
                   <Link 
@@ -285,6 +316,7 @@ export default function Header() {
                     Dashboard
                   </Link>
 
+                  {/* SabiTools - Mobile */}
                   <div className="px-3 py-2">
                     <button
                       onClick={() => setIsSabiToolsOpen(!isSabiToolsOpen)}
@@ -299,23 +331,34 @@ export default function Header() {
 
                     {isSabiToolsOpen && (
                       <div className="ml-4 mt-2 space-y-1">
+                        {/* View all link for mobile */}
                         <Link
-                          href="/sabiquiz"
-                          className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                          href="/sabitools"
+                          className="flex items-center space-x-2 px-3 py-2 text-xs text-red-600 font-medium hover:bg-red-50 rounded"
                           onClick={closeAllMenus}
                         >
-                          <Sparkles className="w-4 h-4 text-red-500" />
-                          <span>SabiQuiz</span>
+                          <span>View all tools →</span>
                         </Link>
                         
-                        <Link
-                          href="/sabiadvisor"
-                          className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
-                          onClick={closeAllMenus}
-                        >
-                          <Briefcase className="w-4 h-4 text-red-500" />
-                          <span>SabiAdvisor</span>
-                        </Link>
+                        {sabitoolsCatalog.map((tool) => {
+                          const IconComponent = tool.icon
+                          return (
+                            <Link
+                              key={tool.id}
+                              href={tool.href}
+                              className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                              onClick={closeAllMenus}
+                            >
+                              <IconComponent className="w-4 h-4 text-red-500" />
+                              <span>{tool.name}</span>
+                              {tool.status === 'new' && (
+                                <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded-full">
+                                  NEW
+                                </span>
+                              )}
+                            </Link>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
@@ -338,6 +381,7 @@ export default function Header() {
                   </Link>
                 </>
               )}
+              
               {userProfile?.role === 'instructor' && (
                 <Link 
                   href="/instructor/courses/create" 
