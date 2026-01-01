@@ -1,54 +1,24 @@
 // lib/sabiquiz/question-generator.ts
+
 import { supabase } from '@/lib/supabase'
 import { generateContent, extractJSON } from './gemini-client'
 import { validateQuestions, type Question } from './validators'
+import { chunkText, saveChunks, getChunks, type ChunkRecord } from './chunker'
+import { buildContextProfile, type ContextProfile } from './context-profile'
+import { 
+  extractObjectives, 
+  selectObjectivesForGeneration,
+  type LearningObjective,
+  type ExtractionResult 
+} from './objective-extractor'
+import { 
+  buildQuestionGenerationPrompt, 
+  buildSimpleGenerationPrompt 
+} from './prompts'
 
-/**
- * Nigerian-focused prompt template
- * Enforces local context in all generated questions
- */
-const NIGERIAN_PROMPT_TEMPLATE = `You are an expert Nigerian educator creating exam questions for secondary school students.
-
-STRICT REQUIREMENTS (Questions will be REJECTED if you violate these):
-
-1. **Names**: ONLY use Nigerian names like Chidi, Amina, Tunde, Ngozi, Ibrahim, Fatima, Emeka, Zainab, Ade, Hauwa, Uche, Aisha
-2. **Places**: ONLY use Nigerian cities like Lagos, Kano, Abuja, Port Harcourt, Ibadan, Benin City, Enugu, Jos, Kaduna
-3. **Money**: ONLY use Naira (₦) - NEVER dollars ($), pounds (£), or euros (€)
-4. **Units**: ONLY metric (km, kg, liters, Celsius) - NEVER miles, feet, pounds, Fahrenheit
-5. **Seasons**: Use "rainy season" or "dry season" - NEVER "winter" or "summer"
-6. **Language**: Use simple, clear English (B2 CEFR level maximum)
-7. **Culture**: Use Nigerian context (jollof rice, WAEC exams, NECO, etc.) when relevant
-8. **Format**: British English spelling (colour, honour, organise)
-
-Generate exactly 10 multiple-choice questions from the following study material.
-
-MATERIAL:
-{material_text}
-
-OUTPUT FORMAT (valid JSON only):
-{
-  "questions": [
-    {
-      "question": "Clear, concise question stem",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct_answer": 0,
-      "rationale": "Explanation of why this answer is correct (2-3 sentences)",
-      "difficulty": "medium",
-      "topic": "Specific topic covered"
-    }
-  ]
-}
-
-IMPORTANT:
-- Generate EXACTLY 10 questions
-- Each question MUST have EXACTLY 4 options
-- correct_answer is the index (0-3) of the correct option
-- Make questions practical and relevant to Nigerian students
-- Vary difficulty across questions (3 easy, 5 medium, 2 hard)
-- Ensure questions test understanding, not just memorization
-- Options should be clearly distinct and plausible
-
-Return ONLY valid JSON, no additional text.`
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface GenerationResult {
   questions: Question[]
@@ -57,63 +27,354 @@ export interface GenerationResult {
   failedValidation: number
   overallQualityScore: number
   costEstimate: number
+  pipeline: 'advanced' | 'simple'
+  metadata?: {
+    chunksCreated: number
+    objectivesExtracted: number
+    mode: string
+  }
 }
 
+export interface GenerationOptions {
+  questionCount?: number
+  difficultyMix?: { easy: number; medium: number; hard: number }
+  useAdvancedPipeline?: boolean
+  mode?: 'school' | 'corporate' | 'certification'
+}
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+const CONFIG = {
+  DEFAULT_QUESTION_COUNT: 10,
+  MIN_TEXT_LENGTH: 100,
+  MAX_TEXT_LENGTH: 50000,
+  SIMPLE_PIPELINE_THRESHOLD: 2000, // Use simple pipeline for short texts
+  COST_PER_1K_TOKENS: 0.0001, // Approximate cost
+}
+
+// ============================================================================
+// MAIN GENERATION FUNCTION
+// ============================================================================
+
 /**
- * Generate questions from study material
+ * Generate questions from study material using multi-pass pipeline
  */
 export async function generateQuestions(
   materialText: string,
   materialId: string,
   category: string,
-  level: string
+  level: string,
+  options: GenerationOptions = {}
 ): Promise<GenerationResult> {
+  const {
+    questionCount = CONFIG.DEFAULT_QUESTION_COUNT,
+    difficultyMix = { easy: 3, medium: 5, hard: 2 },
+    useAdvancedPipeline = true,
+    mode,
+  } = options
+
   // Validate input
-  if (!materialText || materialText.length < 100) {
-    throw new Error('Material text too short. Need at least 100 characters to generate questions.')
+  if (!materialText || materialText.length < CONFIG.MIN_TEXT_LENGTH) {
+    throw new Error('Material text too short. Need at least 100 characters.')
   }
 
-  // Truncate if too long (stay within token limits)
-  const maxChars = 15000
-  const truncatedText = materialText.length > maxChars 
-    ? materialText.substring(0, maxChars) + '\n\n[Content truncated...]'
+  // Truncate if too long
+  const truncatedText = materialText.length > CONFIG.MAX_TEXT_LENGTH
+    ? materialText.substring(0, CONFIG.MAX_TEXT_LENGTH)
     : materialText
 
-  // Create prompt
-  const prompt = NIGERIAN_PROMPT_TEMPLATE.replace('{material_text}', truncatedText)
+  // Build context profile
+  const profile = buildContextProfile({
+    category,
+    level,
+    mode,
+  })
 
-  // Call Gemini API
-  console.log('🤖 Calling Gemini API...')
-  const response = await generateContent(prompt)
+  console.log(`[Generator] Mode: ${profile.mode}, Domain: ${profile.domain}`)
 
-  // Parse response
-  console.log('📝 Parsing response...')
-  const parsed = extractJSON<{ questions: Question[] }>(response)
+  // Decide pipeline based on text length and options
+  const useAdvanced = useAdvancedPipeline && truncatedText.length > CONFIG.SIMPLE_PIPELINE_THRESHOLD
 
-  if (!parsed.questions || !Array.isArray(parsed.questions)) {
-    throw new Error('Invalid response format from AI')
+  if (useAdvanced) {
+    return await runAdvancedPipeline(
+      truncatedText,
+      materialId,
+      profile,
+      questionCount,
+      difficultyMix
+    )
+  } else {
+    return await runSimplePipeline(
+      truncatedText,
+      materialId,
+      profile,
+      questionCount,
+      difficultyMix
+    )
+  }
+}
+
+// ============================================================================
+// ADVANCED PIPELINE (Multi-pass)
+// ============================================================================
+
+/**
+ * Run advanced multi-pass pipeline
+ * 1. Chunk material
+ * 2. Extract objectives
+ * 3. Generate questions per objective
+ * 4. Validate and score
+ */
+async function runAdvancedPipeline(
+  text: string,
+  materialId: string,
+  profile: ContextProfile,
+  questionCount: number,
+  difficultyMix: { easy: number; medium: number; hard: number }
+): Promise<GenerationResult> {
+  console.log('[Generator] Running advanced pipeline...')
+
+  // Step 1: Chunk the material
+  console.log('[Generator] Step 1: Chunking material...')
+  const chunks = chunkText(text)
+  let savedChunks: ChunkRecord[] = []
+  
+  try {
+    savedChunks = await saveChunks(materialId, chunks)
+  } catch (error) {
+    console.error('[Generator] Failed to save chunks, using in-memory:', error)
+    // Create mock chunk records for in-memory processing
+    savedChunks = chunks.map((c, i) => ({
+      id: `temp-${i}`,
+      material_id: materialId,
+      chunk_index: c.index,
+      text: c.text,
+      token_count: c.tokenCount,
+      created_at: new Date().toISOString(),
+    }))
   }
 
-  if (parsed.questions.length === 0) {
-    throw new Error('No questions generated')
+  console.log(`[Generator] Created ${savedChunks.length} chunks`)
+
+  // Step 2: Extract learning objectives
+  console.log('[Generator] Step 2: Extracting objectives...')
+  let extraction: ExtractionResult
+  
+  try {
+    extraction = await extractObjectives(savedChunks, profile)
+  } catch (error) {
+    console.error('[Generator] Objective extraction failed, using simple pipeline:', error)
+    return await runSimplePipeline(text, materialId, profile, questionCount, difficultyMix)
   }
 
-  // Validate questions
-  console.log('✅ Validating questions...')
-  const validation = validateQuestions(parsed.questions)
+  console.log(`[Generator] Extracted ${extraction.learning_objectives.length} objectives`)
 
-  // Estimate cost (Gemini 2.0 Flash Lite pricing - very cheap!)
-  const costEstimate = 0.001 // ~$0.001 per generation
+  // If too few objectives, fall back to simple pipeline
+  if (extraction.learning_objectives.length < 3) {
+    console.log('[Generator] Too few objectives, falling back to simple pipeline')
+    return await runSimplePipeline(text, materialId, profile, questionCount, difficultyMix)
+  }
+
+  // Step 3: Select objectives for generation
+  const selectedObjectives = selectObjectivesForGeneration(
+    extraction.learning_objectives,
+    questionCount,
+    difficultyMix
+  )
+
+  console.log(`[Generator] Selected ${selectedObjectives.length} objectives for generation`)
+
+  // Step 4: Generate questions per objective
+  console.log('[Generator] Step 3: Generating questions...')
+  const allQuestions: Question[] = []
+  
+  // Group objectives to reduce API calls (2 questions per call)
+  for (const { objective, difficulty } of selectedObjectives) {
+    try {
+      const questions = await generateQuestionsForObjective(
+        objective,
+        difficulty,
+        savedChunks,
+        profile
+      )
+      allQuestions.push(...questions)
+      
+      // Stop if we have enough
+      if (allQuestions.length >= questionCount * 1.5) {
+        break
+      }
+    } catch (error) {
+      console.error(`[Generator] Failed to generate for objective ${objective.id}:`, error)
+    }
+  }
+
+  console.log(`[Generator] Generated ${allQuestions.length} raw questions`)
+
+  // Step 5: Validate and score
+  console.log('[Generator] Step 4: Validating questions...')
+  const validation = validateQuestions(allQuestions)
+
+  // Select best questions up to requested count
+  const finalQuestions = selectBestQuestions(allQuestions, questionCount, difficultyMix)
+
+  // Estimate cost
+  const tokensUsed = text.length / 4 + allQuestions.length * 500
+  const costEstimate = (tokensUsed / 1000) * CONFIG.COST_PER_1K_TOKENS
 
   return {
-    questions: parsed.questions,
-    totalGenerated: parsed.questions.length,
+    questions: finalQuestions,
+    totalGenerated: allQuestions.length,
     passedValidation: validation.passedCount,
     failedValidation: validation.failedCount,
     overallQualityScore: validation.overallScore,
     costEstimate,
+    pipeline: 'advanced',
+    metadata: {
+      chunksCreated: savedChunks.length,
+      objectivesExtracted: extraction.learning_objectives.length,
+      mode: profile.mode,
+    },
   }
 }
+
+/**
+ * Generate questions for a single objective
+ */
+async function generateQuestionsForObjective(
+  objective: LearningObjective,
+  difficulty: 'easy' | 'medium' | 'hard',
+  chunks: ChunkRecord[],
+  profile: ContextProfile
+): Promise<Question[]> {
+  const prompt = buildQuestionGenerationPrompt(profile, objective, chunks, difficulty)
+
+  const response = await generateContent(
+    prompt.systemPrompt + '\n\n' + prompt.userPrompt,
+    { temperature: 0.7 }
+  )
+
+  try {
+    const parsed = extractJSON<Question[]>(response)
+    
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    // Add source chunk IDs to questions
+    return parsed.map(q => ({
+      ...q,
+      source_chunk_ids: objective.supporting_chunk_ids,
+    }))
+  } catch (error) {
+    console.error('[Generator] Failed to parse questions:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// SIMPLE PIPELINE (Single-pass, fallback)
+// ============================================================================
+
+/**
+ * Run simple single-pass pipeline (for short texts or fallback)
+ */
+async function runSimplePipeline(
+  text: string,
+  materialId: string,
+  profile: ContextProfile,
+  questionCount: number,
+  difficultyMix: { easy: number; medium: number; hard: number }
+): Promise<GenerationResult> {
+  console.log('[Generator] Running simple pipeline...')
+
+  const prompt = buildSimpleGenerationPrompt(profile, text, questionCount, difficultyMix)
+
+  const response = await generateContent(
+    prompt.systemPrompt + '\n\n' + prompt.userPrompt,
+    { temperature: 0.7 }
+  )
+
+  const parsed = extractJSON<Question[]>(response)
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('No questions generated')
+  }
+
+  // Validate questions
+  const validation = validateQuestions(parsed)
+
+  // Estimate cost
+  const tokensUsed = text.length / 4 + parsed.length * 500
+  const costEstimate = (tokensUsed / 1000) * CONFIG.COST_PER_1K_TOKENS
+
+  return {
+    questions: parsed,
+    totalGenerated: parsed.length,
+    passedValidation: validation.passedCount,
+    failedValidation: validation.failedCount,
+    overallQualityScore: validation.overallScore,
+    costEstimate,
+    pipeline: 'simple',
+  }
+}
+
+// ============================================================================
+// QUESTION SELECTION
+// ============================================================================
+
+/**
+ * Select best questions based on quality and difficulty distribution
+ */
+function selectBestQuestions(
+  questions: Question[],
+  targetCount: number,
+  difficultyMix: { easy: number; medium: number; hard: number }
+): Question[] {
+  // Group by difficulty
+  const byDifficulty: Record<string, Question[]> = {
+    easy: [],
+    medium: [],
+    hard: [],
+  }
+
+  questions.forEach(q => {
+    const diff = q.difficulty || 'medium'
+    if (byDifficulty[diff]) {
+      byDifficulty[diff].push(q)
+    } else {
+      byDifficulty['medium'].push(q)
+    }
+  })
+
+  // Select from each difficulty
+  const selected: Question[] = []
+
+  const difficulties: ('easy' | 'medium' | 'hard')[] = ['easy', 'medium', 'hard']
+  
+  difficulties.forEach(diff => {
+    const needed = difficultyMix[diff]
+    const available = byDifficulty[diff]
+    
+    // Sort by quality_score if available
+    available.sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0))
+    
+    selected.push(...available.slice(0, needed))
+  })
+
+  // If we don't have enough, fill from any difficulty
+  if (selected.length < targetCount) {
+    const remaining = questions.filter(q => !selected.includes(q))
+    selected.push(...remaining.slice(0, targetCount - selected.length))
+  }
+
+  return selected.slice(0, targetCount)
+}
+
+// ============================================================================
+// DATABASE OPERATIONS
+// ============================================================================
 
 /**
  * Save generated questions to database
@@ -125,43 +386,38 @@ export async function saveQuestions(
   category: string,
   level: string
 ): Promise<void> {
-  // Prepare questions for insertion with auto-approval
   const questionsToInsert = questions.map(q => ({
     material_id: materialId,
     category,
     level,
-    topic: q.topic,
-    question: q.question,
+    topic: q.topic || null,
+    question: q.question || q.stem, // Support both field names
     options: q.options,
     correct_answer: q.correct_answer,
-    rationale: q.rationale,
-    difficulty: q.difficulty,
+    correct_answers: q.correct_answers || null, // For multi-select
+    rationale: q.rationale || q.explanation || null,
+    difficulty: q.difficulty || 'medium',
+    quality_score: q.quality_score || null,
+    question_type: q.question_type || 'single_correct',
+    source_chunk_ids: q.source_chunk_ids || null,
+    mode: q.mode || null,
     status: 'approved',
     created_by: userId,
   }))
 
-  console.log('💾 Saving questions to database...')
-  console.log('Questions to insert:', questionsToInsert.length)
-  console.log('User ID:', userId)
+  console.log(`[Generator] Saving ${questionsToInsert.length} questions...`)
 
-  // Insert all questions
   const { data, error } = await supabase
     .from('sabiquiz_questions')
     .insert(questionsToInsert)
     .select()
 
   if (error) {
-    console.error('❌ Database error details:', {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    })
+    console.error('[Generator] Database error:', error)
     throw new Error(`Failed to save questions: ${error.message}`)
   }
 
-  console.log(`✅ Saved ${questions.length} questions to database`)
-  console.log('Inserted data:', data)
+  console.log(`[Generator] Saved ${data?.length || 0} questions`)
 }
 
 /**
@@ -172,12 +428,17 @@ export async function generateAndSaveQuestions(
   materialId: string,
   userId: string,
   category: string,
-  level: string
+  level: string,
+  options?: GenerationOptions
 ): Promise<GenerationResult> {
-  // Generate questions
-  const result = await generateQuestions(materialText, materialId, category, level)
+  const result = await generateQuestions(
+    materialText,
+    materialId,
+    category,
+    level,
+    options
+  )
 
-  // Save to database
   await saveQuestions(result.questions, materialId, userId, category, level)
 
   return result
@@ -194,9 +455,37 @@ export async function getQuestionsForMaterial(materialId: string): Promise<Quest
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Database error:', error)
+    console.error('[Generator] Database error:', error)
     throw new Error('Failed to fetch questions')
   }
 
   return data || []
+}
+
+/**
+ * Record a generation run for cost tracking
+ */
+export async function recordGenerationRun(
+  userId: string,
+  materialId: string,
+  result: GenerationResult
+): Promise<void> {
+  try {
+    await supabase.from('generation_runs').insert({
+      user_id: userId,
+      material_id: materialId,
+      model_used: 'gemini-2.0-flash-lite',
+      cost_usd: result.costEstimate,
+      questions_generated: result.totalGenerated,
+      questions_approved: result.passedValidation,
+      stats: {
+        pipeline: result.pipeline,
+        quality_score: result.overallQualityScore,
+        metadata: result.metadata,
+      },
+    })
+  } catch (error) {
+    console.error('[Generator] Failed to record run:', error)
+    // Non-fatal, don't throw
+  }
 }

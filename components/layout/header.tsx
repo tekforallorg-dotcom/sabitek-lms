@@ -4,7 +4,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Settings, LogOut, ChevronDown, Zap, CreditCard } from 'lucide-react'
+import { User, Settings, LogOut, ChevronDown, Zap, CreditCard, Sparkles
+ } from 'lucide-react'
 import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
 
 export default function Header() {
@@ -45,7 +46,7 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-1">
               <span className="text-2xl font-bold text-gray-900">Sabitek</span>
-              <Zap className="w-4 h-4 text-red-500 mb-2" />
+              <Sparkles className="w-4 h-4 text-red-500 mb-2" />
             </Link>
           </div>
 

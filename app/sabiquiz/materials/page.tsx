@@ -3,26 +3,77 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FileText, Trash2, Calendar, HardDrive } from 'lucide-react'
+import { FileText, Trash2, Calendar, HardDrive, Flame, Star, Trophy, ChevronRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import FileUpload from '@/components/sabiquiz/FileUpload'
+import { getUserXP } from '@/lib/sabiquiz/quiz-utils'
 import type { Material } from '@/lib/sabiquiz/types'
+
+interface QuickStats {
+  level: number
+  totalXp: number
+  currentStreak: number
+  totalQuizzes: number
+}
+
+const LEVEL_TITLES = [
+  'Novice', 'Learner', 'Student', 'Scholar', 'Expert',
+  'Master', 'Grandmaster', 'Sage', 'Wizard', 'Legend'
+]
 
 export default function MaterialsPage() {
   const router = useRouter()
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
+  const [quickStats, setQuickStats] = useState<QuickStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
 
   useEffect(() => {
-    fetchMaterials()
+    Promise.all([fetchMaterials(), fetchQuickStats()])
   }, [])
+
+  async function fetchQuickStats() {
+    try {
+      setStatsLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setStatsLoading(false)
+        return
+      }
+
+      // Run all queries in parallel
+      const [xpData, streakResult, countResult] = await Promise.all([
+        getUserXP(user.id),
+        supabase
+          .from('study_streaks')
+          .select('current_streak')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('sabiquiz_attempts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+      ])
+
+      setQuickStats({
+        level: xpData.currentLevel,
+        totalXp: xpData.totalXp,
+        currentStreak: streakResult.data?.current_streak || 0,
+        totalQuizzes: countResult.count || 0,
+      })
+    } catch (err) {
+      console.error('Error fetching quick stats:', err)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
 
   async function fetchMaterials() {
     try {
       setLoading(true)
 
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
@@ -35,7 +86,7 @@ export default function MaterialsPage() {
       const { data, error } = await supabase
         .from('sabiquiz_materials')
         .select('*')
-        .eq('user_id', user.id)  // Filter by current user
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -51,7 +102,6 @@ export default function MaterialsPage() {
     if (!confirm('Delete this material? This cannot be undone.')) return
 
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
@@ -59,15 +109,13 @@ export default function MaterialsPage() {
         return
       }
 
-      // Delete from storage
       await supabase.storage.from('sabiquiz-materials').remove([filePath])
 
-      // Delete from database (with user_id check for security)
       const { error } = await supabase
         .from('sabiquiz_materials')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)  // Ensure user can only delete their own materials
+        .eq('user_id', user.id)
 
       if (error) throw error
 
@@ -86,6 +134,106 @@ export default function MaterialsPage() {
           Upload materials to generate AI-powered quizzes
         </p>
       </div>
+
+      {/* Mini Dashboard Snippet */}
+      {statsLoading ? (
+        <div className="mb-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl h-[88px] md:h-[76px] animate-pulse" />
+      ) : quickStats && quickStats.totalQuizzes > 0 ? (
+        <div 
+          className="mb-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => router.push('/sabiquiz/analytics')}
+        >
+          {/* Mobile Layout */}
+          <div className="flex md:hidden flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <span className="text-lg font-bold">{quickStats.level}</span>
+                </div>
+                <div>
+                  <p className="text-purple-200 text-xs">Level</p>
+                  <p className="font-semibold text-sm">
+                    {LEVEL_TITLES[Math.min(quickStats.level - 1, LEVEL_TITLES.length - 1)]}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-purple-200">
+                <span className="text-xs">Dashboard</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between pt-2 border-t border-white/20">
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-medium">{quickStats.totalXp.toLocaleString()} XP</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span className="text-sm font-medium">{quickStats.currentStreak}d streak</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-medium">{quickStats.totalQuizzes}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              {/* Level */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <span className="text-lg font-bold">{quickStats.level}</span>
+                </div>
+                <div>
+                  <p className="text-purple-200 text-xs">Level</p>
+                  <p className="font-semibold text-sm">
+                    {LEVEL_TITLES[Math.min(quickStats.level - 1, LEVEL_TITLES.length - 1)]}
+                  </p>
+                </div>
+              </div>
+
+              {/* XP */}
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <div>
+                  <p className="text-purple-200 text-xs">XP</p>
+                  <p className="font-semibold text-sm">{quickStats.totalXp.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Streak */}
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <div>
+                  <p className="text-purple-200 text-xs">Streak</p>
+                  <p className="font-semibold text-sm">{quickStats.currentStreak} days</p>
+                </div>
+              </div>
+
+              {/* Quizzes */}
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                <div>
+                  <p className="text-purple-200 text-xs">Quizzes</p>
+                  <p className="font-semibold text-sm">{quickStats.totalQuizzes}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* View Dashboard Link */}
+            <div className="text-right">
+              <div className="flex items-center gap-1 text-purple-200 hover:text-white transition-colors justify-end">
+                <span className="text-sm font-medium">View Dashboard</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] text-purple-300">All time stats</span>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-6">
         <FileUpload onUploadComplete={fetchMaterials} />

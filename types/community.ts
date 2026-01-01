@@ -51,8 +51,24 @@ export type DayOfWeek =
 // Request & Session Enums
 export type RequestStatus = 'open' | 'in_review' | 'matched' | 'closed' | 'expired'
 export type RequestUrgency = 'low' | 'medium' | 'high'
-export type OfferStatus = 'sent' | 'accepted' | 'rejected' | 'withdrawn'
-export type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+export type OfferStatus = 'pending' | 'accepted' | 'declined' | 'withdrawn'
+export type SessionStatus = 'proposed' | 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+export type SessionRequestStatus = 'pending' | 'accepted' | 'declined' | 'cancelled'
+export type MeetingProvider = 'google_meet' | 'zoom' | 'whatsapp' | 'discord' | 'other'
+export type NotificationType = 
+  | 'session_request'
+  | 'session_request_accepted'
+  | 'session_request_declined'
+  | 'offer'
+  | 'offer_accepted'
+  | 'offer_declined'
+  | 'session_scheduled'
+  | 'session_reminder'
+  | 'message'
+  | 'review_prompt'
+export type ThreadContext = 'session_request' | 'offer' | 'general'
+export type MessageContentType = 'text' | 'system'
+export type ReportStatus = 'open' | 'reviewing' | 'resolved'
 
 // ============================================
 // DATABASE TYPES
@@ -186,6 +202,184 @@ export interface Session {
 }
 
 // ============================================
+// NEW MESSAGING SYSTEM TYPES
+// ============================================
+
+export interface MentorProfileExtended {
+  id: string
+  bio: string | null
+  headline: string | null
+  hourly_rate_ngn: number | null
+  availability: Record<string, unknown> | null
+  verified: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SessionRequest {
+  id: string
+  learner_id: string
+  mentor_id: string
+  message: string | null
+  status: SessionRequestStatus
+  created_at: string
+  updated_at: string
+  // Joined data
+  learner?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url: string | null
+  }
+  mentor?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url: string | null
+  }
+}
+
+export interface CommunityOffer {
+  id: string
+  request_id: string
+  mentor_id: string
+  message: string | null
+  proposed_rate_ngn: number | null
+  status: OfferStatus
+  created_at: string
+  updated_at: string
+  // Joined data
+  mentor?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+  request?: LearningRequest
+}
+
+export interface CommunitySession {
+  id: string
+  learner_id: string
+  mentor_id: string
+  session_request_id: string | null
+  offer_id: string | null
+  skill_id: string | null
+  scheduled_start: string | null
+  scheduled_end: string | null
+  duration_minutes: number
+  meeting_provider: MeetingProvider | null
+  meeting_url: string | null
+  status: SessionStatus
+  notes: string | null
+  created_at: string
+  updated_at: string
+  completed_at: string | null
+  // Joined data
+  learner?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+  mentor?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+  skill?: Skill
+}
+
+export interface Thread {
+  id: string
+  session_id: string | null
+  context: ThreadContext
+  created_at: string
+  updated_at: string
+  // Joined/computed
+  participants?: ThreadParticipant[]
+  last_message?: Message
+  unread_count?: number
+}
+
+export interface ThreadParticipant {
+  thread_id: string
+  user_id: string
+  role: 'learner' | 'mentor'
+  last_read_at: string | null
+  created_at: string
+  // Joined
+  user?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+}
+
+export interface Message {
+  id: string
+  thread_id: string
+  sender_id: string
+  content: string
+  content_type: MessageContentType
+  created_at: string
+  edited_at: string | null
+  is_deleted: boolean
+  // Joined
+  sender?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  entity_id: string | null
+  entity_type: string | null
+  title: string
+  body: string | null
+  is_read: boolean
+  created_at: string
+}
+
+export interface Review {
+  id: string
+  session_id: string
+  reviewer_id: string
+  reviewee_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  // Joined
+  reviewer?: {
+    id: string
+    full_name: string
+    avatar_url: string | null
+  }
+  session?: CommunitySession
+}
+
+export interface Block {
+  id: string
+  blocker_id: string
+  blocked_id: string
+  created_at: string
+}
+
+export interface Report {
+  id: string
+  reporter_id: string
+  reported_user_id: string
+  thread_id: string | null
+  message_id: string | null
+  reason: string
+  details: string | null
+  status: ReportStatus
+  created_at: string
+}
+
+// ============================================
 // FORM TYPES
 // ============================================
 
@@ -225,6 +419,11 @@ export interface LearningRequestForm {
   constraints: string[]
 }
 
+export interface SessionRequestForm {
+  mentor_id: string
+  message: string
+}
+
 // ============================================
 // API RESPONSE TYPES
 // ============================================
@@ -253,6 +452,13 @@ export interface MentorProfile {
   total_sessions: number
   avg_rating: number
   reviews_count: number
+}
+
+export interface MentorProfileFull extends MentorProfile {
+  headline: string | null
+  hourly_rate_ngn: number | null
+  availability: AvailabilitySlot[]
+  reviews: Review[]
 }
 
 // ============================================
@@ -298,6 +504,14 @@ export const MEETING_METHODS: { value: MeetingMethod; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
+export const MEETING_PROVIDERS: { value: MeetingProvider; label: string }[] = [
+  { value: 'google_meet', label: 'Google Meet' },
+  { value: 'zoom', label: 'Zoom' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'discord', label: 'Discord' },
+  { value: 'other', label: 'Other' },
+]
+
 export const SKILL_LEVELS: { value: SkillLevel; label: string }[] = [
   { value: 'beginner', label: 'Beginner' },
   { value: 'intermediate', label: 'Intermediate' },
@@ -333,4 +547,19 @@ export const REQUEST_STATUSES: { value: RequestStatus; label: string }[] = [
   { value: 'matched', label: 'Matched' },
   { value: 'closed', label: 'Closed' },
   { value: 'expired', label: 'Expired' },
+]
+
+export const SESSION_STATUSES: { value: SessionStatus; label: string; color: string }[] = [
+  { value: 'proposed', label: 'Proposed', color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'scheduled', label: 'Scheduled', color: 'text-blue-600 bg-blue-50' },
+  { value: 'completed', label: 'Completed', color: 'text-green-600 bg-green-50' },
+  { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600 bg-gray-50' },
+  { value: 'no_show', label: 'No Show', color: 'text-red-600 bg-red-50' },
+]
+
+export const SESSION_REQUEST_STATUSES: { value: SessionRequestStatus; label: string; color: string }[] = [
+  { value: 'pending', label: 'Pending', color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'accepted', label: 'Accepted', color: 'text-green-600 bg-green-50' },
+  { value: 'declined', label: 'Declined', color: 'text-red-600 bg-red-50' },
+  { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600 bg-gray-50' },
 ]

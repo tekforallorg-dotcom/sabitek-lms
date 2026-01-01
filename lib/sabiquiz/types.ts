@@ -19,17 +19,31 @@ export interface UploadProgress {
   error?: string
 }
 
+// Updated Categories
 export const CATEGORIES = [
-  'STEM (Science, Tech, Engineering, Math)',
-  'Technology & Professional Courses',
+  'Technology & Software Development',
+  'Digital Skills & Productivity',
+  'Data & Analytics',
+  'Cybersecurity & Online Safety',
+  'Business & Entrepreneurship',
+  'Career Development & Employability',
+  'Professional Certifications & Exams',
+  'Communication & Writing',
+  'Leadership & Workplace Skills',
+  'General Studies & Personal Development',
   'Other',
 ] as const
 
+// Updated Levels
 export const LEVELS = [
-  'Junior Secondary (JSS1-JSS3)',
-  'Senior Secondary (SS1-SS3)',
-  'Professional Course',
-  'University/Tertiary',
+  'Foundation (Beginner)',
+  'Intermediate (Developing)',
+  'Advanced (Professional)',
+  'Certification Prep (Exam Focused)',
+  'Career Track (Job Ready)',
+  'School Level (JSS & SSS)',
+  'Tertiary Level (University & Polytechnic)',
+  'Professional Level (Workplace)',
   'Other',
 ] as const
 
@@ -96,5 +110,8 @@ export interface QuestionCounts {
 }
 
 export const DEFAULT_QUESTIONS_PER_QUIZ = 10
-export const MIN_QUESTIONS_PER_QUIZ = 5
+export const MIN_QUESTIONS_PER_QUIZ = 1
 export const MAX_QUESTIONS_PER_QUIZ = 50
+
+// Question count options for quiz start
+export const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50] as const
