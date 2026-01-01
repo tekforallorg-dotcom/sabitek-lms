@@ -170,7 +170,7 @@ export default function SabiQuizHomePage() {
             SabiQuiz
           </h1>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-2 px-4">
-            AI-powered quizzes designed for Nigerian learners.
+            AI-powered quizzes designed for every learners.
           </p>
           <p className="text-sm sm:text-base lg:text-lg text-gray-800 font-medium max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 lg:mb-10 px-4">
             Upload any material. Get instant quizzes. Master every topic.
@@ -473,16 +473,12 @@ export default function SabiQuizHomePage() {
             }} />
             
             <div className="relative">
-              <div className="flex justify-center gap-2 mb-4">
-                <Star className="w-6 h-6 text-yellow-400" />
-                <Flame className="w-6 h-6 text-orange-400" />
-                <Trophy className="w-6 h-6 text-yellow-400" />
-              </div>
+              
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3">
                 Ready to transform how you study?
               </h2>
               <p className="text-sm sm:text-base text-gray-300 mb-6 max-w-2xl mx-auto">
-                Join thousands of Nigerian students mastering their courses with AI-powered quizzes, gamified learning, and smart analytics.
+                Join thousands of learners mastering their courses with AI-powered quizzes, gamified learning, and smart analytics.
               </p>
               <Button
                 onClick={handleStartLearning}

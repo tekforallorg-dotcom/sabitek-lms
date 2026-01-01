@@ -7,18 +7,24 @@ import { Card, CardContent } from '@/components/ui/card'
 import { 
   Bot,
   MessageSquare,
-  Sparkles,
   GraduationCap,
   Briefcase,
   Globe,
   BookOpen,
   Target,
   TrendingUp,
-  Clock,
   Shield,
   ArrowRight,
   CheckCircle,
-  Zap
+  Zap,
+  Brain,
+  Clock,
+  Sparkles,
+  Users,
+  Heart,
+  Lightbulb,
+  RotateCcw,
+  MessageCircle
 } from 'lucide-react'
 
 export default function SabiBotPage() {
@@ -26,55 +32,59 @@ export default function SabiBotPage() {
   const { user, loading } = useAuth()
   const [isStarting, setIsStarting] = useState(false)
 
-  const handleStartChat = () => {
+  const handleStartChat = (prompt?: string) => {
     if (!user) {
       router.push('/auth/login?redirect=/sabibot/chat')
       return
     }
     setIsStarting(true)
-    router.push('/sabibot/chat')
+    if (prompt) {
+      router.push(`/sabibot/chat?prompt=${encodeURIComponent(prompt)}`)
+    } else {
+      router.push('/sabibot/chat')
+    }
   }
 
   const capabilities = [
     {
       icon: GraduationCap,
       title: 'Exam Preparation',
-      description: 'WAEC, NECO, JAMB study plans with weekly targets and past question strategies',
+      description: 'school study plans with weekly targets',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
       icon: Briefcase,
       title: 'Career Guidance',
-      description: 'Tech career roadmaps, salary insights, and transition plans for job market',
+      description: 'Tech roadmaps, salary insights, transition plans',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
       icon: TrendingUp,
       title: 'Tech Roadmaps',
-      description: 'Frontend, Backend, DevOps, Data Science paths with realistic timelines',
+      description: 'Frontend, Backend, DevOps, Data Science paths',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
     {
       icon: Target,
       title: 'Study Planning',
-      description: 'Personalized schedules that fit your work, commute, and family duties',
+      description: 'Schedules that fit work, commute, and family',
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
     {
       icon: BookOpen,
       title: 'Certification Help',
-      description: 'AWS, Azure, Google Cloud, CompTIA study plans and cost-benefit analysis',
+      description: 'AWS, Azure, Google Cloud, CompTIA guidance',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
     },
     {
       icon: Shield,
       title: 'Interview Prep',
-      description: 'Behavioral questions, technical prep, and salary negotiation coaching',
+      description: 'Technical prep and salary negotiation tips',
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-50',
     },
@@ -90,11 +100,25 @@ export default function SabiBotPage() {
 
   const samplePrompts = [
     "I want to become a frontend developer in 6 months",
-    "Help me prepare for JAMB, I have 4 months",
-    "What's the salary range for DevOps engineers in Lagos?",
+    "Help me prepare for school exams, I have 4 months",
+    "What's the salary range for DevOps in Lagos?",
     "Create a study plan for AWS certification",
     "I'm a teacher, how can I earn online?",
     "How do I transition from banking to tech?",
+  ]
+
+  const problemsSolved = [
+    { problem: 'Generic career advice', solution: 'Context-aware guidance based on your realities', icon: Target },
+    { problem: 'One-size-fits-all plans', solution: 'Personalized to your schedule & constraints', icon: Clock },
+    { problem: 'Forgetting your progress', solution: 'Memory that tracks goals & streaks', icon: Brain },
+    { problem: 'Language barriers', solution: '5 languages including Pidgin & local languages', icon: Globe },
+  ]
+
+  const smartFeatures = [
+    { icon: Brain, title: 'Remembers You', desc: 'Tracks your goals, progress, and study streaks across sessions' },
+    { icon: Lightbulb, title: 'Actionable Plans', desc: 'Not generic advice, specific steps with timelines you can follow' },
+    { icon: Globe, title: 'Local Context', desc: 'Understands NYSC, salary ranges, data costs, power constraints' },
+    { icon: RotateCcw, title: 'Continuous Support', desc: 'Pick up where you left off, adjust plans as life changes' },
   ]
 
   if (loading) {
@@ -107,7 +131,7 @@ export default function SabiBotPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section - Compressed */}
       <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -115,29 +139,29 @@ export default function SabiBotPage() {
           }} />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="text-center max-w-3xl mx-auto">
             {/* Bot Avatar */}
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-6 shadow-2xl">
-              <Bot className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-4 shadow-2xl">
+              <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
 
-           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-white">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-white">
               SabiBot
             </h1>
-            <p className="text-lg sm:text-xl text-gray-300 mb-2">
-              Your AI Learning Companion 
+            <p className="text-base sm:text-lg text-gray-300 mb-1">
+              Your AI Learning Companion
             </p>
-            <p className="text-sm sm:text-base text-gray-400 mb-8 max-w-2xl mx-auto">
-             Clear guidance, better direction, and steady growth, tailored to your goals.
+            <p className="text-sm text-gray-400 mb-6 max-w-xl mx-auto">
+              Clear guidance, better direction, and steady growth, tailored to your goals.
             </p>
 
-            {/* Language Pills */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {/* Language Pills - Compact */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
               {languages.map(lang => (
                 <span 
                   key={lang.name}
-                  className="px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm flex items-center gap-1.5"
+                  className="px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs flex items-center gap-1"
                 >
                   <span>{lang.flag}</span>
                   <span>{lang.name}</span>
@@ -146,65 +170,73 @@ export default function SabiBotPage() {
             </div>
 
             <Button
-              onClick={handleStartChat}
+              onClick={() => handleStartChat()}
               disabled={isStarting}
               size="lg"
-              className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all"
             >
               {isStarting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                   Starting...
                 </>
               ) : (
                 <>
-                  <MessageSquare className="w-5 h-5 mr-2" />
-                  {user ? 'Start Chatting' : 'Login to Chat'}
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Start Chatting
                 </>
               )}
             </Button>
 
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-gray-500 mt-3">
               Free to use • No limits • Remembers your progress
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Wave */}
-        <div className="h-16 bg-gray-50 relative -mt-1">
-          <svg 
-            className="absolute -top-1 left-0 w-full h-16 text-gray-900" 
-            viewBox="0 0 1440 64" 
-            fill="currentColor"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,32 C480,64 960,0 1440,32 L1440,0 L0,0 Z"></path>
-          </svg>
+      {/* Problems Solved - NEW */}
+      <div className="bg-white border-b border-gray-200 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {problemsSolved.map((item, idx) => {
+              const Icon = item.icon
+              return (
+                <div key={idx} className="text-center p-4">
+                  <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Icon className="w-5 h-5 text-red-500" />
+                  </div>
+                  <p className="text-xs text-gray-400 line-through mb-1">{item.problem}</p>
+                  <p className="text-sm text-gray-900 font-medium">{item.solution}</p>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Capabilities Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-            How SabiBot Can Help You
+      {/* Capabilities Grid - Compressed */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            How SabiBot Helps You
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            From exam prep to career transitions, get practical, actionable guidance tailored to every learners realities
+          <p className="text-sm text-gray-600">
+            Practical guidance tailored to every learner
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {capabilities.map((cap, idx) => {
             const IconComponent = cap.icon
             return (
-              <Card key={idx} className="border border-gray-200 hover:shadow-lg transition-shadow">
-                <CardContent className="p-5 sm:p-6">
-                  <div className={`w-12 h-12 ${cap.bgColor} rounded-xl flex items-center justify-center mb-4`}>
-                    <IconComponent className={`w-6 h-6 ${cap.color}`} />
+              <Card key={idx} className="border border-gray-200 hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className={`w-10 h-10 ${cap.bgColor} rounded-lg flex items-center justify-center mb-3`}>
+                    <IconComponent className={`w-5 h-5 ${cap.color}`} />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{cap.title}</h3>
-                  <p className="text-sm text-gray-600">{cap.description}</p>
+                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{cap.title}</h3>
+                  <p className="text-xs text-gray-600">{cap.description}</p>
                 </CardContent>
               </Card>
             )
@@ -212,109 +244,156 @@ export default function SabiBotPage() {
         </div>
       </div>
 
-      {/* Sample Prompts */}
-      <div className="bg-white border-y border-gray-200 py-12 sm:py-16">
+      {/* Sample Prompts - Compact */}
+      <div className="bg-gradient-to-b from-gray-50 to-white border-y border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              Try Asking SabiBot
+          <div className="text-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+              Try Asking
             </h2>
-            <p className="text-gray-600">Click any prompt to start a conversation</p>
+            <p className="text-sm text-gray-600">Click any prompt to start</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-w-4xl mx-auto">
             {samplePrompts.map((prompt, idx) => (
               <button
                 key={idx}
-                onClick={() => {
-                  if (!user) {
-                    router.push('/auth/login?redirect=/sabibot/chat')
-                  } else {
-                    router.push(`/sabibot/chat?prompt=${encodeURIComponent(prompt)}`)
-                  }
-                }}
-                className="text-left p-4 bg-gray-50 hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-xl transition-colors group"
+                onClick={() => handleStartChat(prompt)}
+                className="text-left p-3 bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-lg transition-colors group flex items-center justify-between gap-2"
               >
-                <p className="text-sm text-gray-700 group-hover:text-gray-900">"{prompt}"</p>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 mt-2 group-hover:translate-x-1 transition-all" />
+                <p className="text-sm text-gray-700 group-hover:text-gray-900 line-clamp-1">"{prompt}"</p>
+                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-red-500 flex-shrink-0 group-hover:translate-x-0.5 transition-all" />
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Features List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-              Built for Every Learner
-            </h2>
-            <div className="space-y-4">
-              {[
-                'Understands examination requirements and education systems',
-                'Knows realistic salary ranges for tech roles globally',
-                'Considers power outages, data costs, and time constraints',
-                'Speaks English, Pidgin, Yoruba, Hausa, and Igbo',
-                'Remembers your goals and tracks your study streaks',
-                'Provides actionable plans, not generic advice',
-              ].map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-700">{feature}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Smart Features - NEW */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            Smarter Than Typical AI
+          </h2>
+          <p className="text-sm text-gray-600">
+            Built specifically for learners in Africa
+          </p>
+        </div>
 
-          <div className="bg-gray-900 rounded-2xl p-6 sm:p-8 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5" />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {smartFeatures.map((feature, idx) => {
+            const Icon = feature.icon
+            return (
+              <div key={idx} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                  <Icon className="w-5 h-5 text-gray-700" />
+                </div>
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">{feature.title}</h3>
+                <p className="text-xs text-gray-600">{feature.desc}</p>
               </div>
-              <div>
-                <p className="font-semibold">SabiBot</p>
-                <p className="text-xs text-gray-400">AI Learning Companion</p>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Chat Preview - Compact */}
+      <div className="bg-gray-900 py-10 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+                Built for Your Reality
+              </h2>
+              <div className="space-y-3">
+                {[
+                  'Understands school requirements context',
+                  'Knows realistic salary ranges across Africa',
+                  'Considers data costs and power constraints',
+                  'Speaks your language, literally',
+                  'Remembers your goals and progress',
+                  'Gives actionable plans, not fluff',
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <p className="text-sm text-gray-300">{feature}</p>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-sm text-gray-300 mb-4">
-              <p className="mb-3">
-                How you dey! I see say you wan become frontend developer. Make we map the journey:
-              </p>
-              <p className="mb-2">
-                <strong className="text-white">Month 1-2:</strong> HTML, CSS, JavaScript basics. Build 3 small projects.
-              </p>
-              <p className="mb-2">
-                <strong className="text-white">Month 3-4:</strong> React fundamentals. Clone 2 real websites.
-              </p>
-              <p>
-                <strong className="text-white">Month 5-6:</strong> Portfolio + job applications. Target entry roles: ₦150k-300k/month.
+
+            <div className="bg-gray-800 rounded-xl p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-medium text-white text-sm">SabiBot</p>
+                  <p className="text-xs text-gray-500">AI Companion</p>
+                </div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-3 text-sm text-gray-300 space-y-2">
+                <p>
+                  How you dey! I see say you wan become frontend developer. Make we map am:
+                </p>
+                <p className="text-xs">
+                  <span className="text-white font-medium">Month 1-2:</span> HTML, CSS, JavaScript basics. Build 3 small projects.
+                </p>
+                <p className="text-xs">
+                  <span className="text-white font-medium">Month 3-4:</span> React fundamentals. Clone 2 real websites.
+                </p>
+                <p className="text-xs">
+                  <span className="text-white font-medium">Month 5-6:</span> Portfolio + job applications. Entry: ₦150k-300k/month.
+                </p>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                * Example response in Pidgin
               </p>
             </div>
-            <p className="text-xs text-gray-500">
-              * Example response in Nigerian Pidgin
-            </p>
           </div>
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-12 sm:py-16">
+      {/* Stats Bar - NEW */}
+      <div className="bg-white border-y border-gray-200 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">5</p>
+              <p className="text-xs text-gray-600">Languages Supported</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">24/7</p>
+              <p className="text-xs text-gray-600">Always Available</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">∞</p>
+              <p className="text-xs text-gray-600">Unlimited Chats</p>
+            </div>
+            <div>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">Free</p>
+              <p className="text-xs text-gray-600">No Hidden Costs</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section - Compact */}
+      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Zap className="w-12 h-12 mx-auto mb-4 text-yellow-300" />
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Ready to accelerate your learning?
+          
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Ready to accelerate your growth?
           </h2>
-          <p className="text-red-100 mb-8 max-w-2xl mx-auto">
-            Get personalized guidance from a mentor who understands your journey
+          <p className="text-red-100 text-sm mb-6 max-w-xl mx-auto">
+            Get personalized guidance from a companion who understands your journey
           </p>
           <Button
-            onClick={handleStartChat}
+            onClick={() => handleStartChat()}
             size="lg"
-            className="bg-white text-red-600 hover:bg-red-50 px-8 py-4 text-base sm:text-lg rounded-xl"
+            className="bg-white text-red-600 hover:bg-red-50 px-6 py-3 text-base rounded-xl"
           >
-            <MessageSquare className="w-5 h-5 mr-2" />
-            {user ? 'Start Chatting Now' : 'Login to Get Started'}
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Start Chatting Now
           </Button>
         </div>
       </div>
