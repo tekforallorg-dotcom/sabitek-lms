@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 
@@ -12,7 +12,7 @@ interface EntitlementState {
 }
 
 export function useEntitlements(): EntitlementState {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [state, setState] = useState<EntitlementState>({
     plan: 'free',
     isProUser: false,
@@ -20,8 +20,15 @@ export function useEntitlements(): EntitlementState {
     canAccessSabiAdvisor: false,
     loading: true
   })
+  const hasFetched = useRef(false)
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return
+    }
+
+    // No user after auth loaded = free user
     if (!user) {
       setState({
         plan: 'free',
@@ -32,8 +39,15 @@ export function useEntitlements(): EntitlementState {
       })
       return
     }
+
+    // Prevent duplicate fetches
+    if (hasFetched.current) {
+      return
+    }
+    hasFetched.current = true
+
     fetchEntitlements()
-  }, [user])
+  }, [user, authLoading])
 
   const fetchEntitlements = async () => {
     try {

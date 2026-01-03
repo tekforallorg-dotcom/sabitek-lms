@@ -129,10 +129,22 @@ export default function SabiQuizHomePage() {
     router.push(href)
   }
 
+  // Show loading state while checking entitlements
+  if (user && entitlementsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-sm text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Pro Badge - Show if locked */}
-      {user && !canAccessSabiQuiz && !entitlementsLoading && (
+      {user && !canAccessSabiQuiz && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 sm:py-3 px-4">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
             <div className="flex items-center gap-2">

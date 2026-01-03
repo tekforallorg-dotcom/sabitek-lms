@@ -309,57 +309,104 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-     {/* Header */}
+    {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push('/sabiquiz/materials')}
-            className="mb-4 -ml-2 text-gray-600 hover:text-gray-900"
+            className="mb-3 -ml-2 text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Materials
           </Button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-              <p className="text-gray-600 mt-1">Track your learning progress and achievements</p>
+          
+          {/* Title row */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
             </div>
             
             {/* Time Range Filter */}
-            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-gray-100 rounded-lg p-0.5 sm:p-1 flex-shrink-0">
               {(['7', '30', '90', 'all'] as const).map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                     timeRange === range
                       ? 'bg-white text-red-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {range === 'all' ? 'All Time' : `${range}d`}
+                  {range === 'all' ? 'All' : `${range}d`}
                 </button>
               ))}
             </div>
           </div>
+          
+          {/* Subtitle - separate row */}
+          <p className="text-sm text-gray-600 mt-1">Track your learning progress and achievements</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* XP & Level Card */}
+        {/* XP & Level Card */}
         {xpData && (
-          <Card className="mb-8 bg-gradient-to-r from-purple-600 to-indigo-600 text-white overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="mb-6 sm:mb-8 bg-gradient-to-r from-purple-600 to-indigo-600 text-white overflow-hidden">
+            <CardContent className="p-4 sm:p-6">
+              {/* Mobile Layout */}
+              <div className="flex sm:hidden flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+                      <span className="text-2xl font-bold">{xpData.currentLevel}</span>
+                    </div>
+                    <div>
+                      <p className="text-purple-200 text-xs">Level</p>
+                      <p className="text-sm font-semibold">
+                        {LEVEL_TITLES[Math.min(xpData.currentLevel - 1, LEVEL_TITLES.length - 1)]}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-purple-200 text-xs">This Week</p>
+                    <p className="text-lg font-bold flex items-center justify-end gap-1">
+                      <Zap className="w-4 h-4 text-yellow-400" />
+                      +{xpData.xpThisWeek}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-purple-200 text-xs">Total XP</p>
+                    <p className="font-bold flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-400" />
+                      {xpData.totalXp.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+                      style={{ width: `${xpData.progressPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-purple-200 text-xs mt-1 text-right">{xpData.xpToNextLevel} XP to next level</p>
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden sm:flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   {/* Level Badge */}
                   <div className="relative">
                     <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
                       <span className="text-4xl font-bold">{xpData.currentLevel}</span>
                     </div>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
                       {LEVEL_TITLES[Math.min(xpData.currentLevel - 1, LEVEL_TITLES.length - 1)]}
                     </div>
                   </div>

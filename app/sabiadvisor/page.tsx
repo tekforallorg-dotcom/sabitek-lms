@@ -33,10 +33,14 @@ export default function SabiAdvisorPage() {
     router.push('/sabiadvisor/survey')
   }
 
-  if (loading || entitlementsLoading) {
+// Show loading state while checking entitlements
+  if (user && entitlementsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-sm text-gray-600">Loading...</p>
+        </div>
       </div>
     )
   }
