@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { useEntitlements } from '@/hooks/useEntitlements'
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Target, Lock, Crown } from 'lucide-react'
+import { useWallet } from '@/hooks/useWallet'
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Target, Wallet, Plus, Briefcase } from 'lucide-react'
 
 const QUESTIONS = [
   {
@@ -173,16 +174,27 @@ const QUESTIONS = [
   },
 ]
 
+interface CostEstimate {
+  costKobo: number
+  costFormatted: string
+  displayName: string
+}
+
 export default function SurveyPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const { canAccessSabiAdvisor, loading: entitlementsLoading } = useEntitlements()
+  const { balance, refreshBalance } = useWallet()
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
   const [isAnimating, setIsAnimating] = useState(false)
+  
+  // Pricing state
+  const [costEstimate, setCostEstimate] = useState<CostEstimate | null>(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [chargedAmount, setChargedAmount] = useState<string | null>(null)
 
   const currentQuestion = QUESTIONS[currentStep]
   const progress = ((currentStep + 1) / QUESTIONS.length) * 100
@@ -192,6 +204,23 @@ export default function SurveyPage() {
     const timer = setTimeout(() => setIsAnimating(false), 300)
     return () => clearTimeout(timer)
   }, [currentStep])
+
+  // Fetch pricing on mount
+  useEffect(() => {
+    fetchCostEstimate()
+  }, [])
+
+  const fetchCostEstimate = async () => {
+    try {
+      const res = await fetch('/api/advisor/pricing?operation=roadmap_generate')
+      if (res.ok) {
+        const data = await res.json()
+        setCostEstimate(data)
+      }
+    } catch (error) {
+      console.error('Cost estimate error:', error)
+    }
+  }
 
   const handleAnswer = (option: string) => {
     const questionId = currentQuestion.id
@@ -220,7 +249,8 @@ export default function SurveyPage() {
       setDirection('forward')
       setCurrentStep(currentStep + 1)
     } else {
-      await handleSubmit()
+      // Show confirmation modal before submitting
+      setShowConfirmModal(true)
     }
   }
 
@@ -237,6 +267,7 @@ export default function SurveyPage() {
       return
     }
 
+    setShowConfirmModal(false)
     setIsSubmitting(true)
     setError('')
 
@@ -253,18 +284,26 @@ export default function SurveyPage() {
       const responseData = await response.json()
 
       if (!response.ok) {
+        if (response.status === 402) {
+          throw new Error('Insufficient wallet balance. Please top up to continue.')
+        }
         throw new Error(responseData.error || 'Failed to generate recommendations')
       }
 
+      setChargedAmount(responseData.cached ? '₦0 (cached)' : responseData.charged)
+      refreshBalance()
+      
       router.push(`/sabiadvisor/results/${responseData.resultId}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Submit error:', err)
-      setError(err.message || 'Something went wrong. Please try again.')
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setIsSubmitting(false)
     }
   }
 
-  if (authLoading || entitlementsLoading) {
+  const formatNaira = (kobo: number) => `₦${(kobo / 100).toLocaleString()}`
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-white">
         <div className="text-center">
@@ -280,40 +319,50 @@ export default function SurveyPage() {
     return null
   }
 
-  // Premium gate - redirect if not Pro
-  if (!canAccessSabiAdvisor) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-white flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-            <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">Pro Feature</h1>
-          <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-            SabiAdvisor career guidance is available exclusively for Pro subscribers. 
-            Upgrade now to discover your perfect tech career path.
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={() => router.push('/pricing')}
-              className="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg transition-all"
-            >
-              Upgrade to Pro - ₦3,000/month
-            </button>
-            <button
-              onClick={() => router.push('/sabiadvisor')}
-              className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm sm:text-base hover:bg-gray-200 transition-all"
-            >
-              Learn More
-            </button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-pink-50/20 to-white relative overflow-hidden">
+      {/* Sub Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/sabiadvisor"
+                className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm hidden sm:inline">Back</span>
+              </Link>
+              <div className="w-px h-4 bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-red-500" />
+                <span className="font-semibold text-gray-900 text-sm">SabiAdvisor</span>
+              </div>
+              <span className="text-gray-400">/</span>
+              <span className="text-sm text-gray-600">Career Assessment</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/account/wallet"
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+              >
+                <Wallet className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-900">
+                  {balance?.balanceFormatted || '₦0'}
+                </span>
+              </Link>
+              <Link
+                href="/account/wallet"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Top Up</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    )
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-pink-50/20 to-white relative overflow-hidden">
       {/* Animated background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-red-200/20 rounded-full blur-3xl animate-pulse"></div>
@@ -329,6 +378,14 @@ export default function SurveyPage() {
           </div>
           <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 mb-1">Find Your Perfect Tech Path</h1>
           <p className="text-xs text-gray-600">Answer honestly for personalized recommendations</p>
+          
+          {/* Cost indicator */}
+          {costEstimate && (
+            <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-medium">
+              <Wallet className="w-3 h-3" />
+              Cost: {costEstimate.costFormatted}
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -463,6 +520,14 @@ export default function SurveyPage() {
         {error && (
           <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-lg sm:rounded-xl p-3 mb-4 animate-shake">
             <p className="text-red-800 text-xs font-medium">{error}</p>
+            {error.includes('wallet') && (
+              <button
+                onClick={() => router.push('/account/wallet')}
+                className="mt-2 text-xs text-red-600 underline"
+              >
+                Top up wallet →
+              </button>
+            )}
           </div>
         )}
 
@@ -510,6 +575,65 @@ export default function SurveyPage() {
           </p>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowConfirmModal(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-xl shadow-2xl z-50 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate Your Career Roadmap</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This will cost <strong>{costEstimate?.costFormatted || '₦150'}</strong> from your wallet.
+            </p>
+            
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Your balance:</span>
+                <span className="font-medium">{balance?.balanceFormatted || '₦0'}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span className="text-gray-600">After charge:</span>
+                <span className="font-medium">
+                  {balance && costEstimate 
+                    ? formatNaira(balance.balanceKobo - costEstimate.costKobo)
+                    : '...'}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-orange-700">
+                💡 <strong>Cached for 7 days:</strong> Same answers won&apos;t be charged again.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!balance || balance.balanceKobo < (costEstimate?.costKobo || 0)}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg text-sm font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Generate Roadmap
+              </button>
+            </div>
+
+            {balance && costEstimate && balance.balanceKobo < costEstimate.costKobo && (
+              <button
+                onClick={() => router.push('/account/wallet')}
+                className="w-full mt-3 text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Top up wallet →
+              </button>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Custom Animations */}
       <style jsx>{`

@@ -102,14 +102,14 @@ export default function SabiwriteLayout({
     setTopUpError('')
 
     try {
-      const res = await fetch('/api/sabiwrite/billing', {
+      const res = await fetch('/api/wallet/topup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: amount * 100, // Convert to kobo
           userId: user.id,
           email: user.email,
-          callback_url: `${window.location.origin}/sabiwrite/billing?verify=true`,
+          callback_url: `${window.location.origin}/account/wallet?verify=true`,
         }),
       })
 
@@ -262,31 +262,26 @@ export default function SabiwriteLayout({
             {planTier}
           </span>
 
-          {/* Wallet Balance */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+          {/* Wallet Balance - Clickable to go to wallet page */}
+          <Link 
+            href="/account/wallet"
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+          >
             <Wallet className="w-4 h-4 text-gray-500" />
             {isLoadingWallet ? (
               <div className="w-16 h-4 bg-gray-200 animate-pulse rounded"></div>
             ) : (
               <span className="text-sm font-medium text-gray-900">{formatNaira(walletBalance)}</span>
             )}
-          </div>
+          </Link>
 
-{/* Top Up Button */}
+          {/* Top Up Button */}
           <button 
             onClick={handleTopUpClick}
             className="px-3 py-1.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
           >
             Top Up
           </button>
-          {/* Billing Button */}
-          <Link 
-            href="/sabiwrite/billing"
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <FileText className="w-4 h-4" />
-            Billing
-          </Link>
         </div>
       </header>
 

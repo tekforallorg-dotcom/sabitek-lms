@@ -4,8 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Settings, LogOut, ChevronDown, Zap, CreditCard, Sparkles
- } from 'lucide-react'
+import { User, Settings, LogOut, ChevronDown, Zap, Sparkles, Wallet } from 'lucide-react'
 import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
 
 export default function Header() {
@@ -14,7 +13,7 @@ export default function Header() {
   const { user, userProfile, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [isSabiToolsOpen, setIsSabiToolsOpen] = useState(false)
+  const [isSabiSuiteOpen, setIsSabiSuiteOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -31,7 +30,7 @@ export default function Header() {
   }
 
   const closeAllMenus = () => {
-    setIsSabiToolsOpen(false)
+    setIsSabiSuiteOpen(false)
     setIsMenuOpen(false)
   }
 
@@ -68,28 +67,28 @@ export default function Header() {
                   Dashboard
                 </Link>
 
-                {/* SabiTools Dropdown - Desktop */}
+                {/* SabiSuite Dropdown - Desktop */}
                 <div 
                   className="relative"
-                  onMouseEnter={() => setIsSabiToolsOpen(true)}
-                  onMouseLeave={() => setIsSabiToolsOpen(false)}
+                  onMouseEnter={() => setIsSabiSuiteOpen(true)}
+                  onMouseLeave={() => setIsSabiSuiteOpen(false)}
                 >
                   <button 
                     className="flex items-center space-x-1 text-gray-700 hover:text-red-500 transition-colors py-2"
-                    onClick={() => setIsSabiToolsOpen(!isSabiToolsOpen)}
+                    onClick={() => setIsSabiSuiteOpen(!isSabiSuiteOpen)}
                   >
-                    <Zap className="w-4 h-4" />
-                    <span>SabiTools</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isSabiToolsOpen ? 'rotate-180' : ''}`} />
+                    <Zap className="w-4 h-4 text-red-500 drop-shadow-[0_0_3px_rgba(251,113,133,0.8)]" />
+                    <span>SabiSuite</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isSabiSuiteOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {isSabiToolsOpen && (
+                  {isSabiSuiteOpen && (
                     <div className="absolute left-0 top-full w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 mt-0">
                       {/* View All link at top */}
                       <Link
                         href="/sabitools"
                         className="flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:text-red-500 border-b border-gray-100 mb-1"
-                        onClick={() => setIsSabiToolsOpen(false)}
+                        onClick={() => setIsSabiSuiteOpen(false)}
                       >
                         <span>View all tools</span>
                         <ChevronDown className="w-3 h-3 -rotate-90" />
@@ -102,7 +101,7 @@ export default function Header() {
                             key={tool.id}
                             href={tool.href}
                             className="flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-                            onClick={() => setIsSabiToolsOpen(false)}
+                            onClick={() => setIsSabiSuiteOpen(false)}
                           >
                             <IconComponent className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
                             <div className="flex-1">
@@ -212,12 +211,12 @@ export default function Header() {
                         </Link>
 
                         <Link
-                          href="/account/billing"
+                          href="/account/wallet"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
-                          <CreditCard className="w-4 h-4" />
-                          <span>Billing</span>
+                          <Wallet className="w-4 h-4" />
+                          <span>Wallet</span>
                         </Link>
 
                         <hr className="my-2 border-gray-100" />
@@ -317,20 +316,20 @@ export default function Header() {
                     Dashboard
                   </Link>
 
-                  {/* SabiTools - Mobile */}
+                  {/* SabiSuite - Mobile */}
                   <div className="px-3 py-2">
                     <button
-                      onClick={() => setIsSabiToolsOpen(!isSabiToolsOpen)}
+                      onClick={() => setIsSabiSuiteOpen(!isSabiSuiteOpen)}
                       className="flex items-center justify-between w-full text-gray-700"
                     >
                       <div className="flex items-center space-x-2">
-                        <Zap className="w-4 h-4" />
-                        <span>SabiTools</span>
+                        <Zap className="w-4 h-4 text-red-500 drop-shadow-[0_0_3px_rgba(251,113,133,0.8)]" />
+                        <span>SabiSuite</span>
                       </div>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isSabiToolsOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-4 h-4 transition-transform ${isSabiSuiteOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {isSabiToolsOpen && (
+                    {isSabiSuiteOpen && (
                       <div className="ml-4 mt-2 space-y-1">
                         {/* View all link for mobile */}
                         <Link
@@ -373,12 +372,12 @@ export default function Header() {
                   </Link>
 
                   <Link 
-                    href="/account/billing" 
+                    href="/account/wallet" 
                     className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded flex items-center space-x-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <CreditCard className="w-4 h-4" />
-                    <span>Billing</span>
+                    <Wallet className="w-4 h-4" />
+                    <span>Wallet</span>
                   </Link>
                 </>
               )}

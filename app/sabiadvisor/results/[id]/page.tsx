@@ -74,6 +74,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
+  const [expandAllForPDF, setExpandAllForPDF] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -106,55 +107,55 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   }
 
   const handleDownloadPDF = async () => {
-    setIsDownloading(true)
-    try {
-      const pdfContent = document.getElementById('pdf-content')
-      if (!pdfContent) {
-        throw new Error('Content not found')
-      }
-
-      // Collapse all roadmap months before capturing
-      setSelectedMonth(null)
-      
-      // Wait for UI to update
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      const canvas = await html2canvas(pdfContent, {
-        scale: 2, // Higher quality for download
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 1200,
-      })
-
-      const imgWidth = 210
-      const pageHeight = 297
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-      let heightLeft = imgHeight
-
-      const pdf = new jsPDF('p', 'mm', 'a4', true)
-      let position = 0
-
-      const imgData = canvas.toDataURL('image/png')
-
+  setIsDownloading(true)
+  try {
+    const pdfContent = document.getElementById('pdf-content')
+    if (!pdfContent) {
+      throw new Error('Content not found')
+    }
+    
+    // Expand all roadmap months before capturing
+    setExpandAllForPDF(true)
+    
+    // Wait for UI to update
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    const canvas = await html2canvas(pdfContent, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: 1200,
+    })
+    
+    const imgWidth = 210
+    const pageHeight = 297
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+    let heightLeft = imgHeight
+    const pdf = new jsPDF('p', 'mm', 'a4', true)
+    let position = 0
+    const imgData = canvas.toDataURL('image/png')
+    
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST')
+    heightLeft -= pageHeight
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight
+      pdf.addPage()
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST')
       heightLeft -= pageHeight
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight
-        pdf.addPage()
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST')
-        heightLeft -= pageHeight
-      }
-
-      pdf.save(`sabitek-career-path-${new Date().getTime()}.pdf`)
-    } catch (error) {
-      console.error('PDF generation error:', error)
-      alert('Failed to generate PDF. Please try again.')
-    } finally {
-      setIsDownloading(false)
     }
+    
+    pdf.save(`sabitek-career-path-${new Date().getTime()}.pdf`)
+  } catch (error) {
+    console.error('PDF generation error:', error)
+    alert('Failed to generate PDF. Please try again.')
+  } finally {
+    // Collapse back after PDF is generated
+    setExpandAllForPDF(false)
+    setIsDownloading(false)
   }
+}
 
   const handleSendEmail = async () => {
     if (!user?.email) {
@@ -169,11 +170,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         throw new Error('Content not found')
       }
 
-      // Collapse all roadmap months before capturing
-      setSelectedMonth(null)
-      
-      // Wait for UI to update
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Expand all roadmap months before capturing
+setExpandAllForPDF(true)
+
+// Wait for UI to update
+await new Promise(resolve => setTimeout(resolve, 300))
 
       // Use lower scale for email (reduces file size)
       const canvas = await html2canvas(pdfContent, {
@@ -241,8 +242,9 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       console.error('Email send error:', error)
       alert(error.message || 'Failed to send email. Please try downloading instead.')
     } finally {
-      setIsSendingEmail(false)
-    }
+  setExpandAllForPDF(false)
+  setIsSendingEmail(false)
+}
   }
 
   if (authLoading || loading) {
@@ -470,7 +472,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
               <div className="space-y-4">
                 {roadmap.months.map((month: MonthPlan, idx: number) => {
-                  const isExpanded = selectedMonth === month.month
+                  const isExpanded = expandAllForPDF || selectedMonth === month.month
                   
                   return (
                     <div key={month.month} className="relative">

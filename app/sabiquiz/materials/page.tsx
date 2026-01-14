@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FileText, Trash2, Calendar, HardDrive, Flame, Star, Trophy, ChevronRight } from 'lucide-react'
+import { FileText, Trash2, Calendar, HardDrive, Flame, Star, Trophy, ChevronRight, Wallet, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { useWallet } from '@/hooks/useWallet'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import FileUpload from '@/components/sabiquiz/FileUpload'
@@ -28,6 +30,7 @@ export default function MaterialsPage() {
   const [loading, setLoading] = useState(true)
   const [quickStats, setQuickStats] = useState<QuickStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
+  const { balance } = useWallet()
 
   useEffect(() => {
     Promise.all([fetchMaterials(), fetchQuickStats()])
@@ -128,11 +131,34 @@ export default function MaterialsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Study Materials</h1>
-        <p className="text-sm text-gray-600">
-          Upload materials to generate AI-powered quizzes
-        </p>
+      {/* Header with Wallet */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Study Materials</h1>
+          <p className="text-sm text-gray-600">
+            Upload materials to generate AI-powered quizzes
+          </p>
+        </div>
+        
+        {/* Wallet Display */}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/account/wallet"
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+          >
+            <Wallet className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-900">
+              {balance?.balanceFormatted || '₦0'}
+            </span>
+          </Link>
+          <Link
+            href="/account/wallet"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Top Up</span>
+          </Link>
+        </div>
       </div>
 
       {/* Mini Dashboard Snippet */}

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { routeModel, getModelConfig } from '@/lib/sabiwrite/model-router'
 import { getPricingRule, calculateCostEstimate, estimateTokens } from '@/lib/sabiwrite/pricing'
-import { debitWallet, getOrCreateWallet } from '@/lib/sabiwrite/wallet'
+import { debitWallet, getOrCreateWallet } from '@/lib/wallet'
 import { ToolType, ToneType, PlanTier } from '@/lib/sabiwrite/types'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -224,12 +224,21 @@ export async function POST(request: NextRequest) {
     const operationId = operation?.id
 
     // Debit wallet
-  const debitResult = await debitWallet(supabase, {
+  // Debit wallet (unified)
+    const debitResult = await debitWallet(supabase, {
       userId: user.id,
       amountKobo: costEstimate.totalCostKobo,
+      service: 'sabiwrite',
+      serviceRefId: operationId,
       referenceType: 'operation',
-      referenceId: operationId,
-      description: `${toolType} - ${action || 'default'}`
+      description: `SabiWrite ${toolType}${action ? ` - ${action}` : ''}`,
+      metadata: {
+        tool_type: toolType,
+        action: action,
+        session_id: currentSessionId,
+        input_tokens: inputTokens,
+        model: routeDecision.model
+      }
     })
 
     if (!debitResult.success) {

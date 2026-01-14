@@ -1,8 +1,10 @@
 'use client'
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { useEntitlements } from '@/hooks/useEntitlements'
+import { useWallet } from '@/hooks/useWallet'
 import { 
   Target, 
   Zap, 
@@ -10,188 +12,282 @@ import {
   ArrowRight,
   DollarSign,
   Clock,
-  Lock,
-  Crown
+  FileText,
+  Mail,
+  MessageSquare,
+  Map,
+  Wallet,
+  Plus,
+  ChevronRight,
+  Briefcase
 } from 'lucide-react'
+
+interface PricingItem {
+  operation_type: string
+  display_name: string
+  description: string
+  base_cost_kobo: number
+}
 
 export default function SabiAdvisorPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
-  const { canAccessSabiAdvisor, loading: entitlementsLoading } = useEntitlements()
-  const [isStarting, setIsStarting] = useState(false)
+  const { user, loading: authLoading } = useAuth()
+  const { balance } = useWallet()
+  const [pricing, setPricing] = useState<Record<string, PricingItem[]>>({})
+  const [loadingPricing, setLoadingPricing] = useState(true)
 
-  const handleStart = () => {
-    if (!user) {
-      router.push('/auth/login?redirect=/sabiadvisor/survey')
-      return
+  useEffect(() => {
+    fetchPricing()
+  }, [])
+
+  const fetchPricing = async () => {
+    try {
+      const res = await fetch('/api/advisor/pricing')
+      const data = await res.json()
+      setPricing(data.pricing || {})
+    } catch (error) {
+      console.error('Failed to fetch pricing:', error)
+    } finally {
+      setLoadingPricing(false)
     }
-    if (!canAccessSabiAdvisor) {
-      router.push('/pricing')
-      return
-    }
-    setIsStarting(true)
-    router.push('/sabiadvisor/survey')
   }
 
-// Show loading state while checking entitlements
-  if (user && entitlementsLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  const formatNaira = (kobo: number) => `₦${(kobo / 100).toLocaleString()}`
 
-  const isLocked = user && !canAccessSabiAdvisor
+  const tools = [
+    {
+      id: 'cv',
+      title: 'CV Builder',
+      description: 'Create ATS-optimized CVs tailored to your target role',
+      icon: FileText,
+      lightColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      href: '/sabiadvisor/cv',
+      features: ['Build from profile', 'Tailor to job description', 'ATS optimization'],
+      startingPrice: pricing.cv?.[0]?.base_cost_kobo
+    },
+    {
+      id: 'cover',
+      title: 'Cover Letter',
+      description: 'Generate personalized cover letters that feel human',
+      icon: Mail,
+      lightColor: 'bg-green-50',
+      textColor: 'text-green-600',
+      href: '/sabiadvisor/cover-letter',
+      features: ['Section structure', 'Company research', 'Tone customization'],
+      startingPrice: pricing.cover_letter?.[0]?.base_cost_kobo
+    },
+    {
+      id: 'interview',
+      title: 'Interview Prep',
+      description: 'Practice with AI and get feedback on your answers',
+      icon: MessageSquare,
+      lightColor: 'bg-purple-50',
+      textColor: 'text-purple-600',
+      href: '/sabiadvisor/interview',
+      features: ['Question bank', 'Mock interviews', 'Answer grading'],
+      startingPrice: pricing.interview?.[0]?.base_cost_kobo
+    },
+    {
+      id: 'roadmap',
+      title: 'Career Roadmap',
+      description: 'Get a personalized plan for your career growth',
+      icon: Map,
+      lightColor: 'bg-orange-50',
+      textColor: 'text-orange-600',
+      href: '/sabiadvisor/survey',
+      features: ['Personalized path', '6-month plan', 'Learning resources'],
+      startingPrice: pricing.roadmap?.[0]?.base_cost_kobo
+    }
+  ]
+
+  const stats = [
+    { icon: Target, value: '15+', label: 'Career Tracks', color: 'bg-blue-100', iconColor: 'text-blue-600' },
+    { icon: DollarSign, value: '₦300k-2M', label: 'Salary Range', color: 'bg-green-100', iconColor: 'text-green-600' },
+    { icon: Clock, value: '6-12mo', label: 'To Job-Ready', color: 'bg-purple-100', iconColor: 'text-purple-600' },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Pro Badge */}
-      {isLocked && (
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 sm:py-3 px-4">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
+    <div className="min-h-screen bg-gray-50">
+      {/* Sub Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-xs sm:text-sm font-medium">SabiAdvisor is a Pro feature</span>
+              <Briefcase className="w-5 h-5 text-red-500" />
+              <span className="font-semibold text-gray-900">SabiAdvisor</span>
             </div>
-            <button
-              onClick={() => router.push('/pricing')}
-              className="bg-white text-orange-600 hover:bg-orange-50 text-xs sm:text-sm px-3 sm:px-4 py-1 rounded-lg font-medium"
-            >
-              Upgrade to Pro
-            </button>
+            {user && (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/account/wallet"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-900">
+                    {balance?.balanceFormatted || '₦0'}
+                  </span>
+                </Link>
+                <Link
+                  href="/account/wallet"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Top Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="max-w-6xl mx-auto px-4 pt-10 sm:pt-12 lg:pt-16 pb-10 sm:pb-12 lg:pb-16">
-        {/* Hero */}
-        <div className="text-center mb-10 sm:mb-12 lg:mb-16 relative">
-          <div className="absolute inset-x-0 -top-10 h-[320px] sm:h-[380px] lg:h-[420px] bg-gradient-to-br from-pink-200/70 via-pink-100/60 to-red-100/50 rounded-[2rem] sm:rounded-[3rem] -z-10"></div>
-          <div className="absolute inset-x-0 -top-8 h-[300px] sm:h-[360px] lg:h-[400px] bg-gradient-to-tr from-red-100/60 via-pink-200/70 to-pink-50/50 rounded-[2rem] sm:rounded-[3rem] -z-10"></div>
-          <div className="absolute inset-x-0 -top-6 h-[280px] sm:h-[340px] lg:h-[380px] bg-gradient-to-b from-pink-100/80 via-pink-50/60 to-transparent rounded-[2rem] sm:rounded-[3rem] -z-10"></div>
-          
-          <div className="relative z-10 pt-10 sm:pt-12 lg:pt-16 pb-6 sm:pb-8">
-            <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm text-red-600 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold mb-4 sm:mb-6 border border-red-200 shadow-sm">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              Career Discovery Powered by SabiBot
+      {/* Hero - Matching SabiQuiz */}
+      <div className="relative overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        
+        <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-red-200">
+              <Zap className="w-3 h-3" />
+              AI-Powered Career Tools
             </div>
             
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-3 sm:mb-5 leading-tight px-4">
-              Find Your Perfect<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">
-                Tech Career Path
-              </span>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
+              Build Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">Professional Profile</span>
             </h1>
             
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
-              Take a quick survey and discover a clear path into tech with guidance 
-              on learning, growth, and reaching your full potential.
+            <p className="text-sm text-gray-600 max-w-xl mx-auto mb-4">
+              Create ATS-optimized CVs, write compelling cover letters, and ace your interviews with AI assistance.
+            </p>
+
+            {!user ? (
+              <button
+                onClick={() => router.push('/auth/login?redirect=/sabiadvisor')}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all"
+              >
+                Login to Get Started
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <Link
+                href="/sabiadvisor/profile"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all"
+              >
+                Complete Your Profile
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+
+            <p className="text-xs text-gray-500 mt-2">
+              No subscriptions • Pay per use • Cached results free
             </p>
           </div>
+        </div>
+      </div>
 
-          <button
-            onClick={handleStart}
-            disabled={isStarting}
-            className="group inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-red-600 to-pink-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base lg:text-lg hover:shadow-2xl hover:scale-105 transition-all duration-200 disabled:opacity-50 shadow-lg relative z-10"
-          >
-            {isStarting ? (
-              <>
-                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Starting...
-              </>
-            ) : isLocked ? (
-              <>
-                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                Upgrade to Unlock
-              </>
-            ) : !user ? (
-              <>
-                Login to Start
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </>
-            ) : (
-              <>
-                Start Career Discovery
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Profile Reminder */}
+        {user && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-3 mb-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span className="text-sm text-gray-700">
+                  <strong>Complete your profile</strong> to power all tools
+                </span>
+              </div>
+              <Link
+                href="/sabiadvisor/profile"
+                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap"
+              >
+                Edit Profile
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        )}
 
-          <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
-            10 minutes • {isLocked ? 'Pro Feature' : 'Free'} • Personalized insights
-          </p>
+        {/* Tools Grid - 2x2 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {tools.map((tool) => {
+            const Icon = tool.icon
+            return (
+              <Link
+                key={tool.id}
+                href={user ? tool.href : '/auth/login?redirect=/sabiadvisor'}
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 ${tool.lightColor} rounded-lg flex-shrink-0`}>
+                    <Icon className={`w-5 h-5 ${tool.textColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                        {tool.title}
+                      </h3>
+                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">{tool.description}</p>
+                    
+                    <div className="space-y-1 mb-2">
+                      {tool.features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+
+                    {tool.startingPrice && (
+                      <div className="text-xs">
+                        <span className="text-gray-400">From </span>
+                        <span className="font-semibold text-gray-900">
+                          {formatNaira(tool.startingPrice)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12 lg:mb-16">
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4">
-              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">15+ Tracks</h3>
-            <p className="text-xs sm:text-sm text-gray-600">From Frontend to Cloud Architecture</p>
-          </div>
-
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">₦300k-2M</h3>
-            <p className="text-xs sm:text-sm text-gray-600">Monthly salary ranges in Nigeria</p>
-          </div>
-
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">6-12 Months</h3>
-            <p className="text-xs sm:text-sm text-gray-600">Average time to job-ready</p>
-          </div>
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <div key={stat.label} className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                <div className={`w-8 h-8 ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
+                  <Icon className={`w-4 h-4 ${stat.iconColor}`} />
+                </div>
+                <h3 className="text-sm font-bold">{stat.value}</h3>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+              </div>
+            )
+          })}
         </div>
 
         {/* How It Works */}
-        <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-10 border border-gray-200 shadow-sm mb-10 sm:mb-12 lg:mb-16">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center mb-6 sm:mb-8 lg:mb-10">How It Works</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3 text-center">How It Works</h2>
+          <div className="grid grid-cols-4 gap-3">
             {[
-              { num: 1, title: 'Answer Questions', desc: 'Share your goals and situation' },
-              { num: 2, title: 'AI Analysis', desc: 'We evaluate your unique profile' },
-              { num: 3, title: 'Get Recommendations', desc: 'Top 3 paths ranked for you' },
-              { num: 4, title: 'Start Learning', desc: 'Follow your personalized plan' },
+              { num: 1, title: 'Create Profile', desc: 'Add experience & skills' },
+              { num: 2, title: 'Choose Tool', desc: 'CV, Cover Letter, etc.' },
+              { num: 3, title: 'Confirm Cost', desc: 'See price upfront' },
+              { num: 4, title: 'Download', desc: 'Export PDF/DOCX' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-base sm:text-lg lg:text-xl font-bold shadow-md">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg flex items-center justify-center mx-auto mb-1.5 text-sm font-bold">
                   {step.num}
                 </div>
-                <h3 className="font-bold text-gray-900 mb-1 sm:mb-2 text-xs sm:text-sm lg:text-base">{step.title}</h3>
-                <p className="text-xs text-gray-600">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* What You Get */}
-        <div className="text-center">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">What You'll Get</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto">
-            {[
-              'Top 3 career tracks matched to you',
-              'Confidence scores with rationale',
-              '7-day starter plan',
-              'Realistic salary expectations',
-              'Time to job-ready estimates',
-              'Free learning resources',
-              'Entry-level role guidance',
-              'Nigerian market insights',
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 sm:gap-3 text-left">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                <span className="text-xs sm:text-sm text-gray-700">{item}</span>
+                <h3 className="font-semibold text-gray-900 text-xs mb-0.5">{step.title}</h3>
+                <p className="text-[10px] text-gray-500">{step.desc}</p>
               </div>
             ))}
           </div>

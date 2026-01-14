@@ -1,25 +1,21 @@
 'use client'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { 
   Users, 
   MessageSquare, 
-  GraduationCap,
   ArrowRight,
   Sparkles,
-  Clock,
-  Globe,
-  Star,
   Target,
   Zap,
-  BookOpen,
-  Award,
   CheckCircle,
   Handshake,
-  Wallet
+  Wallet,
+  UserPlus,
+  Calendar
 } from 'lucide-react'
 
 export default function CommunityPage() {
@@ -36,46 +32,61 @@ export default function CommunityPage() {
     router.push('/community/profile')
   }
 
-  const handleBrowseRequests = () => {
-    if (!user) {
-      router.push('/auth/login?redirect=/community/requests')
-      return
-    }
-    router.push('/community/requests')
-  }
-
-  const features = [
+  const tools = [
     {
+      id: 'requests',
       title: 'Browse Requests',
       description: 'Find learners who need your expertise',
       icon: MessageSquare,
+      lightColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
       href: '/community/requests',
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50',
+      features: ['View all requests', 'Filter by skill', 'Make offers'],
     },
     {
+      id: 'mentors',
       title: 'Find Mentors',
       description: 'Connect with experts in any skill',
       icon: Users,
-      href: '/community/mentors',
-      iconColor: 'text-green-600',
-      iconBg: 'bg-green-50',
+      lightColor: 'bg-green-50',
+      textColor: 'text-green-600',
+      href: '/community/browse',
+      features: ['Search by skill', 'View profiles', 'Book sessions'],
     },
     {
+      id: 'profile',
       title: 'My Profile',
       description: 'Set your skills and availability',
       icon: Target,
+      lightColor: 'bg-purple-50',
+      textColor: 'text-purple-600',
       href: '/community/profile',
-      iconColor: 'text-purple-600',
-      iconBg: 'bg-purple-50',
+      features: ['Add teach skills', 'Add learn skills', 'Set rates'],
+    },
+    {
+      id: 'sessions',
+      title: 'My Sessions',
+      description: 'Manage your scheduled sessions',
+      icon: Calendar,
+      lightColor: 'bg-orange-50',
+      textColor: 'text-orange-600',
+      href: '/community/sessions',
+      features: ['View upcoming', 'Track history', 'Leave reviews'],
     },
   ]
 
- const stats = [
-  { icon: Handshake, label: 'Peer-to-Pro Learning' },
-  { icon: Sparkles, label: 'Smart Matching' },
-  { icon: Wallet, label: 'Earn with Skills' },
-]
+  const stats = [
+    { icon: Handshake, value: 'P2P', label: 'Learning' },
+    { icon: Sparkles, value: 'AI', label: 'Matching' },
+    { icon: Wallet, value: 'Earn', label: 'Credits' },
+  ]
+
+  const benefits = [
+    { icon: Users, title: 'Peer Learning', desc: 'Learn from those who understand your context' },
+    { icon: Wallet, title: 'Earn Credits', desc: 'Teach what you know and get paid' },
+    { icon: Calendar, title: 'Flexible', desc: 'Schedule sessions that fit your life' },
+    { icon: UserPlus, title: 'Free Start', desc: 'No upfront payment required' },
+  ]
 
   const handleFeatureClick = (href: string) => {
     if (!user) {
@@ -88,221 +99,150 @@ export default function CommunityPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-white">
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-red-50/80 via-red-50/60 to-white" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm text-red-600 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold mb-4 sm:mb-6 border border-red-200 shadow-sm">
-           <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-            AI Powered Peer-to-Peer Learning
-          </div>
+       <div className="min-h-screen bg-gray-50">
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-            SabiCommunity
-          </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 lg:mb-10 px-4">
-            Connect with mentors and learners across Nigeria. Share your knowledge, 
-            learn new skills, and earn credits through peer-to-peer sessions.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
+      {/* Hero - Compact with Gradient */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        
+        <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-red-200">
+              <Zap className="w-3 h-3" />
+              AI-Powered Peer Learning
+            </div>
+            
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
+              Learn and <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">Earn Together</span>
+            </h1>
+            
+            <p className="text-sm text-gray-600 max-w-xl mx-auto mb-4">
+              Connect with mentors and learners across Nigeria. Share your knowledge, learn new skills, and earn credits.
+            </p>
+
+            <button
               onClick={handleGetStarted}
               disabled={isStarting}
-              size="lg"
-              className="bg-red-500 hover:bg-red-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
             >
               {isStarting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   Loading...
                 </>
-              ) : !user ? (
-                'Login to Get Started'
               ) : (
                 <>
-                  Setup My Profile
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {user ? 'Setup My Profile' : 'Login to Get Started'}
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </Button>
-            <Button
-              onClick={handleBrowseRequests}
-              variant="outline"
-              size="lg"
-              className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Browse Requests
-            </Button>
-          </div>
+            </button>
 
-          {/* Stats */}
-          <div className="mt-10 sm:mt-12 lg:mt-16 grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-3xl mx-auto">
-            {stats.map((stat) => {
-              const Icon = stat.icon
-              return (
-                <div key={stat.label} className="text-center">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 mx-auto mb-1 sm:mb-2" />
-                  <p className="text-xs sm:text-sm text-gray-600">{stat.label}</p>
-                </div>
-              )
-            })}
+            <p className="text-xs text-gray-500 mt-2">
+              Free to start • Earn by teaching • Learn from peers
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">Learn and Teach Together</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Everyone has something to teach and something to learn</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {features.map((feature) => {
-            const Icon = feature.icon
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Tools Grid - 2x2 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {tools.map((tool) => {
+            const Icon = tool.icon
             return (
-              <Card
-                key={feature.title}
-                className="group cursor-pointer hover:shadow-md transition-all duration-300 border border-gray-200"
-                onClick={() => handleFeatureClick(feature.href)}
+              <div
+                key={tool.id}
+                onClick={() => handleFeatureClick(tool.href)}
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all group cursor-pointer"
               >
-                <div className="p-4 sm:p-5 lg:p-6">
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 ${feature.iconBg} rounded-lg flex items-center justify-center`}>
-                      <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${feature.iconColor}`} />
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 ${tool.lightColor} rounded-lg flex-shrink-0`}>
+                    <Icon className={`w-5 h-5 ${tool.textColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                        {tool.title}
+                      </h3>
+                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">{tool.description}</p>
+                    
+                    <div className="space-y-1">
+                      {tool.features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                          {feature}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  
-                  <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">{feature.title}</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">{feature.description}</p>
-                  
-                  <div className="flex items-center text-xs sm:text-sm text-gray-900 group-hover:text-red-500 transition-colors">
-                    {!user ? 'Login to access' : 'Open'}
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                  </div>
                 </div>
-              </Card>
+              </div>
             )
           })}
         </div>
-      </div>
 
-      {/* How It Works */}
-      <div className="bg-white border-y border-gray-200 py-10 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">How SabiCommunity Works</h2>
-            <p className="text-xs sm:text-sm text-gray-600">Simple peer-to-peer learning in 4 steps</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-base sm:text-lg lg:text-xl font-bold">
-                1
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <div key={stat.label} className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Icon className="w-4 h-4 text-red-500" />
+                </div>
+                <h3 className="text-sm font-bold">{stat.value}</h3>
+                <p className="text-xs text-gray-500">{stat.label}</p>
               </div>
-              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Set Your Skills</h3>
-              <p className="text-xs sm:text-sm text-gray-600">Add skills you can teach and want to learn</p>
-            </div>
+            )
+          })}
+        </div>
 
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-base sm:text-lg lg:text-xl font-bold">
-                2
+        {/* Benefits Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {benefits.map((benefit) => {
+            const Icon = benefit.icon
+            return (
+              <div key={benefit.title} className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Icon className="w-4 h-4 text-gray-700" />
+                </div>
+                <h3 className="text-xs font-semibold text-gray-900 mb-0.5">{benefit.title}</h3>
+                <p className="text-[10px] text-gray-500">{benefit.desc}</p>
               </div>
-              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Post or Browse</h3>
-              <p className="text-xs sm:text-sm text-gray-600">Post a request or find mentors for any skill</p>
-            </div>
+            )
+          })}
+        </div>
 
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-base sm:text-lg lg:text-xl font-bold">
-                3
+        {/* How It Works */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3 text-center">How It Works</h2>
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { num: 1, title: 'Set Skills', desc: 'Teach & learn' },
+              { num: 2, title: 'Connect', desc: 'Find matches' },
+              { num: 3, title: 'Book', desc: 'Schedule session' },
+              { num: 4, title: 'Earn', desc: 'Get credits' },
+            ].map((step) => (
+              <div key={step.num} className="text-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg flex items-center justify-center mx-auto mb-1.5 text-sm font-bold">
+                  {step.num}
+                </div>
+                <h3 className="font-semibold text-gray-900 text-xs mb-0.5">{step.title}</h3>
+                <p className="text-[10px] text-gray-500">{step.desc}</p>
               </div>
-              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Book Session</h3>
-              <p className="text-xs sm:text-sm text-gray-600">Schedule a 1:1 session at your convenience</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-base sm:text-lg lg:text-xl font-bold">
-                4
-              </div>
-              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Learn & Earn</h3>
-              <p className="text-xs sm:text-sm text-gray-600">Complete sessions and earn credits</p>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
-
-      {/* What You Get */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-        <div className="text-center mb-8 sm:mb-10">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">Why SabiCommunity?</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Built for Nigerian learners and mentors</p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto">
-          {[
-            'Learn from peers who understand your context',
-            'Teach what you know and earn credits',
-            'Flexible scheduling that fits your life',
-            'Support for low-bandwidth connections',
-            'Languages: English, Pidgin, Yoruba, Hausa, Igbo',
-            'Google Meet, Zoom, or WhatsApp calls',
-            'Build your reputation with reviews',
-            'Free to start - no upfront payment',
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-2 sm:gap-3 text-left bg-white p-3 rounded-lg border border-gray-200">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-gray-700">{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
-        <Card className="bg-gray-900 border-0 overflow-hidden">
-          <div className="relative p-6 sm:p-8 lg:p-12 text-center">
-            <div className="absolute inset-0 opacity-10" style={{
-              backgroundImage: 'url(https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }} />
-            
-            <div className="relative">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4">
-                Ready to join the community?
-              </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Set up your profile in 2 minutes and start connecting with learners and mentors
-              </p>
-              <Button
-                onClick={handleGetStarted}
-                size="lg"
-                className="bg-red-500 hover:bg-red-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base"
-              >
-                {!user ? 'Login to Get Started' : 'Complete My Profile'}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   )

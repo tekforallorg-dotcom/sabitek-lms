@@ -474,20 +474,19 @@ function selectFinalQuestions(
 // DATABASE OPERATIONS
 // ============================================================================
 
-/**
- * Save pipeline results to database
- */
 export async function savePipelineResults(
   result: PipelineResult,
   materialId: string,
   userId: string,
   category: string,
-  level: string
+  level: string,
+  supabaseClient?: typeof supabase
 ): Promise<void> {
+  const db = supabaseClient || supabase
+  
   if (!result.success || result.questions.length === 0) {
     throw new Error('No questions to save')
   }
-
   // Prepare questions for insertion
   const questionsToInsert = result.questions.map(q => ({
     material_id: materialId,
@@ -507,24 +506,18 @@ export async function savePipelineResults(
     status: 'approved',
     created_by: userId,
   }))
-
   console.log(`[Pipeline] Saving ${questionsToInsert.length} questions...`)
-
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('sabiquiz_questions')
     .insert(questionsToInsert)
     .select()
-
-  if (error) {
-    console.error('[Pipeline] Database error:', error)
-    throw new Error(`Failed to save questions: ${error.message}`)
-  }
+  
 
   console.log(`[Pipeline] Saved ${data?.length || 0} questions`)
 
   // Record generation run
   try {
-    await supabase.from('generation_runs').insert({
+    await db.from('generation_runs').insert({
       user_id: userId,
       material_id: materialId,
       model_used: 'gemini-2.0-flash-lite',

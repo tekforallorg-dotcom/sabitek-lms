@@ -1,4 +1,3 @@
-
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { PurchaseCourseModal } from '@/components/courses/PurchaseCourseModal'
 import { 
   BookOpen, 
   Users, 
@@ -57,6 +57,7 @@ export default function CourseDetailPage() {
   const [finishingCourse, setFinishingCourse] = useState(false)
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [generatedCertificateId, setGeneratedCertificateId] = useState<string | null>(null)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
   useEffect(() => {
     if (!authLoading) {
@@ -161,7 +162,7 @@ export default function CourseDetailPage() {
     }
   }
 
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     if (!user) {
       router.push('/auth/login')
       return
@@ -169,36 +170,17 @@ export default function CourseDetailPage() {
 
     if (!course) return
 
-    try {
-      setPurchasing(true)
-
-      const response = await fetch('/api/billing/purchase-course', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          courseId: course.id,
-          email: user.email
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to initialize purchase')
-      }
-
-      // Redirect to Paystack
-      window.location.href = data.authorization_url
-
-    } catch (error: any) {
-      console.error('Purchase error:', error)
-      alert(error.message || 'Failed to start purchase')
-    } finally {
-      setPurchasing(false)
-    }
+    // Show purchase modal instead of direct Paystack redirect
+    setShowPurchaseModal(true)
   }
 
+  const handlePurchaseSuccess = () => {
+    setShowPurchaseModal(false)
+    setHasPurchased(true)
+    setIsEnrolled(true)
+    // Refresh the page data
+    fetchCourseData()
+  }
   const handleFinishCourse = async () => {
     if (!user || !course) return
 
@@ -355,6 +337,21 @@ export default function CourseDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Purchase Modal */}
+      {course && (
+        <PurchaseCourseModal
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
+          course={{
+            id: course.id,
+            title: course.title,
+            price: course.price || 0,
+            currency: course.currency
+          }}
+          onSuccess={handlePurchaseSuccess}
+        />
+      )}
+      
       {/* Congratulations Modal */}
       {showCongratsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">

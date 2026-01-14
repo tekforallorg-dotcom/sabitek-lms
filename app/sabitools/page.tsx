@@ -1,21 +1,26 @@
 'use client'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useWallet } from '@/hooks/useWallet'
 import { 
   Search, 
   Zap, 
-  ArrowRight,
+  TrendingUp,
+  Wallet,
+  Plus,
+  Layers,
   Sparkles,
-  TrendingUp
+  ArrowUpRight
 } from 'lucide-react'
 import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
 
-export default function SabiToolsPage() {
+export default function SabiSuitePage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  const { balance } = useWallet()
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredTools = sabitoolsCatalog.filter(tool => {
@@ -33,21 +38,21 @@ export default function SabiToolsPage() {
     switch (status) {
       case 'new':
         return (
-          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-            NEW
+          <span className="px-2 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-[10px] font-bold rounded-lg uppercase shadow-sm">
+            New
           </span>
         )
       case 'popular':
         return (
-          <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
-            POPULAR
+          <span className="px-2 py-1 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] font-bold rounded-lg uppercase shadow-sm flex items-center gap-1">
+            <TrendingUp className="w-2.5 h-2.5" />
+            Hot
           </span>
         )
       case 'beta':
         return (
-          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-            BETA
+          <span className="px-2 py-1 bg-gradient-to-r from-purple-400 to-pink-500 text-white text-[10px] font-bold rounded-lg uppercase shadow-sm">
+            Beta
           </span>
         )
       default:
@@ -55,22 +60,74 @@ export default function SabiToolsPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium">Powered by AI</span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Sub Header */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                <Layers className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold text-gray-900">SabiSuite</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full text-xs text-gray-600">
+                <Sparkles className="w-3.5 h-3.5 text-red-500" />
+                <span>{sabitoolsCatalog.length} tools</span>
+              </div>
+              {user && (
+                <>
+                  <Link
+                    href="/account/wallet"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 shadow-sm transition-all hover:shadow-md"
+                  >
+                    <Wallet className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm font-semibold text-gray-900">
+                      {balance?.balanceFormatted || '₦0'}
+                    </span>
+                  </Link>
+                  <Link
+                    href="/account/wallet"
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Top Up</span>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero - Compact with Gradient */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        
+        <div className="relative max-w-6xl mx-auto px-4 py-10 sm:py-12">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm text-red-600 px-4 py-2 rounded-full text-xs font-semibold mb-4 border border-red-100 shadow-sm">
+              <Zap className="w-3.5 h-3.5" />
+              AI-Powered Learning Suite
             </div>
             
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-white">
-  <span className="text-red-500">Sabi</span>Tools
-</h1>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-300 mb-8">
-              One place to access Sabitek tools that help you learn, create, and grow your career.
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-3">
+              All Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500">Learning Tools</span>
+            </h1>
+            
+            <p className="text-sm sm:text-base text-gray-600 max-w-lg mx-auto mb-6">
+              Discover AI tools that help you learn, create, and grow your career.
             </p>
 
             {/* Search */}
@@ -81,134 +138,112 @@ export default function SabiToolsPage() {
                 placeholder="Search tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-300 shadow-lg shadow-gray-200/50 transition-all"
               />
             </div>
           </div>
         </div>
-
-        {/* Wave decoration */}
-        <div className="h-16 bg-gray-50 relative -mt-1">
-          <svg 
-            className="absolute -top-1 left-0 w-full h-16 text-gray-900" 
-            viewBox="0 0 1440 64" 
-            fill="currentColor"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,32 C480,64 960,0 1440,32 L1440,0 L0,0 Z"></path>
-          </svg>
-        </div>
       </div>
 
-      {/* Tools Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-red-500" />
-            <span>{sabitoolsCatalog.length} tools available</span>
-          </div>
-        </div>
-
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Tools Grid */}
         {filteredTools.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredTools.map((tool) => {
               const IconComponent = tool.icon
               return (
-                <Card 
+                <div
                   key={tool.id}
-                  className="group hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-red-200 overflow-hidden cursor-pointer"
-                  onClick={() => router.push(tool.href)}
+                  onClick={() => {
+                    if (!user) {
+                      router.push(`/auth/login?redirect=${tool.href}`)
+                    } else {
+                      router.push(tool.href)
+                    }
+                  }}
+                  className="group relative bg-white rounded-3xl border border-gray-200/80 p-5 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:border-red-200 hover:-translate-y-1"
                 >
-                  <CardContent className="p-0">
-                    {/* Card Header with gradient */}
-                    <div className="h-2 bg-gradient-to-r from-red-500 to-red-600"></div>
-                    
-                    <div className="p-5 sm:p-6">
-                      {/* Icon and Status */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-100 transition-colors">
-                          <IconComponent className="w-6 h-6 text-red-600" />
+                  {/* Gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-50/0 to-pink-50/0 group-hover:from-red-50/50 group-hover:to-pink-50/50 rounded-3xl transition-all duration-300" />
+                  
+                  <div className="relative">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      {/* Icon */}
+                      <div className="relative">
+                        <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:shadow-red-500/40 group-hover:scale-105 transition-all duration-300">
+                          <IconComponent className="w-7 h-7 text-white" />
                         </div>
-                        {getStatusBadge(tool.status)}
                       </div>
+                      
+                      {/* Status Badge */}
+                      {getStatusBadge(tool.status)}
+                    </div>
 
-                      {/* Name */}
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
+                    {/* Content */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-red-600 transition-colors">
                         {tool.name}
                       </h3>
-
-                      {/* Short Description */}
                       <p className="text-sm text-gray-500 mb-3">
                         {tool.shortDescription}
                       </p>
-
-                      {/* Long Description */}
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      <p className="text-xs text-gray-400 line-clamp-2">
                         {tool.longDescription}
                       </p>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {tool.tags.slice(0, 3).map(tag => (
-                          <span 
-                            key={tag}
-                            className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* CTA */}
-                      <Button
-                        className="w-full bg-gray-900 hover:bg-red-600 text-white transition-colors group-hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (!user) {
-                            router.push(`/auth/login?redirect=${tool.href}`)
-                          } else {
-                            router.push(tool.href)
-                          }
-                        }}
-                      >
-                        Open Tool
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {tool.tags.map((tag, i) => (
+                        <span 
+                          key={i}
+                          className="px-2.5 py-1 bg-gray-100 group-hover:bg-white text-gray-600 text-[11px] font-medium rounded-lg transition-colors"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <span className="text-xs text-gray-400">Click to open</span>
+                      <div className="w-8 h-8 bg-gray-100 group-hover:bg-red-500 rounded-full flex items-center justify-center transition-all duration-300">
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )
             })}
           </div>
         ) : (
           <div className="text-center py-16">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No tools found</h3>
-            <p className="text-sm text-gray-600">
-              Try a different search term
-            </p>
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-300" />
+            </div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">No tools found</h3>
+            <p className="text-xs text-gray-500">Try a different search term</p>
           </div>
         )}
-      </div>
 
-      {/* Bottom CTA */}
-      <div className="bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-            More tools coming soon
-          </h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            We're building more AI-powered tools to help Nigerian learners succeed. 
-            Stay tuned for updates!
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/courses')}
-            className="border-gray-300"
-          >
-            Browse Courses
-          </Button>
+        {/* Coming Soon */}
+        <div className="mt-10 relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 text-center">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }} />
+          </div>
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium text-white">Coming Soon</span>
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">More tools on the way</h2>
+            <p className="text-sm text-gray-400 max-w-md mx-auto">
+              We're building more AI-powered tools to help learners across Africa succeed. Stay tuned!
+            </p>
+          </div>
         </div>
       </div>
     </div>

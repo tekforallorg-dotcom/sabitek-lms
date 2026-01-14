@@ -1,27 +1,46 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Sparkles, CheckCircle, XCircle, Loader2, Bot, FileText, Brain, ClipboardCheck, Star } from 'lucide-react'
+import { useWallet } from '@/hooks/useWallet'
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  CheckCircle, 
+  XCircle, 
+  Loader2, 
+  Bot, 
+  FileText, 
+  Brain, 
+  ClipboardCheck, 
+  Star,
+  Wallet
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { runPipeline, savePipelineResults, type PipelineResult, type PipelineProgress } from '@/lib/sabiquiz/pipeline'
-import { getQuestionsForMaterial } from '@/lib/sabiquiz/question-generator'
 import type { Material } from '@/lib/sabiquiz/types'
-import type { Question } from '@/lib/sabiquiz/validators'
 
-// USD to NGN conversion rate
-const USD_TO_NGN = 1600
+interface Question {
+  id: string
+  question: string
+  options: string[]
+  correct_answer: string
+  difficulty: string
+  topic: string
+}
 
-function formatNaira(usdAmount: number): string {
-  const ngnAmount = usdAmount * USD_TO_NGN
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(ngnAmount)
+interface CostEstimate {
+  costKobo: number
+  costFormatted: string
+  displayName: string
+}
+
+interface GenerationStats {
+  questionsGenerated: number
+  averageQualityScore: number
+  costEstimateUSD: number
+  costEstimateNGN: number
 }
 
 // Generation steps for user-friendly display
@@ -33,28 +52,43 @@ const GENERATION_STEPS = [
   { id: 'complete', label: 'Done!', icon: CheckCircle },
 ]
 
-function getStepIndex(stage: string): number {
-  const index = GENERATION_STEPS.findIndex(s => s.id === stage)
-  return index >= 0 ? index : 0
-}
-
 export default function GeneratePage() {
   const params = useParams()
   const router = useRouter()
+  const { balance, refreshBalance } = useWallet()
   const materialId = params.id as string
 
   const [material, setMaterial] = useState<Material | null>(null)
   const [generating, setGenerating] = useState(false)
-  const [progress, setProgress] = useState<PipelineProgress | null>(null)
+  const [currentStep, setCurrentStep] = useState(-1)
   const [questions, setQuestions] = useState<Question[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<PipelineResult | null>(null)
-  const [questionCount, setQuestionCount] = useState(0)
+  const [stats, setStats] = useState<GenerationStats | null>(null)
+  const [generationComplete, setGenerationComplete] = useState(false)
+  const [newQuestionsCount, setNewQuestionsCount] = useState(0)
+  
+  // Pricing state
+  const [costEstimate, setCostEstimate] = useState<CostEstimate | null>(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [chargedAmount, setChargedAmount] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMaterial()
     fetchExistingQuestions()
+    fetchCostEstimate()
   }, [materialId])
+
+  async function fetchCostEstimate() {
+    try {
+      const res = await fetch('/api/sabiquiz/generate?operation=quiz_generate')
+      if (res.ok) {
+        const data = await res.json()
+        setCostEstimate(data)
+      }
+    } catch (error) {
+      console.error('Cost estimate error:', error)
+    }
+  }
 
   async function fetchMaterial() {
     const { data, error } = await supabase
@@ -74,24 +108,18 @@ export default function GeneratePage() {
 
   async function fetchExistingQuestions() {
     try {
-      const existingQuestions = await getQuestionsForMaterial(materialId)
-      setQuestions(existingQuestions)
+      const { data } = await supabase
+        .from('sabiquiz_questions')
+        .select('*')
+        .eq('material_id', materialId)
+
+      if (data && data.length > 0) {
+        setQuestions(data)
+      }
     } catch (error) {
       console.error('Error fetching questions:', error)
     }
   }
-
-  const handleProgressUpdate = useCallback((p: PipelineProgress) => {
-    setProgress(p)
-    
-    // Simulate question count during generation
-    if (p.stage === 'generating') {
-      const count = Math.floor((p.percent - 40) / 3)
-      setQuestionCount(Math.min(10, Math.max(0, count)))
-    } else if (p.stage === 'reviewing' || p.stage === 'selecting') {
-      setQuestionCount(10)
-    }
-  }, [])
 
   async function handleGenerate() {
     if (!material || !material.extracted_text) {
@@ -99,56 +127,69 @@ export default function GeneratePage() {
       return
     }
 
+    setShowConfirmModal(false)
     setGenerating(true)
     setError(null)
-    setResult(null)
-    setQuestionCount(0)
-    setProgress({ stage: 'init', message: 'Starting...', percent: 0 })
+    setStats(null)
+    setGenerationComplete(false)
+    setCurrentStep(0)
+    setChargedAmount(null)
+    setNewQuestionsCount(0)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const pipelineResult = await runPipeline(
-        material.extracted_text,
-        materialId,
-        material.category || 'General',
-        material.level || 'Foundation (Beginner)',
-        {
-          questionCount: 10,
-          difficultyMix: { easy: 3, medium: 5, hard: 2 },
-          useAdvancedPipeline: false,
-          useAIReview: false,
-        },
-        handleProgressUpdate
-      )
+      // Simulate progress steps
+      const progressInterval = setInterval(() => {
+        setCurrentStep(prev => Math.min(prev + 1, 3))
+      }, 2000)
 
-      if (!pipelineResult.success || pipelineResult.questions.length === 0) {
-        throw new Error(pipelineResult.errors.join(', ') || 'No questions were generated. Please try again.')
+      const response = await fetch('/api/sabiquiz/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          materialId,
+          materialText: material.extracted_text,
+          category: material.category || 'General',
+          level: material.level || 'Foundation (Beginner)',
+          questionCount: 10,
+        }),
+      })
+
+      clearInterval(progressInterval)
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 402) {
+          throw new Error('Insufficient wallet balance. Please top up to continue.')
+        }
+        throw new Error(data.error || 'Failed to generate questions')
       }
 
-      await savePipelineResults(
-        pipelineResult,
-        materialId,
-        user.id,
-        material.category || 'General',
-        material.level || 'Foundation (Beginner)'
-      )
-
-      setResult(pipelineResult)
-      setQuestionCount(pipelineResult.questions.length)
-      setProgress({ stage: 'complete', message: 'Done!', percent: 100 })
-
+      const newQuestions = data.questions || []
+      setNewQuestionsCount(newQuestions.length)
+      setStats(data.stats)
+      setChargedAmount(data.charged)
+      setCurrentStep(4) // Complete
+      setGenerationComplete(true)
+      
+      // Refresh questions list and balance
       await fetchExistingQuestions()
+      refreshBalance()
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Generation error:', err)
-      setError(err.message || 'Failed to generate questions')
-      setProgress(null)
+      setError(err instanceof Error ? err.message : 'Failed to generate questions')
+      setCurrentStep(-1)
     } finally {
       setGenerating(false)
     }
   }
+
+  const formatNaira = (kobo: number) => `₦${(kobo / 100).toLocaleString()}`
 
   if (!material) {
     return (
@@ -160,7 +201,7 @@ export default function GeneratePage() {
     )
   }
 
-  const currentStepIndex = progress ? getStepIndex(progress.stage) : -1
+  const hasExistingQuestions = questions.length > 0
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -175,12 +216,33 @@ export default function GeneratePage() {
       </Button>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Generate Quiz Questions</h1>
-        <p className="text-sm text-gray-600">
-          SabiBot will analyze your material and create quiz questions
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Generate Quiz Questions</h1>
+            <p className="text-sm text-gray-600">
+              SabiBot will analyze your material and create quiz questions
+            </p>
+          </div>
+          {/* Wallet & Cost Badge */}
+          <div className="flex items-center gap-2">
+            {costEstimate && (
+              <div className="flex items-center gap-1.5 bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                {costEstimate.costFormatted}/gen
+              </div>
+            )}
+            <button
+              onClick={() => router.push('/account/wallet')}
+              className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors"
+            >
+              <Wallet className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-900">
+                {balance?.balanceFormatted || '₦0'}
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
-
+      
       {/* Material Details */}
       <Card className="mb-6">
         <CardHeader className="pb-3">
@@ -199,22 +261,14 @@ export default function GeneratePage() {
             <span className="text-gray-600">Level:</span>
             <span className="font-medium">{material.level}</span>
           </div>
+          {hasExistingQuestions && (
+            <div className="flex justify-between pt-2 border-t">
+              <span className="text-gray-600">Questions available:</span>
+              <span className="font-medium text-green-600">{questions.length}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-     {/* Existing Questions */}
-      {questions.length > 0 && !generating && (
-        <Card className="mb-6 bg-green-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <p className="text-sm text-green-800">
-                <strong>{questions.length} questions</strong> already generated for this material
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Error Display */}
       {error && (
@@ -222,14 +276,24 @@ export default function GeneratePage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <XCircle className="w-5 h-5 text-red-600" />
-              <p className="text-sm text-red-800">{error}</p>
+              <div className="flex-1">
+                <p className="text-sm text-red-800">{error}</p>
+                {error.includes('wallet') && (
+                  <button
+                    onClick={() => router.push('/account/wallet')}
+                    className="mt-1 text-xs text-red-600 underline"
+                  >
+                    Top up wallet →
+                  </button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* SabiBot Progress Display */}
-      {progress && generating && (
+      {generating && (
         <Card className="mb-6 border-red-200 bg-gradient-to-br from-red-50 to-white">
           <CardContent className="p-6">
             {/* SabiBot Header */}
@@ -247,9 +311,8 @@ export default function GeneratePage() {
             <div className="space-y-3 mb-6">
               {GENERATION_STEPS.slice(0, -1).map((step, index) => {
                 const StepIcon = step.icon
-                const isActive = index === currentStepIndex
-                const isComplete = index < currentStepIndex
-                const isPending = index > currentStepIndex
+                const isActive = index === currentStep
+                const isComplete = index < currentStep
 
                 return (
                   <div 
@@ -280,11 +343,6 @@ export default function GeneratePage() {
                     }`}>
                       {step.label}
                     </span>
-                    {isActive && progress.stage === 'generating' && (
-                      <span className="ml-auto text-sm font-bold text-red-600">
-                        {questionCount}/10
-                      </span>
-                    )}
                   </div>
                 )
               })}
@@ -294,15 +352,15 @@ export default function GeneratePage() {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-red-600 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${progress.percent}%` }}
+                style={{ width: `${Math.min((currentStep + 1) * 25, 100)}%` }}
               />
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Success Results - Simplified */}
-      {result && result.success && (
+      {/* Success Results */}
+      {generationComplete && (
         <Card className="mb-6 bg-gradient-to-br from-green-50 to-white border-green-200">
           <CardContent className="p-6">
             {/* Success Header */}
@@ -313,70 +371,115 @@ export default function GeneratePage() {
               <div>
                 <h3 className="font-semibold text-gray-900">Questions Ready!</h3>
                 <p className="text-sm text-gray-600">
-                  SabiBot added {result.questions.length} new questions
+                  SabiBot added {newQuestionsCount} new questions
                 </p>
               </div>
             </div>
 
-            {/* Simple Stats */}
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-white rounded-lg border border-green-100">
-                <div className="text-2xl font-bold text-green-600">+{result.questions.length}</div>
+                <div className="text-2xl font-bold text-green-600">+{newQuestionsCount}</div>
                 <div className="text-xs text-gray-600">New</div>
               </div>
               <div className="text-center p-4 bg-white rounded-lg border border-green-100">
                 <div className="text-2xl font-bold text-green-600">
-                  {(result.stats.averageQualityScore * 100).toFixed(0)}%
+                  {stats ? `${(stats.averageQualityScore * 100).toFixed(0)}%` : '—'}
                 </div>
                 <div className="text-xs text-gray-600">Quality</div>
               </div>
               <div className="text-center p-4 bg-white rounded-lg border border-green-100">
-                <div className="text-2xl font-bold text-green-600">
-                  {formatNaira(result.stats.costEstimateUSD)}
-                </div>
-                <div className="text-xs text-gray-600">Cost</div>
+                <div className="text-2xl font-bold text-green-600">{chargedAmount}</div>
+                <div className="text-xs text-gray-600">Charged</div>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Generate Button */}
-      {!generating && !result && (
-        <Button
-          onClick={handleGenerate}
-          disabled={generating || !material.extracted_text}
-          className="w-full bg-red-600 hover:bg-red-700 text-white"
-          size="lg"
-        >
-          <Sparkles className="w-4 h-4 mr-2" />
-          Generate 10 Questions
-        </Button>
-      )}
-
-      {/* Start Quiz Button */}
-      {(questions.length > 0 || (result && result.success)) && (
-        <div className="mt-6 space-y-3">
-          <Button
-            onClick={() => router.push(`/sabiquiz/quiz/start/${materialId}`)}
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
-            size="lg"
-          >
-            Start Quiz
-          </Button>
-          {result && (
+      {/* Action Buttons */}
+      {!generating && (
+        <div className="space-y-3">
+          {/* Start Quiz - if questions exist */}
+          {hasExistingQuestions && (
             <Button
-              onClick={() => {
-                setResult(null)
-                setProgress(null)
-              }}
-              variant="outline"
-              className="w-full"
+              onClick={() => router.push(`/sabiquiz/quiz/start/${materialId}`)}
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              size="lg"
             >
-              Generate More Questions
+              Start Quiz ({questions.length} questions)
             </Button>
           )}
+          
+          {/* Generate Button */}
+          <Button
+            onClick={() => setShowConfirmModal(true)}
+            disabled={!material.extracted_text}
+            variant={hasExistingQuestions ? 'outline' : 'default'}
+            className={!hasExistingQuestions ? 'w-full bg-red-600 hover:bg-red-700 text-white' : 'w-full'}
+            size="lg"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {hasExistingQuestions ? 'Generate 10 More Questions' : 'Generate 10 Questions'}
+          </Button>
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowConfirmModal(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-xl shadow-2xl z-50 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate Quiz Questions</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This will generate 10 AI-powered questions from your material.
+            </p>
+            
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Cost:</span>
+                <span className="font-medium">{costEstimate?.costFormatted || '₦50'}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span className="text-gray-600">Your balance:</span>
+                <span className="font-medium">{balance?.balanceFormatted || '₦0'}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span className="text-gray-600">After charge:</span>
+                <span className="font-medium">
+                  {balance && costEstimate 
+                    ? formatNaira(balance.balanceKobo - costEstimate.costKobo)
+                    : '...'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGenerate}
+                disabled={!balance || balance.balanceKobo < (costEstimate?.costKobo || 0)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Generate
+              </button>
+            </div>
+
+            {balance && costEstimate && balance.balanceKobo < costEstimate.costKobo && (
+              <button
+                onClick={() => router.push('/account/wallet')}
+                className="w-full mt-3 text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Top up wallet →
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
