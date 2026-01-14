@@ -3,9 +3,6 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import type { ParsedDocument } from '@/lib/advisor/resume-schema'
-import { createRequire } from 'node:module'
-
-const require = createRequire(import.meta.url)
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -106,60 +103,26 @@ async function parseTxtFile(file: File): Promise<ParsedDocument> {
 }
 
 /**
- * Parse PDF file using pdf-parse v2.x
+ * Parse PDF file using unpdf (serverless-compatible, no worker required)
  */
 async function parsePdfFile(file: File): Promise<ParsedDocument> {
   try {
-    const mod = require('pdf-parse')
-    const PDFParse = mod.PDFParse
-    
-    if (!PDFParse) {
-      throw new Error('PDFParse class not found')
-    }
+    const { extractText } = await import('unpdf')
     
     const arrayBuffer = await file.arrayBuffer()
     const uint8Array = new Uint8Array(arrayBuffer)
     
-    const parser = new PDFParse(uint8Array)
+    console.log(`📄 Parsing PDF: ${file.name} (${uint8Array.length} bytes)`)
     
-    let rawText: unknown = ''
-    let numPages = 1
+    const { text, totalPages } = await extractText(uint8Array)
     
-    if (typeof parser.loadPDF === 'function') {
-      const data = await parser.loadPDF()
-      rawText = data?.text || parser.text || ''
-      numPages = data?.numpages || parser.numPages || 1
-    } else if (typeof parser.getText === 'function') {
-      rawText = await parser.getText()
-      numPages = parser.numPages || 1
-    } else if (typeof parser.render === 'function') {
-      await parser.render()
-      rawText = parser.text || ''
-      numPages = parser.numPages || 1
-    } else {
-      rawText = parser.text || ''
-      numPages = parser.numPages || 1
-    }
-    
-    // Ensure text is a string
-    let text = ''
-    if (typeof rawText === 'string') {
-      text = rawText
-    } else if (Array.isArray(rawText)) {
-      text = rawText.join('\n')
-    } else if (rawText && typeof rawText === 'object') {
-      // Try to extract text from object
-      const obj = rawText as Record<string, unknown>
-      text = String(obj.text || obj.content || obj.data || JSON.stringify(rawText))
-    } else {
-      text = String(rawText || '')
-    }
+    console.log(`📄 PDF loaded: ${totalPages} pages`)
     
     const cleanedText = cleanText(text)
     const charCount = cleanedText.length
     
-    const expectedMinChars = numPages * 200
-    const isScannedLikely = charCount < 200 || (numPages > 0 && charCount < expectedMinChars * 0.3)
+    const expectedMinChars = totalPages * 200
+    const isScannedLikely = charCount < 200 || (totalPages > 0 && charCount < expectedMinChars * 0.3)
     
     let parseQuality: 'good' | 'partial' | 'poor' = 'good'
     if (charCount < 100) {
@@ -168,7 +131,7 @@ async function parsePdfFile(file: File): Promise<ParsedDocument> {
       parseQuality = 'partial'
     }
 
-    console.log(`PDF parsed: ${charCount} chars from ${numPages} pages, quality: ${parseQuality}`)
+    console.log(`✅ PDF parsed: ${charCount} chars from ${totalPages} pages, quality: ${parseQuality}`)
 
     return {
       rawText: cleanedText,
@@ -181,7 +144,8 @@ async function parsePdfFile(file: File): Promise<ParsedDocument> {
       }
     }
   } catch (error) {
-    console.error('PDF parse error:', error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error('PDF parse error with unpdf:', errorMsg)
     
     return {
       rawText: '',
@@ -347,7 +311,6 @@ function extractSections(text: string): ParsedDocument['sectionsGuess'] {
  * Clean extracted text
  */
 function cleanText(text: unknown): string {
-  // Ensure we have a string
   let str = ''
   if (typeof text === 'string') {
     str = text
