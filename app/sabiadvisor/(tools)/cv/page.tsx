@@ -386,6 +386,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   setShowConfirmModal(true)
 }
 
+
   // FIX 2: Single confirmGenerate with progress status
   const confirmGenerate = async () => {
     setShowConfirmModal(false)
