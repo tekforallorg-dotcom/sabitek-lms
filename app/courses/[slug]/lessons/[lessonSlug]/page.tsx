@@ -8,8 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/components/providers/auth-provider'
 import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
-import { useEntitlements } from '@/hooks/useEntitlements'
-import { Lock, Crown } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
 import { 
   Save, 
@@ -22,7 +21,8 @@ import {
   FileText,
   Award,
   X,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react'
 
 interface Lesson {
@@ -66,6 +66,94 @@ interface Quiz {
   created_by: string
 }
 
+// Custom Modal Component (replaces alert/confirm)
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  message: string
+  type?: 'info' | 'success' | 'error' | 'warning'
+  actions?: Array<{
+    label: string
+    onClick: () => void
+    variant?: 'primary' | 'secondary'
+  }>
+}
+
+function Modal({ isOpen, onClose, title, message, type = 'info', actions }: ModalProps) {
+  if (!isOpen) return null
+
+  const iconMap = {
+    info: <AlertCircle className="w-6 h-6 text-blue-500" />,
+    success: <CheckCircle className="w-6 h-6 text-green-500" />,
+    error: <X className="w-6 h-6 text-red-500" />,
+    warning: <AlertTriangle className="w-6 h-6 text-amber-500" />
+  }
+
+  const bgMap = {
+    info: 'from-blue-500 to-blue-600',
+    success: 'from-green-500 to-green-600',
+    error: 'from-red-500 to-red-600',
+    warning: 'from-amber-500 to-amber-600'
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {/* Gradient header */}
+        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              {iconMap[type]}
+            </div>
+            <h3 className="text-lg font-bold text-white">{title}</h3>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-5">
+          <p className="text-gray-600 text-sm whitespace-pre-line">{message}</p>
+        </div>
+        
+        {/* Actions */}
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          {actions ? (
+            actions.map((action, i) => (
+              <Button
+                key={i}
+                onClick={action.onClick}
+                variant={action.variant === 'secondary' ? 'outline' : 'default'}
+                className={action.variant === 'primary' 
+                  ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+                  : ''
+                }
+                size="sm"
+              >
+                {action.label}
+              </Button>
+            ))
+          ) : (
+            <Button
+              onClick={onClose}
+              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white"
+              size="sm"
+            >
+              OK
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LessonViewerPage() {
   const params = useParams()
   const router = useRouter()
@@ -89,13 +177,34 @@ export default function LessonViewerPage() {
   const [quizAttempts, setQuizAttempts] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({})
   const [quizSubmitted, setQuizSubmitted] = useState(false)
-  const { isProUser, loading: entitlementsLoading } = useEntitlements()
   const [quizResults, setQuizResults] = useState<{
     score: number
     passed: boolean
     correctAnswers: number
     totalQuestions: number
   } | null>(null)
+
+  // Modal state (replaces alert)
+  const [modal, setModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'info' | 'success' | 'error' | 'warning'
+    actions?: ModalProps['actions']
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  })
+
+  const showModal = (title: string, message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info', actions?: ModalProps['actions']) => {
+    setModal({ isOpen: true, title, message, type, actions })
+  }
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }))
+  }
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -311,9 +420,13 @@ export default function LessonViewerPage() {
         console.error('❌ Database error:', error)
         
         if (error.code === '42501' || error.message.includes('permission') || error.message.includes('policy')) {
-          alert(`⚠️ Permission Error\n\nYou don't have permission to mark lessons as complete. This is a database security issue.\n\nError: ${error.message}\n\nPlease contact support or check your Supabase RLS policies.`)
+          showModal(
+            'Permission Error',
+            `You don't have permission to mark lessons as complete. This is a database security issue.\n\nError: ${error.message}\n\nPlease contact support or check your Supabase RLS policies.`,
+            'warning'
+          )
         } else {
-          alert(`Error marking lesson as complete: ${error.message}`)
+          showModal('Error', `Error marking lesson as complete: ${error.message}`, 'error')
         }
         return
       }
@@ -350,7 +463,7 @@ export default function LessonViewerPage() {
       
     } catch (error) {
       console.error('💥 Unexpected error:', error)
-      alert(`An unexpected error occurred: ${error}`)
+      showModal('Error', `An unexpected error occurred: ${error}`, 'error')
     }
   }
 
@@ -405,7 +518,7 @@ export default function LessonViewerPage() {
         
         if (updateError) {
           console.error('Update failed:', updateError)
-          alert(`Failed to update notes: ${updateError.message}`)
+          showModal('Error', `Failed to update notes: ${updateError.message}`, 'error')
         } else {
           console.log('Note updated successfully:', updatedNote)
           setNotesId(existingNote.id)
@@ -450,7 +563,7 @@ export default function LessonViewerPage() {
           
           if (altInsertError) {
             console.error('Insert also failed with notes column:', altInsertError)
-            alert(`Failed to create notes. Please check if the table structure is correct.`)
+            showModal('Error', 'Failed to create notes. Please check if the table structure is correct.', 'error')
           } else {
             console.log('Note created successfully with notes column:', altNewNote)
             setNotesId(altNewNote.id)
@@ -466,7 +579,7 @@ export default function LessonViewerPage() {
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert(`Unexpected error: ${error}`)
+      showModal('Error', `Unexpected error: ${error}`, 'error')
     } finally {
       setSavingNotes(false)
     }
@@ -484,7 +597,11 @@ export default function LessonViewerPage() {
     
     const answeredCount = Object.keys(selectedAnswers).length
     if (answeredCount < quiz.questions.length) {
-      alert(`Please answer all questions. You've answered ${answeredCount} out of ${quiz.questions.length} questions.`)
+      showModal(
+        'Incomplete Quiz',
+        `Please answer all questions. You've answered ${answeredCount} out of ${quiz.questions.length} questions.`,
+        'warning'
+      )
       return
     }
     
@@ -527,7 +644,7 @@ export default function LessonViewerPage() {
       
       if (attemptError) {
         console.error('Error saving quiz attempt:', attemptError)
-        alert(`Failed to save quiz attempt: ${attemptError.message}`)
+        showModal('Error', `Failed to save quiz attempt: ${attemptError.message}`, 'error')
         return
       }
       
@@ -548,7 +665,7 @@ export default function LessonViewerPage() {
       
     } catch (error) {
       console.error('Error submitting quiz:', error)
-      alert('An error occurred while submitting the quiz. Please try again.')
+      showModal('Error', 'An error occurred while submitting the quiz. Please try again.', 'error')
     }
   }
 
@@ -575,7 +692,7 @@ export default function LessonViewerPage() {
     switch (lesson.content_type) {
       case 'youtube':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-lg">
+          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
             {lesson.youtube_url?.includes('<iframe') ? (
               <div 
                 className="w-full h-full"
@@ -595,7 +712,7 @@ export default function LessonViewerPage() {
 
       case 'video':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden shadow-lg">
+          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
             <video
               key={lesson.id}
               src={lesson.video_url}
@@ -610,7 +727,7 @@ export default function LessonViewerPage() {
       case 'pdf':
         return (
           <div className="w-full">
-            <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+            <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
               <iframe
                 key={lesson.id}
                 src={`${lesson.pdf_url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
@@ -624,7 +741,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.pdf_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
               >
                 Open in New Tab
               </Button>
@@ -637,7 +754,7 @@ export default function LessonViewerPage() {
                 }}
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
               >
                 Download PDF
               </Button>
@@ -651,7 +768,7 @@ export default function LessonViewerPage() {
             {lesson.powerpoint_url?.includes('docs.google.com/presentation') || 
              lesson.powerpoint_url?.includes('onedrive.live.com') || 
              lesson.powerpoint_url?.includes('office.com') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
                 <iframe
                   key={lesson.id}
                   src={lesson.powerpoint_url.replace('/edit', '/embed').replace('/view', '/embed')}
@@ -662,7 +779,7 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : lesson.powerpoint_url?.includes('.ppt') || lesson.powerpoint_url?.includes('.pptx') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
                 <iframe
                   key={lesson.id}
                   src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.powerpoint_url)}`}
@@ -672,11 +789,11 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center">
                 <p className="text-gray-600 mb-4">PowerPoint preview loading...</p>
                 <Button
                   onClick={() => window.open(lesson.powerpoint_url, '_blank')}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
                 >
                   Open Presentation
                 </Button>
@@ -687,7 +804,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.powerpoint_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
               >
                 Open in New Tab
               </Button>
@@ -701,7 +818,7 @@ export default function LessonViewerPage() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
                 >
                   Download PowerPoint
                 </Button>
@@ -713,9 +830,9 @@ export default function LessonViewerPage() {
       case 'text':
       default:
         return (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 shadow-sm">
             <div 
-              className="prose prose-sm md:prose-base max-w-none"
+              className="prose prose-sm md:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-red-500 prose-strong:text-gray-900"
               dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
             />
           </div>
@@ -723,11 +840,15 @@ export default function LessonViewerPage() {
     }
   }
 
+  // Loading state with gradient
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-red-100 rounded-full"></div>
+            <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
+          </div>
           <p className="mt-4 text-gray-600 font-medium">
             {authLoading ? 'Checking authentication...' : 'Loading lesson...'}
           </p>
@@ -736,20 +857,24 @@ export default function LessonViewerPage() {
     )
   }
 
+  // Enrollment required state
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Enrollment Required</CardTitle>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+        <Card className="max-w-md w-full rounded-2xl border-gray-100 shadow-xl">
+          <CardHeader className="text-center pb-2">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Lock className="w-7 h-7 text-white" />
+            </div>
+            <CardTitle className="text-xl">Enrollment Required</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4">
+          <CardContent className="text-center">
+            <p className="text-gray-600 text-sm mb-5">
               You need to be enrolled in this course to access the lessons.
             </p>
             <Button 
               onClick={() => router.push(`/courses/${params.slug}`)}
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
             >
               Go to Course Page
             </Button>
@@ -765,8 +890,18 @@ export default function LessonViewerPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        actions={modal.actions}
+      />
+
+      {/* Header with gradient */}
+      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700 sticky top-0 z-10 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -774,27 +909,27 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => router.push(`/courses/${params.slug}`)}
                 size="sm"
-                className="border-gray-300 flex-shrink-0"
+                className="border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 flex-shrink-0 rounded-xl"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-500 break-words">{course?.title}</p>
-               <h1 className="text-sm md:text-base font-bold text-gray-900 break-words">
-                    Lesson {currentIndex + 1}: {lesson?.title}
+                <p className="text-xs text-gray-400 break-words">{course?.title}</p>
+                <h1 className="text-sm md:text-base font-bold text-white break-words">
+                  Lesson {currentIndex + 1}: {lesson?.title}
                 </h1>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {lesson?.duration_minutes && (
-                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
                   <Clock className="w-3 h-3" />
                   {lesson.duration_minutes}m
                 </span>
               )}
               {isCompleted ? (
-                <span className="px-2 md:px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-medium flex items-center gap-1">
+                <span className="px-2 md:px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full text-xs font-medium flex items-center gap-1 shadow-lg shadow-green-500/20">
                   <CheckCircle className="w-3 h-3" />
                   <span className="hidden sm:inline">Completed</span>
                 </span>
@@ -802,7 +937,7 @@ export default function LessonViewerPage() {
                 <Button
                   onClick={markAsComplete}
                   size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-xs rounded-xl shadow-lg shadow-red-500/20"
                 >
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Complete
@@ -814,10 +949,10 @@ export default function LessonViewerPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Lesson Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-5">
             {renderContent()}
 
             {/* Navigation Buttons */}
@@ -826,7 +961,7 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => previousLesson && navigateToLesson(previousLesson)}
                 disabled={!previousLesson}
-                className="border-gray-300 hover:bg-gray-50"
+                className="border-gray-200 hover:bg-gray-50 rounded-xl disabled:opacity-50"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
@@ -834,7 +969,7 @@ export default function LessonViewerPage() {
               <Button
                 onClick={() => nextLesson && navigateToLesson(nextLesson)}
                 disabled={!nextLesson}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl disabled:opacity-50 shadow-lg shadow-red-500/20"
               >
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -845,15 +980,17 @@ export default function LessonViewerPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {/* My Notes Card */}
-            <Card className="border-gray-200">
+            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-gray-600" />
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-white" />
+                    </div>
                     My Notes
                   </span>
                   {notesSaved && (
-                    <span className="text-xs text-green-600 font-normal flex items-center gap-1">
+                    <span className="text-xs text-green-600 font-normal flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
                       <CheckCircle className="w-3 h-3" />
                       Saved
                     </span>
@@ -866,12 +1003,12 @@ export default function LessonViewerPage() {
                   onChange={(e) => setNotesContent(e.target.value)}
                   placeholder="Take notes while learning..."
                   rows={6}
-                  className="w-full resize-none text-sm border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="w-full resize-none text-sm border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-xl"
                 />
                 <Button 
                   onClick={saveNotes} 
                   disabled={savingNotes || !notesContent.trim()}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white text-sm"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white text-sm rounded-xl"
                   size="sm"
                 >
                   <Save className="w-3 h-3 mr-2" />
@@ -882,10 +1019,12 @@ export default function LessonViewerPage() {
 
             {/* Instructor Quiz Card */}
             {quiz && quiz.questions && quiz.questions.length > 0 && (
-              <Card className="border-gray-200">
+              <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Award className="w-4 h-4 text-red-600" />
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                      <Award className="w-4 h-4 text-white" />
+                    </div>
                     {quiz.title}
                   </CardTitle>
                   {quiz.description && (
@@ -893,19 +1032,19 @@ export default function LessonViewerPage() {
                   )}
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 mb-4 text-xs">
+                  <div className="space-y-2 mb-4 text-xs bg-gray-50 rounded-xl p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Questions:</span>
-                      <span className="font-medium">{quiz.questions.length}</span>
+                      <span className="font-semibold text-gray-900">{quiz.questions.length}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Pass Score:</span>
-                      <span className="font-medium">{quiz.pass_percentage}%</span>
+                      <span className="font-semibold text-gray-900">{quiz.pass_percentage}%</span>
                     </div>
                     {quiz.time_limit && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Time Limit:</span>
-                        <span className="font-medium flex items-center gap-1">
+                        <span className="font-semibold text-gray-900 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {quiz.time_limit} min
                         </span>
@@ -914,7 +1053,7 @@ export default function LessonViewerPage() {
                     {quizAttempts > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Your Attempts:</span>
-                        <span className="font-medium">{quizAttempts}</span>
+                        <span className="font-semibold text-gray-900">{quizAttempts}</span>
                       </div>
                     )}
                   </div>
@@ -928,7 +1067,7 @@ export default function LessonViewerPage() {
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               return (
-                                <div key={questionId} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
+                                <div key={questionId} className="p-3 border border-gray-200 rounded-xl bg-gray-50">
                                   <p className="font-medium text-sm mb-2">
                                     {index + 1}. {question.question}
                                   </p>
@@ -936,7 +1075,7 @@ export default function LessonViewerPage() {
                                     {question.options.map((option, optIndex) => (
                                       <label 
                                         key={optIndex} 
-                                        className={`flex items-start gap-2 p-2 rounded cursor-pointer hover:bg-white transition-colors ${
+                                        className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer hover:bg-white transition-colors ${
                                           selectedAnswers[questionId] === optIndex ? 'bg-red-50 border-red-300 border' : 'border border-transparent'
                                         }`}
                                       >
@@ -959,7 +1098,7 @@ export default function LessonViewerPage() {
                           {/* Submit and Cancel buttons */}
                           <div className="space-y-2">
                             <Button 
-                              className="w-full bg-green-600 hover:bg-green-700 text-white text-sm"
+                              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm rounded-xl"
                               onClick={submitQuiz}
                               size="sm"
                               disabled={Object.keys(selectedAnswers).length === 0}
@@ -972,7 +1111,7 @@ export default function LessonViewerPage() {
                                 setShowQuiz(false)
                                 setSelectedAnswers({})
                               }}
-                              className="w-full text-sm"
+                              className="w-full text-sm rounded-xl border-gray-200"
                               size="sm"
                             >
                               Cancel
@@ -982,8 +1121,10 @@ export default function LessonViewerPage() {
                       ) : (
                         /* Quiz Results */
                         <div className="space-y-3">
-                          <div className={`p-4 rounded-lg text-center border-2 ${
-                            quizResults?.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+                          <div className={`p-4 rounded-xl text-center ${
+                            quizResults?.passed 
+                              ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500' 
+                              : 'bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-500'
                           }`}>
                             <h3 className={`text-xl font-bold mb-1 ${
                               quizResults?.passed ? 'text-green-800' : 'text-red-800'
@@ -1007,7 +1148,7 @@ export default function LessonViewerPage() {
                               const isCorrect = selectedAnswer === question.correct_answer
                               
                               return (
-                                <div key={questionId} className={`p-3 border rounded-lg text-sm ${
+                                <div key={questionId} className={`p-3 border rounded-xl text-sm ${
                                   isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
                                 }`}>
                                   <p className="font-medium mb-1">
@@ -1038,7 +1179,7 @@ export default function LessonViewerPage() {
                           <div className="space-y-2">
                             {!quizResults?.passed && (
                               <Button 
-                                className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
+                                className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm rounded-xl"
                                 onClick={() => {
                                   setSelectedAnswers({})
                                   setQuizSubmitted(false)
@@ -1052,7 +1193,7 @@ export default function LessonViewerPage() {
                             <Button
                               variant="outline"
                               onClick={resetQuiz}
-                              className="w-full text-sm"
+                              className="w-full text-sm rounded-xl border-gray-200"
                               size="sm"
                             >
                               Close
@@ -1069,7 +1210,7 @@ export default function LessonViewerPage() {
                         setQuizResults(null)
                         setSelectedAnswers({})
                       }}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
+                      className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm rounded-xl shadow-lg shadow-red-500/20"
                       size="sm"
                     >
                       <PlayCircle className="w-4 h-4 mr-2" />
@@ -1080,72 +1221,52 @@ export default function LessonViewerPage() {
               </Card>
             )}
 
-{/* AI Tools - Pro Feature */}
-            {isProUser ? (
+            {/* AI Tools - Available to all users */}
+            {lesson?.content_type === 'text' && lesson?.content && (
               <>
-                {lesson?.content_type === 'text' && lesson?.content && (
-                  <>
-                    <div>
-                      <LessonSummary
-                        lessonId={lesson.id}
-                        lessonContent={lesson.content}
-                        contentType={lesson.content_type}
-                      />
-                    </div>
-                    <div>
-                      <LessonQA
-                        lessonId={lesson.id}
-                        lessonContent={lesson.content}
-                        contentType={lesson.content_type}
-                      />
-                    </div>
-                  </>
-                )}
-                
-                {lesson && lesson.content_type !== 'text' && (
-                  <>
-                    <div>
-                      <LessonSummary
-                        lessonId={lesson.id}
-                        contentType={lesson.content_type}
-                      />
-                    </div>
-                    <div>
-                      <LessonQA
-                        lessonId={lesson.id}
-                        contentType={lesson.content_type}
-                      />
-                    </div>
-                  </>
-                )}
+                <div>
+                  <LessonSummary
+                    lessonId={lesson.id}
+                    lessonContent={lesson.content}
+                    contentType={lesson.content_type}
+                  />
+                </div>
+                <div>
+                  <LessonQA
+                    lessonId={lesson.id}
+                    lessonContent={lesson.content}
+                    contentType={lesson.content_type}
+                  />
+                </div>
               </>
-            ) : (
-              <Card className="border-amber-200 bg-amber-50">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
-                  </div>
-                  <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-1">AI Study Tools</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                    Get AI-powered summaries and ask questions about this lesson
-                  </p>
-                  <Button
-                    onClick={() => router.push('/pricing')}
-                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
-                    Upgrade to Pro
-                  </Button>
-                </CardContent>
-              </Card>
             )}
-
+            
+            {lesson && lesson.content_type !== 'text' && (
+              <>
+                <div>
+                  <LessonSummary
+                    lessonId={lesson.id}
+                    contentType={lesson.content_type}
+                  />
+                </div>
+                <div>
+                  <LessonQA
+                    lessonId={lesson.id}
+                    contentType={lesson.content_type}
+                  />
+                </div>
+              </>
+            )}
             {/* Practice Quiz Component (fallback if no instructor quiz) */}
             {!quiz && (
-              <Card className="border-gray-200">
+              <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Practice Quiz</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
+                      <Award className="w-4 h-4 text-white" />
+                    </div>
+                    Practice Quiz
+                  </CardTitle>
                   <CardDescription className="text-xs">
                     Test your understanding with AI-generated questions
                   </CardDescription>
@@ -1162,10 +1283,12 @@ export default function LessonViewerPage() {
             )}
 
             {/* Course Lessons */}
-            <Card className="border-gray-200">
+            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-gray-600" />
+                  <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-white" />
+                  </div>
                   Course Lessons
                 </CardTitle>
               </CardHeader>
@@ -1177,16 +1300,18 @@ export default function LessonViewerPage() {
                       <button
                         key={l.id}
                         onClick={() => navigateToLesson(l)}
-                        className={`w-full text-left p-2 rounded-lg transition-colors text-sm ${
+                        className={`w-full text-left p-3 rounded-xl transition-all text-sm group ${
                           isActive
-                            ? 'bg-red-50 border-2 border-red-500'
-                            : 'hover:bg-gray-50 border-2 border-transparent'
+                            ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/20'
+                            : 'hover:bg-gray-50 border border-gray-100 hover:border-gray-200'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-gray-500">Lesson {index + 1}</p>
-                            <p className={`font-medium truncate ${isActive ? 'text-red-600' : 'text-gray-900'}`}>
+                            <p className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                              Lesson {index + 1}
+                            </p>
+                            <p className={`font-medium truncate ${isActive ? 'text-white' : 'text-gray-900'}`}>
                               {l.title}
                             </p>
                           </div>
@@ -1197,7 +1322,9 @@ export default function LessonViewerPage() {
                             {l.content_type === 'powerpoint' && <span title="PowerPoint" className="text-xs">📊</span>}
                             {l.content_type === 'text' && <span title="Text" className="text-xs">📝</span>}
                             {l.duration_minutes && (
-                              <span className="text-xs text-gray-500">{l.duration_minutes}m</span>
+                              <span className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                                {l.duration_minutes}m
+                              </span>
                             )}
                           </div>
                         </div>
@@ -1209,9 +1336,16 @@ export default function LessonViewerPage() {
             </Card>
 
             {/* Instructor Info */}
-            <Card className="border-gray-200">
+            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Instructor</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">
+                      {course?.instructor?.full_name?.charAt(0) || 'I'}
+                    </span>
+                  </div>
+                  Instructor
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="font-medium text-sm text-gray-900">{course?.instructor?.full_name}</p>

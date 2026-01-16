@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Mail, Lock, ArrowRight, BookOpen, GraduationCap, Users, Award } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
@@ -44,36 +44,101 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
-      {/* Login Form Content */}
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
+    <div className="min-h-screen flex">
+      {/* Left Side - Branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-900/30 via-transparent to-pink-900/30" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-3xl rotate-12 blur-sm" />
+        <div className="absolute bottom-32 left-20 w-24 h-24 bg-gradient-to-br from-pink-500/20 to-red-500/20 rounded-2xl -rotate-12 blur-sm" />
+        <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
+        
+        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
           {/* Logo */}
-          <div className="text-center mb-8">
+          <Link href="/" className="flex items-center gap-2 mb-12">
+            <h1 className="text-4xl font-bold flex items-center gap-1">
+              <span className="text-white">Sabitek</span>
+              <span className="relative">
+                <Sparkles className="w-7 h-7 text-red-500" />
+              </span>
+            </h1>
+          </Link>
+          
+          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
+            Welcome back to<br />
+            <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+              learning
+            </span>
+          </h2>
+          <p className="text-gray-400 text-lg mb-12 max-w-md">
+            Continue your learning journey. Access your courses, track progress, and achieve your goals.
+          </p>
+          
+          {/* Features */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium">100+ Courses</h3>
+                <p className="text-gray-500 text-sm">Learn at your own pace</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <GraduationCap className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium">Earn Certificates</h3>
+                <p className="text-gray-500 text-sm">Showcase your achievements</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium">Join Community</h3>
+                <p className="text-gray-500 text-sm">Connect with other learners</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+        <div className="max-w-md w-full py-12">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 justify-center">
-              <h1 className="text-4xl font-bold flex items-center gap-1">
+              <h1 className="text-3xl font-bold flex items-center gap-1">
                 <span className="text-black">Sabitek</span>
                 <span className="relative">
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  <Sparkles className="w-6 h-6 text-red-500 animate-pulse" />
+                  <Sparkles className="w-6 h-6 text-red-500" />
                 </span>
               </h1>
             </Link>
-            <p className="text-gray-600 mt-2">Welcome back to learning</p>
           </div>
 
-          <Card className="shadow-xl border-0">
-            <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-bold text-center text-black">Sign In</CardTitle>
+          <Card className="shadow-xl border-0 rounded-2xl overflow-hidden">
+            <CardHeader className="space-y-1 pb-6 bg-gradient-to-r from-gray-50 to-gray-100/50">
+              <CardTitle className="text-2xl font-bold text-center text-gray-900">Sign In</CardTitle>
               <CardDescription className="text-center text-gray-600">
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {error && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-200">
-                    {error}
+                  <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-200 flex items-start gap-2">
+                    <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-red-500 text-xs">!</span>
+                    </div>
+                    <span>{error}</span>
                   </div>
                 )}
 
@@ -81,14 +146,17 @@ export default function LoginPage() {
                   <label className="text-sm font-medium text-gray-700">
                     Email Address
                   </label>
-                  <Input
-                    {...register('email')}
-                    type="email"
-                    placeholder="name@example.com"
-                    className="h-11 border-gray-300 focus:border-red-500 focus:ring-red-500"
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Input
+                      {...register('email')}
+                      type="email"
+                      placeholder="name@example.com"
+                      className="h-12 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                    />
+                  </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm">{errors.email.message}</p>
                   )}
                 </div>
 
@@ -96,21 +164,24 @@ export default function LoginPage() {
                   <label className="text-sm font-medium text-gray-700">
                     Password
                   </label>
-                  <Input
-                    {...register('password')}
-                    type="password"
-                    placeholder="Enter your password"
-                    className="h-11 border-gray-300 focus:border-red-500 focus:ring-red-500"
-                  />
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Input
+                      {...register('password')}
+                      type="password"
+                      placeholder="Enter your password"
+                      className="h-12 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                    />
+                  </div>
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 text-sm">{errors.password.message}</p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-end">
                   <Link
                     href="/auth/forgot-password"
-                    className="text-sm text-red-500 hover:text-red-600"
+                    className="text-sm text-red-500 hover:text-red-600 font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -119,31 +190,34 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-11 bg-red-500 hover:bg-red-600 text-white font-medium"
+                  className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/20"
                 >
                   {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span className="ml-2">Signing in...</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Signing in...</span>
                     </div>
                   ) : (
-                    'Sign In'
+                    <span className="flex items-center justify-center gap-2">
+                      Sign In
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
                   )}
                 </Button>
 
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-300" />
+                    <span className="w-full border-t border-gray-200" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-gray-500">Or</span>
+                    <span className="bg-white px-3 text-gray-500">Or</span>
                   </div>
                 </div>
 
                 <div className="text-center">
                   <p className="text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-medium">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-semibold">
                       Sign up for free
                     </Link>
                   </p>
@@ -153,7 +227,7 @@ export default function LoginPage() {
           </Card>
 
           {/* Footer text */}
-          <p className="text-center text-sm text-gray-500 mt-8">
+          <p className="text-center text-xs text-gray-500 mt-8">
             By signing in, you agree to our{' '}
             <Link href="/terms" className="text-red-500 hover:text-red-600">
               Terms of Service

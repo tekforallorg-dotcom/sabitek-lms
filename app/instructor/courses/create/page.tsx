@@ -12,6 +12,20 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { generateSlug } from '@/lib/utils'
 import FileUploader from '@/components/upload/file-uploader'
+import { 
+  BookOpen, 
+  Image, 
+  DollarSign, 
+  ChevronLeft,
+  Sparkles,
+  CheckCircle,
+  FileText,
+  Video,
+  Upload,
+  GraduationCap,
+  Layers,
+  AlertCircle
+} from 'lucide-react'
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters'),
@@ -19,7 +33,7 @@ const courseSchema = z.object({
     .min(1, 'Description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description must be less than 500 characters'),
-  difficulty_level: z.enum(['beginner', 'intermediate', 'advanced']),
+  difficulty_level: z.enum(['absolute-beginner', 'beginner', 'elementary', 'intermediate', 'upper-intermediate', 'advanced', 'expert', 'all-levels']),
   category: z.string().min(1, 'Category is required'),
   intro_video_url: z.string().optional(),
   is_free: z.boolean(),
@@ -29,16 +43,54 @@ const courseSchema = z.object({
 type CourseInput = z.infer<typeof courseSchema>
 
 const categories = [
-  'Technology',
-  'Business',
-  'Design',
-  'Marketing',
-  'Personal Development',
-  'Health & Fitness',
-  'Music',
+  'Technology & IT',
+  'Web Development',
+  'Mobile Development',
+  'Data Science & Analytics',
+  'Artificial Intelligence',
+  'Cybersecurity',
+  'Cloud Computing',
+  'Business & Entrepreneurship',
+  'Digital Marketing',
+  'Finance & Accounting',
+  'Project Management',
+  'Design & Creative',
+  'UI/UX Design',
+  'Graphic Design',
+  'Video & Animation',
   'Photography',
+  'Music & Audio',
+  'Writing & Content',
+  'Personal Development',
+  'Leadership & Management',
+  'Communication Skills',
+  'Health & Wellness',
+  'Fitness & Nutrition',
   'Languages',
+  'Education & Teaching',
+  'Engineering',
+  'Science & Research',
+  'Agriculture & Farming',
+  'Law & Legal',
+  'Real Estate',
+  'Hospitality & Tourism',
+  'Fashion & Beauty',
+  'Arts & Crafts',
+  'Religion & Spirituality',
+  'Parenting & Family',
+  'Career Development',
   'Other'
+]
+
+const difficultyLevels = [
+  { value: 'absolute-beginner', label: 'Absolute Beginner', description: 'No prior knowledge needed' },
+  { value: 'beginner', label: 'Beginner', description: 'Basic understanding helpful' },
+  { value: 'elementary', label: 'Elementary', description: 'Some foundational knowledge' },
+  { value: 'intermediate', label: 'Intermediate', description: 'Comfortable with basics' },
+  { value: 'upper-intermediate', label: 'Upper Intermediate', description: 'Strong foundation required' },
+  { value: 'advanced', label: 'Advanced', description: 'Significant experience needed' },
+  { value: 'expert', label: 'Expert', description: 'Professional-level content' },
+  { value: 'all-levels', label: 'All Levels', description: 'Suitable for everyone' },
 ]
 
 export default function CreateCoursePage() {
@@ -65,6 +117,7 @@ export default function CreateCoursePage() {
 
   const isFree = watch('is_free')
   const description = watch('description')
+  const difficultyLevel = watch('difficulty_level')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -76,18 +129,13 @@ export default function CreateCoursePage() {
   }, [user, userProfile, loading, router])
 
   const onSubmit = async (data: CourseInput) => {
-
-      console.log('🚀 Form submitted with data:', data)
-  console.log('📝 Description length:', data.description.length)
-  
-  if (!user) {
-    console.log('❌ No user')
-    return
-  }
-
-  setIsSubmitting(true)
-  setError(null)
-    if (!user) return
+    console.log('🚀 Form submitted with data:', data)
+    console.log('📝 Description length:', data.description.length)
+    
+    if (!user) {
+      console.log('❌ No user')
+      return
+    }
 
     setIsSubmitting(true)
     setError(null)
@@ -145,10 +193,13 @@ export default function CreateCoursePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="relative">
+            <div className="w-14 h-14 border-4 border-red-100 rounded-full"></div>
+            <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
+          </div>
+          <p className="mt-4 text-gray-600 font-medium">Loading...</p>
         </div>
       </div>
     )
@@ -159,31 +210,75 @@ export default function CreateCoursePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Create New Course</h2>
-          <p className="text-gray-600 mt-2">Share your knowledge with learners across Africa</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Header */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-900/20 via-transparent to-pink-900/20" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-10 right-[15%] w-20 h-20 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb */}
+          <button 
+            onClick={() => router.push('/instructor')}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm">Back to Dashboard</span>
+          </button>
+
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/20">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Create New Course</h1>
+              <p className="text-gray-400 text-sm mt-1">Share your knowledge with learners across Africa</p>
+            </div>
+          </div>
         </div>
 
-        <Card className="border-gray-200">
-          <CardHeader className="bg-gray-50 border-b">
-            <CardTitle>Course Details</CardTitle>
-            <CardDescription>
-              Fill in the course information. You can add lessons and content after creating the course.
-            </CardDescription>
+        {/* Curved transition */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 40" fill="none" preserveAspectRatio="none" className="w-full h-6">
+            <path d="M0 40V15C360 0 720 0 1080 15C1260 22 1380 30 1440 30V40H0Z" fill="#F9FAFB"/>
+          </svg>
+        </div>
+      </section>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <Card className="rounded-2xl border-gray-100 shadow-sm overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Course Details</CardTitle>
+                <CardDescription className="text-xs">
+                  Fill in the course information. You can add lessons after creating the course.
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                  {error}
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
                 </div>
               )}
 
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Information</h3>
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                  <FileText className="w-5 h-5 text-red-500" />
+                  <h3 className="text-base font-semibold text-gray-900">Basic Information</h3>
+                </div>
                 
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-sm font-medium text-gray-700">
@@ -193,41 +288,48 @@ export default function CreateCoursePage() {
                     id="title"
                     type="text"
                     placeholder="e.g., Introduction to Web Development"
+                    className="rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
                     {...register('title')}
                   />
                   {errors.title && (
-                    <p className="text-sm text-red-600">{errors.title.message}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="description" className="text-sm font-medium text-gray-700">
                     Description <span className="text-red-500">*</span>
-                    <span className="text-xs text-gray-500 ml-2">
-                      ({description?.length || 0}/500 characters)
+                    <span className={`text-xs ml-2 ${(description?.length || 0) > 450 ? 'text-amber-600' : 'text-gray-500'}`}>
+                      ({description?.length || 0}/500)
                     </span>
                   </label>
                   <textarea
                     id="description"
                     rows={4}
                     maxLength={500}
-                    className="flex w-full rounded-md border border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                    className="flex w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                     placeholder="Describe what students will learn in this course..."
                     {...register('description')}
                   />
                   {errors.description && (
-                    <p className="text-sm text-red-600">{errors.description.message}</p>
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.description.message}
+                    </p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="category" className="text-sm font-medium text-gray-700">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="category"
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      className="flex h-10 w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       {...register('category')}
                     >
                       <option value="">Select a category</option>
@@ -236,7 +338,10 @@ export default function CreateCoursePage() {
                       ))}
                     </select>
                     {errors.category && (
-                      <p className="text-sm text-red-600">{errors.category.message}</p>
+                      <p className="text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.category.message}
+                      </p>
                     )}
                   </div>
 
@@ -246,24 +351,32 @@ export default function CreateCoursePage() {
                     </label>
                     <select
                       id="difficulty_level"
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      className="flex h-10 w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       {...register('difficulty_level')}
                     >
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
+                      {difficultyLevels.map(level => (
+                        <option key={level.value} value={level.value}>
+                           {level.label}
+                        </option>
+                      ))}
                     </select>
+                    <p className="text-xs text-gray-500">
+                      {difficultyLevels.find(l => l.value === difficultyLevel)?.description || 'Select a difficulty level'}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Media */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Course Media</h3>
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                  <Image className="w-5 h-5 text-red-500" />
+                  <h3 className="text-base font-semibold text-gray-900">Course Media</h3>
+                </div>
                 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
-                    Cover Image (Optional)
+                    Cover Image <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
                   <FileUploader
                     label="Upload Cover Image"
@@ -272,36 +385,51 @@ export default function CreateCoursePage() {
                     currentUrl={coverImageUrl}
                     onUpload={(url: string) => setCoverImageUrl(url)}
                   />
-                  <p className="text-xs text-gray-500">Recommended size: 1280x720px</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <Upload className="w-3 h-3" />
+                    Recommended size: 1280×720px (16:9 ratio)
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="intro_video_url" className="text-sm font-medium text-gray-700">
-                    Intro Video URL (Optional)
+                    Intro Video URL <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
                   <Input
                     id="intro_video_url"
                     type="text"
-                    placeholder="YouTube or Vimeo link"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
                     {...register('intro_video_url')}
                   />
-                  <p className="text-xs text-gray-500">Add a video to introduce your course</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <Video className="w-3 h-3" />
+                    Add a YouTube or Vimeo link to introduce your course
+                  </p>
                 </div>
               </div>
 
               {/* Pricing */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Pricing</h3>
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                  <span className="w-5 h-5 flex items-center justify-center text-red-500 font-bold text-sm">₦</span>
+                  <h3 className="text-base font-semibold text-gray-900">Pricing</h3>
+                </div>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
                   <input
                     type="checkbox"
                     id="is_free"
                     {...register('is_free')}
-                    className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                    className="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500"
                   />
-                  <label htmlFor="is_free" className="text-sm font-medium text-gray-700">
-                    This course is free
+                  <label htmlFor="is_free" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <span>This course is free</span>
+                    {isFree && (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                        Free for all learners
+                      </span>
+                    )}
                   </label>
                 </div>
 
@@ -310,27 +438,46 @@ export default function CreateCoursePage() {
                     <label htmlFor="price" className="text-sm font-medium text-gray-700">
                       Price (₦)
                     </label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...register('price')}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₦</span>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500 pl-8"
+                        {...register('price')}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-4 pt-4">
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl shadow-lg shadow-red-500/20 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Course'}
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Create Course
+                    </span>
+                  )}
                 </Button>
                 <Link href="/instructor">
-                  <Button type="button" variant="outline" className="border-black text-black hover:bg-black hover:text-white">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="border-gray-200 hover:bg-gray-50 rounded-xl"
+                  >
                     Cancel
                   </Button>
                 </Link>
@@ -339,14 +486,34 @@ export default function CreateCoursePage() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">What happens next?</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            <li>• After creating your course, you&apos;ll add lessons with various content types</li>
-            <li>• You can upload PDFs, PowerPoints, or embed YouTube videos for each lesson</li>
-            <li>• Courses start in draft mode - publish when you&apos;re ready</li>
-            <li>• Students can enroll once your course is published</li>
-          </ul>
+        {/* What happens next */}
+        <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">What happens next?</h3>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Add lessons with PDFs, PowerPoints, or YouTube videos</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Create quizzes to test learner understanding</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Course starts in draft mode — publish when you&apos;re ready</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Students can enroll once your course is published</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,28 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronUp, ChevronDown } from 'lucide-react'
+import { 
+  ChevronUp, 
+  ChevronDown, 
+  BookOpen, 
+  Eye, 
+  Trash2, 
+  Edit3, 
+  Plus, 
+  CheckCircle, 
+  X, 
+  AlertCircle, 
+  AlertTriangle,
+  PlayCircle,
+  FileText,
+  Youtube,
+  Presentation,
+  Clock,
+  GraduationCap,
+  Settings,
+  Globe,
+  EyeOff
+} from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +57,100 @@ interface Course {
   intro_video_url?: string
   is_free: boolean
   price: number
+}
+
+// Custom Modal Component
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  message: string
+  type?: 'info' | 'success' | 'error' | 'warning' | 'confirm'
+  actions?: Array<{
+    label: string
+    onClick: () => void
+    variant?: 'primary' | 'secondary' | 'danger'
+  }>
+}
+
+function Modal({ isOpen, onClose, title, message, type = 'info', actions }: ModalProps) {
+  if (!isOpen) return null
+
+  const iconMap = {
+    info: <AlertCircle className="w-6 h-6 text-blue-500" />,
+    success: <CheckCircle className="w-6 h-6 text-green-500" />,
+    error: <X className="w-6 h-6 text-red-500" />,
+    warning: <AlertTriangle className="w-6 h-6 text-amber-500" />,
+    confirm: <AlertTriangle className="w-6 h-6 text-amber-500" />
+  }
+
+  const bgMap = {
+    info: 'from-blue-500 to-blue-600',
+    success: 'from-green-500 to-emerald-600',
+    error: 'from-red-500 to-red-600',
+    warning: 'from-amber-500 to-orange-500',
+    confirm: 'from-amber-500 to-orange-500'
+  }
+
+  const getButtonClass = (variant?: string) => {
+    switch (variant) {
+      case 'primary':
+        return 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+      case 'danger':
+        return 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
+      case 'secondary':
+      default:
+        return ''
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              {iconMap[type]}
+            </div>
+            <h3 className="text-lg font-bold text-white">{title}</h3>
+          </div>
+        </div>
+        
+        <div className="p-5">
+          <p className="text-gray-600 text-sm whitespace-pre-line">{message}</p>
+        </div>
+        
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          {actions ? (
+            actions.map((action, i) => (
+              <Button
+                key={i}
+                onClick={action.onClick}
+                variant={action.variant === 'secondary' ? 'outline' : 'default'}
+                className={`rounded-xl ${getButtonClass(action.variant)}`}
+                size="sm"
+              >
+                {action.label}
+              </Button>
+            ))
+          ) : (
+            <Button
+              onClick={onClose}
+              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+              size="sm"
+            >
+              OK
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const categories = [
@@ -81,6 +196,33 @@ export default function CourseManagementPage() {
   })
   const [isSavingOrder, setIsSavingOrder] = useState(false)
   const [isAddingLesson, setIsAddingLesson] = useState(false)
+
+  // Modal state
+  const [modal, setModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'info' | 'success' | 'error' | 'warning' | 'confirm'
+    actions?: ModalProps['actions']
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  })
+
+  const showModal = (
+    title: string, 
+    message: string, 
+    type: 'info' | 'success' | 'error' | 'warning' | 'confirm' = 'info',
+    actions?: ModalProps['actions']
+  ) => {
+    setModal({ isOpen: true, title, message, type, actions })
+  }
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }))
+  }
 
   useEffect(() => { 
     if (!loading) {
@@ -139,7 +281,11 @@ export default function CourseManagementPage() {
 
   const handleUpdateCourse = async () => {
     if (!course || !courseForm.title || courseForm.description.length > 500) {
-      alert('Please fill all required fields. Description must be 500 characters or less.')
+      showModal(
+        'Validation Error',
+        'Please fill all required fields. Description must be 500 characters or less.',
+        'warning'
+      )
       return
     }
 
@@ -159,51 +305,71 @@ export default function CourseManagementPage() {
         .eq('id', course.id)
 
       if (!error) {
-        alert('Course updated successfully!')
+        showModal('Success', 'Course updated successfully!', 'success')
         setIsEditingCourse(false)
         fetchCourseData()
       } else {
-        alert(`Failed to update course: ${error.message}`)
+        showModal('Error', `Failed to update course: ${error.message}`, 'error')
       }
     } catch (error) {
       console.error('Error updating course:', error)
-      alert('Failed to update course')
+      showModal('Error', 'Failed to update course', 'error')
     }
   }
 
   const handleDeleteCourse = async () => {
     if (!course) return
 
-    if (!confirm(`Are you sure you want to delete "${course.title}"? This will also delete all lessons and cannot be undone.`)) {
-      return
-    }
+    showModal(
+      'Delete Course',
+      `Are you sure you want to delete "${course.title}"?\n\nThis will also delete all lessons and cannot be undone.`,
+      'confirm',
+      [
+        {
+          label: 'Cancel',
+          onClick: closeModal,
+          variant: 'secondary'
+        },
+        {
+          label: 'Delete',
+          onClick: async () => {
+            closeModal()
+            try {
+              const { error: lessonsError } = await supabase
+                .from('lessons')
+                .delete()
+                .eq('course_id', course.id)
 
-    try {
-      const { error: lessonsError } = await supabase
-        .from('lessons')
-        .delete()
-        .eq('course_id', course.id)
+              if (lessonsError) {
+                showModal('Error', `Failed to delete lessons: ${lessonsError.message}`, 'error')
+                return
+              }
 
-      if (lessonsError) {
-        alert(`Failed to delete lessons: ${lessonsError.message}`)
-        return
-      }
+              const { error: courseError } = await supabase
+                .from('courses')
+                .delete()
+                .eq('id', course.id)
 
-      const { error: courseError } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', course.id)
-
-      if (!courseError) {
-        alert('Course deleted successfully!')
-        router.push('/instructor')
-      } else {
-        alert(`Failed to delete course: ${courseError.message}`)
-      }
-    } catch (error) {
-      console.error('Error deleting course:', error)
-      alert('Failed to delete course')
-    }
+              if (!courseError) {
+                showModal('Success', 'Course deleted successfully!', 'success', [
+                  {
+                    label: 'Go to Dashboard',
+                    onClick: () => router.push('/instructor'),
+                    variant: 'primary'
+                  }
+                ])
+              } else {
+                showModal('Error', `Failed to delete course: ${courseError.message}`, 'error')
+              }
+            } catch (error) {
+              console.error('Error deleting course:', error)
+              showModal('Error', 'Failed to delete course', 'error')
+            }
+          },
+          variant: 'danger'
+        }
+      ]
+    )
   }
 
   const handleAddOrUpdateLesson = async () => {
@@ -230,7 +396,7 @@ export default function CourseManagementPage() {
           .eq('id', editingLesson.id)
 
         if (!error) {
-          alert('Lesson updated successfully!')
+          showModal('Success', 'Lesson updated successfully!', 'success')
           setEditingLesson(null)
         }
       } else {
@@ -239,7 +405,7 @@ export default function CourseManagementPage() {
           .insert(lessonData)
 
         if (!error) {
-          alert('Lesson added successfully!')
+          showModal('Success', 'Lesson added successfully!', 'success')
           setIsAddingLesson(false)
         }
       }
@@ -256,27 +422,44 @@ export default function CourseManagementPage() {
       fetchCourseData()
     } catch (error) {
       console.error('Error saving lesson:', error)
-      alert('Failed to save lesson')
+      showModal('Error', 'Failed to save lesson', 'error')
     }
   }
 
-  const deleteLesson = async (lessonId: string) => {
-    if (!confirm('Are you sure you want to delete this lesson?')) return
+  const deleteLesson = async (lessonId: string, lessonTitle: string) => {
+    showModal(
+      'Delete Lesson',
+      `Are you sure you want to delete "${lessonTitle}"?\n\nThis action cannot be undone.`,
+      'confirm',
+      [
+        {
+          label: 'Cancel',
+          onClick: closeModal,
+          variant: 'secondary'
+        },
+        {
+          label: 'Delete',
+          onClick: async () => {
+            closeModal()
+            try {
+              const { error } = await supabase
+                .from('lessons')
+                .delete()
+                .eq('id', lessonId)
 
-    try {
-      const { error } = await supabase
-        .from('lessons')
-        .delete()
-        .eq('id', lessonId)
-
-      if (!error) {
-        alert('Lesson deleted successfully!')
-        fetchCourseData()
-      }
-    } catch (error) {
-      console.error('Error deleting lesson:', error)
-      alert('Failed to delete lesson')
-    }
+              if (!error) {
+                showModal('Success', 'Lesson deleted successfully!', 'success')
+                fetchCourseData()
+              }
+            } catch (error) {
+              console.error('Error deleting lesson:', error)
+              showModal('Error', 'Failed to delete lesson', 'error')
+            }
+          },
+          variant: 'danger'
+        }
+      ]
+    )
   }
 
   const publishCourse = async () => {
@@ -289,12 +472,12 @@ export default function CourseManagementPage() {
         .eq('id', course.id)
 
       if (!error) {
-        alert('Course published successfully!')
+        showModal('Success', 'Course published successfully! It is now visible to learners.', 'success')
         setCourse({ ...course, status: 'published' })
       }
     } catch (error) {
       console.error('Error publishing course:', error)
-      alert('Failed to publish course')
+      showModal('Error', 'Failed to publish course', 'error')
     }
   }
 
@@ -308,16 +491,15 @@ export default function CourseManagementPage() {
         .eq('id', course.id)
 
       if (!error) {
-        alert('Course unpublished successfully!')
+        showModal('Success', 'Course unpublished. It is now hidden from learners.', 'success')
         setCourse({ ...course, status: 'draft' })
       }
     } catch (error) {
       console.error('Error unpublishing course:', error)
-      alert('Failed to unpublish course')
+      showModal('Error', 'Failed to unpublish course', 'error')
     }
   }
 
-  // ============ LESSON REORDERING ============
   const moveLesson = async (lessonId: string, direction: 'up' | 'down') => {
     const currentIndex = lessons.findIndex(l => l.id === lessonId)
     if (currentIndex === -1) return
@@ -325,13 +507,11 @@ export default function CourseManagementPage() {
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
     if (targetIndex < 0 || targetIndex >= lessons.length) return
 
-    // Optimistic UI: swap lessons locally
     const newLessons = [...lessons]
     const temp = newLessons[currentIndex]
     newLessons[currentIndex] = newLessons[targetIndex]
     newLessons[targetIndex] = temp
 
-    // Recalculate lesson_order values (use 10, 20, 30... for spacing)
     const updatedLessons = newLessons.map((lesson, idx) => ({
       ...lesson,
       lesson_order: (idx + 1) * 10
@@ -341,7 +521,6 @@ export default function CourseManagementPage() {
     setIsSavingOrder(true)
 
     try {
-      // Batch update all lesson orders
       const updates = updatedLessons.map(lesson => 
         supabase
           .from('lessons')
@@ -354,99 +533,195 @@ export default function CourseManagementPage() {
 
       if (hasError) {
         console.error('Error saving lesson order')
-        // Rollback: re-fetch from DB
         fetchCourseData()
-        alert('Failed to save lesson order. Please try again.')
+        showModal('Error', 'Failed to save lesson order. Please try again.', 'error')
       }
     } catch (error) {
       console.error('Error reordering lessons:', error)
       fetchCourseData()
-      alert('Failed to save lesson order. Please try again.')
+      showModal('Error', 'Failed to save lesson order. Please try again.', 'error')
     } finally {
       setIsSavingOrder(false)
     }
   }
 
+  const getContentTypeIcon = (type: string) => {
+    switch (type) {
+      case 'youtube': return <Youtube className="w-4 h-4" />
+      case 'pdf': return <FileText className="w-4 h-4" />
+      case 'powerpoint': return <Presentation className="w-4 h-4" />
+      default: return <FileText className="w-4 h-4" />
+    }
+  }
+
+  const getContentTypeLabel = (type: string) => {
+    switch (type) {
+      case 'youtube': return 'YouTube'
+      case 'pdf': return 'PDF'
+      case 'powerpoint': return 'PowerPoint'
+      default: return 'Text'
+    }
+  }
+
   if (loading || courseLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading course...</p>
+          <div className="relative">
+            <div className="w-14 h-14 border-4 border-red-100 rounded-full"></div>
+            <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
+          </div>
+          <p className="mt-4 text-gray-600 font-medium">Loading course...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Course Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{course?.title}</h1>
-              <p className="mt-2 text-gray-600">{course?.description}</p>
-              <div className="flex items-center gap-4 mt-4">
-                <span className={`px-3 py-1 rounded-full text-sm ${
+    <div className="min-h-screen bg-gray-50">
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        actions={modal.actions}
+      />
+
+      {/* Hero Header */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-red-900/20 via-transparent to-pink-900/20" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-10 right-[15%] w-20 h-20 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+            <button onClick={() => router.push('/instructor')} className="hover:text-white transition-colors">
+              Instructor Dashboard
+            </button>
+            <span>/</span>
+            <span className="text-white">{course?.title}</span>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   course?.status === 'published' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                 }`}>
-                  {course?.status === 'published' ? 'Published' : 'Draft'}
+                  {course?.status === 'published' ? '● Published' : '○ Draft'}
                 </span>
-                <span className="text-sm text-gray-600">
+                {course?.is_free ? (
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    Free
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ₦{course?.price?.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{course?.title}</h1>
+              <p className="text-gray-400 text-sm max-w-2xl line-clamp-2">{course?.description}</p>
+              
+              <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <BookOpen className="w-4 h-4" />
                   {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap className="w-4 h-4" />
+                  {course?.difficulty_level}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Settings className="w-4 h-4" />
+                  {course?.category}
                 </span>
               </div>
             </div>
-            <div className="flex gap-3 flex-wrap">
+            
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => setIsEditingCourse(true)}
                 variant="outline"
-                className="border-gray-300"
+                className="border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 rounded-xl"
+                size="sm"
               >
-                Edit Course
-              </Button>
-              <Button
-                onClick={handleDeleteCourse}
-                variant="outline"
-                className="border-red-500 text-red-500 hover:bg-red-50"
-              >
-                Delete Course
+                <Edit3 className="w-4 h-4 mr-1.5" />
+                Edit
               </Button>
               <Button
                 onClick={() => router.push(`/courses/${course?.slug}`)}
                 variant="outline"
-                className="border-gray-300"
+                className="border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 rounded-xl"
+                size="sm"
               >
-                Preview Course
+                <Eye className="w-4 h-4 mr-1.5" />
+                Preview
               </Button>
               {course?.status === 'published' ? (
                 <Button
                   onClick={unpublishCourse}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl"
+                  size="sm"
                 >
+                  <EyeOff className="w-4 h-4 mr-1.5" />
                   Unpublish
                 </Button>
               ) : (
                 <Button
                   onClick={publishCourse}
-                  className="bg-green-500 hover:bg-green-600 text-white"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg shadow-green-500/20"
+                  size="sm"
                 >
-                  Publish Course
+                  <Globe className="w-4 h-4 mr-1.5" />
+                  Publish
                 </Button>
               )}
+              <Button
+                onClick={handleDeleteCourse}
+                variant="outline"
+                className="border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-xl"
+                size="sm"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Delete
+              </Button>
             </div>
           </div>
         </div>
 
+        {/* Curved transition */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 40" fill="none" preserveAspectRatio="none" className="w-full h-6">
+            <path d="M0 40V15C360 0 720 0 1080 15C1260 22 1380 30 1440 30V40H0Z" fill="#F9FAFB"/>
+          </svg>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Edit Course Modal */}
         {isEditingCourse && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Edit Course Details</CardTitle>
-              <CardDescription>Update your course information</CardDescription>
+          <Card className="mb-6 rounded-2xl border-gray-100 shadow-lg">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <Edit3 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Edit Course Details</CardTitle>
+                  <CardDescription className="text-xs">Update your course information</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -458,6 +733,7 @@ export default function CourseManagementPage() {
                     value={courseForm.title}
                     onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
                     placeholder="Enter course title"
+                    className="rounded-xl border-gray-200"
                   />
                 </div>
 
@@ -473,12 +749,12 @@ export default function CourseManagementPage() {
                     maxLength={500}
                     value={courseForm.description}
                     onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-                    className="flex w-full rounded-md border border-gray-300 bg-background px-3 py-2 text-sm"
+                    className="flex w-full rounded-xl border border-gray-200 bg-background px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500"
                     placeholder="Describe what students will learn..."
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Category
@@ -486,7 +762,7 @@ export default function CourseManagementPage() {
                     <select
                       value={courseForm.category}
                       onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-red-500 focus:ring-red-500"
                     >
                       {categories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -501,7 +777,7 @@ export default function CourseManagementPage() {
                     <select
                       value={courseForm.difficulty_level}
                       onChange={(e) => setCourseForm({ ...courseForm, difficulty_level: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-red-500 focus:ring-red-500"
                     >
                       <option value="beginner">Beginner</option>
                       <option value="intermediate">Intermediate</option>
@@ -531,6 +807,7 @@ export default function CourseManagementPage() {
                     value={courseForm.intro_video_url}
                     onChange={(e) => setCourseForm({ ...courseForm, intro_video_url: e.target.value })}
                     placeholder="YouTube or Vimeo link"
+                    className="rounded-xl border-gray-200"
                   />
                 </div>
 
@@ -540,7 +817,7 @@ export default function CourseManagementPage() {
                     id="is_free_edit"
                     checked={courseForm.is_free}
                     onChange={(e) => setCourseForm({ ...courseForm, is_free: e.target.checked })}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
                   <label htmlFor="is_free_edit" className="text-sm font-medium text-gray-700">
                     This course is free
@@ -557,21 +834,22 @@ export default function CourseManagementPage() {
                       value={courseForm.price}
                       onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) || 0 })}
                       placeholder="0.00"
+                      className="rounded-xl border-gray-200"
                     />
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                   <Button
                     variant="outline"
                     onClick={() => setIsEditingCourse(false)}
-                    className="border-gray-300"
+                    className="border-gray-200 rounded-xl"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleUpdateCourse}
-                    className="bg-red-500 hover:bg-red-600 text-white"
+                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
                   >
                     Save Changes
                   </Button>
@@ -582,37 +860,50 @@ export default function CourseManagementPage() {
         )}
 
         {/* Lessons Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>
-                  Course Lessons
-                  {isSavingOrder && (
-                    <span className="text-sm font-normal text-gray-500 ml-2">Saving order...</span>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Manage your course content
-                  {!isSavingOrder && lessons.length > 1 && (
-                    <span className="text-xs text-gray-400 ml-2">• Use arrows to reorder</span>
-                  )}
-                </CardDescription>
+        <Card className="rounded-2xl border-gray-100 shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <PlayCircle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    Course Lessons
+                    {isSavingOrder && (
+                      <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        Saving...
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Manage your course content
+                    {!isSavingOrder && lessons.length > 1 && (
+                      <span className="text-gray-400 ml-1">• Use arrows to reorder</span>
+                    )}
+                  </CardDescription>
+                </div>
               </div>
               {!isAddingLesson && !editingLesson && (
                 <Button
                   onClick={() => setIsAddingLesson(true)}
-                  className="bg-red-500 hover:bg-red-600 text-white"
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl shadow-lg shadow-red-500/20"
+                  size="sm"
                 >
-                  + Add Lesson
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add Lesson
                 </Button>
               )}
             </div>
           </CardHeader>
           <CardContent>
+            {/* Add/Edit Lesson Form */}
             {(isAddingLesson || editingLesson) && (
-              <div className="border rounded-lg p-4 mb-6 bg-gray-50">
-                <h3 className="font-semibold mb-4">
+              <div className="border border-gray-200 rounded-2xl p-5 mb-6 bg-gradient-to-br from-gray-50 to-white">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    {editingLesson ? <Edit3 className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-white" />}
+                  </div>
                   {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
                 </h3>
                 <div className="space-y-4">
@@ -624,6 +915,7 @@ export default function CourseManagementPage() {
                       value={lessonForm.title}
                       onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
                       placeholder="Enter lesson title"
+                      className="rounded-xl border-gray-200"
                     />
                   </div>
 
@@ -634,12 +926,12 @@ export default function CourseManagementPage() {
                     <select
                       value={lessonForm.content_type}
                       onChange={(e) => setLessonForm({ ...lessonForm, content_type: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-red-500 focus:ring-red-500"
                     >
-                      <option value="text">Text</option>
-                      <option value="youtube">YouTube Video</option>
-                      <option value="pdf">PDF Document</option>
-                      <option value="powerpoint">PowerPoint</option>
+                      <option value="text">📝 Text</option>
+                      <option value="youtube">📺 YouTube Video</option>
+                      <option value="pdf">📄 PDF Document</option>
+                      <option value="powerpoint">📊 PowerPoint</option>
                     </select>
                   </div>
 
@@ -665,6 +957,7 @@ export default function CourseManagementPage() {
                         value={lessonForm.youtube_url}
                         onChange={(e) => setLessonForm({ ...lessonForm, youtube_url: e.target.value })}
                         placeholder="https://www.youtube.com/watch?v=..."
+                        className="rounded-xl border-gray-200"
                       />
                     </div>
                   )}
@@ -698,10 +991,11 @@ export default function CourseManagementPage() {
                       value={lessonForm.duration_minutes}
                       onChange={(e) => setLessonForm({ ...lessonForm, duration_minutes: parseInt(e.target.value) || 0 })}
                       placeholder="Estimated duration"
+                      className="rounded-xl border-gray-200"
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -717,13 +1011,13 @@ export default function CourseManagementPage() {
                           duration_minutes: 0
                         })
                       }}
-                      className="border-gray-300"
+                      className="border-gray-200 rounded-xl"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleAddOrUpdateLesson}
-                      className="bg-red-500 hover:bg-red-600 text-white"
+                      className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
                     >
                       {editingLesson ? 'Update Lesson' : 'Add Lesson'}
                     </Button>
@@ -732,21 +1026,25 @@ export default function CourseManagementPage() {
               </div>
             )}
 
+            {/* Lessons List */}
             {lessons.length > 0 ? (
               <div className="space-y-3">
                 {lessons.map((lesson, index) => (
-                  <div key={lesson.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                  <div 
+                    key={lesson.id} 
+                    className="border border-gray-100 rounded-xl p-4 bg-white hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         {/* Reorder Buttons */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-0.5">
                           <button
                             onClick={() => moveLesson(lesson.id, 'up')}
                             disabled={index === 0 || isSavingOrder}
-                            className={`p-1 rounded transition-colors ${
+                            className={`p-1 rounded-lg transition-colors ${
                               index === 0 || isSavingOrder
-                                ? 'text-gray-300 cursor-not-allowed'
-                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                                ? 'text-gray-200 cursor-not-allowed'
+                                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                             }`}
                             title="Move up"
                           >
@@ -755,30 +1053,46 @@ export default function CourseManagementPage() {
                           <button
                             onClick={() => moveLesson(lesson.id, 'down')}
                             disabled={index === lessons.length - 1 || isSavingOrder}
-                            className={`p-1 rounded transition-colors ${
+                            className={`p-1 rounded-lg transition-colors ${
                               index === lessons.length - 1 || isSavingOrder
-                                ? 'text-gray-300 cursor-not-allowed'
-                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                                ? 'text-gray-200 cursor-not-allowed'
+                                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                             }`}
                             title="Move down"
                           >
                             <ChevronDown className="h-4 w-4" />
                           </button>
                         </div>
+
+                        {/* Lesson Number */}
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:from-red-50 group-hover:to-pink-50 transition-colors">
+                          <span className="text-sm font-bold text-gray-600 group-hover:text-red-500 transition-colors">
+                            {index + 1}
+                          </span>
+                        </div>
+
                         {/* Lesson Info */}
-                        <div>
-                          <h4 className="font-medium">
-                            {index + 1}. {lesson.title}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-sm truncate">
+                            {lesson.title}
                           </h4>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                            <span>Type: {lesson.content_type}</span>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              {getContentTypeIcon(lesson.content_type)}
+                              {getContentTypeLabel(lesson.content_type)}
+                            </span>
                             {lesson.duration_minutes && (
-                              <span>Duration: {lesson.duration_minutes} min</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {lesson.duration_minutes} min
+                              </span>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 flex-shrink-0">
                         <Button
                           size="sm"
                           variant="outline"
@@ -794,25 +1108,26 @@ export default function CourseManagementPage() {
                               duration_minutes: lesson.duration_minutes || 0
                             })
                           }}
-                          className="border-gray-300"
+                          className="border-gray-200 rounded-xl text-xs"
                         >
+                          <Edit3 className="w-3 h-3 mr-1" />
                           Edit
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => router.push(`/instructor/lessons/${lesson.id}/quiz`)}
-                          className="border-blue-500 text-blue-500 hover:bg-blue-50"
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-xs"
                         >
                           Quiz
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => deleteLesson(lesson.id)}
-                          className="border-red-500 text-red-500 hover:bg-red-50"
+                          onClick={() => deleteLesson(lesson.id, lesson.title)}
+                          className="border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-xs"
                         >
-                          Delete
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
                     </div>
@@ -820,9 +1135,22 @@ export default function CourseManagementPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
-                No lessons yet. Add your first lesson to get started.
-              </p>
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4">
+                  <BookOpen className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-sm mb-4">
+                  No lessons yet. Add your first lesson to get started.
+                </p>
+                <Button
+                  onClick={() => setIsAddingLesson(true)}
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add First Lesson
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
