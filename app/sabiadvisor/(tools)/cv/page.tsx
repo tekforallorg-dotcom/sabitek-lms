@@ -53,7 +53,6 @@ interface CVDocument {
   status: string
   ats_score?: number
   created_at: string
-  // New fields from v2 pipeline
   ats?: {
     keyword_coverage_pct?: number
     missing_keywords?: string[]
@@ -62,7 +61,6 @@ interface CVDocument {
   }
 }
 
-// New interface for API response extras
 interface CVGenerationExtras {
   missingMetricsQuestions?: string[]
   roleDiff?: {
@@ -75,6 +73,7 @@ interface CVGenerationExtras {
   }
   aiProvider?: string
 }
+
 interface CostEstimate {
   costKobo: number
   costFormatted: string
@@ -98,7 +97,7 @@ export default function CVBuilderPage() {
   // JD Upload state (for Tailor mode)
   const [uploadedJD, setUploadedJD] = useState<File | null>(null)
   const [uploadedJDText, setUploadedJDText] = useState('')
-  const [jobDescription, setJobDescription] = useState('')  // This is for pasted text only
+  const [jobDescription, setJobDescription] = useState('')
   const [uploadingJD, setUploadingJD] = useState(false)
   
   // Form state
@@ -111,18 +110,18 @@ export default function CVBuilderPage() {
   const [uploadedCV, setUploadedCV] = useState<File | null>(null)
   const [uploadedCVText, setUploadedCVText] = useState('')
   const [uploadingCV, setUploadingCV] = useState(false)
-  
 
   // Extra instructions (for Build mode)
   const [extraInstructions, setExtraInstructions] = useState('')
   
   // UI state
   const [generating, setGenerating] = useState(false)
-  const [generationStatus, setGenerationStatus] = useState('') // FIX 2: Progress status
+  const [generationStatus, setGenerationStatus] = useState('')
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
   const [error, setError] = useState('')
   const [profileComplete, setProfileComplete] = useState(false)
-  const [profileCompleteness, setProfileCompleteness] = useState(0)
+const [profileCompleteness, setProfileCompleteness] = useState(0)
+const [profileLoading, setProfileLoading] = useState(true)
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   
   // Data state
@@ -151,30 +150,36 @@ export default function CVBuilderPage() {
   }, [action])
 
   const checkProfile = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const res = await fetch('/api/advisor/profile', {
-        headers: { 'Authorization': `Bearer ${session.access_token}` }
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        const profile = data.profile
-        setProfileCompleteness(profile?.profile_completeness || 0)
-        setProfileComplete(profile?.profile_completeness >= 30)
-        setProfileData({
-          full_name: profile?.full_name || '',
-          email: profile?.email || '',
-          phone: profile?.phone || '',
-          location: profile?.location || ''
-        })
-      }
-    } catch (error) {
-      console.error('Profile check error:', error)
+  try {
+    setProfileLoading(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setProfileLoading(false)
+      return
     }
+
+    const res = await fetch('/api/advisor/profile', {
+      headers: { 'Authorization': `Bearer ${session.access_token}` }
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const profile = data.profile
+      setProfileCompleteness(profile?.profile_completeness || 0)
+      setProfileComplete(profile?.profile_completeness >= 30)
+      setProfileData({
+        full_name: profile?.full_name || '',
+        email: profile?.email || '',
+        phone: profile?.phone || '',
+        location: profile?.location || ''
+      })
+    }
+  } catch (error) {
+    console.error('Profile check error:', error)
+  } finally {
+    setProfileLoading(false)
   }
+}
 
   const fetchSavedCVs = async () => {
     try {
@@ -208,7 +213,6 @@ export default function CVBuilderPage() {
     }
   }
 
-  // CV File upload handler
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -274,120 +278,107 @@ export default function CVBuilderPage() {
     }
   }
 
-  // JD File upload handler (for Tailor mode)
-  // JD File upload handler (for Tailor mode)
-// PDF/DOCX are processed separately - NOT written to textbox
-const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0]
-  if (!file) return
+  const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  const allowedTypes = [
-    'application/pdf',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/msword',
-    'text/plain'
-  ]
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain'
+    ]
 
-  if (!allowedTypes.includes(file.type)) {
-    setError('Please upload a PDF, DOCX, DOC, or TXT file')
-    return
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    setError('File size must be less than 5MB')
-    return
-  }
-
-  setUploadingJD(true)
-  setError('')
-  setUploadedJD(file)
-
-  try {
-    if (file.type === 'text/plain') {
-      // TXT files: read directly into uploadedJDText
-      const text = await file.text()
-      setUploadedJDText(text)
-    } else {
-      // PDF/DOCX: Parse via API into uploadedJDText (NOT jobDescription textbox)
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/advisor/parse-document', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: formData
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        // Store parsed text separately - textbox remains independent
-        setUploadedJDText(data.text || data.rawText || '')
-      } else {
-        // Parse failed - file is still attached, user can paste in textbox
-        setUploadedJDText('')
-        console.warn('JD file parse failed - user can add text in textbox')
-      }
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a PDF, DOCX, DOC, or TXT file')
+      return
     }
-  } catch (error) {
-    console.error('JD upload error:', error)
-    // Don't block - file is attached, user can paste in textbox as fallback
-    setUploadedJDText('')
-  } finally {
-    setUploadingJD(false)
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB')
+      return
+    }
+
+    setUploadingJD(true)
+    setError('')
+    setUploadedJD(file)
+
+    try {
+      if (file.type === 'text/plain') {
+        const text = await file.text()
+        setUploadedJDText(text)
+      } else {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/advisor/parse-document', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: formData
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          setUploadedJDText(data.text || data.rawText || '')
+        } else {
+          setUploadedJDText('')
+          console.warn('JD file parse failed - user can add text in textbox')
+        }
+      }
+    } catch (error) {
+      console.error('JD upload error:', error)
+      setUploadedJDText('')
+    } finally {
+      setUploadingJD(false)
+    }
   }
-}
 
   const removeUploadedJD = () => {
-  setUploadedJD(null)
-  setUploadedJDText('')  // FIXED: Only clear upload text, preserve pasted text
-  if (jdFileInputRef.current) {
-    jdFileInputRef.current.value = ''
+    setUploadedJD(null)
+    setUploadedJDText('')
+    if (jdFileInputRef.current) {
+      jdFileInputRef.current.value = ''
+    }
   }
-}
 
   const handleGenerate = () => {
-  if (!targetRole.trim()) {
-    setError('Please enter a target role')
-    return
-  }
-  
-  // FIXED: Better validation with clearer error messages
-  if (action === 'tailor') {
-    // Block if still uploading
-    if (uploadingJD) {
-      setError('Please wait for the job description file to finish processing.')
+    if (!targetRole.trim()) {
+      setError('Please enter a target role')
       return
     }
     
-    const hasUploadedJDText = uploadedJDText.trim().length > 0
-    const hasPastedJD = jobDescription.trim().length > 0
-    const hasFile = uploadedJD !== null
-    
-    if (!hasUploadedJDText && !hasPastedJD) {
-      if (hasFile) {
-        // File attached but couldn't extract text
-        setError("We couldn't read text from the uploaded file. Please paste the job description text below, or try a different file format.")
-      } else {
-        setError('Please upload or paste a job description.')
+    if (action === 'tailor') {
+      if (uploadingJD) {
+        setError('Please wait for the job description file to finish processing.')
+        return
       }
+      
+      const hasUploadedJDText = uploadedJDText.trim().length > 0
+      const hasPastedJD = jobDescription.trim().length > 0
+      const hasFile = uploadedJD !== null
+      
+      if (!hasUploadedJDText && !hasPastedJD) {
+        if (hasFile) {
+          setError("We couldn't read text from the uploaded file. Please paste the job description text below, or try a different file format.")
+        } else {
+          setError('Please upload or paste a job description.')
+        }
+        return
+      }
+    }
+    
+    if (!profileComplete) {
+      setError('Please complete your profile first (at least 30%)')
       return
     }
+    
+    setError('')
+    setShowConfirmModal(true)
   }
-  
-  if (!profileComplete) {
-    setError('Please complete your profile first (at least 30%)')
-    return
-  }
-  
-  setError('')
-  setShowConfirmModal(true)
-}
 
-
-  // FIX 2: Single confirmGenerate with progress status
   const confirmGenerate = async () => {
     setShowConfirmModal(false)
     setGenerating(true)
@@ -401,7 +392,6 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
       setGenerationStatus('Preparing CV generation...')
       
-      // Simulate progress stages (since API doesn't stream)
       const progressStages = [
         'Analyzing target role requirements...',
         'Crafting professional summary...',
@@ -418,9 +408,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           setGenerationStatus(progressStages[stageIndex])
           stageIndex++
         }
-      }, 2500) // Change status every 2.5 seconds
+      }, 2500)
 
-      // Merge uploaded JD text and pasted text
       const finalJobDescription = action === 'tailor'
         ? [uploadedJDText.trim(), jobDescription.trim()].filter(Boolean).join('\n\n---\n\n')
         : undefined
@@ -471,7 +460,6 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   }
 
-  // Export handlers
   const handleExportPDF = async () => {
     if (!currentCV || !profileData) return
     
@@ -537,31 +525,40 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-4 border-pink-200 border-t-pink-600 animate-spin"></div>
+          <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-transparent border-r-red-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="h-full flex flex-col lg:flex-row">
-      {/* FIX 3: Left Panel with sticky positioning and fixed button */}
-      <div className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col lg:h-screen lg:sticky lg:top-0">
-        {/* Header - fixed */}
-        <div className="p-4 border-b border-gray-200 flex-shrink-0">
-          <h1 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
-            CV Builder
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">Create ATS-optimized CVs</p>
+      {/* Left Panel - Form */}
+      <div className="w-full lg:w-96 bg-white/80 backdrop-blur-sm border-b lg:border-b-0 lg:border-r border-gray-200/50 flex flex-col lg:h-screen lg:sticky lg:top-0">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">CV Builder</h1>
+              <p className="text-xs text-gray-500">Create ATS-optimized CVs</p>
+            </div>
+          </div>
         </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Profile Status */}
-          {!profileComplete && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+          {!profileLoading && !profileComplete && (
+  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3">
+    <div className="flex items-start gap-2">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-4 h-4 text-amber-600" />
+                </div>
                 <div>
                   <p className="text-sm font-medium text-amber-800">Profile Incomplete</p>
                   <p className="text-xs text-amber-600 mt-0.5">
@@ -569,7 +566,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </p>
                   <a 
                     href="/sabiadvisor/profile" 
-                    className="text-xs text-amber-700 underline mt-1 inline-block"
+                    className="text-xs text-amber-700 font-medium hover:text-amber-800 mt-1 inline-flex items-center gap-1"
                   >
                     Complete Profile →
                   </a>
@@ -584,10 +581,10 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setAction('build')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
                   action === 'build'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-sm font-medium">Build CV</span>
@@ -595,10 +592,10 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               </button>
               <button
                 onClick={() => setAction('tailor')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
                   action === 'tailor'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-sm font-medium">Tailor CV</span>
@@ -615,7 +612,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               value={targetRole}
               onChange={(e) => setTargetRole(e.target.value)}
               placeholder="e.g., Systems Analyst, Frontend Developer"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             />
           </div>
 
@@ -625,7 +622,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             >
               <option value="entry">Entry Level</option>
               <option value="mid">Mid Level</option>
@@ -640,20 +637,20 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <select
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             >
               <option value="ATS-1page">ATS-Friendly Resume (1 Page)</option>
               <option value="ATS-2page">ATS-Friendly Resume (2 Pages)</option>
               <option value="REMOTE_OPTIMISED_ATS">Remote Optimised Resume (ATS + Remote-Ready)</option>
             </select>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1.5 px-1">
               {format === 'ATS-1page' && 'Best for strict ATS + quick applications'}
               {format === 'ATS-2page' && 'Best for experienced candidates'}
-              {format === 'REMOTE_OPTIMISED_ATS' && 'Best for remote/hybrid jobs; highlights async communication + documentation'}
+              {format === 'REMOTE_OPTIMISED_ATS' && 'Best for remote/hybrid jobs'}
             </p>
           </div>
 
-          {/* Upload CV Section - Always Visible */}
+          {/* Upload CV Section */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Upload Your Existing CV (Optional)
@@ -663,12 +660,14 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </p>
             
             {uploadedCV ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <File className="w-4 h-4 text-green-600" />
+              <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <File className="w-4 h-4 text-green-600" />
+                </div>
                 <span className="text-sm text-green-700 flex-1 truncate">{uploadedCV.name}</span>
                 <button
                   onClick={removeUploadedCV}
-                  className="p-1 hover:bg-green-100 rounded"
+                  className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4 text-green-600" />
                 </button>
@@ -676,15 +675,17 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             ) : (
               <div
                 onClick={() => cvFileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-green-400 hover:bg-green-50/50 transition-colors"
+                className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-green-400 hover:bg-green-50/50 transition-all group"
               >
                 {uploadingCV ? (
                   <Loader2 className="w-6 h-6 animate-spin text-green-500 mx-auto" />
                 ) : (
                   <>
-                    <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                    <div className="w-10 h-10 bg-gray-100 group-hover:bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2 transition-colors">
+                      <Upload className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" />
+                    </div>
                     <p className="text-sm text-gray-600">
-                      Drop CV or <span className="text-green-600">browse</span>
+                      Drop CV or <span className="text-green-600 font-medium">browse</span>
                     </p>
                     <p className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT (max 5MB)</p>
                   </>
@@ -701,7 +702,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             />
           </div>
 
-          {/* Tailor Mode: Job Description Upload & Input */}
+          {/* Tailor Mode: Job Description */}
           {action === 'tailor' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -712,12 +713,14 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               </p>
               
               {uploadedJD ? (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
-                  <File className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl mb-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <File className="w-4 h-4 text-blue-600" />
+                  </div>
                   <span className="text-sm text-blue-700 flex-1 truncate">{uploadedJD.name}</span>
                   <button
                     onClick={removeUploadedJD}
-                    className="p-1 hover:bg-blue-100 rounded"
+                    className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4 text-blue-600" />
                   </button>
@@ -725,15 +728,15 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               ) : (
                 <div
                   onClick={() => jdFileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors mb-2"
+                  className="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all mb-2 group"
                 >
                   {uploadingJD ? (
                     <Loader2 className="w-5 h-5 animate-spin text-blue-500 mx-auto" />
                   ) : (
                     <>
-                      <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                      <Upload className="w-5 h-5 text-gray-400 group-hover:text-blue-500 mx-auto mb-1 transition-colors" />
                       <p className="text-xs text-gray-600">
-                        Upload JD file or <span className="text-blue-600">browse</span>
+                        Upload JD file or <span className="text-blue-600 font-medium">browse</span>
                       </p>
                     </>
                   )}
@@ -748,7 +751,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 className="hidden"
               />
 
-              <div className="relative my-2">
+              <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200" />
                 </div>
@@ -762,7 +765,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 onChange={(e) => setJobDescription(e.target.value)}
                 placeholder="Paste the job description here..."
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
               />
             </div>
           )}
@@ -776,33 +779,41 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <textarea
                 value={extraInstructions}
                 onChange={(e) => setExtraInstructions(e.target.value)}
-                placeholder="Any specific instructions for building your CV, e.g., 'Emphasize leadership experience' or 'Focus on cloud technologies'"
+                placeholder="e.g., 'Emphasize leadership experience' or 'Focus on cloud technologies'"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
               />
             </div>
           )}
-{/* Status indicators */}
-{action === 'tailor' && (uploadedJDText.trim() || jobDescription.trim()) && (
-  <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-2">
-    <p className="text-xs text-green-700">
-      ✓ Job description ready
-      {uploadedJDText.trim() && jobDescription.trim() && ' (file + pasted text will be combined)'}
-      {uploadedJDText.trim() && !jobDescription.trim() && ' (from uploaded file)'}
-      {!uploadedJDText.trim() && jobDescription.trim() && ' (from pasted text)'}
-    </p>
-  </div>
-)}
+
+          {/* Status indicator */}
+          {action === 'tailor' && (uploadedJDText.trim() || jobDescription.trim()) && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <p className="text-xs text-green-700 font-medium">
+                  Job description ready
+                  {uploadedJDText.trim() && jobDescription.trim() && ' (file + pasted text)'}
+                  {uploadedJDText.trim() && !jobDescription.trim() && ' (from file)'}
+                  {!uploadedJDText.trim() && jobDescription.trim() && ' (from pasted text)'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">
-              {error}
+            <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
             </div>
           )}
 
           {/* Cost Estimate */}
           {costEstimate && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Estimated cost:</span>
                 <span className="text-sm font-semibold text-gray-900">{costEstimate.costFormatted}</span>
@@ -813,9 +824,9 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
           )}
 
-          {/* FIX 2: Generation Progress Status */}
+          {/* Generation Progress */}
           {generating && generationStatus && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                 <span className="text-sm text-blue-700">{generationStatus}</span>
@@ -825,7 +836,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Success Message */}
           {chargedAmount && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-green-700">
@@ -836,12 +847,12 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           )}
         </div>
 
-        {/* FIX 3: Generate Button - Fixed at bottom */}
-        <div className="p-4 border-t border-gray-200 flex-shrink-0 bg-white">
+        {/* Generate Button - Fixed */}
+        <div className="p-4 border-t border-gray-100 flex-shrink-0 bg-white/80 backdrop-blur-sm">
           <button
             onClick={handleGenerate}
             disabled={generating || !profileComplete}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
           >
             {generating ? (
               <>
@@ -859,7 +870,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       </div>
 
       {/* Right Panel - Preview */}
-      <div className="flex-1 bg-gray-100 overflow-auto">
+      <div className="flex-1 bg-gradient-to-br from-gray-50 to-slate-100 overflow-auto">
         {currentCV ? (
           <div className="p-4 lg:p-6">
             {/* Preview Header */}
@@ -879,42 +890,43 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <button 
                   onClick={handleExportPDF}
                   disabled={exporting !== null}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
                 >
                   {exporting === 'pdf' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Download className="w-4 h-4" />
                   )}
-                  Export PDF
+                  PDF
                 </button>
                 <button 
                   onClick={handleExportDOCX}
                   disabled={exporting !== null}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
                 >
                   {exporting === 'docx' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Download className="w-4 h-4" />
                   )}
-                  Export DOCX
+                  DOCX
                 </button>
               </div>
             </div>
 
-              {/* ATS Insights Panel */}
+            {/* ATS Insights Panel */}
             {(currentCV?.ats || cvExtras) && (
-              <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+              <div className="mb-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-200/50 p-4 shadow-sm">
                 <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-3 h-3 text-white" />
+                  </div>
                   ATS Insights
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {/* ATS Score */}
                   {(currentCV?.ats?.score != null || currentCV?.ats_score != null) && (
-                    <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-100">
                       <div className="text-xs text-gray-500 mb-1">ATS Score</div>
                       <div className="text-2xl font-bold text-blue-600">
                         {currentCV?.ats?.score || currentCV?.ats_score}%
@@ -922,10 +934,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </div>
                   )}
                   
-                  {/* Keyword Coverage */}
-                  {/* Keyword Coverage */}
-                    {currentCV?.ats?.keyword_coverage_pct != null && (
-                    <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  {currentCV?.ats?.keyword_coverage_pct != null && (
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-green-100">
                       <div className="text-xs text-gray-500 mb-1">Keyword Coverage</div>
                       <div className="text-2xl font-bold text-green-600">
                         {currentCV.ats.keyword_coverage_pct}%
@@ -933,9 +943,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </div>
                   )}
                   
-                  {/* Role Compatibility */}
                   {cvExtras?.roleDiff && (
-                    <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-purple-100">
                       <div className="text-xs text-gray-500 mb-1">Role Match</div>
                       <div className="text-2xl font-bold text-purple-600">
                         {Math.min(Math.round(cvExtras.roleDiff.compatibilityScore * 100) + 50, 100)}%
@@ -949,9 +958,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   )}
                 </div>
 
-                {/* Missing Keywords */}
                 {currentCV?.ats?.missing_keywords && currentCV.ats.missing_keywords.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-blue-100">
+                  <div className="mt-3 pt-3 border-t border-blue-100/50">
                     <div className="text-xs font-medium text-amber-700 mb-2">
                       💡 Consider adding these keywords:
                     </div>
@@ -959,7 +967,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       {currentCV.ats.missing_keywords.slice(0, 8).map((kw, i) => (
                         <span 
                           key={i}
-                          className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs"
+                          className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-lg text-xs"
                         >
                           {kw}
                         </span>
@@ -973,9 +981,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </div>
                 )}
 
-                {/* Missing Metrics Questions */}
                 {cvExtras?.missingMetricsQuestions && cvExtras.missingMetricsQuestions.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-blue-100">
+                  <div className="mt-3 pt-3 border-t border-blue-100/50">
                     <div className="text-xs font-medium text-blue-700 mb-2">
                       📊 Add metrics to strengthen your CV:
                     </div>
@@ -990,9 +997,8 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </div>
                 )}
 
-                {/* AI Provider Badge */}
                 {cvExtras?.aiProvider && (
-                  <div className="mt-3 pt-3 border-t border-blue-100 flex items-center justify-between">
+                  <div className="mt-3 pt-3 border-t border-blue-100/50 flex items-center justify-between">
                     <span className="text-xs text-gray-400">
                       Generated by 🤖 SabiBot
                     </span>
@@ -1002,7 +1008,7 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             )}
 
             {/* CV Preview */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 lg:p-8 max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 lg:p-8 max-w-3xl mx-auto">
               {/* Header */}
               <div className="text-center mb-6 pb-4 border-b border-gray-200">
                 <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide mb-1">
@@ -1128,10 +1134,10 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         ) : (
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-gray-400" />
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <FileText className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No CV Generated Yet</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No CV Generated Yet</h3>
               <p className="text-sm text-gray-500">
                 Fill in your target role and click &quot;Generate CV&quot; to create an ATS-optimized CV from your profile.
               </p>
@@ -1143,21 +1149,24 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowConfirmModal(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-xl shadow-2xl z-50 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Generation</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              This action will cost <strong>{costEstimate?.costFormatted || '...'}</strong> from your wallet.
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={() => setShowConfirmModal(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-2xl shadow-2xl z-50 p-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">Confirm Generation</h3>
+            <p className="text-sm text-gray-600 mb-4 text-center">
+              This will cost <strong className="text-blue-600">{costEstimate?.costFormatted || '...'}</strong> from your wallet.
             </p>
             
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 mb-4 border border-gray-100">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Your balance:</span>
                 <span className="font-medium">{balance?.balanceFormatted || '₦0'}</span>
               </div>
               <div className="flex justify-between text-sm mt-1">
                 <span className="text-gray-600">After charge:</span>
-                <span className="font-medium">
+                <span className="font-medium text-green-600">
                   {balance && costEstimate 
                     ? formatNaira(balance.balanceKobo - costEstimate.costKobo)
                     : '...'}
@@ -1168,13 +1177,13 @@ const handleJDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmGenerate}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/20"
               >
                 Proceed
               </button>

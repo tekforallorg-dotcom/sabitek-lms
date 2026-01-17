@@ -412,7 +412,7 @@ export default function CreateCoursePage() {
               {/* Pricing */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                  <span className="w-5 h-5 flex items-center justify-center text-red-500 font-bold text-sm">₦</span>
+                  <span className="w-5 h-5 flex items-center justify-center text-red-500 font-bold text-sm">₦</span>  
                   <h3 className="text-base font-semibold text-gray-900">Pricing</h3>
                 </div>
                 

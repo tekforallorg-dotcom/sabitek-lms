@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
@@ -26,7 +25,6 @@ import {
   Download,
   Calendar,
   RefreshCw,
-  DollarSign,
   ShoppingCart,
   BookOpen,
   Users,
@@ -34,7 +32,9 @@ import {
   ExternalLink,
   User,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  TrendingUp,
+  Wallet
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -54,6 +54,7 @@ interface CourseSale {
   status: string
   created_at: string
   course_id: string
+  user_id?: string
   user?: {
     id: string
     email: string
@@ -119,6 +120,7 @@ export default function InstructorBillingPage() {
     }
   }, [authLoading, user, userProfile])
 
+  // EXACT SAME PATTERN AS PROFILE PAGE (which works correctly)
   const fetchBillingData = async () => {
     if (!user) return
 
@@ -129,60 +131,134 @@ export default function InstructorBillingPage() {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-      const { data: instructorCourses } = await supabase
+      // Step 1: Fetch instructor's courses (SAME AS PROFILE PAGE)
+      const { data: courses, error: coursesError } = await supabase
         .from('courses')
-        .select('id, title, slug, price')
+        .select('id, title, slug, price, is_free')
         .eq('instructor_id', user.id)
 
-      if (!instructorCourses || instructorCourses.length === 0) {
+      if (coursesError) {
+        console.error('Error fetching courses:', coursesError)
         setLoading(false)
         return
       }
 
-      const courseIds = instructorCourses.map(c => c.id)
+      if (!courses || courses.length === 0) {
+        // No courses - set empty state
+        setStats({
+          totalEarnings: 0,
+          earningsThisMonth: 0,
+          earningsLast30Days: 0,
+          pendingPayouts: 0,
+          totalSales: 0,
+          totalStudents: 0
+        })
+        setSales([])
+        setCourseEarnings([])
+        setChartData([])
+        setLoading(false)
+        return
+      }
 
-      const { data: purchases } = await supabase
-        .from('course_purchases')
-        .select(`
-          *,
-          user:users(id, email, full_name, avatar_url),
-          course:courses(id, title, slug, price)
-        `)
+      const courseIds = courses.map(c => c.id)
+
+      // Step 2: Fetch enrollments (SAME AS PROFILE PAGE - simple select)
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from('course_enrollments')
+        .select('id, course_id, user_id, enrolled_at')
         .in('course_id', courseIds)
-        .eq('status', 'successful')
-        .order('created_at', { ascending: false })
 
-      const allPurchases = purchases || []
+      if (enrollmentsError) {
+        console.error('Error fetching enrollments:', enrollmentsError)
+        setLoading(false)
+        return
+      }
 
-      const totalEarnings = allPurchases.reduce((sum, p) => sum + (p.amount || 0), 0)
-      
-      const earningsThisMonth = allPurchases
-        .filter(p => new Date(p.created_at) >= monthStart)
-        .reduce((sum, p) => sum + (p.amount || 0), 0)
+      const allEnrollments = enrollments || []
 
-      const earningsLast30Days = allPurchases
-        .filter(p => new Date(p.created_at) >= thirtyDaysAgo)
-        .reduce((sum, p) => sum + (p.amount || 0), 0)
+      // Step 3: Calculate revenue (SAME LOGIC AS PROFILE PAGE)
+      let totalRevenue = 0
+      let revenueThisMonth = 0
+      let revenueLast30Days = 0
 
-      const uniqueStudents = new Set(allPurchases.map(p => p.user_id)).size
+      if (allEnrollments.length > 0) {
+        allEnrollments.forEach(enrollment => {
+          const course = courses.find(c => c.id === enrollment.course_id)
+          if (course && !course.is_free && course.price) {
+            totalRevenue += course.price
+            
+            const enrolledDate = new Date(enrollment.enrolled_at)
+            if (enrolledDate >= monthStart) {
+              revenueThisMonth += course.price
+            }
+            if (enrolledDate >= thirtyDaysAgo) {
+              revenueLast30Days += course.price
+            }
+          }
+        })
+      }
 
+      // Step 4: Get unique students count
+      const uniqueStudentIds = [...new Set(allEnrollments.map(e => e.user_id))]
+      const totalStudents = uniqueStudentIds.length
+
+      // Step 5: Fetch user details for the sales table (separate query)
+      let usersMap: Record<string, any> = {}
+      if (uniqueStudentIds.length > 0) {
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, email, full_name, avatar_url')
+          .in('id', uniqueStudentIds)
+
+        if (users) {
+          usersMap = users.reduce((acc, u) => ({ ...acc, [u.id]: u }), {})
+        }
+      }
+
+      // Step 6: Build sales data for table (sorted by date)
+      const salesData: CourseSale[] = allEnrollments
+        .sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime())
+        .map(enrollment => {
+          const course = courses.find(c => c.id === enrollment.course_id)
+          const amount = (course && !course.is_free && course.price) ? course.price : 0
+
+          return {
+            id: enrollment.id,
+            amount: amount,
+            currency: 'NGN',
+            status: 'successful',
+            created_at: enrollment.enrolled_at,
+            course_id: enrollment.course_id,
+            user_id: enrollment.user_id,
+            user: usersMap[enrollment.user_id] || null,
+            course: course ? {
+              id: course.id,
+              title: course.title,
+              slug: course.slug,
+              price: course.price || 0
+            } : undefined
+          }
+        })
+
+      // Step 7: Set stats
       setStats({
-        totalEarnings,
-        earningsThisMonth,
-        earningsLast30Days,
+        totalEarnings: totalRevenue,
+        earningsThisMonth: revenueThisMonth,
+        earningsLast30Days: revenueLast30Days,
         pendingPayouts: 0,
-        totalSales: allPurchases.length,
-        totalStudents: uniqueStudents
+        totalSales: allEnrollments.length,
+        totalStudents: totalStudents
       })
 
-      setSales(allPurchases)
+      setSales(salesData)
 
+      // Step 8: Calculate earnings by course
       const earningsByCourse: Record<string, CourseEarnings> = {}
-      allPurchases.forEach(p => {
-        if (!earningsByCourse[p.course_id]) {
-          const course = instructorCourses.find(c => c.id === p.course_id)
-          earningsByCourse[p.course_id] = {
-            course_id: p.course_id,
+      allEnrollments.forEach(enrollment => {
+        const course = courses.find(c => c.id === enrollment.course_id)
+        if (!earningsByCourse[enrollment.course_id]) {
+          earningsByCourse[enrollment.course_id] = {
+            course_id: enrollment.course_id,
             title: course?.title || 'Unknown Course',
             slug: course?.slug || '',
             total_earnings: 0,
@@ -190,12 +266,15 @@ export default function InstructorBillingPage() {
             price: course?.price || 0
           }
         }
-        earningsByCourse[p.course_id].total_earnings += p.amount || 0
-        earningsByCourse[p.course_id].total_sales += 1
+        // Add revenue only for paid courses
+        if (course && !course.is_free && course.price) {
+          earningsByCourse[enrollment.course_id].total_earnings += course.price
+        }
+        earningsByCourse[enrollment.course_id].total_sales += 1
       })
 
       setCourseEarnings(Object.values(earningsByCourse).sort((a, b) => b.total_earnings - a.total_earnings))
-      generateChartData(allPurchases)
+      generateChartData(salesData)
 
     } catch (error) {
       console.error('Error fetching billing data:', error)
@@ -300,96 +379,117 @@ export default function InstructorBillingPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-red-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading your earnings...</p>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500 mx-auto" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500 mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          </div>
+          <p className="mt-6 text-gray-300 font-medium">Loading your earnings...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 lg:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link href="/instructor" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Gradient Hero Header */}
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-lg rotate-45 blur-sm" />
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Earnings</h1>
-            <p className="text-sm text-gray-500 mt-1">Track your course sales and earnings</p>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <Link href="/instructor" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-6">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-3 border border-white/10">
+                <Wallet className="w-3 h-3" />
+                Instructor Earnings
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">My Earnings</h1>
+              <p className="text-gray-400 text-sm">Track your course sales and revenue performance</p>
+            </div>
+            <Button 
+              onClick={handleRefresh} 
+              disabled={refreshing} 
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
-          <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm">
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+
+          {/* Stats Cards in Hero */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-gray-400">Total Earnings</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-400 mt-1">{formatCurrency(stats.totalEarnings)}</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">₦</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-gray-400">This Month</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{formatCurrency(stats.earningsThisMonth)}</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-gray-400">Total Sales</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{stats.totalSales}</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-gray-400">Students</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{stats.totalStudents}</p>
+                </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Total Earnings</p>
-                  <p className="text-xl font-bold text-green-600 mt-1">{formatCurrency(stats.totalEarnings)}</p>
-                </div>
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">This Month</p>
-                  <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(stats.earningsThisMonth)}</p>
-                </div>
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Total Sales</p>
-                  <p className="text-xl font-bold text-gray-900 mt-1">{stats.totalSales}</p>
-                </div>
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Students</p>
-                  <p className="text-xl font-bold text-gray-900 mt-1">{stats.totalStudents}</p>
-                </div>
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-amber-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-lg">Earnings (Last 30 Days)</CardTitle>
+          {/* Earnings Chart */}
+          <Card className="lg:col-span-2 border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-white" />
+                </div>
+                Earnings (Last 30 Days)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[250px]">
@@ -399,27 +499,46 @@ export default function InstructorBillingPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} interval="preserveStartEnd" />
                       <YAxis tick={{ fontSize: 11 }} tickLine={false} tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`} />
-                      <Tooltip formatter={(value) => [formatCurrency((value as number) || 0), 'Earnings']} />
-                      <Bar dataKey="earnings" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                      <Tooltip 
+                        formatter={(value) => [formatCurrency((value as number) || 0), 'Earnings']} 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      />
+                      <Bar dataKey="earnings" fill="url(#greenGradient)" radius={[6, 6, 0, 0]} />
+                      <defs>
+                        <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#22c55e" />
+                          <stop offset="100%" stopColor="#10b981" />
+                        </linearGradient>
+                      </defs>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-500">No sales data yet</div>
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                    <TrendingUp className="w-12 h-12 mb-3 text-gray-300" />
+                    <p className="text-sm">No sales data yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Your earnings will appear here</p>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">By Course</CardTitle>
+          {/* By Course */}
+          <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 text-white" />
+                </div>
+                By Course
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {courseEarnings.length > 0 ? (
                 <div className="space-y-3">
                   {courseEarnings.slice(0, 5).map((course, index) => (
-                    <div key={course.course_id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div key={course.course_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                         <span className="text-sm text-gray-700 truncate">{course.title}</span>
                       </div>
@@ -431,61 +550,84 @@ export default function InstructorBillingPage() {
                   ))}
                 </div>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-gray-500 text-sm">No course sales yet</div>
+                <div className="h-[200px] flex flex-col items-center justify-center text-gray-400">
+                  <BookOpen className="w-10 h-10 mb-3 text-gray-300" />
+                  <p className="text-sm">No course sales yet</p>
+                </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
+        {/* Recent Sales Table */}
+        <Card className="border-gray-100 rounded-2xl shadow-sm">
+          <CardHeader className="border-b border-gray-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Receipt className="w-5 h-5 text-gray-500" />
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <Receipt className="w-4 h-4 text-white" />
+                </div>
                 Recent Sales
               </CardTitle>
-              <Button onClick={handleExportCSV} disabled={exporting || filteredSales.length === 0} variant="outline" size="sm">
+              <Button 
+                onClick={handleExportCSV} 
+                disabled={exporting || filteredSales.length === 0} 
+                variant="outline" 
+                size="sm"
+                className="rounded-xl border-gray-200 hover:bg-gray-50"
+              >
                 <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-pulse' : ''}`} />
                 Export CSV
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="mb-4">
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input placeholder="Search by student or course..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input 
+                  placeholder="Search by student or course..." 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  className="pl-9 rounded-xl h-11 border-gray-200 focus:border-red-500 focus:ring-red-500" 
+                />
               </div>
             </div>
 
             {filteredSales.length === 0 ? (
               <div className="text-center py-12">
-                <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No sales yet</p>
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <ShoppingCart className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-600">No sales yet</p>
                 <p className="text-xs text-gray-400 mt-1">When students purchase your courses, they'll appear here</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left text-xs font-medium text-gray-500 pb-3">Student</th>
-                      <th className="text-left text-xs font-medium text-gray-500 pb-3 hidden sm:table-cell">Course</th>
-                      <th className="text-left text-xs font-medium text-gray-500 pb-3">Amount</th>
-                      <th className="text-left text-xs font-medium text-gray-500 pb-3 hidden md:table-cell">Date</th>
-                      <th className="text-left text-xs font-medium text-gray-500 pb-3 w-10"></th>
+                    <tr className="border-b border-gray-100">
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Student</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Course</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Amount</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Date</th>
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 w-10"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-50">
                     {filteredSales.map((sale) => (
-                      <tr key={sale.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewSale(sale)}>
-                        <td className="py-3">
-                          <div className="flex items-center gap-2">
+                      <tr 
+                        key={sale.id} 
+                        className="hover:bg-gray-50 cursor-pointer transition-colors" 
+                        onClick={() => handleViewSale(sale)}
+                      >
+                        <td className="py-4">
+                          <div className="flex items-center gap-3">
                             {sale.user?.avatar_url ? (
-                              <img src={sale.user.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+                              <img src={sale.user.avatar_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                <span className="text-gray-600 text-sm font-medium">{sale.user?.full_name?.charAt(0) || '?'}</span>
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-semibold">{sale.user?.full_name?.charAt(0) || '?'}</span>
                               </div>
                             )}
                             <div>
@@ -494,17 +636,21 @@ export default function InstructorBillingPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 hidden sm:table-cell">
-                          <p className="text-sm text-gray-900 truncate max-w-[200px]">{sale.course?.title}</p>
+                        <td className="py-4 hidden sm:table-cell">
+                          <p className="text-sm text-gray-700 truncate max-w-[200px]">{sale.course?.title}</p>
                         </td>
-                        <td className="py-3">
-                          <p className="text-sm font-semibold text-green-600">{formatCurrency(sale.amount)}</p>
+                        <td className="py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-sm font-semibold">
+                            +{formatCurrency(sale.amount)}
+                          </span>
                         </td>
-                        <td className="py-3 hidden md:table-cell">
+                        <td className="py-4 hidden md:table-cell">
                           <p className="text-xs text-gray-500">{formatDate(sale.created_at)}</p>
                         </td>
-                        <td className="py-3">
-                          <Eye className="w-4 h-4 text-gray-400" />
+                        <td className="py-4">
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                            <Eye className="w-4 h-4 text-gray-500" />
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -514,82 +660,103 @@ export default function InstructorBillingPage() {
             )}
 
             {filteredSales.length > 0 && (
-              <div className="mt-4 text-xs text-gray-500">
+              <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
                 Showing {filteredSales.length} sale{filteredSales.length !== 1 ? 's' : ''}
               </div>
             )}
           </CardContent>
         </Card>
 
+        {/* Sale Details Sheet/Drawer */}
         <Sheet open={drawerOpen} onClose={closeDrawer} title="Sale Details">
           {selectedSale && (
             <div className="p-4 space-y-6">
-              <div className="bg-green-50 rounded-xl p-4 text-center">
-                <p className="text-sm text-green-700 mb-1">You Earned</p>
-                <p className="text-3xl font-bold text-green-600">{formatCurrency(selectedSale.amount)}</p>
+              {/* Earnings Highlight */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center border border-green-100">
+                <p className="text-sm text-green-700 mb-1 font-medium">You Earned</p>
+                <p className="text-4xl font-bold text-green-600">{formatCurrency(selectedSale.amount)}</p>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-400" />
+              {/* Student Info */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <User className="w-3 h-3 text-white" />
+                  </div>
                   Student
                 </h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   {selectedSale.user?.avatar_url ? (
-                    <img src={selectedSale.user.avatar_url} alt="" className="w-12 h-12 rounded-full" />
+                    <img src={selectedSale.user.avatar_url} alt="" className="w-14 h-14 rounded-xl object-cover" />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-600 text-lg font-semibold">{selectedSale.user?.full_name?.charAt(0) || '?'}</span>
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <span className="text-gray-600 text-xl font-semibold">{selectedSale.user?.full_name?.charAt(0) || '?'}</span>
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">{selectedSale.user?.full_name || 'Unknown Student'}</p>
+                    <p className="font-semibold text-gray-900">{selectedSale.user?.full_name || 'Unknown Student'}</p>
                     <p className="text-sm text-gray-500">{selectedSale.user?.email || 'No email'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-gray-400" />
+              {/* Course Info */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-3 h-3 text-white" />
+                  </div>
                   Course
                 </h3>
-                <p className="font-medium text-gray-900 mb-2">{selectedSale.course?.title}</p>
-                <Link href={`/courses/${selectedSale.course?.slug}`} className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-700" onClick={(e) => e.stopPropagation()}>
+                <p className="font-semibold text-gray-900 mb-3">{selectedSale.course?.title}</p>
+                <Link 
+                  href={`/courses/${selectedSale.course?.slug}`} 
+                  className="inline-flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium" 
+                  onClick={(e) => e.stopPropagation()}
+                >
                   View Course <ExternalLink className="w-3 h-3" />
                 </Link>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  Details
+              {/* Transaction Details */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center">
+                    <FileText className="w-3 h-3 text-white" />
+                  </div>
+                  Transaction Details
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Amount</span>
-                    <span className="text-sm font-medium text-gray-900">{formatCurrency(selectedSale.amount)}</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(selectedSale.amount)}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Status</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                       <CheckCircle className="w-3 h-3" />
                       {selectedSale.status}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Currency</span>
-                    <span className="text-sm font-medium text-gray-900">{selectedSale.currency}</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedSale.currency}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2">
+                  <div className="flex justify-between items-center py-3">
                     <span className="text-sm text-gray-500">Date</span>
-                    <span className="text-sm font-medium text-gray-900">{formatDate(selectedSale.created_at)}</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatDate(selectedSale.created_at)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-200">
-                <Button variant="outline" className="w-full" onClick={closeDrawer}>Close</Button>
+              <div className="pt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full rounded-xl h-12 border-gray-200 hover:bg-gray-50" 
+                  onClick={closeDrawer}
+                >
+                  Close
+                </Button>
               </div>
             </div>
           )}

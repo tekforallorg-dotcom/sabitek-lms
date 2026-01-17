@@ -15,7 +15,8 @@ import {
   Plus,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  Sparkles
 } from 'lucide-react'
 
 const tools = [
@@ -24,8 +25,10 @@ const tools = [
     title: 'My Profile',
     icon: User,
     href: '/sabiadvisor/profile',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100'
+    color: 'text-gray-700',
+    activeColor: 'text-gray-900',
+    bgColor: 'bg-gray-100',
+    activeBg: 'bg-gradient-to-r from-gray-100 to-gray-50'
   },
   {
     id: 'cv',
@@ -33,7 +36,9 @@ const tools = [
     icon: FileText,
     href: '/sabiadvisor/cv',
     color: 'text-blue-600',
-    bgColor: 'bg-blue-50'
+    activeColor: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    activeBg: 'bg-gradient-to-r from-blue-100 to-blue-50'
   },
   {
     id: 'cover-letter',
@@ -41,7 +46,9 @@ const tools = [
     icon: Mail,
     href: '/sabiadvisor/cover-letter',
     color: 'text-green-600',
-    bgColor: 'bg-green-50'
+    activeColor: 'text-green-700',
+    bgColor: 'bg-green-50',
+    activeBg: 'bg-gradient-to-r from-green-100 to-green-50'
   },
   {
     id: 'interview',
@@ -49,7 +56,9 @@ const tools = [
     icon: MessageSquare,
     href: '/sabiadvisor/interview',
     color: 'text-purple-600',
-    bgColor: 'bg-purple-50'
+    activeColor: 'text-purple-700',
+    bgColor: 'bg-purple-50',
+    activeBg: 'bg-gradient-to-r from-purple-100 to-purple-50'
   },
   {
     id: 'roadmap',
@@ -57,7 +66,9 @@ const tools = [
     icon: Map,
     href: '/sabiadvisor/survey',
     color: 'text-orange-600',
-    bgColor: 'bg-orange-50'
+    activeColor: 'text-orange-700',
+    bgColor: 'bg-orange-50',
+    activeBg: 'bg-gradient-to-r from-orange-100 to-orange-50'
   }
 ]
 
@@ -73,16 +84,16 @@ export default function SabiAdvisorToolsLayout({
   const currentTool = tools.find(t => pathname.startsWith(t.href)) || tools[0]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-red-50/30 flex flex-col">
+      {/* Top Header - Pink Gradient */}
+      <header className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 sticky top-0 z-40 shadow-lg shadow-pink-500/10">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-2 hover:bg-white/10 rounded-xl text-white transition-colors"
               >
                 {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -90,20 +101,22 @@ export default function SabiAdvisorToolsLayout({
               {/* Back to landing */}
               <Link 
                 href="/sabiadvisor"
-                className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm"
+                className="flex items-center gap-1 text-white/80 hover:text-white text-sm transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back</span>
               </Link>
               
-              <div className="h-5 w-px bg-gray-200 hidden sm:block" />
+              <div className="h-5 w-px bg-white/20 hidden sm:block" />
               
               {/* Current tool */}
               <div className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-red-500" />
-                <span className="font-semibold text-gray-900">SabiAdvisor</span>
-                <span className="text-gray-400">/</span>
-                <span className="text-gray-600 text-sm">{currentTool.title}</span>
+                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+                  <Briefcase className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-white">SabiAdvisor</span>
+                <span className="text-white/60">/</span>
+                <span className="text-white/90 text-sm">{currentTool.title}</span>
               </div>
             </div>
 
@@ -111,16 +124,16 @@ export default function SabiAdvisorToolsLayout({
             <div className="flex items-center gap-2">
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl border border-white/30 transition-all"
               >
-                <Wallet className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-900">
+                <Wallet className="w-4 h-4 text-white" />
+                <span className="text-sm font-medium text-white">
                   {balance?.balanceFormatted || '₦0'}
                 </span>
               </Link>
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-white/90 text-red-600 text-sm font-medium rounded-xl transition-all shadow-lg shadow-black/10"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Top Up</span>
@@ -131,14 +144,27 @@ export default function SabiAdvisorToolsLayout({
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
+        {/* Sidebar - Enhanced */}
         <aside className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30
-          w-56 bg-white border-r border-gray-200 flex flex-col
-          transition-transform duration-200 ease-in-out
-          pt-16 lg:pt-0
+          w-60 bg-white/80 backdrop-blur-md border-r border-gray-200/50 flex flex-col
+          transition-transform duration-300 ease-out
+          pt-16 lg:pt-0 shadow-xl lg:shadow-none
         `}>
+          {/* Sidebar Header */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg shadow-pink-500/20">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500">AI Career Tools</p>
+                <p className="text-sm font-semibold text-gray-900">SabiAdvisor</p>
+              </div>
+            </div>
+          </div>
+
           <nav className="flex-1 p-3 space-y-1">
             {tools.map((tool) => {
               const Icon = tool.icon
@@ -149,28 +175,38 @@ export default function SabiAdvisorToolsLayout({
                   key={tool.id}
                   href={tool.href}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
                     isActive
-                      ? `${tool.bgColor} ${tool.color} font-medium`
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? `${tool.activeBg} ${tool.activeColor} font-medium shadow-sm`
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? tool.color : 'text-gray-400'}`} />
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    isActive ? tool.bgColor : 'bg-gray-100'
+                  }`}>
+                    <Icon className={`w-4 h-4 ${isActive ? tool.color : 'text-gray-400'}`} />
+                  </div>
                   {tool.title}
                 </Link>
               )
             })}
           </nav>
 
-          {/* Help link */}
-          <div className="p-3 border-t border-gray-200">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs text-gray-600 mb-2">
-                Need help? Check our guides on creating effective CVs and cover letters.
+          {/* Help Section - Enhanced */}
+          <div className="p-3 border-t border-gray-100">
+            <div className="bg-gradient-to-br from-pink-50 to-red-50 rounded-xl p-4 border border-pink-100">
+              <div className="flex items-start gap-2 mb-2">
+                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-3 h-3 text-white" />
+                </div>
+                <p className="text-xs font-medium text-gray-700">Need help?</p>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Check our guides on creating effective CVs and cover letters.
               </p>
               <Link
                 href="/support"
-                className="text-xs text-red-600 hover:text-red-700 font-medium"
+                className="inline-flex items-center text-xs text-red-600 hover:text-red-700 font-medium transition-colors"
               >
                 View Help Center →
               </Link>
@@ -181,7 +217,7 @@ export default function SabiAdvisorToolsLayout({
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 lg:hidden transition-opacity"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}

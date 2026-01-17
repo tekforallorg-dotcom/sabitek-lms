@@ -125,16 +125,24 @@ export default function SabiBotPage() {
               <span className="font-semibold text-gray-900">SabiBot</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {languages.map(lang => (
-                <span 
-                  key={lang.name}
-                  className="px-2 py-0.5 bg-gray-100 rounded-full text-xs flex items-center gap-1"
-                >
-                  <span>{lang.flag}</span>
-                  <span className="hidden sm:inline">{lang.name}</span>
-                </span>
-              ))}
-            </div>
+  {/* Desktop: Show all languages */}
+  <div className="hidden sm:flex flex-wrap gap-1.5">
+    {languages.map(lang => (
+      <span 
+        key={lang.name}
+        className="px-2 py-0.5 bg-gray-100 rounded-full text-xs flex items-center gap-1"
+      >
+        <span>{lang.flag}</span>
+        <span>{lang.name}</span>
+      </span>
+    ))}
+  </div>
+  {/* Mobile: Show only UK + Nigeria flags */}
+  <div className="flex sm:hidden gap-1.5">
+    <span className="px-2 py-1 bg-gray-100 rounded-full text-sm">🇬🇧</span>
+    <span className="px-2 py-1 bg-gray-100 rounded-full text-sm">🇳🇬</span>
+  </div>
+</div>
           </div>
         </div>
       </div>

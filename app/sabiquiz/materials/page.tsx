@@ -3,7 +3,23 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FileText, Trash2, Calendar, HardDrive, Flame, Star, Trophy, ChevronRight, Wallet, Plus } from 'lucide-react'
+import { 
+  FileText, 
+  Trash2, 
+  Calendar, 
+  HardDrive, 
+  Flame, 
+  Star, 
+  Trophy, 
+  ChevronRight, 
+  Wallet, 
+  Plus,
+  Sparkles,
+  BookOpen,
+  Zap,
+  ArrowRight,
+  Clock
+} from 'lucide-react'
 import Link from 'next/link'
 import { useWallet } from '@/hooks/useWallet'
 import { Card, CardContent } from '@/components/ui/card'
@@ -130,233 +146,248 @@ export default function MaterialsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      {/* Header with Wallet */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Study Materials</h1>
-          <p className="text-sm text-gray-600">
-            Upload materials to generate AI-powered quizzes
-          </p>
-        </div>
-        
-        {/* Wallet Display */}
-        <div className="flex items-center gap-2">
-          <Link
-            href="/account/wallet"
-            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-          >
-            <Wallet className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-900">
-              {balance?.balanceFormatted || '₦0'}
-            </span>
-          </Link>
-          <Link
-            href="/account/wallet"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Top Up</span>
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Gradient Hero Header */}
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-lg rotate-45 blur-sm" />
 
-      {/* Mini Dashboard Snippet */}
-      {statsLoading ? (
-        <div className="mb-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl h-[88px] md:h-[76px] animate-pulse" />
-      ) : quickStats && quickStats.totalQuizzes > 0 ? (
-        <div 
-          className="mb-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl text-white cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => router.push('/sabiquiz/analytics')}
-        >
-          {/* Mobile Layout */}
-          <div className="flex md:hidden flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <span className="text-lg font-bold">{quickStats.level}</span>
-                </div>
-                <div>
-                  <p className="text-purple-200 text-xs">Level</p>
-                  <p className="font-semibold text-sm">
-                    {LEVEL_TITLES[Math.min(quickStats.level - 1, LEVEL_TITLES.length - 1)]}
-                  </p>
-                </div>
+        <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
+          {/* Top Row: Title + Wallet */}
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-3 border border-white/10">
+                <Sparkles className="w-3 h-3" />
+                AI-Powered Learning
               </div>
-              <div className="flex items-center gap-1 text-purple-200">
-                <span className="text-xs">Dashboard</span>
-                <ChevronRight className="w-4 h-4" />
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Study Materials</h1>
+              <p className="text-gray-400 text-sm">
+                Upload materials to generate AI-powered quizzes
+              </p>
             </div>
             
-            <div className="flex items-center justify-between pt-2 border-t border-white/20">
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm font-medium">{quickStats.totalXp.toLocaleString()} XP</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <span className="text-sm font-medium">{quickStats.currentStreak}d streak</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm font-medium">{quickStats.totalQuizzes}</span>
-              </div>
-            </div>
+            {/* Wallet Display */}
+<div className="flex items-center gap-2">
+  <Link
+    href="/sabiquiz/history"
+    className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl border border-white/20 transition-colors"
+  >
+    <Clock className="w-4 h-4 text-gray-300" />
+    <span className="text-sm font-medium text-white hidden sm:inline">History</span>
+  </Link>
+  <Link
+    href="/account/wallet"
+    className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl border border-white/20 transition-colors"
+  >
+    <Wallet className="w-4 h-4 text-gray-300" />
+    <span className="text-sm font-medium text-white">
+      {balance?.balanceFormatted || '₦0'}
+    </span>
+  </Link>
+  <Link
+    href="/account/wallet"
+    className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-red-500/20"
+  >
+    <Plus className="w-4 h-4" />
+    <span className="hidden sm:inline">Top Up</span>
+  </Link>
+</div>
           </div>
 
-          {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Level */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <span className="text-lg font-bold">{quickStats.level}</span>
+          {/* Quick Stats in Hero */}
+          {statsLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 animate-pulse">
+                  <div className="h-10 bg-white/10 rounded-lg" />
                 </div>
-                <div>
-                  <p className="text-purple-200 text-xs">Level</p>
-                  <p className="font-semibold text-sm">
-                    {LEVEL_TITLES[Math.min(quickStats.level - 1, LEVEL_TITLES.length - 1)]}
-                  </p>
-                </div>
-              </div>
-
-              {/* XP */}
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <div>
-                  <p className="text-purple-200 text-xs">XP</p>
-                  <p className="font-semibold text-sm">{quickStats.totalXp.toLocaleString()}</p>
-                </div>
-              </div>
-
-              {/* Streak */}
-              <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <div>
-                  <p className="text-purple-200 text-xs">Streak</p>
-                  <p className="font-semibold text-sm">{quickStats.currentStreak} days</p>
-                </div>
-              </div>
-
-              {/* Quizzes */}
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-400" />
-                <div>
-                  <p className="text-purple-200 text-xs">Quizzes</p>
-                  <p className="font-semibold text-sm">{quickStats.totalQuizzes}</p>
-                </div>
-              </div>
+              ))}
             </div>
+          ) : quickStats && quickStats.totalQuizzes > 0 ? (
+            <div 
+              className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 cursor-pointer hover:bg-white/10 transition-all mt-4"
+              onClick={() => router.push('/sabiquiz/analytics')}
+            >
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Level */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <span className="text-xl font-bold text-white">{quickStats.level}</span>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">Level</p>
+                    <p className="font-semibold text-white text-sm">
+                      {LEVEL_TITLES[Math.min(quickStats.level - 1, LEVEL_TITLES.length - 1)]}
+                    </p>
+                  </div>
+                </div>
 
-            {/* View Dashboard Link */}
-            <div className="text-right">
-              <div className="flex items-center gap-1 text-purple-200 hover:text-white transition-colors justify-end">
-                <span className="text-sm font-medium">View Dashboard</span>
+                {/* XP */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <Star className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">Total XP</p>
+                    <p className="font-semibold text-white text-sm">{quickStats.totalXp.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Streak */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <Flame className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">Streak</p>
+                    <p className="font-semibold text-white text-sm">{quickStats.currentStreak} days</p>
+                  </div>
+                </div>
+
+                {/* Quizzes */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
+                    <Trophy className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">Quizzes</p>
+                    <p className="font-semibold text-white text-sm">{quickStats.totalQuizzes} completed</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* View Dashboard Link */}
+              <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-white/10 text-gray-300 hover:text-white transition-colors">
+                <span className="text-sm font-medium">View Full Dashboard</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
-              <span className="text-[10px] text-purple-300">All time stats</span>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        {/* File Upload Section */}
+        <div className="mb-8">
+          <FileUpload onUploadComplete={fetchMaterials} />
+        </div>
+
+        {/* Materials List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Your Materials</h2>
+                <p className="text-sm text-gray-500">{materials.length} files uploaded</p>
+              </div>
             </div>
           </div>
-        </div>
-      ) : null}
 
-      <div className="mb-6">
-        <FileUpload onUploadComplete={fetchMaterials} />
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Your Materials ({materials.length})
-        </h2>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : materials.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="p-8 text-center">
-              <FileText className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-1">No materials uploaded yet</p>
-              <p className="text-xs text-gray-500">
-                Upload your first study material to get started
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded-lg w-3/4 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded-lg w-1/2" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : materials.length === 0 ? (
+            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No materials uploaded yet</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Upload your first study material to start generating AI-powered quizzes
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {materials.map((material) => (
-              <Card
-                key={material.id}
-                className="hover:shadow-md transition-shadow border-gray-200"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                      <FileText className="w-8 h-8 text-red-600 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm text-gray-900 truncate mb-1.5">
-                          {material.filename}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="px-1.5 py-0.5 bg-red-50 text-red-700 rounded text-[10px] font-medium leading-tight">
-                            {material.category}
-                          </span>
-                          <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-[10px] font-medium leading-tight">
-                            {material.level}
-                          </span>
+              <div className="inline-flex items-center gap-2 text-red-600 text-sm font-medium">
+                <Zap className="w-4 h-4" />
+                Supports PDF, TXT, and DOCX files
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {materials.map((material) => (
+                <div
+                  key={material.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden group"
+                >
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-red-100">
+                          <FileText className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate mb-2 text-sm">
+                            {material.filename}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="px-2 py-1 bg-gradient-to-r from-red-50 to-pink-50 text-red-700 rounded-lg text-xs font-medium border border-red-100">
+                              {material.category}
+                            </span>
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
+                              {material.level}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteMaterial(material.id, material.file_path)}
+                        className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8 p-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteMaterial(material.id, material.file_path)}
-                      className="text-gray-400 hover:text-red-600 h-7 w-7 p-0"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
 
-                  <div className="space-y-1.5 text-xs text-gray-500 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <HardDrive className="w-3.5 h-3.5" />
-                      <span>{(material.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                      <div className="flex items-center gap-1.5">
+                        <HardDrive className="w-3.5 h-3.5" />
+                        <span>{(material.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>
+                          {new Date(material.created_at).toLocaleDateString('en-NG', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>
-                        {new Date(material.created_at).toLocaleDateString('en-NG', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </span>
-                    </div>
-                  </div>
 
-                  {material.status === 'ready' && (
-                    <Button
-                      className="w-full bg-red-600 hover:bg-red-700 text-white h-8 text-xs"
-                      onClick={() => router.push(`/sabiquiz/generate/${material.id}`)}
-                    >
-                      Generate Quiz
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                    {material.status === 'ready' && (
+                      <Button
+                        className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white h-10 text-sm font-medium rounded-xl shadow-lg shadow-red-500/20 transition-all"
+                        onClick={() => router.push(`/sabiquiz/generate/${material.id}`)}
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Generate Quiz
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }

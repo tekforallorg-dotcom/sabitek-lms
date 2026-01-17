@@ -3,11 +3,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Clock, Bookmark, Loader2, CheckCircle, Save, Flame, Zap, Trophy, Skull, X } from 'lucide-react'
+import { Clock, Bookmark, Loader2, CheckCircle, Save, Flame, Zap, Trophy, Skull, X, HelpCircle, Sparkles, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
 import { updateStreakAndMastery, awardXP, checkAndAwardBadges } from '@/lib/sabiquiz/quiz-utils'
 import type { Question } from '@/lib/sabiquiz/types'
 
@@ -175,11 +173,6 @@ function AnimationStyles() {
         50% { transform: translateY(-3px); }
       }
 
-      .fuse-burning {
-        background: linear-gradient(90deg, #f97316 0%, #fbbf24 30%, #6b7280 30%, #6b7280 100%);
-        background-size: 200% 100%;
-      }
-
      @keyframes shimmer {
         0% { background-position: 200% 0; }
         100% { background-position: -200% 0; }
@@ -226,7 +219,7 @@ function ProgressBarWithCharacter({
       </span>
       
       <div className="flex-1 relative">
-        <div className="h-2.5 bg-gray-200 rounded-full">
+        <div className="h-2.5 bg-white/20 rounded-full">
           <div
             className="h-2.5 bg-gradient-to-l from-red-400 to-red-600 rounded-full transition-all duration-500 ease-out float-right"
             style={{ width: `${Math.min(progress, 100)}%` }}
@@ -296,12 +289,14 @@ function TimeAttackFuse({
       
       {/* Fuse track */}
       <div className="flex-1 relative h-3">
-        <div className="absolute inset-0 bg-gray-300 rounded-full overflow-hidden">
+        <div className="absolute inset-0 bg-white/20 rounded-full overflow-hidden">
           {/* Burning fuse effect */}
           <div
-            className="h-full rounded-full transition-all duration-1000 ease-linear fuse-burning"
+            className="h-full rounded-full transition-all duration-1000 ease-linear"
             style={{ 
               width: `${100 - progress}%`,
+              background: 'linear-gradient(90deg, #f97316 0%, #fbbf24 30%, #6b7280 30%, #6b7280 100%)',
+              backgroundSize: '200% 100%',
               animationDuration: '2s',
               float: 'right'
             }}
@@ -587,7 +582,7 @@ function BossQuizIndicator({
   const isNearEnd = progress > 75
   
   return (
-    <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-red-900 to-red-700 border-2 border-red-500 shadow-lg shadow-red-500/30">
+    <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-gradient-to-r from-red-900 to-red-700 border-2 border-red-500 shadow-lg shadow-red-500/30">
       <span 
         className="text-2xl"
         style={{ animation: 'skullFloat 1s ease-in-out infinite' }}
@@ -658,7 +653,7 @@ function FloatingTimer({
     <div className="flex items-center gap-3">
       {/* Minute Buzzer - Pulsing dot */}
       {showMinuteBuzzer && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg border border-blue-300">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-xl border border-blue-300">
           <span 
             className="w-2.5 h-2.5 bg-blue-500 rounded-full"
             style={{ animation: 'pulse 0.5s ease-in-out infinite' }}
@@ -670,7 +665,7 @@ function FloatingTimer({
       {/* 30 Second Buzzer - Aggressive alarm */}
       {showThirtyBuzzer && (
         <div 
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg border-2 border-red-400"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-xl border-2 border-red-400"
           style={{ animation: 'aggressiveShake 0.1s ease-in-out infinite' }}
         >
           <span className="text-lg" style={{ animation: 'aggressiveShake 0.08s ease-in-out infinite' }}>
@@ -687,7 +682,7 @@ function FloatingTimer({
             ? 'bg-red-600 text-white' 
             : isCritical 
               ? 'bg-orange-500 text-white'
-              : 'bg-orange-100 text-orange-700 border border-orange-300'
+              : 'bg-white/10 text-white border border-white/20'
         }`}
         style={{ 
           animation: showThirtyBuzzer 
@@ -737,7 +732,7 @@ function ExplosionOverlay({ onComplete }: { onComplete: () => void }) {
         </p>
         <button
           onClick={onComplete}
-          className="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+          className="mt-8 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/20"
         >
           View Result
         </button>
@@ -783,7 +778,7 @@ function PerfectRunEndOverlay({
         )}
         <button
           onClick={onComplete}
-          className="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+          className="mt-8 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/20"
         >
           View Result
         </button>
@@ -1241,10 +1236,13 @@ export default function QuizPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-red-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading your quiz...</p>
+          <div className="relative mx-auto mb-4">
+            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          </div>
+          <p className="text-gray-300">Loading your quiz...</p>
         </div>
       </div>
     )
@@ -1252,11 +1250,18 @@ export default function QuizPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-6">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => router.back()} variant="outline" className="w-full">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full rounded-2xl border-0 shadow-xl">
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-600" />
+            </div>
+            <p className="text-red-600 font-medium mb-4">{error}</p>
+            <Button 
+              onClick={() => router.back()} 
+              variant="outline" 
+              className="w-full rounded-xl h-11"
+            >
               Go Back
             </Button>
           </CardContent>
@@ -1290,16 +1295,21 @@ export default function QuizPage() {
         />
       )}
       
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 pt-4 pb-3">
+      {/* Enhanced Sticky Header with Dark Gradient */}
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-lg">
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-2 right-[15%] w-16 h-16 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-2 left-[10%] w-12 h-12 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-xl -rotate-12 blur-sm" />
+        
+        <div className="relative max-w-5xl mx-auto px-4 pt-4 pb-3">
           {/* Controls and Stats */}
           <div className="flex items-center justify-between mb-4">
             <Button
               onClick={handleSaveAndExit}
-              variant="outline"
+              variant="ghost"
               size="sm"
               disabled={submitting || saving || quizMode === 'time_attack'}
+              className="text-white/80 hover:text-white hover:bg-white/10 rounded-xl"
             >
               {saving ? (
                 <>
@@ -1308,7 +1318,7 @@ export default function QuizPage() {
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4 mr-2" />
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Save & Exit
                 </>
               )}
@@ -1317,11 +1327,11 @@ export default function QuizPage() {
             <div className="flex items-center gap-3 text-sm">
               {/* Mode Badge */}
               {quizMode !== 'normal' && (
-                <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
-                  quizMode === 'time_attack' ? 'bg-orange-100 text-orange-700 border border-orange-300' :
-                  quizMode === 'perfect_run' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' :
-                  quizMode === 'boss_quiz' ? 'bg-red-100 text-red-700 border border-red-300' :
-                  'bg-gray-100 text-gray-700'
+                <div className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${
+                  quizMode === 'time_attack' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' :
+                  quizMode === 'perfect_run' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                  quizMode === 'boss_quiz' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                  'bg-white/10 text-white/70'
                 }`}>
                   {quizMode === 'time_attack' && <><Zap className="w-3 h-3" /> Time Attack</>}
                   {quizMode === 'perfect_run' && <><Trophy className="w-3 h-3" /> Perfect Run</>}
@@ -1331,19 +1341,19 @@ export default function QuizPage() {
               
               {/* Timer for normal mode */}
               {quizMode === 'normal' && (
-                <div className="flex items-center gap-1.5 text-gray-600">
+                <div className="flex items-center gap-1.5 text-white/70 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
                   <Clock className="w-4 h-4" />
                   <span className="font-mono font-medium">{formatTime(elapsedTime)}</span>
                 </div>
               )}
               
-              <div className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+              <div className="flex items-center gap-1.5 bg-green-500/20 text-green-300 px-3 py-1.5 rounded-xl border border-green-500/30">
+                <CheckCircle className="w-4 h-4" />
                 <span className="font-medium">{answeredCount}/{totalQuestions}</span>
               </div>
               
               {bookmarkedCount > 0 && (
-                <div className="flex items-center gap-1.5 text-yellow-600">
+                <div className="flex items-center gap-1.5 bg-yellow-500/20 text-yellow-300 px-3 py-1.5 rounded-xl border border-yellow-500/30">
                   <Bookmark className="w-4 h-4" />
                   <span>{bookmarkedCount}</span>
                 </div>
@@ -1395,45 +1405,51 @@ export default function QuizPage() {
             return (
               <Card 
                 key={question.id} 
-                className={`${isBookmarked ? 'border-yellow-400 border-2' : ''} ${
-                  showResult && !isCorrect ? 'border-red-400 border-2 bg-red-50' : ''
-                } ${showResult && isCorrect ? 'border-green-400 border-2 bg-green-50' : ''}`}
+                className={`rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 ${
+                  isBookmarked ? 'ring-2 ring-yellow-400 ring-offset-2' : ''
+                } ${
+                  showResult && !isCorrect ? 'ring-2 ring-red-400 ring-offset-2 bg-red-50' : ''
+                } ${showResult && isCorrect ? 'ring-2 ring-green-400 ring-offset-2 bg-green-50' : ''}`}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
+                <CardContent className="p-5 sm:p-6">
+                  {/* Question Header */}
+                  <div className="flex items-start justify-between mb-5">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold text-sm ${
                           quizMode === 'boss_quiz' 
-                            ? 'bg-red-100 text-red-600' 
-                            : 'bg-red-100 text-red-600'
+                            ? 'bg-gradient-to-br from-red-500 to-red-700 text-white shadow-lg shadow-red-500/30' 
+                            : 'bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/20'
                         }`}>
                           {index + 1}
                         </span>
                         {question.difficulty && (
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            question.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                            question.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
+                          <span className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
+                            question.difficulty === 'easy' ? 'bg-green-100 text-green-700 border border-green-200' :
+                            question.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                            'bg-red-100 text-red-700 border border-red-200'
                           }`}>
                             {question.difficulty}
                           </span>
                         )}
                         {isAnswered && !showResult && (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium bg-green-50 px-2.5 py-1 rounded-lg">
+                            <CheckCircle className="w-4 h-4" />
+                            Answered
+                          </div>
                         )}
                         {showResult && isCorrect && (
-                          <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                            <CheckCircle className="w-5 h-5" /> Correct!
-                          </span>
+                          <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium bg-green-100 px-2.5 py-1 rounded-lg">
+                            <CheckCircle className="w-4 h-4" /> Correct!
+                          </div>
                         )}
                         {showResult && !isCorrect && (
-                          <span className="flex items-center gap-1 text-red-600 text-sm font-medium">
-                            <X className="w-5 h-5" /> Wrong
-                          </span>
+                          <div className="flex items-center gap-1.5 text-red-600 text-sm font-medium bg-red-100 px-2.5 py-1 rounded-lg">
+                            <X className="w-4 h-4" /> Wrong
+                          </div>
                         )}
                       </div>
-                      <p className="text-lg font-medium text-gray-900">{question.question}</p>
+                      <p className="text-lg font-medium text-gray-900 leading-relaxed">{question.question}</p>
                     </div>
                     
                     {quizMode !== 'time_attack' && (
@@ -1441,64 +1457,88 @@ export default function QuizPage() {
                         onClick={() => toggleBookmark(question.id)}
                         variant="ghost"
                         size="sm"
-                        className={isBookmarked ? 'text-yellow-600' : 'text-gray-400'}
+                        className={`rounded-xl h-10 w-10 p-0 ${isBookmarked ? 'text-yellow-500 bg-yellow-50 hover:bg-yellow-100' : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'}`}
                       >
                         {isBookmarked ? <Bookmark className="w-5 h-5 fill-current" /> : <Bookmark className="w-5 h-5" />}
                       </Button>
                     )}
                   </div>
 
-                  <RadioGroup
-                    value={selectedAnswer !== undefined ? selectedAnswer.toString() : ''}
-                    onValueChange={(value) => handleAnswerSelect(question.id, parseInt(value))}
-                    disabled={perfectRunFailed}
-                  >
-                  
-                    <div className="space-y-3 mt-4">
-                      {question.options.map((option, optIndex) => {
-                        const isSelected = selectedAnswer === optIndex
-                        const isCorrectOption = question.correct_answer === optIndex
-                        
-                        // Show correct answer in perfect run after wrong answer
-                        const showCorrectHighlight = showResult && !isCorrect && isCorrectOption
-                        const showWrongHighlight = showResult && !isCorrect && isSelected
-                        
-                        return (
-                          <div
-                            key={optIndex}
-                            className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                              showWrongHighlight
-                                ? 'border-red-500 bg-red-100'
-                                : showCorrectHighlight
-                                  ? 'border-green-500 bg-green-100'
-                                  : isSelected
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                            } ${perfectRunFailed ? 'cursor-not-allowed opacity-75' : ''}`}
-                          >
-                            <RadioGroupItem 
-                              value={optIndex.toString()} 
-                              id={`${question.id}-${optIndex}`} 
-                              disabled={perfectRunFailed}
-                            />
-                            <Label
-                              htmlFor={`${question.id}-${optIndex}`}
-                              className={`flex-1 ${perfectRunFailed ? 'cursor-not-allowed' : 'cursor-pointer'} font-normal`}
-                            >
-                              <span className="font-semibold mr-2">{String.fromCharCode(65 + optIndex)}.</span>
-                              {option}
-                            </Label>
-                            {showCorrectHighlight && <CheckCircle className="w-5 h-5 text-green-600" />}
-                            {showWrongHighlight && <X className="w-5 h-5 text-red-600" />}
+                  {/* Answer Options - FULLY CLICKABLE AREAS */}
+                  <div className="space-y-3">
+                    {question.options.map((option, optIndex) => {
+                      const isSelected = selectedAnswer === optIndex
+                      const isCorrectOption = question.correct_answer === optIndex
+                      
+                      // Show correct answer in perfect run after wrong answer
+                      const showCorrectHighlight = showResult && !isCorrect && isCorrectOption
+                      const showWrongHighlight = showResult && !isCorrect && isSelected
+                      
+                      return (
+                        <button
+                          key={optIndex}
+                          type="button"
+                          onClick={() => !perfectRunFailed && handleAnswerSelect(question.id, optIndex)}
+                          disabled={perfectRunFailed}
+                          className={`w-full flex items-center gap-4 p-4 sm:p-5 border-2 rounded-2xl text-left transition-all duration-200 ${
+                            showWrongHighlight
+                              ? 'border-red-500 bg-red-100 shadow-md'
+                              : showCorrectHighlight
+                                ? 'border-green-500 bg-green-100 shadow-md'
+                                : isSelected
+                                  ? 'border-red-500 bg-red-50 shadow-md ring-2 ring-red-200'
+                                  : 'border-gray-200 bg-white hover:border-red-300 hover:bg-gray-50 hover:shadow-sm'
+                          } ${perfectRunFailed ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
+                        >
+                          {/* Custom Radio Circle */}
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                            isSelected 
+                              ? 'border-red-500 bg-red-500' 
+                              : showCorrectHighlight 
+                                ? 'border-green-500 bg-green-500'
+                                : showWrongHighlight
+                                  ? 'border-red-500 bg-red-500'
+                                  : 'border-gray-300 bg-white'
+                          }`}>
+                            {(isSelected || showCorrectHighlight || showWrongHighlight) && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                            )}
                           </div>
-                        )
-                      })}
-                    </div>
-                  </RadioGroup>
+                          
+                          {/* Option Label */}
+                          <span className={`font-bold text-sm ${
+                            isSelected ? 'text-red-600' : 
+                            showCorrectHighlight ? 'text-green-600' :
+                            showWrongHighlight ? 'text-red-600' :
+                            'text-gray-500'
+                          }`}>
+                            {String.fromCharCode(65 + optIndex)}.
+                          </span>
+                          
+                          {/* Option Text */}
+                          <span className={`flex-1 font-medium ${
+                            isSelected ? 'text-gray-900' : 
+                            showCorrectHighlight ? 'text-green-900' :
+                            showWrongHighlight ? 'text-red-900' :
+                            'text-gray-700'
+                          }`}>
+                            {option}
+                          </span>
+                          
+                          {/* Result Icons */}
+                          {showCorrectHighlight && <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />}
+                          {showWrongHighlight && <X className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                        </button>
+                      )
+                    })}
+                  </div>
 
                   {question.topic && (
-                    <div className="mt-4 text-sm text-gray-500">
-                      Topic: {question.topic}
+                    <div className="mt-5 pt-4 border-t border-gray-100">
+                      <span className="inline-flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        Topic: {question.topic}
+                      </span>
                     </div>
                   )}
                 </CardContent>
@@ -1507,8 +1547,8 @@ export default function QuizPage() {
           })}
         </div>
 
-{/* Submit Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 mt-8 -mx-4 px-4 py-4 shadow-lg">
+        {/* Submit Footer */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 mt-8 -mx-4 px-4 py-4 shadow-lg rounded-t-2xl">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <div className="text-sm text-gray-600 flex-1">
               {perfectRunFailed ? (
@@ -1516,7 +1556,8 @@ export default function QuizPage() {
                   Perfect run ended at {perfectRunStreak}/{totalQuestions}
                 </span>
               ) : answeredCount === totalQuestions ? (
-                <span className="text-green-600 font-medium">
+                <span className="text-green-600 font-medium flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
                   All questions answered!
                 </span>
               ) : (
@@ -1541,7 +1582,7 @@ export default function QuizPage() {
                   }
                 }}
                 disabled={submitting || (answeredCount === 0 && quizMode !== 'time_attack') || saving}
-                className="bg-red-600 hover:bg-red-700 text-white px-8"
+                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 sm:px-8 h-12 rounded-xl shadow-lg shadow-red-500/20 transition-all"
                 size="lg"
               >
                 {submitting ? (
@@ -1555,8 +1596,8 @@ export default function QuizPage() {
               </Button>
             </div>
           </div>
-          </div>
         </div>
+      </div>
     </div>
   )
 }

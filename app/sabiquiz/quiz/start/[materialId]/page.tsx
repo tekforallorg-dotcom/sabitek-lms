@@ -3,7 +3,21 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Sparkles, Loader2, Clock, Target, BookOpen, AlertCircle, Zap, Trophy, Skull } from 'lucide-react'
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Loader2, 
+  Clock, 
+  Target, 
+  BookOpen, 
+  AlertCircle, 
+  Zap, 
+  Trophy, 
+  Skull,
+  FileText,
+  Play,
+  ChevronRight
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -23,36 +37,40 @@ const QUIZ_MODES = [
     name: 'Normal',
     description: 'Standard quiz with no time limit.',
     icon: BookOpen,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    gradient: 'from-blue-500 to-indigo-600',
+    lightBg: 'bg-blue-50',
     borderColor: 'border-blue-200',
+    textColor: 'text-blue-600',
   },
   {
     id: 'time_attack' as QuizMode,
     name: 'Time Attack',
     description: 'Race against the countdown clock!',
     icon: Zap,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    gradient: 'from-orange-500 to-amber-600',
+    lightBg: 'bg-orange-50',
     borderColor: 'border-orange-200',
+    textColor: 'text-orange-600',
   },
   {
     id: 'perfect_run' as QuizMode,
     name: 'Perfect Run',
     description: 'One wrong answer and it\'s over!',
     icon: Trophy,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
+    gradient: 'from-yellow-500 to-amber-600',
+    lightBg: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
+    textColor: 'text-yellow-600',
   },
   {
     id: 'boss_quiz' as QuizMode,
     name: 'Boss Quiz',
     description: 'Hard questions only. Are you ready?',
     icon: Skull,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
+    gradient: 'from-red-500 to-pink-600',
+    lightBg: 'bg-red-50',
     borderColor: 'border-red-200',
+    textColor: 'text-red-600',
   },
 ]
 
@@ -243,12 +261,17 @@ export default function QuizStartPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const selectedMode = QUIZ_MODES.find(m => m.id === mode) || QUIZ_MODES[0]
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-red-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading quiz...</p>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          </div>
+          <p className="mt-6 text-gray-400 font-medium">Loading quiz...</p>
         </div>
       </div>
     )
@@ -256,19 +279,22 @@ export default function QuizStartPage() {
 
   if (error && !material) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-red-600">Error</CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.back()} variant="outline" className="w-full">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Error</h2>
+          <p className="text-gray-600 text-center mb-6">{error}</p>
+          <Button 
+            onClick={() => router.back()} 
+            variant="outline" 
+            className="w-full rounded-xl h-11"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
       </div>
     )
   }
@@ -277,34 +303,82 @@ export default function QuizStartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button onClick={() => router.back()} variant="ghost" size="sm" className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Materials
-          </Button>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-6 h-6 text-red-600" />
+      {/* Gradient Hero Header */}
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-lg rotate-45 blur-sm" />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Back to Materials</span>
+          </button>
+
+          {/* Title Section */}
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/20">
+              <Play className="w-7 h-7 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">Start Quiz</h1>
-              <p className="text-gray-600 mt-1">{material?.filename}</p>
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-2 border border-white/10">
+                <Sparkles className="w-3 h-3" />
+                Configure Your Quiz
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Start Quiz</h1>
+              <p className="text-gray-400 text-sm mt-1">Choose your challenge mode and settings</p>
+            </div>
+          </div>
+
+          {/* Material Info Card in Hero */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-xl flex items-center justify-center">
+                <FileText className="w-6 h-6 text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium truncate text-sm">{material?.filename}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="px-2 py-0.5 bg-red-500/20 text-red-300 rounded-lg text-xs font-medium">
+                    {material?.category}
+                  </span>
+                  <span className="px-2 py-0.5 bg-white/10 text-gray-300 rounded-lg text-xs font-medium">
+                    {questionCounts.total} questions
+                  </span>
+                </div>
+              </div>
+              <div className="text-right hidden sm:block">
+                <div className="text-2xl font-bold text-white">{finalCount}</div>
+                <div className="text-xs text-gray-400">selected</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-6">
             {/* Challenge Mode Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Challenge Mode</CardTitle>
-                <CardDescription>Choose how you want to test yourself</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Challenge Mode</h3>
+                    <p className="text-xs text-gray-500">Choose how you want to test yourself</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5">
                 <div className="grid grid-cols-2 gap-3">
                   {QUIZ_MODES.map((m) => {
                     const Icon = m.icon
@@ -316,104 +390,115 @@ export default function QuizStartPage() {
                         key={m.id}
                         onClick={() => !isDisabled && setMode(m.id)}
                         disabled={isDisabled}
-                        className={`p-4 rounded-lg border-2 text-left transition-all ${
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
                           isDisabled 
                             ? 'opacity-50 cursor-not-allowed border-gray-200 bg-gray-50'
                             : isSelected
-                              ? `${m.borderColor} ${m.bgColor}`
+                              ? `${m.borderColor} ${m.lightBg}`
                               : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                       >
-                        <Icon className={`w-6 h-6 mb-2 ${isSelected ? m.color : 'text-gray-400'}`} />
-                        <p className={`font-medium text-sm ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+                          isSelected 
+                            ? `bg-gradient-to-br ${m.gradient} shadow-lg`
+                            : 'bg-gray-100'
+                        }`}>
+                          <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
+                        </div>
+                        <p className={`font-semibold text-sm ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
                           {m.name}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">{m.description}</p>
                         {m.id === 'boss_quiz' && questionCounts.hard === 0 && (
-                          <p className="text-xs text-red-500 mt-1">No hard questions</p>
+                          <p className="text-xs text-red-500 mt-2">No hard questions</p>
                         )}
                       </button>
                     )
                   })}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Quiz Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quiz Settings</CardTitle>
-                <CardDescription>Configure your quiz</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Quiz Settings</h3>
+                    <p className="text-xs text-gray-500">Configure your quiz parameters</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-5 space-y-6">
                 {/* Difficulty Selection - Hidden for Boss Quiz */}
                 {mode !== 'boss_quiz' && (
                   <div>
-                    <Label className="text-base font-semibold mb-3 block">Difficulty Level</Label>
+                    <Label className="text-sm font-semibold mb-3 block text-gray-900">Difficulty Level</Label>
                     <RadioGroup 
                       value={difficulty} 
                       onValueChange={(value) => setDifficulty(value as DifficultyLevel | 'mixed')} 
-                      className="space-y-3"
+                      className="space-y-2"
                     >
-                      <div className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
-                        questionCounts.easy === 0 ? 'opacity-50' : 'hover:border-red-300'
-                      }`}>
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="easy" id="easy" disabled={questionCounts.easy === 0} />
-                          <Label htmlFor="easy" className="cursor-pointer font-medium">Easy</Label>
+                      {[
+                        { value: 'easy', label: 'Easy', count: questionCounts.easy, color: 'green' },
+                        { value: 'medium', label: 'Medium', count: questionCounts.medium, color: 'yellow' },
+                        { value: 'hard', label: 'Hard', count: questionCounts.hard, color: 'red' },
+                        { value: 'mixed', label: 'Mixed (All Levels)', count: questionCounts.total, color: 'purple' },
+                      ].map((item) => (
+                        <div 
+                          key={item.value}
+                          className={`flex items-center justify-between p-3 border rounded-xl transition-all ${
+                            item.count === 0 && item.value !== 'mixed'
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : difficulty === item.value
+                                ? 'border-red-300 bg-red-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <RadioGroupItem 
+                              value={item.value} 
+                              id={item.value} 
+                              disabled={item.count === 0 && item.value !== 'mixed'} 
+                            />
+                            <Label htmlFor={item.value} className="cursor-pointer font-medium text-sm">
+                              {item.label}
+                            </Label>
+                          </div>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
+                            {item.count} available
+                          </span>
                         </div>
-                        <span className="text-sm text-gray-500">{questionCounts.easy} available</span>
-                      </div>
-
-                      <div className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
-                        questionCounts.medium === 0 ? 'opacity-50' : 'hover:border-red-300'
-                      }`}>
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="medium" id="medium" disabled={questionCounts.medium === 0} />
-                          <Label htmlFor="medium" className="cursor-pointer font-medium">Medium</Label>
-                        </div>
-                        <span className="text-sm text-gray-500">{questionCounts.medium} available</span>
-                      </div>
-
-                      <div className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
-                        questionCounts.hard === 0 ? 'opacity-50' : 'hover:border-red-300'
-                      }`}>
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="hard" id="hard" disabled={questionCounts.hard === 0} />
-                          <Label htmlFor="hard" className="cursor-pointer font-medium">Hard</Label>
-                        </div>
-                        <span className="text-sm text-gray-500">{questionCounts.hard} available</span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 border rounded-lg hover:border-red-300 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="mixed" id="mixed" />
-                          <Label htmlFor="mixed" className="cursor-pointer font-medium">Mixed (All Levels)</Label>
-                        </div>
-                        <span className="text-sm text-gray-500">{questionCounts.total} available</span>
-                      </div>
+                      ))}
                     </RadioGroup>
                   </div>
                 )}
 
                 {/* Boss Quiz Notice */}
                 {mode === 'boss_quiz' && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-800 font-medium flex items-center gap-2">
-                      <Skull className="w-4 h-4" />
-                      Boss Quiz uses hard questions only
-                    </p>
-                    <p className="text-xs text-red-600 mt-1">{questionCounts.hard} hard questions available</p>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                        <Skull className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-red-800 font-semibold">Boss Quiz uses hard questions only</p>
+                        <p className="text-xs text-red-600 mt-0.5">{questionCounts.hard} hard questions available</p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {/* Number of Questions Selection */}
                 <div>
-                  <Label className="text-base font-semibold mb-3 block">Number of Questions</Label>
+                  <Label className="text-sm font-semibold mb-3 block text-gray-900">Number of Questions</Label>
                   <select
                     value={requestedCount}
                     onChange={(e) => setRequestedCount(Number(e.target.value))}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-sm"
                   >
                     {QUESTION_COUNT_OPTIONS.map((count) => (
                       <option key={count} value={count}>
@@ -428,50 +513,54 @@ export default function QuizStartPage() {
 
                 {/* Availability Notice */}
                 {availableQuestions < requestedCount && availableQuestions > 0 && (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-yellow-800">
-                      Only {availableQuestions} questions available. You'll answer {finalCount} questions.
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    <p className="text-sm text-amber-800">
+                      Only {availableQuestions} questions available. You'll answer <span className="font-semibold">{finalCount}</span> questions.
                     </p>
                   </div>
                 )}
 
                 {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
                     <p className="text-sm text-red-800">{error}</p>
                   </div>
                 )}
 
+                {/* Action Buttons */}
                 {inProgressAttempt ? (
-                  <div className="space-y-3">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="space-y-3 pt-2">
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                      </div>
                       <p className="text-sm text-blue-800">
                         You have an incomplete quiz from {new Date(inProgressAttempt.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <Button 
                       onClick={() => router.push(`/sabiquiz/quiz/${inProgressAttempt.id}`)} 
-                      className="w-full bg-blue-600 hover:bg-blue-700" 
+                      className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-lg shadow-blue-500/20" 
                       size="lg"
                     >
-                      <Sparkles className="w-4 h-4 mr-2" />
+                      <Play className="w-5 h-5 mr-2" />
                       Resume Quiz
                     </Button>
                     <Button 
                       onClick={handleStartQuiz} 
                       disabled={!canStartQuiz || starting} 
                       variant="outline"
-                      className="w-full" 
+                      className="w-full h-12 rounded-xl border-2" 
                       size="lg"
                     >
                       {starting ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                           Starting...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-4 h-4 mr-2" />
+                          <Sparkles className="w-5 h-5 mr-2" />
                           Start New {getModeTitle(mode)} ({finalCount} questions)
                         </>
                       )}
@@ -481,17 +570,17 @@ export default function QuizStartPage() {
                   <Button 
                     onClick={handleStartQuiz} 
                     disabled={!canStartQuiz || starting} 
-                    className="w-full bg-red-600 hover:bg-red-700" 
+                    className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl shadow-lg shadow-red-500/20" 
                     size="lg"
                   >
                     {starting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Starting...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <Play className="w-5 h-5 mr-2" />
                         Start {getModeTitle(mode)} ({finalCount} questions)
                       </>
                     )}
@@ -503,31 +592,42 @@ export default function QuizStartPage() {
                     No questions available for this selection
                   </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-6">
             {/* Quiz Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quiz Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-red-600 mt-0.5" />
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${selectedMode.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <selectedMode.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Quiz Details</h3>
+                </div>
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="flex items-start gap-4 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
                   <div>
-                    <p className="font-medium text-gray-900">Questions</p>
+                    <p className="font-semibold text-gray-900 text-sm">Questions</p>
                     <p className="text-sm text-gray-600">
                       {finalCount} of {availableQuestions} available
                     </p>
                   </div>
                 </div>
 
-               <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-red-600 mt-0.5" />
+                <div className="flex items-start gap-4 p-3 bg-gray-50 rounded-xl">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${
+                    mode === 'time_attack' ? 'from-orange-500 to-amber-600' : 'from-green-500 to-emerald-600'
+                  } rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-semibold text-gray-900 text-sm">
                       {mode === 'time_attack' ? 'Time Limit' : 'No Time Limit'}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -546,10 +646,14 @@ export default function QuizStartPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <Target className="w-5 h-5 text-red-600 mt-0.5" />
+                <div className="flex items-start gap-4 p-3 bg-gray-50 rounded-xl">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${
+                    mode === 'perfect_run' ? 'from-yellow-500 to-amber-600' : 'from-purple-500 to-pink-600'
+                  } rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-semibold text-gray-900 text-sm">
                       {mode === 'perfect_run' ? 'Zero Mistakes Allowed' : 'All Questions at Once'}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -560,56 +664,109 @@ export default function QuizStartPage() {
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Mode-specific Tips */}
-            <Card className={`${QUIZ_MODES.find(m => m.id === mode)?.bgColor || 'bg-red-50'} ${QUIZ_MODES.find(m => m.id === mode)?.borderColor || 'border-red-200'}`}>
-              <CardHeader>
-                <CardTitle className="text-gray-900">
-                  {mode === 'normal' && 'Tips for Success'}
-                  {mode === 'time_attack' && 'Time Attack Tips'}
-                  {mode === 'perfect_run' && 'Perfect Run Tips'}
-                  {mode === 'boss_quiz' && 'Boss Quiz Tips'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-800">
+            <div className={`rounded-2xl border overflow-hidden ${selectedMode.lightBg} ${selectedMode.borderColor}`}>
+              <div className="p-5 border-b border-opacity-50" style={{ borderColor: 'inherit' }}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${selectedMode.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">
+                    {mode === 'normal' && 'Tips for Success'}
+                    {mode === 'time_attack' && 'Time Attack Tips'}
+                    {mode === 'perfect_run' && 'Perfect Run Tips'}
+                    {mode === 'boss_quiz' && 'Boss Quiz Tips'}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-5">
+                <ul className="space-y-3">
                   {mode === 'normal' && (
                     <>
-                      <li>• Read each question carefully</li>
-                      <li>• Use bookmarks to flag questions for review</li>
-                      <li>• Check your answers before submitting</li>
-                      <li>• Review explanations after completing</li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                        Read each question carefully
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                        Use bookmarks to flag questions for review
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                        Check your answers before submitting
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                        Review explanations after completing
+                      </li>
                     </>
                   )}
                   {mode === 'time_attack' && (
                     <>
-                      <li>• Don't spend too long on any single question</li>
-                      <li>• Trust your first instinct</li>
-                      <li>• Skip and come back if stuck</li>
-                      <li>• Watch the timer!</li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                        Don't spend too long on any single question
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                        Trust your first instinct
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                        Skip and come back if stuck
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                        Watch the timer!
+                      </li>
                     </>
                   )}
                   {mode === 'perfect_run' && (
                     <>
-                      <li>• Read every option carefully</li>
-                      <li>• Only answer when you're confident</li>
-                      <li>• Take your time - there's no rush</li>
-                      <li>• One mistake ends it all!</li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        Read every option carefully
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        Only answer when you're confident
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        Take your time - there's no rush
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        One mistake ends it all!
+                      </li>
                     </>
                   )}
                   {mode === 'boss_quiz' && (
                     <>
-                      <li>• These are the hardest questions</li>
-                      <li>• Think deeply before answering</li>
-                      <li>• Eliminate obviously wrong answers first</li>
-                      <li>• You've got this!</li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        These are the hardest questions
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        Think deeply before answering
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        Eliminate obviously wrong answers first
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        You've got this!
+                      </li>
                     </>
                   )}
                 </ul>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>
