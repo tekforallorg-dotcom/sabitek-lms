@@ -85,15 +85,15 @@ export default function SabiAdvisorToolsLayout({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-red-50/30 flex flex-col">
-      {/* Top Header - Pink Gradient */}
-      <header className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 sticky top-0 z-40 shadow-lg shadow-pink-500/10">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+      {/* Top Header - Pink Gradient - Fixed overflow */}
+      <header className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 sticky top-0 z-40 shadow-lg shadow-pink-500/10 overflow-hidden">
+        <div className="px-3 sm:px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 hover:bg-white/10 rounded-xl text-white transition-colors"
+                className="lg:hidden p-2 hover:bg-white/10 rounded-xl text-white transition-colors flex-shrink-0"
               >
                 {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -101,39 +101,39 @@ export default function SabiAdvisorToolsLayout({
               {/* Back to landing */}
               <Link 
                 href="/sabiadvisor"
-                className="flex items-center gap-1 text-white/80 hover:text-white text-sm transition-colors"
+                className="flex items-center gap-1 text-white/80 hover:text-white text-sm transition-colors flex-shrink-0"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back</span>
               </Link>
               
-              <div className="h-5 w-px bg-white/20 hidden sm:block" />
+              <div className="h-5 w-px bg-white/20 hidden sm:block flex-shrink-0" />
               
               {/* Current tool */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <Briefcase className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30 flex-shrink-0">
+                  <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <span className="font-semibold text-white">SabiAdvisor</span>
-                <span className="text-white/60">/</span>
-                <span className="text-white/90 text-sm">{currentTool.title}</span>
+                <span className="font-semibold text-white hidden md:inline">SabiAdvisor</span>
+                <span className="text-white/60 hidden md:inline">/</span>
+                <span className="text-white/90 text-sm truncate max-w-[100px] sm:max-w-none">{currentTool.title}</span>
               </div>
             </div>
 
-            {/* Wallet */}
-            <div className="flex items-center gap-2">
+            {/* Wallet - More compact on mobile */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl border border-white/30 transition-all"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-lg sm:rounded-xl border border-white/30 transition-all"
               >
-                <Wallet className="w-4 h-4 text-white" />
-                <span className="text-sm font-medium text-white">
+                <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                <span className="text-xs sm:text-sm font-medium text-white">
                   {balance?.balanceFormatted || '₦0'}
                 </span>
               </Link>
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-white/90 text-red-600 text-sm font-medium rounded-xl transition-all shadow-lg shadow-black/10"
+                className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-1.5 bg-white hover:bg-white/90 text-red-600 text-sm font-medium rounded-lg sm:rounded-xl transition-all shadow-lg shadow-black/10"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Top Up</span>

@@ -117,19 +117,15 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       }
 
       // Wait for QR code canvas to fully render
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-      // Capture the certificate as canvas with high quality
+      // Capture the certificate as canvas
       const canvas = await html2canvas(certificateElement, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: certificateElement.offsetWidth,
-        height: certificateElement.offsetHeight,
-        windowWidth: certificateElement.offsetWidth,
-        windowHeight: certificateElement.offsetHeight,
       })
 
       // Create PDF in landscape A4
@@ -139,25 +135,37 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         format: 'a4'
       })
       
-      const pdfWidth = pdf.internal.pageSize.getWidth() // 297mm
-      const pdfHeight = pdf.internal.pageSize.getHeight() // 210mm
+      // A4 landscape dimensions
+      const pdfWidth = 297
+      const pdfHeight = 210
       
-      // Calculate dimensions to fit certificate centered on page
-      const imgWidth = canvas.width
-      const imgHeight = canvas.height
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+      // Convert canvas to mm (assuming 96 DPI, scaled by 2)
+      // 1 inch = 25.4mm, 96 pixels = 1 inch
+      // So 1 pixel = 25.4/96 mm = 0.2646mm
+      // But we scaled by 2, so actual size is canvas.width / 2 in original pixels
+      const pxToMm = 25.4 / 96
+      const imgWidthMm = (canvas.width / 2) * pxToMm
+      const imgHeightMm = (canvas.height / 2) * pxToMm
       
-      const scaledWidth = imgWidth * ratio
-      const scaledHeight = imgHeight * ratio
+      // Calculate scale to fit within page with 10mm margin
+      const margin = 10
+      const maxWidth = pdfWidth - (margin * 2)
+      const maxHeight = pdfHeight - (margin * 2)
       
-      // Center the image on the page
-      const x = (pdfWidth - scaledWidth) / 2
-      const y = (pdfHeight - scaledHeight) / 2
+      const scaleX = maxWidth / imgWidthMm
+      const scaleY = maxHeight / imgHeightMm
+      const scale = Math.min(scaleX, scaleY, 1)
+      
+      const finalWidth = imgWidthMm * scale
+      const finalHeight = imgHeightMm * scale
+      
+      // Center on page
+      const x = (pdfWidth - finalWidth) / 2
+      const y = (pdfHeight - finalHeight) / 2
 
       const imgData = canvas.toDataURL('image/png', 1.0)
-      pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight)
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
 
-      // Direct download with certificate number as filename
       pdf.save(`${certificate.certificate_number}.pdf`)
     } catch (error) {
       console.error('PDF generation error:', error)
@@ -180,49 +188,53 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         throw new Error('Certificate element not found')
       }
 
-      // Wait for QR code to render
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-      // Capture the certificate as canvas
       const canvas = await html2canvas(certificateElement, {
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: certificateElement.offsetWidth,
-        height: certificateElement.offsetHeight,
       })
 
-      // Create PDF
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
       })
       
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-      const imgWidth = canvas.width
-      const imgHeight = canvas.height
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
-      const scaledWidth = imgWidth * ratio
-      const scaledHeight = imgHeight * ratio
-      const x = (pdfWidth - scaledWidth) / 2
-      const y = (pdfHeight - scaledHeight) / 2
+      const pdfWidth = 297
+      const pdfHeight = 210
+      
+      const pxToMm = 25.4 / 96
+      const imgWidthMm = (canvas.width / 2) * pxToMm
+      const imgHeightMm = (canvas.height / 2) * pxToMm
+      
+      const margin = 10
+      const maxWidth = pdfWidth - (margin * 2)
+      const maxHeight = pdfHeight - (margin * 2)
+      
+      const scaleX = maxWidth / imgWidthMm
+      const scaleY = maxHeight / imgHeightMm
+      const scale = Math.min(scaleX, scaleY, 1)
+      
+      const finalWidth = imgWidthMm * scale
+      const finalHeight = imgHeightMm * scale
+      
+      const x = (pdfWidth - finalWidth) / 2
+      const y = (pdfHeight - finalHeight) / 2
 
       const imgData = canvas.toDataURL('image/jpeg', 0.85)
-      pdf.addImage(imgData, 'JPEG', x, y, scaledWidth, scaledHeight)
+      pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight)
 
       const pdfBase64 = pdf.output('dataurlstring').split(',')[1]
 
-      // Check size (max 10MB for email)
       const pdfSizeInMB = (pdfBase64.length * 3) / 4 / (1024 * 1024)
       if (pdfSizeInMB > 10) {
         throw new Error('PDF is too large to email. Please use Download instead.')
       }
 
-      // Send to API
       const response = await fetch('/api/certificates/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
