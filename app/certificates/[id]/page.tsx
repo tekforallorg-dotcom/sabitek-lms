@@ -117,15 +117,18 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       }
 
       // Wait for QR code canvas to fully render
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Capture the certificate as canvas
+      // Capture the certificate as canvas with high quality
       const canvas = await html2canvas(certificateElement, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
+        // Important: capture only the element, not surrounding area
+        foreignObjectRendering: false,
+        removeContainer: true,
       })
 
       // Create PDF in landscape A4
@@ -135,36 +138,39 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         format: 'a4'
       })
       
-      // A4 landscape dimensions
-      const pdfWidth = 297
-      const pdfHeight = 210
+      // A4 landscape: 297mm × 210mm
+      const pageWidth = 297
+      const pageHeight = 210
       
-      // Convert canvas to mm (assuming 96 DPI, scaled by 2)
-      // 1 inch = 25.4mm, 96 pixels = 1 inch
-      // So 1 pixel = 25.4/96 mm = 0.2646mm
-      // But we scaled by 2, so actual size is canvas.width / 2 in original pixels
-      const pxToMm = 25.4 / 96
-      const imgWidthMm = (canvas.width / 2) * pxToMm
-      const imgHeightMm = (canvas.height / 2) * pxToMm
+      // Add margins (15mm on each side)
+      const margin = 15
+      const contentWidth = pageWidth - (margin * 2)  // 267mm
+      const contentHeight = pageHeight - (margin * 2) // 180mm
       
-      // Calculate scale to fit within page with 10mm margin
-      const margin = 10
-      const maxWidth = pdfWidth - (margin * 2)
-      const maxHeight = pdfHeight - (margin * 2)
+      // Get canvas dimensions
+      const canvasWidth = canvas.width
+      const canvasHeight = canvas.height
+      const canvasRatio = canvasWidth / canvasHeight
+      const contentRatio = contentWidth / contentHeight
       
-      const scaleX = maxWidth / imgWidthMm
-      const scaleY = maxHeight / imgHeightMm
-      const scale = Math.min(scaleX, scaleY, 1)
+      let drawWidth, drawHeight, drawX, drawY
       
-      const finalWidth = imgWidthMm * scale
-      const finalHeight = imgHeightMm * scale
+      if (canvasRatio > contentRatio) {
+        // Canvas is wider - fit to width
+        drawWidth = contentWidth
+        drawHeight = contentWidth / canvasRatio
+      } else {
+        // Canvas is taller - fit to height  
+        drawHeight = contentHeight
+        drawWidth = contentHeight * canvasRatio
+      }
       
       // Center on page
-      const x = (pdfWidth - finalWidth) / 2
-      const y = (pdfHeight - finalHeight) / 2
+      drawX = (pageWidth - drawWidth) / 2
+      drawY = (pageHeight - drawHeight) / 2
 
       const imgData = canvas.toDataURL('image/png', 1.0)
-      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
+      pdf.addImage(imgData, 'PNG', drawX, drawY, drawWidth, drawHeight)
 
       pdf.save(`${certificate.certificate_number}.pdf`)
     } catch (error) {
@@ -188,7 +194,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         throw new Error('Certificate element not found')
       }
 
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       const canvas = await html2canvas(certificateElement, {
         scale: 2,
@@ -196,6 +202,8 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
+        foreignObjectRendering: false,
+        removeContainer: true,
       })
 
       const pdf = new jsPDF({
@@ -204,29 +212,32 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         format: 'a4'
       })
       
-      const pdfWidth = 297
-      const pdfHeight = 210
+      const pageWidth = 297
+      const pageHeight = 210
+      const margin = 15
+      const contentWidth = pageWidth - (margin * 2)
+      const contentHeight = pageHeight - (margin * 2)
       
-      const pxToMm = 25.4 / 96
-      const imgWidthMm = (canvas.width / 2) * pxToMm
-      const imgHeightMm = (canvas.height / 2) * pxToMm
+      const canvasWidth = canvas.width
+      const canvasHeight = canvas.height
+      const canvasRatio = canvasWidth / canvasHeight
+      const contentRatio = contentWidth / contentHeight
       
-      const margin = 10
-      const maxWidth = pdfWidth - (margin * 2)
-      const maxHeight = pdfHeight - (margin * 2)
+      let drawWidth, drawHeight, drawX, drawY
       
-      const scaleX = maxWidth / imgWidthMm
-      const scaleY = maxHeight / imgHeightMm
-      const scale = Math.min(scaleX, scaleY, 1)
+      if (canvasRatio > contentRatio) {
+        drawWidth = contentWidth
+        drawHeight = contentWidth / canvasRatio
+      } else {
+        drawHeight = contentHeight
+        drawWidth = contentHeight * canvasRatio
+      }
       
-      const finalWidth = imgWidthMm * scale
-      const finalHeight = imgHeightMm * scale
-      
-      const x = (pdfWidth - finalWidth) / 2
-      const y = (pdfHeight - finalHeight) / 2
+      drawX = (pageWidth - drawWidth) / 2
+      drawY = (pageHeight - drawHeight) / 2
 
       const imgData = canvas.toDataURL('image/jpeg', 0.85)
-      pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight)
+      pdf.addImage(imgData, 'JPEG', drawX, drawY, drawWidth, drawHeight)
 
       const pdfBase64 = pdf.output('dataurlstring').split(',')[1]
 
