@@ -1,6 +1,6 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase, Globe, BarChart3 } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase, Globe, BarChart3 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -35,12 +35,13 @@ export default function SabiBot() {
   const [preferredLanguage, setPreferredLanguage] = useState<Language>('english')
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [showLearningStats, setShowLearningStats] = useState(false)
+  const [userScrolled, setUserScrolled] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const previousUserId = useRef<string | null>(null)
   const languageMenuRef = useRef<HTMLDivElement>(null)
 
-  // Close language menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
@@ -57,7 +58,6 @@ export default function SabiBot() {
     }
   }, [showLanguageMenu])
 
-  // Reset chat when user changes
   useEffect(() => {
     if (user?.id !== previousUserId.current) {
       setMessages([])
@@ -74,7 +74,6 @@ export default function SabiBot() {
     }
   }, [user?.id])
 
-  // Load user profile and language preference
   const loadUserProfile = async () => {
     if (!user?.id) return
 
@@ -93,12 +92,10 @@ export default function SabiBot() {
 
       setUserProfile(profile)
       
-      // Set language preference
       if (profile?.preferred_language) {
         setPreferredLanguage(profile.preferred_language as Language)
       }
       
-      // Get language-specific welcome message
       const welcomeContent = getWelcomeMessage(profile?.full_name, profile?.preferred_language || 'english')
       
       const welcomeMessage: Message = {
@@ -120,74 +117,69 @@ export default function SabiBot() {
     
     switch (lang) {
       case 'pidgin':
-        return `Wetin dey happen${name}! I be SabiBot, your personal AI learning companion.
+        return `Wetin dey happen${name}! Na me be SabiBot, your learning paddy.
 
 I fit help you with:
-- Course recommendations wey fit match your goals
-- Career guidance and learning paths (tech, teaching, any field)
-- Tech career transition advice (which area dey pay well)
-- Online teaching opportunities (earn in dollars)
-- Study strategies and exam preparation
-- Professional certifications and adult education
-- Understanding course content
+• Course wey go match your goal
+• Career advice and which path to follow
+• Tech career wey dey pay well well
+• Online teaching wey go fetch you dollar
+• How to read and pass exam well well
+• Certification and adult education
 
-How I fit assist your learning journey today?`
+Wetin you wan learn today?`
       
       case 'yoruba':
-        return `Bawo ni${name}! I'm SabiBot, your personal AI learning companion.
+        return `Bawo ni${name}! Mo ni SabiBot, oluranlọwọ ikẹkọ rẹ.
 
-I can help you with (Mo le ran e lowo pelu):
-- Course recommendations for your goals
-- Career guidance and learning paths
-- Tech career transitions and specializations
-- Online teaching opportunities
-- Study strategies and exam preparation
-- Professional certifications
-- Navigating the platform
+Mo le ran ọ lọwọ pẹlu:
+• Awọn iṣẹ ikẹkọ ti o dara fun ọ
+• Imọran iṣẹ ati ọna lati tẹle
+• Iṣẹ imọ-ẹrọ ti o san owo daradara
+• Ẹkọ lori ayelujara ti o le san owo dọla
+• Ilana kika ati igbaradi idanwo
+• Iwe-ẹri ọjọgbọn ati ẹkọ agbalagba
 
-How can I assist your learning journey today?`
+Kini o fẹ kọ loni?`
       
       case 'hausa':
-        return `Sannu${name}! I'm SabiBot, your personal AI learning companion.
+        return `Sannu${name}! Ni ne SabiBot, mataimakin koyo naka.
 
-I can help you with (Zan iya taimaka ka da):
-- Course recommendations for your goals
-- Career guidance and learning paths
-- Tech career transitions and specializations
-- Online teaching opportunities
-- Study strategies and exam preparation
-- Professional certifications
-- Navigating the platform
+Zan iya taimaka maka da:
+• Darussa da za su dace da burin ka
+• Shawarar sana'a da hanyar da za ka bi
+• Sana'ar fasaha da ke biyan kuɗi sosai
+• Koyarwa ta yanar gizo da za ta kawo dala
+• Dabarun karatu da shirye-shiryen jarrabawa
+• Takardar shaidar ƙwararru da ilimin manya
 
-How can I assist your learning journey today?`
+Me kake son koyo yau?`
       
       case 'igbo':
-        return `Kedu${name}! I'm SabiBot, your personal AI learning companion.
+        return `Kedu${name}! Abụ m SabiBot, onye enyemaka ọmụmụ gị.
 
-I can help you with (Enwere m ike inyere gi aka):
-- Course recommendations for your goals
-- Career guidance and learning paths
-- Tech career transitions and specializations
-- Online teaching opportunities
-- Study strategies and exam preparation
-- Professional certifications
-- Navigating the platform
+Enwere m ike inyere gị aka na:
+• Usoro nkuzi dabara maka ebumnuche gị
+• Ndụmọdụ ọrụ na ụzọ ị ga-eso
+• Ọrụ teknụzụ na-akwụ ụgwọ nke ọma
+• Nkuzi n'ịntanetị nke ga-eweta dọla
+• Usoro ọgụgụ na nkwadebe ule
+• Asambodo ndị ọkachamara na agụmakwụkwọ
 
-How can I assist your learning journey today?`
+Gịnị ka ịchọrọ ịmụta taa?`
       
-      default: // english
-        return `Welcome back${name}! I'm SabiBot, your personal AI learning companion.
+      default:
+        return `Welcome${name}! I'm SabiBot, your personal learning assistant.
 
 I can help you with:
-- Course recommendations tailored to your goals
-- Career guidance and strategic planning (all ages, all fields)
-- Tech career transitions (which specializations pay most)
-- Online teaching opportunities (earn in dollars from Nigeria)
-- Study strategies and exam preparation (JAMB, WAEC, professional certs)
-- Adult education pathways and certifications
-- Understanding course content
+• Course recommendations for your goals
+• Career guidance and strategic planning
+• Tech careers with high earning potential
+• Online teaching opportunities
+• Study strategies and exam preparation
+• Professional certifications
 
-How can I assist your learning journey today?`
+What would you like to learn today?`
     }
   }
 
@@ -195,24 +187,12 @@ How can I assist your learning journey today?`
     const welcomeMessage: Message = {
       id: 'welcome',
       role: 'assistant',
-      content: `Welcome to Sabitek. I'm SabiBot, your AI learning companion.
-
-I can help you with:
-- Course recommendations tailored to your goals
-- Career guidance and strategic planning
-- Tech career transitions and specializations
-- Online teaching opportunities
-- Study strategies and exam preparation
-- Professional certifications
-- Navigating the platform
-
-How can I assist your learning journey today?`,
+      content: getWelcomeMessage(null, preferredLanguage),
       timestamp: new Date()
     }
     setMessages([welcomeMessage])
   }
 
-  // Initialize welcome message when chat opens
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       if (user?.id && !userProfile) {
@@ -232,13 +212,31 @@ How can I assist your learning journey today?`,
     }
   }, [isOpen, messages.length, user?.id, userProfile])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const isNearBottom = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return true
+    const threshold = 100
+    return container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+  }, [])
+
+  const scrollToBottom = useCallback((force = false) => {
+    if (force || (!userScrolled && isNearBottom())) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [userScrolled, isNearBottom])
+
+  const handleScroll = useCallback(() => {
+    const nearBottom = isNearBottom()
+    setUserScrolled(!nearBottom)
+  }, [isNearBottom])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage?.role === 'user') {
+      setUserScrolled(false)
+      scrollToBottom(true)
+    }
+  }, [messages.length])
 
   useEffect(() => {
     if (isOpen && !isMinimized && inputRef.current) {
@@ -246,12 +244,10 @@ How can I assist your learning journey today?`,
     }
   }, [isOpen, isMinimized])
 
-  // Handle language change
   const handleLanguageChange = async (newLanguage: Language) => {
     setPreferredLanguage(newLanguage)
     setShowLanguageMenu(false)
 
-    // Save to database if user is authenticated
     if (user?.id) {
       try {
         const { error } = await supabase
@@ -262,7 +258,6 @@ How can I assist your learning journey today?`,
         if (error) {
           console.error('Error saving language preference:', error)
         } else {
-          // Update welcome message with new language
           const welcomeContent = getWelcomeMessage(userProfile?.full_name, newLanguage)
           const welcomeMessage: Message = {
             id: 'welcome-' + Date.now(),
@@ -276,7 +271,6 @@ How can I assist your learning journey today?`,
         console.error('Error updating language:', error)
       }
     } else {
-      // For non-authenticated users, just update the welcome message
       const welcomeContent = getWelcomeMessage(null, newLanguage)
       const welcomeMessage: Message = {
         id: 'welcome-' + Date.now(),
@@ -288,7 +282,27 @@ How can I assist your learning journey today?`,
     }
   }
 
- const handleSend = async () => {
+  const getErrorMessage = (lang: Language) => {
+    switch (lang) {
+      case 'pidgin': return 'I no fit answer now. Abeg try again.'
+      case 'yoruba': return 'Mi o le dahun ni bayi. Jọwọ gbiyanju lẹẹkansi.'
+      case 'hausa': return 'Ba zan iya amsa yanzu ba. Da fatan za a sake gwadawa.'
+      case 'igbo': return 'Enweghị m ike ịza ugbu a. Biko nwaa ọzọ.'
+      default: return 'I could not generate a response. Please try again.'
+    }
+  }
+
+  const getConnectionErrorMessage = (lang: Language) => {
+    switch (lang) {
+      case 'pidgin': return 'Network wahala dey. Check your internet make you try again.'
+      case 'yoruba': return 'Isoro asopọ wa. Jọwọ ṣayẹwo intanẹẹti rẹ ki o tun gbiyanju.'
+      case 'hausa': return 'Matsalar haɗin yanar gizo. Da fatan za a duba intanet ɗin ku sannan ku sake gwadawa.'
+      case 'igbo': return 'Nsogbu njikọ. Biko lelee ịntanetị gị wee nwaa ọzọ.'
+      default: return 'Connection issue. Please check your internet and try again.'
+    }
+  }
+
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
@@ -302,6 +316,7 @@ How can I assist your learning journey today?`,
     setInput('')
     setIsLoading(true)
     setIsTyping(true)
+    setUserScrolled(false)
 
     const assistantMessageId = (Date.now() + 1).toString()
 
@@ -319,7 +334,8 @@ How can I assist your learning journey today?`,
             userName: userProfile?.full_name,
             userRole: userProfile?.role || 'learner',
             isAuthenticated: !!user,
-            preferredLanguage: preferredLanguage
+            preferredLanguage: preferredLanguage,
+            strictLanguage: true
           }
         })
       })
@@ -352,7 +368,6 @@ How can I assist your learning journey today?`,
                   if (json.content) {
                     fullContent += json.content
                     
-                    // Add message on first content chunk, then update
                     if (!messageAdded) {
                       setIsTyping(false)
                       setMessages(prev => [...prev, {
@@ -380,13 +395,14 @@ How can I assist your learning journey today?`,
           }
         }
 
-        // If no content received, show error
+        setTimeout(() => scrollToBottom(true), 100)
+
         if (!fullContent) {
           setIsTyping(false)
           setMessages(prev => [...prev, {
             id: assistantMessageId,
             role: 'assistant',
-            content: 'I could not generate a response. Please try again.',
+            content: getErrorMessage(preferredLanguage),
             timestamp: new Date()
           }])
         } else if (user?.id) {
@@ -394,11 +410,10 @@ How can I assist your learning journey today?`,
           updateMemory(user.id, userMessage.content, fullContent)
         }
       } else {
-        // Handle non-streaming JSON response
         const data = await response.json()
         setIsTyping(false)
         
-        const content = data.content || 'I apologize, but I could not generate a response. Please try again.'
+        const content = data.content || getErrorMessage(preferredLanguage)
         setMessages(prev => [...prev, {
           id: assistantMessageId,
           role: 'assistant',
@@ -418,7 +433,7 @@ How can I assist your learning journey today?`,
       setMessages(prev => [...prev, {
         id: assistantMessageId,
         role: 'assistant',
-        content: 'I encountered a connection issue. Please check your internet and try again.',
+        content: getConnectionErrorMessage(preferredLanguage),
         timestamp: new Date()
       }])
     } finally {
@@ -426,7 +441,6 @@ How can I assist your learning journey today?`,
     }
   }
 
-  // Save conversation to database - only if table exists
   const saveConversation = async (userMsg: Message, assistantMsg: Message) => {
     if (!user?.id) return
 
@@ -449,22 +463,19 @@ How can I assist your learning journey today?`,
   }
 
   const updateMemory = async (userId: string, userMsg: string, assistantMsg: string) => {
-  try {
-    // Update study streak only
-    fetch('/api/sabibot/memory', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        action: 'update_streak'
-      })
-    }).catch(err => console.log('Streak update failed:', err))
-    
-    // Note: Insight extraction happens automatically in /api/sabibot/route.ts
-  } catch (error) {
-    console.log('Memory update error:', error)
+    try {
+      fetch('/api/sabibot/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          action: 'update_streak'
+        })
+      }).catch(err => console.log('Streak update failed:', err))
+    } catch (error) {
+      console.log('Memory update error:', error)
+    }
   }
-}
 
   const handleQuickAction = (prompt: string) => {
     setInput(prompt)
@@ -479,53 +490,47 @@ How can I assist your learning journey today?`,
     }).format(date)
   }
 
-  const QUICK_ACTIONS = [
-    { icon: Briefcase, label: 'Career Path', prompt: 'What career path should I choose?' },
-    { icon: BookOpen, label: 'Find Courses', prompt: 'Recommend courses for my goals' },
-    { icon: GraduationCap, label: 'Study Tips', prompt: 'Give me effective study strategies' },
-    { icon: Target, label: 'Get Started', prompt: 'How do I start learning on Sabitek?' },
-  ]
+  const getQuickActions = (lang: Language) => {
+    switch (lang) {
+      case 'pidgin':
+        return [
+          { icon: Briefcase, label: 'Career Path', prompt: 'Which career path I suppose follow?' },
+          { icon: BookOpen, label: 'Find Courses', prompt: 'Recommend course wey go fit my goal' },
+          { icon: GraduationCap, label: 'Study Tips', prompt: 'Give me beta study tips' },
+          { icon: Target, label: 'Get Started', prompt: 'How I go start to learn for Sabitek?' },
+        ]
+      case 'yoruba':
+        return [
+          { icon: Briefcase, label: 'Ọna Iṣẹ', prompt: 'Ọna iṣẹ wo ni mo yẹ ki n yan?' },
+          { icon: BookOpen, label: 'Wa Ẹkọ', prompt: 'Ṣe alaye iṣẹ ikẹkọ fun awọn ibi-afẹde mi' },
+          { icon: GraduationCap, label: 'Imọran', prompt: 'Fun mi ni ilana kika to dara' },
+          { icon: Target, label: 'Bẹrẹ', prompt: 'Bawo ni mo ṣe le bẹrẹ lati kọ ẹkọ lori Sabitek?' },
+        ]
+      case 'hausa':
+        return [
+          { icon: Briefcase, label: 'Hanyar Aiki', prompt: 'Wace hanyar sana\'a ya kamata in zaɓa?' },
+          { icon: BookOpen, label: 'Nemo Darasi', prompt: 'Ka ba da shawarar darussa don burina' },
+          { icon: GraduationCap, label: 'Shawarwari', prompt: 'Ba ni dabaru masu kyau na karatu' },
+          { icon: Target, label: 'Fara', prompt: 'Ta yaya zan fara koyo a Sabitek?' },
+        ]
+      case 'igbo':
+        return [
+          { icon: Briefcase, label: 'Ụzọ Ọrụ', prompt: 'Kedu ụzọ ọrụ m kwesịrị ịhọrọ?' },
+          { icon: BookOpen, label: 'Chọta Ihe', prompt: 'Tụọ aro usoro nkuzi maka ebumnuche m' },
+          { icon: GraduationCap, label: 'Ndụmọdụ', prompt: 'Nye m usoro ọgụgụ dị mma' },
+          { icon: Target, label: 'Malite', prompt: 'Kedu ka m ga-esi malite ịmụ ihe na Sabitek?' },
+        ]
+      default:
+        return [
+          { icon: Briefcase, label: 'Career Path', prompt: 'What career path should I choose?' },
+          { icon: BookOpen, label: 'Find Courses', prompt: 'Recommend courses for my goals' },
+          { icon: GraduationCap, label: 'Study Tips', prompt: 'Give me effective study strategies' },
+          { icon: Target, label: 'Get Started', prompt: 'How do I start learning on Sabitek?' },
+        ]
+    }
+  }
 
-  const animatedButtonStyles = `
-    @keyframes blink {
-      0%, 90%, 100% { opacity: 1; }
-      95% { opacity: 0.2; }
-    }
-    
-    .robot-eye {
-      animation: blink 4s infinite;
-    }
-    
-    .robot-eye-left {
-      animation-delay: 0.1s;
-    }
-    
-    @keyframes antenna-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-    }
-    
-    .robot-antenna {
-      animation: antenna-pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes mouth-speak {
-      0%, 100% { width: 8px; }
-      50% { width: 6px; }
-    }
-    
-    .robot-mouth {
-      animation: mouth-speak 2s infinite;
-    }
-    
-    .animation-delay-200 {
-      animation-delay: 200ms;
-    }
-    
-    .animation-delay-400 {
-      animation-delay: 400ms;
-    }
-  `
+  const QUICK_ACTIONS = getQuickActions(preferredLanguage)
 
   return (
     <>
@@ -533,14 +538,14 @@ How can I assist your learning journey today?`,
       <button
         onClick={() => setIsOpen(true)}
         className={`${
-          isOpen ? 'scale-0' : 'scale-100'
-        } fixed bottom-6 right-6 z-50 transition-all duration-200`}
+          isOpen ? 'scale-0 pointer-events-none' : 'scale-100'
+        } fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 transition-transform duration-200`}
         aria-label="Open SabiBot"
       >
-        <div className="relative w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 group">
+        <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 group">
           {/* Animated Robot Icon */}
           <svg
-            className="w-9 h-9 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            className="w-7 h-7 sm:w-9 sm:h-9 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             viewBox="0 0 40 40"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -556,7 +561,7 @@ How can I assist your learning journey today?`,
             <line x1="20" y1="14" x2="20" y2="9" stroke="white" strokeWidth="2"/>
             <circle cx="20" cy="8" r="2" fill="white" className="robot-antenna"/>
             
-            {/* Mouth - Speaking Animation */}
+            {/* Mouth */}
             <rect x="16" y="24" width="8" height="2" rx="1" fill="#ef4444" className="robot-mouth"/>
             
             {/* Chat Indicator Dots */}
@@ -580,126 +585,126 @@ How can I assist your learning journey today?`,
           </svg>
           
           {/* Online Status */}
-          <span className="absolute top-0 right-0 flex h-3 w-3">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-white"></span>
           </span>
         </div>
       </button>
 
-      {/* Chat Widget - Professional Design */}
+      {/* Chat Widget */}
       <div className={`${
-        isOpen ? 'visible' : 'invisible'
-      } fixed bottom-0 right-0 z-50 transition-all duration-200`}>
+        isOpen ? 'visible' : 'invisible pointer-events-none'
+      } fixed inset-0 sm:inset-auto sm:bottom-0 sm:right-0 z-50 transition-all duration-200`}>
+        
+        {/* Mobile backdrop */}
+        <div 
+          className={`${isOpen ? 'opacity-100' : 'opacity-0'} sm:hidden fixed inset-0 bg-black/20 transition-opacity`}
+          onClick={() => setIsOpen(false)}
+        />
+        
         <div
           className={`${
             isOpen 
               ? isMinimized 
-                ? 'h-14 w-80' 
-                : 'h-[500px] w-[360px]'
+                ? 'h-14 w-full sm:w-80' 
+                : 'h-full sm:h-[500px] w-full sm:w-[360px]'
               : 'h-0 w-0'
           } ${
-            isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-6`}
+            isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          } bg-white sm:rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border-0 sm:border sm:border-gray-200 sm:m-4 fixed bottom-0 right-0 sm:relative`}
         >
-         {/* Header - Solid Sabitek Red */}
-<div className="relative bg-red-600 p-3.5 flex items-center justify-between">
-  {/* Subtle accent line */}
-  <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10"></div>
-  <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10"></div>
-  
-  {/* Logo and Title */}
-  <div className="flex items-center gap-3 relative z-10">
-    <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
-      <Bot className="w-5 h-5 text-white" />
-    </div>
-    <div className="text-white">
-      <h3 className="font-semibold text-sm">SabiBot</h3>
-      <p className="text-xs opacity-90">Learning Assistant</p>
-    </div>
-  </div>
-  
-  {/* Icon Buttons */}
-  <div className="flex items-center gap-1 relative z-10">
-    {/* Language Selector */}
-    <div className="relative z-50" ref={languageMenuRef}>
-      <button
-        onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-        aria-label="Change language"
-        title="Change language"
-      >
-        <Globe className="w-4 h-4 text-white" />
-      </button>
-      
-      {/* Language Dropdown */}
-      {showLanguageMenu && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.value}
-              onClick={() => handleLanguageChange(lang.value as Language)}
-              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
-              }`}
-            >
-              <span>{lang.label}</span>
-              <span className="text-lg">{lang.flag}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-    
-    {/* Learning Stats Button */}
-    {user && (
-      <button
-        onClick={() => setShowLearningStats(true)}
-        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-        aria-label="View learning stats"
-        title="Your learning journey"
-      >
-        <BarChart3 className="w-4 h-4 text-white" />
-      </button>
-    )}
-    
-    {/* Minimize Button */}
-    <button
-      onClick={() => setIsMinimized(!isMinimized)}
-      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-      aria-label="Minimize"
-    >
-      <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
-    </button>
-    
-    {/* Close Button */}
-    <button
-      onClick={() => {
-        setIsOpen(false)
-        setIsMinimized(false)
-      }}
-      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-      aria-label="Close"
-    >
-      <X className="w-4 h-4 text-white" />
-    </button>
-  </div>
-</div>
+          {/* Header */}
+          <div className="relative bg-red-600 p-3 sm:p-3.5 flex items-center justify-between flex-shrink-0 safe-area-top">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="text-white">
+                <h3 className="font-semibold text-sm">SabiBot</h3>
+                <p className="text-[10px] sm:text-xs opacity-90">
+                  {LANGUAGES.find(l => l.value === preferredLanguage)?.flag} {LANGUAGES.find(l => l.value === preferredLanguage)?.label}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <div className="relative z-50" ref={languageMenuRef}>
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Change language"
+                >
+                  <Globe className="w-4 h-4 text-white" />
+                </button>
+                
+                {showLanguageMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.value}
+                        onClick={() => handleLanguageChange(lang.value as Language)}
+                        className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                          preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
+                        }`}
+                      >
+                        <span>{lang.label}</span>
+                        <span className="text-lg">{lang.flag}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {user && (
+                <button
+                  onClick={() => setShowLearningStats(true)}
+                  className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="View learning stats"
+                >
+                  <BarChart3 className="w-4 h-4 text-white" />
+                </button>
+              )}
+              
+              <button
+                onClick={() => setIsMinimized(!isMinimized)}
+                className="hidden sm:block p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Minimize"
+              >
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <button
+                onClick={() => {
+                  setIsOpen(false)
+                  setIsMinimized(false)
+                }}
+                className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
 
           {!isMinimized && (
             <>
-              {/* Messages Area - Clean Styling */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+              {/* Messages Area */}
+              <div 
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-3 bg-gray-50"
+              >
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                      <div className="flex items-start gap-2">
+                    <div className={`max-w-[85%] sm:max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                      <div className="flex items-start gap-1.5 sm:gap-2">
                         {message.role === 'assistant' && (
-                          <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-4 h-4 text-gray-600" />
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
                           </div>
                         )}
                         
@@ -707,9 +712,9 @@ How can I assist your learning journey today?`,
                           message.role === 'user' 
                             ? 'bg-gray-800 text-white' 
                             : 'bg-white text-gray-800 border border-gray-200'
-                        } rounded-lg px-3.5 py-2.5`}>
+                        } rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5`}>
                           {message.role === 'assistant' ? (
-                            <div className="text-sm">
+                            <div className="text-[13px] sm:text-sm leading-relaxed">
                               <ReactMarkdown
                                 components={{
                                   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -723,19 +728,19 @@ How can I assist your learning journey today?`,
                               </ReactMarkdown>
                             </div>
                           ) : (
-                            <p className="text-sm">{message.content}</p>
+                            <p className="text-[13px] sm:text-sm">{message.content}</p>
                           )}
                         </div>
                         
                         {message.role === 'user' && (
-                          <div className="w-7 h-7 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-4 h-4 text-white" />
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                           </div>
                         )}
                       </div>
                       
-                      <div className={`text-xs text-gray-500 mt-1 ${
-                        message.role === 'user' ? 'text-right mr-9' : 'ml-9'
+                      <div className={`text-[10px] sm:text-xs text-gray-400 mt-1 ${
+                        message.role === 'user' ? 'text-right mr-8 sm:mr-9' : 'ml-8 sm:ml-9'
                       }`}>
                         {formatTime(message.timestamp)}
                       </div>
@@ -743,18 +748,18 @@ How can I assist your learning journey today?`,
                   </div>
                 ))}
                 
-                {/* Typing Indicator - Simple */}
+                {/* Typing Indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Bot className="w-4 h-4 text-gray-600" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
                       </div>
-                      <div className="bg-white rounded-lg px-3.5 py-2.5 border border-gray-200">
+                      <div className="bg-white rounded-2xl px-3.5 py-2.5 border border-gray-200">
                         <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></span>
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse animation-delay-200"></span>
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse animation-delay-400"></span>
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                         </div>
                       </div>
                     </div>
@@ -764,42 +769,74 @@ How can I assist your learning journey today?`,
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Actions - Simple Design */}
+              {/* Scroll to bottom button */}
+              {userScrolled && (
+                <button
+                  onClick={() => {
+                    setUserScrolled(false)
+                    scrollToBottom(true)
+                  }}
+                  className="absolute bottom-24 right-4 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                  aria-label="Scroll to bottom"
+                >
+                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                </button>
+              )}
+
+              {/* Quick Actions */}
               {messages.length === 1 && (
-                <div className="px-4 py-3 bg-white border-t border-gray-200">
-                  <p className="text-xs text-gray-600 mb-2">Quick actions</p>
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-t border-gray-100">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-2">
+                    {preferredLanguage === 'pidgin' ? 'Quick actions' : 
+                     preferredLanguage === 'yoruba' ? 'Awọn iṣe yara' :
+                     preferredLanguage === 'hausa' ? 'Ayyuka masu sauri' :
+                     preferredLanguage === 'igbo' ? 'Omume ngwa ngwa' :
+                     'Quick actions'}
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                     {QUICK_ACTIONS.map((action, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleQuickAction(action.prompt)}
-                        className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs text-gray-700 transition-colors"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-xl text-[11px] sm:text-xs text-gray-700 transition-colors"
                       >
-                        <action.icon className="w-3.5 h-3.5" />
-                        {action.label}
+                        <action.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                        <span className="truncate">{action.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Input Area - Minimal Design */}
-              <div className="p-3 bg-white border-t border-gray-200">
+              {/* Input Area */}
+              <div className="p-3 bg-white border-t border-gray-100 safe-area-bottom">
                 <div className="flex gap-2">
                   <input
                     ref={inputRef}
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder={user ? "Type your question..." : "Login to chat with SabiBot"}
-                    className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-500 disabled:opacity-50"
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                    placeholder={
+                      !user 
+                        ? (preferredLanguage === 'pidgin' ? 'Login to chat' : 
+                           preferredLanguage === 'yoruba' ? 'Wọle lati ba mi sọrọ' :
+                           preferredLanguage === 'hausa' ? 'Shiga don tattaunawa' :
+                           preferredLanguage === 'igbo' ? 'Banye iji kwurịta' :
+                           'Login to chat')
+                        : (preferredLanguage === 'pidgin' ? 'Type wetin you wan ask...' : 
+                           preferredLanguage === 'yoruba' ? 'Kọ ibeere rẹ...' :
+                           preferredLanguage === 'hausa' ? 'Rubuta tambayar ka...' :
+                           preferredLanguage === 'igbo' ? 'Pịnye ajụjụ gị...' :
+                           'Type your question...')
+                    }
+                    className="flex-1 px-3 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-400 disabled:opacity-50"
                     disabled={isLoading || !user}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading || !user}
-                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send"
                   >
                     {isLoading ? (
@@ -810,7 +847,13 @@ How can I assist your learning journey today?`,
                   </button>
                 </div>
                 {!user && (
-                  <p className="text-xs text-gray-500 mt-2 text-center">Please login to use SabiBot</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 mt-2 text-center">
+                    {preferredLanguage === 'pidgin' ? 'Abeg login to use SabiBot' : 
+                     preferredLanguage === 'yoruba' ? 'Jọwọ wọle lati lo SabiBot' :
+                     preferredLanguage === 'hausa' ? 'Da fatan za a shiga don amfani da SabiBot' :
+                     preferredLanguage === 'igbo' ? 'Biko banye iji SabiBot' :
+                     'Please login to use SabiBot'}
+                  </p>
                 )}
               </div>
             </>
@@ -818,14 +861,51 @@ How can I assist your learning journey today?`,
         </div>
       </div>
 
-      {/* Learning Stats Modal */}
       <LearningStats 
         isOpen={showLearningStats} 
         onClose={() => setShowLearningStats(false)} 
       />
 
-      {/* Add animation styles */}
-      <style jsx>{animatedButtonStyles}</style>
+      {/* Animation styles */}
+      <style jsx global>{`
+        .safe-area-top {
+          padding-top: max(0.75rem, env(safe-area-inset-top));
+        }
+        .safe-area-bottom {
+          padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        }
+        
+        @keyframes blink {
+          0%, 90%, 100% { opacity: 1; }
+          95% { opacity: 0.2; }
+        }
+        
+        .robot-eye {
+          animation: blink 4s infinite;
+        }
+        
+        .robot-eye-left {
+          animation-delay: 0.1s;
+        }
+        
+        @keyframes antenna-pulse {
+          0%, 100% { transform-origin: center; transform: scale(1); }
+          50% { transform-origin: center; transform: scale(1.2); }
+        }
+        
+        .robot-antenna {
+          animation: antenna-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes mouth-speak {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        
+        .robot-mouth {
+          animation: mouth-speak 1.5s infinite;
+        }
+      `}</style>
     </>
   )
 }
