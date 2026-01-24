@@ -10,6 +10,7 @@ import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   Save, 
   BookOpen, 
@@ -842,20 +843,12 @@ export default function LessonViewerPage() {
 
   // Loading state with gradient
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-100 rounded-full"></div>
-            <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
-          </div>
-          <p className="mt-4 text-gray-600 font-medium">
-            {authLoading ? 'Checking authentication...' : 'Loading lesson...'}
-          </p>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <SabiLoader text={authLoading ? 'Checking authentication...' : 'Loading lesson...'} />
+    </div>
+  )
+}
 
   // Enrollment required state
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {

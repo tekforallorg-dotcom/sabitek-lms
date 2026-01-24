@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import FileUploader from '@/components/upload/file-uploader'
+import SabiLoader from '@/components/ui/SabiLoader'
 import {
   User,
   Mail,
@@ -254,18 +255,12 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-14 h-14 border-4 border-red-100 rounded-full"></div>
-            <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
-          </div>
-          <p className="mt-4 text-gray-600 font-medium">Loading profile...</p>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <SabiLoader text="Loading profile..." />
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50">

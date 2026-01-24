@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useWallet } from '@/hooks/useWallet'
 import { supabase } from '@/lib/supabase'
 import { generateCVPDF, generateCVDOCX } from '@/lib/advisor/cv-export'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   FileText,
   Download,
@@ -523,15 +524,12 @@ const [profileLoading, setProfileLoading] = useState(true)
   const formatNaira = (kobo: number) => `₦${(kobo / 100).toLocaleString()}`
 
   if (authLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-4 border-pink-200 border-t-pink-600 animate-spin"></div>
-          <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-transparent border-r-red-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SabiLoader text="Loading CV Builder..." />
+    </div>
+  )
+}
 
   return (
     <div className="h-full flex flex-col lg:flex-row">

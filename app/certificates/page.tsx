@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   Award, 
   Download, 
@@ -81,19 +82,12 @@ function CertificatesContent() {
   }
 
   if (loading || certificatesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
-        <div className="text-center">
-          <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-3 border-pink-200"></div>
-            <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-red-500 animate-spin"></div>
-          </div>
-          <p className="text-sm text-gray-600">Loading certificates...</p>
-        </div>
-      </div>
-    )
-  }
-
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+      <SabiLoader text="Loading certificates..." />
+    </div>
+  )
+}
   const latestCertDate = certificates.length > 0 
     ? new Date(certificates[0].issued_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     : 'N/A'
@@ -277,16 +271,10 @@ function CertificatesContent() {
 export default function CertificatesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
-        <div className="text-center">
-          <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-3 border-pink-200"></div>
-            <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-red-500 animate-spin"></div>
-          </div>
-          <p className="text-sm text-gray-600">Loading certificates...</p>
-        </div>
-      </div>
-    }>
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+    <SabiLoader text="Loading certificates..." />
+  </div>
+}>
       <CertificatesContent />
     </Suspense>
   )

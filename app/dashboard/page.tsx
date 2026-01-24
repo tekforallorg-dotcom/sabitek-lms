@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   BookOpen, 
   Award, 
@@ -129,15 +130,12 @@ export default function DashboardPage() {
   const inProgressCount = enrolledCourses.filter(c => c.progress_percentage > 0 && c.progress_percentage < 100).length
 
   if (loading || coursesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-600 font-medium">Loading your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SabiLoader text="Loading your dashboard..." size="lg" />
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50">

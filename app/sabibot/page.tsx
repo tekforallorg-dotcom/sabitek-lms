@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   Bot,
   MessageSquare,
@@ -107,12 +108,12 @@ export default function SabiBotPage() {
   ]
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SabiLoader text="Loading SabiBot..." />
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50">

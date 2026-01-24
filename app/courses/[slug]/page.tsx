@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { PurchaseCourseModal } from '@/components/courses/PurchaseCourseModal'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   BookOpen, 
   Users, 
@@ -431,18 +432,12 @@ export default function CourseDetailPage() {
   const isFree = course?.is_free || course?.price === 0 || !course?.price
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-12 h-12 border-4 border-red-100 rounded-full"></div>
-            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
-          </div>
-          <p className="mt-4 text-sm text-gray-600 font-medium">Loading course...</p>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <SabiLoader text="Loading course..." />
+    </div>
+  )
+}
 
   if (!course) {
     return (

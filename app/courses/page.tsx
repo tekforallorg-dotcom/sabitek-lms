@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { BookOpen, Clock, User, Search, Filter, Sparkles, ArrowRight, Play } from 'lucide-react'
 
 interface Course {
@@ -98,15 +99,12 @@ export default function CoursesPage() {
   }
 
   if (loading || coursesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-600 font-medium">Loading courses...</p>
-        </div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SabiLoader text="Loading courses..." />
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50">

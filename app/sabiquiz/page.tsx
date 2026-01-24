@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useWallet } from '@/hooks/useWallet'
+import SabiLoader from '@/components/ui/SabiLoader'
 import { 
   HelpCircle,
   BarChart3, 
@@ -92,12 +93,12 @@ export default function SabiQuizHomePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SabiLoader text="Loading SabiQuiz..." />
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen bg-gray-50">
