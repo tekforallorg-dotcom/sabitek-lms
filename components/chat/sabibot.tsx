@@ -593,15 +593,17 @@ What would you like to learn today?`
       </button>
 
       {/* Chat Widget */}
-      <div className={`${
-        isOpen ? 'visible' : 'invisible pointer-events-none'
-      } fixed inset-0 sm:inset-auto sm:bottom-0 sm:right-0 z-50 transition-all duration-200`}>
-        
-        {/* Mobile backdrop */}
-        <div 
-          className={`${isOpen ? 'opacity-100' : 'opacity-0'} sm:hidden fixed inset-0 bg-black/20 transition-opacity`}
-          onClick={() => setIsOpen(false)}
-        />
+      <div
+  className={`${
+    isOpen 
+      ? isMinimized 
+        ? 'h-14 w-72 sm:w-80' 
+        : 'h-[60vh] sm:h-[500px] w-[calc(100%-2rem)] sm:w-[360px]'
+      : 'h-0 w-0'
+  } ${
+    isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+  } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-4 fixed bottom-0 right-0`}
+>
         
         <div
           className={`${
