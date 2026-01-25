@@ -1,530 +1,727 @@
+'use client';
+
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { 
   Sparkles, 
   Target, 
   BookOpen,
-  Award,
-  CheckCircle,
   FileText,
-  Zap,
   Users,
   Smartphone,
   Languages,
   TrendingUp,
-  Clock,
   Briefcase,
   Bot,
-  Heart,
-  Globe,
-  Shield,
   MessageSquare,
   Video,
   HelpCircle,
   GraduationCap,
-  ArrowRight
+  ArrowRight,
+  Building2,
+  BarChart3,
+  QrCode,
+  Wifi,
+  UserCheck,
+  Play,
+  Zap,
+  CircleDot
 } from 'lucide-react';
 
-export const metadata = {
-  title: 'About Sabitek | School of the Free',
-  description: 'AI-powered learning platform built for every learner. Structured courses, smart notes, AI quizzes, career guidance, CV builder, and peer mentorship.',
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } }
 };
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ============================================ */}
+    <div className="min-h-screen bg-white overflow-hidden">
+      {/* ========================================== */}
       {/* HERO SECTION */}
-      {/* ============================================ */}
-      <section className="relative overflow-hidden">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-50 to-red-50" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50" />
+      {/* ========================================== */}
+      <section className="relative pt-8 pb-12 sm:pt-12 sm:pb-16 overflow-hidden">
+        {/* Clean gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-50/80 via-white to-white" />
         
-        {/* Floating elements */}
-        <div className="absolute top-10 right-[10%] w-20 h-20 bg-gradient-to-br from-red-200/30 to-rose-200/30 rounded-2xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[5%] w-16 h-16 bg-gradient-to-br from-pink-200/30 to-red-200/30 rounded-xl -rotate-12 blur-sm" />
+        {/* Subtle radial accent */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-red-100/40 to-transparent rounded-full blur-3xl opacity-60" />
+        
+        {/* Floating soft orbs */}
+        <motion.div 
+          className="absolute top-20 right-[20%] w-24 h-24 rounded-full bg-red-200/25 blur-2xl"
+          animate={{ y: [0, -10, 0], opacity: [0.25, 0.4, 0.25] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-10 left-[15%] w-32 h-32 rounded-full bg-rose-200/20 blur-2xl"
+          animate={{ y: [0, 15, 0], opacity: [0.2, 0.35, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
 
-        <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-4 border border-red-200">
-                <span className="relative flex h-2 w-2">
+        {/* Subtle grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4">
+          <motion.div 
+            className="text-center"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            {/* Badge */}
+            <motion.div variants={fadeInUp} className="mb-4">
+              <span className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-red-100 text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
                 </span>
                 School of the Free
-              </div>
-              
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
-                About{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">
-                  Sabitek
-                </span>
-              </h1>
-              
-              <div className="space-y-3 text-sm text-gray-600 mb-6">
-                <p>
-                  Sabitek is a digital school built for people who are hungry to learn but 
-                  tired of being overwhelmed by scattered content.
-                </p>
-                <p>
-                  We give you clear learning paths, AI-powered tools, structured courses, 
-                  career guidance, and a supportive community, many resources free or affordable.
-                </p>
-                <p className="font-medium text-gray-900">
-                  Whether you are a student, professional, educator, or organization, 
-                  Sabitek is your &quot;School of the Free&quot;.
-                </p>
-              </div>
+              </span>
+            </motion.div>
+            
+            {/* Main heading */}
+            <motion.h1 
+              variants={fadeInUp}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight"
+            >
+              About{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
+                Sabitek
+              </span>
+            </motion.h1>
+            
+            {/* Subtitle */}
+            <motion.p 
+              variants={fadeInUp}
+              className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-6 leading-relaxed"
+            >
+              A digital learning school built for{' '}
+              <span className="text-gray-900 font-medium">structured learning</span>{' '}
+              with measured outcome.
+            </motion.p>
 
-              <div className="flex flex-wrap gap-2">
-                <span className="text-xs bg-red-50 text-red-700 px-3 py-1.5 rounded-full font-medium border border-red-100">
-                  AI-Powered Learning
-                </span>
-                <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium border border-blue-100">
-                  Built for Everyone
-                </span>
-                <span className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-medium border border-green-100">
-                  Free & Affordable
-                </span>
-              </div>
-            </div>
+            {/* CTA buttons */}
+            <motion.div 
+              variants={fadeInUp}
+              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-10"
+            >
+              <Link
+                href="/courses"
+                className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Start Learning
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link
+                href="/sabitools"
+                className="group inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm hover:bg-white text-gray-700 px-6 py-3 rounded-xl text-sm font-semibold border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <div className="w-6 h-6 bg-red-50 rounded-md flex items-center justify-center">
+                  <Play className="w-3 h-3 text-red-500 ml-0.5" />
+                </div>
+                Explore SabiSuite
+              </Link>
+            </motion.div>
 
-            {/* Right: SabiSuite Card */}
-            <div className="relative">
-              <div className="absolute -inset-2 bg-gradient-to-r from-red-500/20 via-pink-500/20 to-red-500/20 rounded-2xl blur-xl opacity-60" />
+            {/* Stats row */}
+            <motion.div 
+              variants={fadeInUp}
+              className="grid grid-cols-3 gap-6 max-w-sm mx-auto"
+            >
+              {[
+                { value: '1K+', label: 'Active Learners' },
+                { value: '50+', label: 'Courses' },
+                { value: '5+', label: 'Institutions' },
+              ].map((stat, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xs text-gray-500">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========================================== */}
+      {/* VISION SECTION */}
+      {/* ========================================== */}
+      <section className="py-10 sm:py-14 bg-white relative">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+            >
+              <motion.span 
+                variants={fadeInUp}
+                className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Our Vision
+              </motion.span>
+              <motion.h2 
+                variants={fadeInUp}
+                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-tight"
+              >
+                Learning that{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
+                  leads somewhere
+                </span>
+              </motion.h2>
               
-              <div className="relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-xl border border-white/50">
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
-                    <Sparkles className="w-5 h-5 text-white" />
+              <motion.div variants={fadeInUp} className="space-y-3 text-sm text-gray-600 leading-relaxed">
+                <p>
+                  Learning on Sabitek is organized into clear programs with defined paths, 
+                  built-in practice, and progress tracking that supports completion.
+                </p>
+                <p>
+                  The platform serves individual learners while enabling institutions, 
+                  educators, and training programs to deliver learning with clear progress 
+                  and proof of completion.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="mt-4 flex flex-wrap gap-2">
+                {['Self-paced', 'Guided cohorts', 'Institution-led'].map((tag, i) => (
+                  <span key={i} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                    {tag}
+                  </span>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Floating card */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative"
+            >
+              <div className="absolute -inset-3 bg-gradient-to-r from-red-500/10 via-rose-500/10 to-red-400/10 rounded-2xl blur-xl" />
+              <div className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl p-6 shadow-xl overflow-hidden">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-red-500/15 to-transparent rounded-full blur-2xl" />
+                
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
+                      <GraduationCap className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold text-sm">School of the Free</h3>
+                      <p className="text-gray-400 text-xs">Our Core Philosophy</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">SabiSuite</h3>
-                    <p className="text-xs text-gray-500">AI-Powered Learning Tools</p>
+                  <p className="text-gray-300 text-sm leading-relaxed mb-5">
+                    Learning that is accessible, guided, and practical, so curiosity 
+                    can translate into capability.
+                  </p>
+                  <div className="pt-4 border-t border-gray-700/50 flex items-center justify-between">
+                    <div className="flex -space-x-2">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-rose-500 border-2 border-gray-900" style={{ zIndex: 4-i }} />
+                      ))}
+                    </div>
+                    <span className="text-gray-400 text-xs">Join thousands of learners</span>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-                <div className="space-y-2">
-                  {[
-                    { icon: Bot, name: 'SabiBot', desc: 'AI Learning Assistant' },
-                    { icon: HelpCircle, name: 'SabiQuiz', desc: 'Smart Quiz Generator' },
-                    { icon: Briefcase, name: 'SabiAdvisor', desc: 'Career & CV Builder' },
-                    { icon: Users, name: 'SabiCommunity', desc: 'Peer Mentorship' },
-                  ].map((tool, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/60">
-                      <div className="w-9 h-9 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <tool.icon className="w-4 h-4 text-gray-500" />
+      {/* ========================================== */}
+      {/* PURPOSE SECTION */}
+      {/* ========================================== */}
+      <section className="py-10 sm:py-14 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-red-50/20" />
+        
+        <div className="relative max-w-4xl mx-auto px-4">
+          <motion.div 
+            className="text-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.span 
+              variants={fadeInUp}
+              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
+            >
+              <Target className="w-3.5 h-3.5" />
+              Purpose
+            </motion.span>
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6"
+            >
+              Why Sabitek exists
+            </motion.h2>
+            
+            <motion.div 
+              variants={fadeInUp}
+              className="relative max-w-2xl mx-auto"
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-500 via-red-400 to-rose-400 rounded-full" />
+              <blockquote className="text-base sm:text-lg text-gray-600 leading-relaxed pl-5 text-left italic">
+                &ldquo;Learning often fails not because people lack motivation, but because content 
+                is fragmented, progress is unclear, and outcomes are difficult to demonstrate.&rdquo;
+              </blockquote>
+            </motion.div>
+            
+            <motion.p 
+              variants={fadeInUp}
+              className="mt-5 text-sm text-gray-600 leading-relaxed max-w-xl mx-auto"
+            >
+              Sabitek brings structure to learning delivery and completion with defined paths, 
+              checkpoints, and assessments.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========================================== */}
+      {/* WHO WE SERVE */}
+      {/* ========================================== */}
+      <section className="py-10 sm:py-14 bg-white relative">
+        <div className="max-w-5xl mx-auto px-4">
+          <motion.div 
+            className="text-center mb-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.span 
+              variants={fadeInUp}
+              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Who We Serve
+            </motion.span>
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-gray-900"
+            >
+              Built for everyone who wants to{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
+                learn and grow
+              </span>
+            </motion.h2>
+          </motion.div>
+
+          <motion.div 
+            className="grid md:grid-cols-3 gap-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            {[
+              {
+                icon: GraduationCap,
+                title: 'Learners',
+                desc: 'Individuals building skills at their own pace with clear structure and guidance.',
+                gradient: 'from-red-500 to-rose-500',
+                shadow: 'shadow-red-500/15',
+                link: '/courses',
+                linkText: 'Start learning'
+              },
+              {
+                icon: UserCheck,
+                title: 'Educators',
+                desc: 'Teachers and trainers delivering structured courses with progress visibility.',
+                gradient: 'from-blue-500 to-cyan-500',
+                shadow: 'shadow-blue-500/15',
+                link: '/teach',
+                linkText: 'Become an instructor'
+              },
+              {
+                icon: Building2,
+                title: 'Institutions',
+                desc: 'Schools and NGOs delivering training at scale with verifiable proof.',
+                gradient: 'from-emerald-500 to-green-500',
+                shadow: 'shadow-emerald-500/15',
+                link: '/schools-and-tutors',
+                linkText: 'Partner with us'
+              },
+            ].map((item, i) => (
+              <motion.div 
+                key={i}
+                variants={scaleIn}
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="group relative"
+              >
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${item.gradient} rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300`} />
+                <div className="relative bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                  <div className={`w-11 h-11 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${item.shadow} group-hover:scale-105 transition-transform duration-300`}>
+                    <item.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1.5">{item.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed flex-1">{item.desc}</p>
+                  <Link 
+                    href={item.link}
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm text-gray-700 font-medium group-hover:text-red-500 transition-colors"
+                  >
+                    {item.linkText}
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========================================== */}
+      {/* PLATFORM FEATURES */}
+      {/* ========================================== */}
+      <section className="py-10 sm:py-14 bg-gray-950 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-48 h-48 bg-red-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-40 h-40 bg-rose-500/10 rounded-full blur-3xl" />
+        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
+        
+        <div className="relative max-w-5xl mx-auto px-4">
+          <motion.div 
+            className="text-center mb-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.span 
+              variants={fadeInUp}
+              className="inline-flex items-center gap-1.5 text-red-400 text-xs font-bold tracking-wider uppercase mb-2"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Platform
+            </motion.span>
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-white mb-2"
+            >
+              Learning on Sabitek
+            </motion.h2>
+            <motion.p 
+              variants={fadeInUp}
+              className="text-sm text-gray-400 max-w-lg mx-auto"
+            >
+              A complete platform for structured learning and measurable outcomes
+            </motion.p>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            {[
+              { icon: BookOpen, title: 'Clear Paths', desc: 'Modules & lessons', gradient: 'from-red-500 to-rose-500' },
+              { icon: Video, title: 'Multi-Format', desc: 'Video, text, PDF', gradient: 'from-blue-500 to-cyan-500' },
+              { icon: HelpCircle, title: 'Practice', desc: 'Quizzes & checkpoints', gradient: 'from-green-500 to-emerald-500' },
+              { icon: BarChart3, title: 'Progress', desc: 'Track completion', gradient: 'from-purple-500 to-violet-500' },
+              { icon: QrCode, title: 'Certificates', desc: 'QR-verifiable', gradient: 'from-orange-500 to-amber-500' },
+            ].map((item, i) => (
+              <motion.div 
+                key={i}
+                variants={scaleIn}
+                whileHover={{ y: -3 }}
+                className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300"
+              >
+                <div className={`w-9 h-9 bg-gradient-to-br ${item.gradient} rounded-lg flex items-center justify-center mb-2`}>
+                  <item.icon className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-semibold text-white text-sm mb-0.5">{item.title}</h3>
+                <p className="text-xs text-gray-400">{item.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========================================== */}
+      {/* SABISUITE */}
+      {/* ========================================== */}
+      <section id="sabisuite" className="py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        <div className="absolute top-10 left-0 w-40 h-40 bg-red-100/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-0 w-48 h-48 bg-rose-100/30 rounded-full blur-3xl" />
+        
+        <div className="relative max-w-5xl mx-auto px-4">
+          <motion.div 
+            className="text-center mb-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp}>
+              <span className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg shadow-red-500/20 mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
+                SabiSuite
+              </span>
+            </motion.div>
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
+            >
+              The technology powering Sabitek
+            </motion.h2>
+            <motion.p 
+              variants={fadeInUp}
+              className="text-sm text-gray-600 max-w-lg mx-auto"
+            >
+              AI-powered tools for learning delivery, practice, and support
+            </motion.p>
+          </motion.div>
+
+          <motion.div 
+            className="grid md:grid-cols-2 gap-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            {[
+              {
+                icon: Bot,
+                name: 'SabiBot',
+                subtitle: 'Learning Assistant',
+                desc: 'Supports learners by explaining concepts and guiding next steps.',
+                feature: 'English, Pidgin, Yoruba, Hausa, Igbo',
+                featureIcon: Languages,
+                gradient: 'from-red-500 to-rose-500',
+                tag: 'AI',
+                tagColor: 'bg-red-50 text-red-600'
+              },
+              {
+                icon: HelpCircle,
+                name: 'SabiQuiz',
+                subtitle: 'Smart Quiz Generator',
+                desc: 'Turns learning materials into quizzes that reinforce understanding.',
+                feature: 'Upload PDFs, documents, or paste text',
+                featureIcon: FileText,
+                gradient: 'from-blue-500 to-cyan-500',
+                tag: 'AI',
+                tagColor: 'bg-blue-50 text-blue-600'
+              },
+              {
+                icon: Briefcase,
+                name: 'SabiAdvisor',
+                subtitle: 'Career and CV Tools',
+                desc: 'CV building, interview preparation, and career guidance.',
+                feature: 'Export to PDF and DOCX',
+                featureIcon: FileText,
+                gradient: 'from-emerald-500 to-green-500',
+                tag: 'AI',
+                tagColor: 'bg-emerald-50 text-emerald-600'
+              },
+              {
+                icon: Users,
+                name: 'SabiCommunity',
+                subtitle: 'Peer Mentorship',
+                desc: 'Peer discussion and mentorship for accountability.',
+                feature: 'Connect with mentors and peers',
+                featureIcon: MessageSquare,
+                gradient: 'from-purple-500 to-violet-500',
+                tag: 'Social',
+                tagColor: 'bg-purple-50 text-purple-600'
+              },
+            ].map((item, i) => (
+              <motion.div 
+                key={i}
+                variants={scaleIn}
+                whileHover={{ y: -3 }}
+                className="group relative"
+              >
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${item.gradient} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur`} />
+                <div className="relative bg-white rounded-xl p-5 border border-gray-200 group-hover:border-transparent transition-all duration-300 h-full">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300`}>
+                        <item.icon className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 text-sm">{tool.name}</p>
-                        <p className="text-xs text-gray-500">{tool.desc}</p>
+                        <h3 className="font-semibold text-gray-900 text-sm">{item.name}</h3>
+                        <p className="text-gray-500 text-xs">{item.subtitle}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Curved transition */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 60" fill="none" preserveAspectRatio="none" className="w-full h-8 sm:h-12">
-            <path d="M0 60V20C360 0 720 0 1080 20C1260 30 1380 40 1440 40V60H0Z" fill="white"/>
-          </svg>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* OUR MISSION */}
-      {/* ============================================ */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <span className="inline-block px-3 py-1 bg-gradient-to-r from-red-50 to-rose-50 rounded-full text-xs font-semibold text-red-600 mb-3">
-                Our Mission
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-                Democratizing Quality Education
-              </h2>
-              
-              <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  We believe everyone deserves access to quality education, regardless of 
-                  location, background, or economic status.
-                </p>
-                <p>
-                  Our platform combines the best of structured learning with cutting-edge AI 
-                  to create personalized learning experiences that actually work.
-                </p>
-                <p>
-                  From Lagos to London, from students to professionals — we are here to help 
-                  you learn, grow, and succeed.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { icon: Heart, value: 'Free', label: 'Many courses at no cost', color: 'bg-red-50 text-red-600' },
-                { icon: Globe, value: 'User-First', label: 'Built for local needs', color: 'bg-blue-50 text-blue-600' },
-                { icon: Sparkles, value: 'AI-Powered', label: 'Smart personalization', color: 'bg-green-50 text-green-600' },
-                { icon: Shield, value: 'Quality', label: 'Verified certificates', color: 'bg-purple-50 text-purple-600' },
-              ].map((item, i) => (
-                <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all hover:-translate-y-0.5">
-                  <div className={`w-9 h-9 ${item.color} rounded-lg flex items-center justify-center mb-2`}>
-                    <item.icon className="w-4 h-4" />
+                    <span className={`px-2 py-0.5 ${item.tagColor} text-[10px] font-bold rounded-full`}>{item.tag}</span>
                   </div>
-                  <p className="font-bold text-gray-900 text-sm">{item.value}</p>
-                  <p className="text-xs text-gray-500">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* SABISUITE DEEP DIVE */}
-      {/* ============================================ */}
-      <section className="relative py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
-        <div className="absolute top-10 right-0 w-48 h-48 bg-gradient-to-br from-red-100/40 to-rose-100/40 rounded-full blur-3xl" />
-        
-        <div className="relative max-w-6xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <span className="inline-block px-3 py-1 bg-gradient-to-r from-red-50 to-rose-50 rounded-full text-xs font-semibold text-red-600 mb-2">
-              SabiSuite
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-              AI Tools That Make Learning{' '}
-              <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Personal</span>
-            </h2>
-            <p className="text-sm text-gray-600">Four intelligent features working together</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {/* SabiBot */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                  <Bot className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">SabiBot</h3>
-                  <p className="text-xs text-gray-500">AI Learning Assistant</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Your personal learning companion that understands your goals and guides you 
-                through your educational journey.
-              </p>
-              <div className="space-y-1.5 mb-3">
-                {['Suggests courses that fit your goals', 'Explains concepts in simple terms', 'Tracks progress and encourages you'].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{item}</span>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">{item.desc}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                    <item.featureIcon className="w-3.5 h-3.5 text-gray-400" />
+                    <span>{item.feature}</span>
                   </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">
-                <Languages className="w-3 h-3" />
-                <span className="font-medium">English, Pidgin, Yoruba, Hausa, Igbo</span>
-              </div>
-            </div>
-
-            {/* SabiQuiz */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                  <HelpCircle className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">SabiQuiz</h3>
-                  <p className="text-xs text-gray-500">AI Quiz Generator</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Turn any learning material into smart quizzes instantly. Upload PDFs, 
-                documents, or paste text — AI generates questions.
-              </p>
-              <div className="space-y-1.5 mb-3">
-                {['Auto-generate quizzes from any material', 'Multiple choice, true/false, and more', 'Track scores and identify weak areas'].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">
-                <Zap className="w-3 h-3" />
-                <span className="font-medium">Just ₦50 per quiz generation</span>
-              </div>
-            </div>
-
-            {/* SabiAdvisor */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                  <Briefcase className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">SabiAdvisor</h3>
-                  <p className="text-xs text-gray-500">Career & CV Builder</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Your complete career toolkit. Build professional CVs, prepare for interviews, 
-                explore career paths, and get personalized guidance.
-              </p>
-              <div className="space-y-1.5 mb-3">
-                {['AI-powered CV builder with templates', 'Cover letter generator', 'Mock interview practice', 'Career path exploration'].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
-                <FileText className="w-3 h-3" />
-                <span className="font-medium">Export to PDF and DOCX</span>
-              </div>
-            </div>
-
-            {/* SabiCommunity */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">SabiCommunity</h3>
-                  <p className="text-xs text-gray-500">Peer Mentorship</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Connect with mentors and peers who have walked the path you are on. 
-                Get guidance, share knowledge, and grow together.
-              </p>
-              <div className="space-y-1.5 mb-3">
-                {['Find mentors in your field', 'Book sessions and get guidance', 'Become a mentor and earn'].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg">
-                <MessageSquare className="w-3 h-3" />
-                <span className="font-medium">Real humans, real guidance</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* PLATFORM FEATURES */}
-      {/* ============================================ */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <span className="inline-block px-3 py-1 bg-gradient-to-r from-red-50 to-rose-50 rounded-full text-xs font-semibold text-red-600 mb-2">
-              Learning Platform
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-              Everything Learners{' '}
-              <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Need</span>
-            </h2>
-            <p className="text-sm text-gray-600">A complete ecosystem designed for your success</p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { icon: BookOpen, title: 'Structured Courses', desc: 'Clear modules & lessons', color: 'text-red-500' },
-              { icon: Video, title: 'Multi-Format', desc: 'Videos, PDFs, slides', color: 'text-blue-500' },
-              { icon: FileText, title: 'Smart Notes', desc: 'Personal lesson notes', color: 'text-green-500' },
-              { icon: Zap, title: 'AI Summaries', desc: 'Quick recaps', color: 'text-yellow-500' },
-              { icon: HelpCircle, title: 'Quiz Checkpoints', desc: 'Test understanding', color: 'text-purple-500' },
-              { icon: Bot, title: 'AI Assistant', desc: 'Help in your language', color: 'text-pink-500' },
-              { icon: TrendingUp, title: 'Progress Dashboard', desc: 'Track completion', color: 'text-cyan-500' },
-              { icon: Award, title: 'Certificates', desc: 'QR-verified credentials', color: 'text-orange-500' },
-            ].map((feature, i) => (
-              <div key={i} className="bg-gray-50 p-4 rounded-xl hover:bg-white hover:shadow-lg hover:border-red-100 border border-transparent transition-all hover:-translate-y-1">
-                <feature.icon className={`w-6 h-6 ${feature.color} mb-2`} />
-                <h3 className="font-semibold text-gray-900 text-sm mb-0.5">{feature.title}</h3>
-                <p className="text-xs text-gray-500">{feature.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ============================================ */}
-      {/* FOR SCHOOLS & ORGANIZATIONS */}
-      {/* ============================================ */}
-      <section className="relative py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
-        <div className="absolute bottom-10 left-0 w-48 h-48 bg-gradient-to-br from-red-100/40 to-rose-100/40 rounded-full blur-3xl" />
-        
-        <div className="relative max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <span className="inline-block px-3 py-1 bg-gradient-to-r from-red-100 to-rose-100 rounded-full text-xs font-semibold text-red-600 mb-3">
-                For Educators
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-                Turn Your Knowledge into a{' '}
-                <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Digital Academy</span>
-              </h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Transform your content into professional learning experiences that learners actually complete.
-                You focus on expertise — we handle the technology.
-              </p>
-              
-              <div className="space-y-2 mb-5">
-                {[
-                  'Upload videos, slides, PDFs, and text content',
-                  'AI automatically generates quizzes and summaries',
-                  'Track learner progress and performance',
-                  'Issue verifiable certificates',
-                  'Build your brand with custom courses',
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-sm text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </div>
+      {/* ========================================== */}
+      {/* DESIGN PRINCIPLES */}
+      {/* ========================================== */}
+      <section className="py-10 sm:py-14 bg-white relative">
+        <div className="max-w-5xl mx-auto px-4">
+          <motion.div 
+            className="text-center mb-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.span 
+              variants={fadeInUp}
+              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
+            >
+              <CircleDot className="w-3.5 h-3.5" />
+              Design Principles
+            </motion.span>
+            <motion.h2 
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-gray-900"
+            >
+              Built for real-world environments
+            </motion.h2>
+          </motion.div>
 
-              <Link
-                href="/schools-and-tutors"
-                className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-lg transition-all hover:-translate-y-0.5"
-              >
-                Learn More About Partnerships
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { icon: TrendingUp, title: 'Better Engagement', desc: 'AI quizzes and summaries keep learners active and interested throughout courses', color: 'border-l-red-500' },
-                { icon: Target, title: 'Clear Analytics', desc: 'Track enrollment, completion rates, and quiz performance at a glance', color: 'border-l-blue-500' },
-                { icon: Clock, title: 'Time Saved', desc: 'AI handles quiz creation and summaries — you focus on teaching', color: 'border-l-green-500' },
-              ].map((item, i) => (
-                <div key={i} className={`bg-white p-4 rounded-xl border-l-4 ${item.color} shadow-sm hover:shadow-md transition-all`}>
-                  <div className="flex items-start gap-3">
-                    <item.icon className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-sm mb-0.5">{item.title}</h3>
-                      <p className="text-xs text-gray-600">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* BUILT FOR AFRICA */}
-      {/* ============================================ */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <span className="inline-block px-3 py-1 bg-gradient-to-r from-red-50 to-rose-50 rounded-full text-xs font-semibold text-red-600 mb-2">
-              Our Focus
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-              Built for{' '}
-              <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Every Learner</span>
-              {' '}
-            </h2>
-            <p className="text-sm text-gray-600">Education that meets you where you are</p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
             {[
-              { icon: Smartphone, title: 'Mobile-First', desc: 'Optimized for phones where most learning happens' },
-              { icon: TrendingUp, title: 'All Levels', desc: 'From beginners to advanced learners' },
-              { icon: Languages, title: 'Local Languages', desc: 'English, Hausa, Igbo, Yoruba, Pidgin' },
-              { icon: Zap, title: 'Affordable', desc: 'Many free and low-cost options' },
+              { icon: Smartphone, title: 'Mobile-first', desc: 'Everyday devices' },
+              { icon: Wifi, title: 'Low-bandwidth', desc: 'Works anywhere' },
+              { icon: Users, title: 'All levels', desc: 'Mixed literacy' },
+              { icon: Languages, title: 'Local languages', desc: 'Accessible' },
+              { icon: TrendingUp, title: 'Clear progress', desc: 'Visible completion' },
             ].map((item, i) => (
-              <div key={i} className="group bg-gray-50 hover:bg-white p-4 sm:p-5 rounded-xl border border-transparent hover:border-red-100 hover:shadow-lg transition-all text-center hover:-translate-y-1">
-                <div className="w-12 h-12 mx-auto bg-gradient-to-br from-red-100 to-rose-100 group-hover:from-red-500 group-hover:to-rose-500 rounded-xl flex items-center justify-center mb-3 transition-all shadow">
-                  <item.icon className="w-5 h-5 text-red-500 group-hover:text-white transition-colors" />
+              <motion.div 
+                key={i}
+                variants={scaleIn}
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="group text-center p-4 rounded-xl bg-gray-50 hover:bg-gradient-to-br hover:from-red-500 hover:to-rose-500 transition-all duration-300 cursor-pointer"
+              >
+                <div className="w-10 h-10 bg-white group-hover:bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-sm transition-all duration-300">
+                  <item.icon className="w-5 h-5 text-red-500 group-hover:text-white transition-colors duration-300" />
                 </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-500">{item.desc}</p>
-              </div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-white text-sm mb-0.5 transition-colors duration-300">{item.title}</h3>
+                <p className="text-xs text-gray-500 group-hover:text-white/80 transition-colors duration-300">{item.desc}</p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ============================================ */}
+      {/* ========================================== */}
       {/* FINAL CTA */}
-      {/* ============================================ */}
-      <section className="relative py-12 sm:py-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-500 via-rose-500 to-red-600" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-600/30 via-transparent to-pink-500/30" />
+      {/* ========================================== */}
+      <section className="relative py-14 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-500 via-red-600 to-rose-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/15 via-transparent to-transparent" />
         
-        {/* Subtle shapes */}
-        <div className="absolute top-5 left-5 w-20 h-20 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute bottom-5 right-5 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+        <motion.div 
+          className="absolute top-8 left-8 w-24 h-24 bg-white/10 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 5, repeat: Infinity }}
+        />
+        <motion.div 
+          className="absolute bottom-8 right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity, delay: 1 }}
+        />
         
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-          backgroundSize: '24px 24px'
+          backgroundSize: '28px 28px'
         }} />
 
-        {/* Curved top */}
-        <div className="absolute top-0 left-0 right-0">
-          <svg viewBox="0 0 1440 40" fill="none" preserveAspectRatio="none" className="w-full h-6 sm:h-8 rotate-180">
-            <path d="M0 40V0C360 26 720 40 1080 26C1260 20 1380 10 1440 0V40H0Z" fill="white"/>
-          </svg>
-        </div>
-
-        <div className="relative max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
+        <motion.div 
+          className="relative max-w-3xl mx-auto px-4 text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+        >
+          <motion.h2 
+            variants={fadeInUp}
+            className="text-2xl sm:text-3xl font-bold text-white mb-4"
+          >
             Join the School of the Free
-          </h2>
+          </motion.h2>
           
-          <div className="space-y-2 text-sm text-white/90 mb-6 max-w-xl mx-auto">
-            <p>
-              <strong className="text-white">Learners:</strong> Start a course, use SabiBot, 
-              take quizzes, and experience guided learning.
-            </p>
-            <p>
-              <strong className="text-white">Educators:</strong> Turn your knowledge into 
-              AI-supported courses learners will complete.
-            </p>
-          </div>
+          <motion.p 
+            variants={fadeInUp}
+            className="text-sm text-white/80 mb-8 max-w-lg mx-auto leading-relaxed"
+          >
+            Structured learning for individuals and institutions that need training to lead somewhere.
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <motion.div 
+            variants={fadeInUp}
+            className="grid sm:grid-cols-2 gap-3 max-w-md mx-auto mb-8"
+          >
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-left border border-white/20">
+              <GraduationCap className="w-7 h-7 text-white mb-2" />
+              <h3 className="font-semibold text-white text-sm mb-1">For Learners</h3>
+              <p className="text-xs text-white/70 leading-relaxed">
+                Explore structured programs and complete learning with clarity.
+              </p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-left border border-white/20">
+              <UserCheck className="w-7 h-7 text-white mb-2" />
+              <h3 className="font-semibold text-white text-sm mb-1">For Educators</h3>
+              <p className="text-xs text-white/70 leading-relaxed">
+                Deliver programs with measurable progress and proof of completion.
+              </p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            variants={fadeInUp}
+            className="flex flex-col sm:flex-row gap-3 justify-center"
+          >
             <Link
               href="/courses"
-              className="inline-flex items-center justify-center gap-2 bg-white text-red-500 hover:bg-gray-100 px-8 py-4 rounded-xl text-base font-bold shadow-xl transition-all hover:shadow-2xl hover:-translate-y-0.5"
+              className="group inline-flex items-center justify-center gap-2 bg-white text-red-600 hover:bg-gray-100 px-6 py-3 rounded-xl text-sm font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
             >
               Start Learning
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               href="/schools-and-tutors"
-              className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/40 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-transparent text-white hover:bg-white/10 px-6 py-3 rounded-xl text-sm font-semibold border border-white/30 hover:border-white/50 transition-all duration-300 hover:-translate-y-0.5"
             >
-              For Schools & Tutors
+              For Schools and Tutors
             </Link>
-          </div>
-
-          <p className="text-xs text-white/60 mt-6">
-            Sabitek — School of the Free. Where curiosity meets opportunity.
-          </p>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
     </div>
   );
