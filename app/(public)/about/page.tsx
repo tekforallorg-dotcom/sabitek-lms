@@ -110,7 +110,7 @@ export default function AboutPage() {
             >
               A digital learning school built for{' '}
               <span className="text-gray-900 font-medium">structured learning</span>{' '}
-              with measure outcome.
+              with measureable outcome.
             </motion.p>
 
             {/* CTA buttons */}
