@@ -5,9 +5,12 @@ import { createAuditLog } from '@/lib/audit-logger'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { certificateId: string } }
+  { params }: { params: Promise<{ certificateId: string }> }
 ) {
   try {
+    // Await params (Next.js 15 requirement)
+    const { certificateId } = await params
+
     // Verify admin authentication
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
@@ -40,14 +43,14 @@ export async function PATCH(
     const { data: targetCert, error: fetchError } = await supabaseAdmin
       .from('certificates')
       .select('*')
-      .eq('id', params.certificateId)
+      .eq('id', certificateId)
       .single()
 
     if (fetchError || !targetCert) {
       return NextResponse.json({ error: 'Certificate not found' }, { status: 404 })
     }
 
-    let updates: any = {}
+    let updates: Record<string, unknown> = {}
     let auditAction = ''
 
     switch (action) {
@@ -76,7 +79,7 @@ export async function PATCH(
     const { error: updateError } = await supabaseAdmin
       .from('certificates')
       .update(updates)
-      .eq('id', params.certificateId)
+      .eq('id', certificateId)
 
     if (updateError) {
       console.error('Error updating certificate:', updateError)
@@ -88,7 +91,7 @@ export async function PATCH(
       actor_user_id: user.id,
       action: auditAction,
       entity_type: 'certificate',
-      entity_id: params.certificateId,
+      entity_id: certificateId,
       before: { 
         revoked_at: targetCert.revoked_at,
         revoke_reason: targetCert.revoke_reason

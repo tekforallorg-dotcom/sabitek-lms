@@ -5,9 +5,12 @@ import { createAuditLog } from '@/lib/audit-logger'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
+    // Await params (Next.js 15 requirement)
+    const { courseId } = await params
+
     // Verify admin authentication
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
@@ -40,14 +43,14 @@ export async function PATCH(
     const { data: targetCourse, error: fetchError } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('id', params.courseId)
+      .eq('id', courseId)
       .single()
 
     if (fetchError || !targetCourse) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    let updates: any = {}
+    let updates: Record<string, unknown> = {}
     let auditAction = ''
 
     switch (action) {
@@ -79,7 +82,7 @@ export async function PATCH(
     const { error: updateError } = await supabaseAdmin
       .from('courses')
       .update(updates)
-      .eq('id', params.courseId)
+      .eq('id', courseId)
 
     if (updateError) {
       console.error('Error updating course:', updateError)
@@ -91,7 +94,7 @@ export async function PATCH(
       actor_user_id: user.id,
       action: auditAction,
       entity_type: 'course',
-      entity_id: params.courseId,
+      entity_id: courseId,
       before: { status: targetCourse.status },
       after: updates,
       reason,

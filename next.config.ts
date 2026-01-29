@@ -1,11 +1,10 @@
-// @ts-nocheck
-const nextConfig = {
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // Required for pdf-parse to work in API routes
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
 
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
+  // Webpack config for PDF.js worker support
   webpack: (config) => {
     config.resolve.alias.canvas = false
     config.resolve.alias.encoding = false
@@ -14,8 +13,8 @@ const nextConfig = {
       test: /pdf\.worker\.(min\.)?mjs$/,
       type: 'asset/resource',
       generator: {
-        filename: 'static/worker/[hash][ext][query]'
-      }
+        filename: 'static/worker/[hash][ext][query]',
+      },
     })
 
     return config

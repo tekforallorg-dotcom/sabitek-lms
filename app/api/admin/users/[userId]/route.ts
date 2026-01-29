@@ -5,9 +5,12 @@ import { createAuditLog } from '@/lib/audit-logger'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    // Await params (Next.js 15 requirement)
+    const { userId } = await params
+
     // Verify admin authentication
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
@@ -34,7 +37,7 @@ export async function PATCH(
     }
 
     // Prevent self-modification
-    if (params.userId === user.id) {
+    if (userId === user.id) {
       return NextResponse.json({ error: 'Cannot modify your own account' }, { status: 400 })
     }
 
@@ -45,14 +48,14 @@ export async function PATCH(
     const { data: targetUser, error: fetchError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('id', params.userId)
+      .eq('id', userId)
       .single()
 
     if (fetchError || !targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    let updates: any = {}
+    let updates: Record<string, unknown> = {}
     let auditAction = ''
 
     switch (action) {
@@ -80,7 +83,7 @@ export async function PATCH(
     const { error: updateError } = await supabaseAdmin
       .from('users')
       .update(updates)
-      .eq('id', params.userId)
+      .eq('id', userId)
 
     if (updateError) {
       console.error('Error updating user:', updateError)
@@ -92,7 +95,7 @@ export async function PATCH(
       actor_user_id: user.id,
       action: auditAction,
       entity_type: 'user',
-      entity_id: params.userId,
+      entity_id: userId,
       before: { status: targetUser.status },
       after: updates,
       reason,
