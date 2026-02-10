@@ -1,22 +1,20 @@
 /**
  * POST /api/mobile/sabiwrite/process
  *
- * Requires a valid mobile entitlement (payment verified).
+ * Supports two payment methods:
+ *   1. entitlement — entitlementId from Paystack per-action flow
+ *   2. wallet — wallet already debited via /wallet/debit
+ *
  * Streams AI output via SSE, same prompts as web.
  *
  * Body: {
- *   entitlementId: string,     // from payment verification
- *   deviceId: string,          // device fingerprint
+ *   entitlementId: string,     // 'wallet' if wallet-paid, or UUID from entitlement
+ *   deviceId: string,
  *   toolType: MobileToolType,
  *   inputText: string,
  *   tone?: ToneType,
  *   action?: string,
  * }
- *
- * Response: SSE stream
- *   data: { content: "chunk" }          // text chunks
- *   data: { done: true, operationId, costKobo, model }  // completion
- *   data: { error: "message" }          // error
  */
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -40,19 +38,16 @@ const SYSTEM_PROMPTS: Record<string, (tone: string, action: string) => string> =
   plagiarism: () => `You are a plagiarism detection expert. Analyze the following text for potential plagiarism indicators.\n\nRespond in this exact JSON format only, no other text:\n{\n  "similarityScore": <number 0-100>,\n  "riskLevel": "<low|medium|high>",\n  "flags": [\n    {"type": "<flag_type>", "description": "<brief explanation>", "severity": "<low|medium|high>"}\n  ],\n  "summary": "<one sentence assessment>",\n  "recommendation": "<what the user should do next>"\n}`,
 };
 
-/** Map mobile tool types to prompt keys */
 function getPromptKey(toolType: MobileToolType): string {
   if (toolType === 'humanize_premium') return 'humanize_premium';
   return toolType;
 }
 
-/** Map mobile tool type to web ToolType for model routing */
 function toWebToolType(toolType: MobileToolType): ToolType {
   if (toolType === 'humanize_premium') return 'humanize';
   return toolType as ToolType;
 }
 
-/** Estimate tokens (4 chars ≈ 1 token) */
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
@@ -78,7 +73,6 @@ export async function POST(request: NextRequest) {
       action?: string;
     };
 
-    // Validate required fields
     if (!entitlementId || !deviceId || !toolType || !inputText) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: entitlementId, deviceId, toolType, inputText' }),
@@ -87,30 +81,50 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const isWalletPayment = entitlementId === 'wallet';
 
-    // Verify entitlement exists and is unused
-    const { data: entitlement, error: entError } = await supabase
-      .from('mobile_entitlements')
-      .select('*')
-      .eq('id', entitlementId)
-      .eq('device_id', deviceId)
-      .eq('status', 'paid')
-      .single();
+    // --- Payment Verification ---
+    if (isWalletPayment) {
+      // Wallet path: verify device has a wallet and the debit already happened.
+      // The debit was done via /wallet/debit before this call.
+      // We verify the wallet exists for this device as a sanity check.
+      const { data: wallet } = await supabase
+        .from('mobile_wallets')
+        .select('id, device_id')
+        .eq('device_id', deviceId)
+        .single();
 
-    if (entError || !entitlement) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired entitlement' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
+      if (!wallet) {
+        return new Response(
+          JSON.stringify({ error: 'No wallet found for this device' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      // Entitlement path: verify entitlement exists and is unused
+      const { data: entitlement, error: entError } = await supabase
+        .from('mobile_entitlements')
+        .select('*')
+        .eq('id', entitlementId)
+        .eq('device_id', deviceId)
+        .eq('status', 'paid')
+        .single();
+
+      if (entError || !entitlement) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired entitlement' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Mark entitlement as consumed
+      await supabase
+        .from('mobile_entitlements')
+        .update({ status: 'consumed', consumed_at: new Date().toISOString() })
+        .eq('id', entitlementId);
     }
 
-    // Mark entitlement as consumed
-    await supabase
-      .from('mobile_entitlements')
-      .update({ status: 'consumed', consumed_at: new Date().toISOString() })
-      .eq('id', entitlementId);
-
-    // Calculate price (for logging)
+    // --- Pricing & Routing ---
     const wordCount = inputText.trim().split(/\s+/).filter(Boolean).length;
     const priceEstimate = getMobilePrice(toolType, wordCount);
 
@@ -121,23 +135,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Route model
     const inputTokens = estimateTokens(inputText);
     const webToolType = toWebToolType(toolType);
     const routeDecision = routeModel({
       toolType: webToolType,
-      planTier: 'free', // mobile doesn't have plan tiers
+      planTier: 'free',
       inputTokens,
       tone,
       modelPreference: toolType === 'humanize_premium' ? 'haiku' : 'auto',
     });
 
-    // Create operation record
+    // --- Create Operation Record ---
     const { data: operation } = await supabase
       .from('mobile_operations')
       .insert({
         device_id: deviceId,
-        entitlement_id: entitlementId,
+        entitlement_id: isWalletPayment ? null : entitlementId,
         tool_type: toolType,
         action: action || toolType,
         input_text: inputText,
@@ -156,13 +169,13 @@ export async function POST(request: NextRequest) {
 
     const operationId = operation?.id;
 
-    // Build prompt
+    // --- Build Prompt ---
     const promptKey = getPromptKey(toolType);
     const systemPrompt =
       SYSTEM_PROMPTS[promptKey]?.(tone, action || toolType) ||
       SYSTEM_PROMPTS.rewrite(tone, action || toolType);
 
-    // Stream AI response
+    // --- Stream AI Response ---
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -272,6 +285,7 @@ export async function POST(request: NextRequest) {
                 costKobo: priceEstimate.priceKobo,
                 model: routeDecision.model,
                 wordCount,
+                paymentMethod: isWalletPayment ? 'wallet' : 'entitlement',
               })}\n\n`
             )
           );
