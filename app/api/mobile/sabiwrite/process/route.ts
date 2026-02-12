@@ -25,16 +25,19 @@ import { type ToneType, type ToolType } from '@/lib/sabiwrite/types';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-/** Same system prompts as web process route */
+/** Max tokens for AI output — 16384 supports ~12k words of output */
+const MAX_OUTPUT_TOKENS = 16384;
+
+/** Same system prompts as web process route — strict: no preamble, no explanation */
 const SYSTEM_PROMPTS: Record<string, (tone: string, action: string) => string> = {
-  rewrite: (tone) => `You are a professional writing assistant. Rewrite the following text in a ${tone} tone. Maintain the original meaning but improve clarity and flow. Output only plain text - no markdown, no bold, no asterisks, no special formatting. Use regular dashes (-) not em-dashes (—). Only output the rewritten text, no explanations.`,
-  shorten: (tone) => `You are a professional editor. Shorten the following text significantly while keeping the key points. Use a ${tone} tone. Output only plain text - no markdown, no bold, no asterisks. Use regular dashes (-) not em-dashes (—). Only output the shortened text, no explanations.`,
-  expand: (tone) => `You are a professional writer. Expand the following text with more detail and examples. Use a ${tone} tone. Output only plain text - no markdown, no bold, no asterisks. Use regular dashes (-) not em-dashes (—). Only output the expanded text, no explanations.`,
-  simplify: (tone) => `You are a professional editor. Simplify the following text so it's easier to understand. Use simple words and shorter sentences. Use a ${tone} tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). Only output the simplified text, no explanations.`,
-  clarity: (tone) => `You are a professional editor. Improve the clarity of the following text. Fix any confusing sentences, improve structure, and make the message clearer. Use a ${tone} tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). Only output the improved text, no explanations.`,
-  tone_change: (tone) => `You are a professional writer. Rewrite the following text in a ${tone} tone. Keep the meaning but change the style to match the requested tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). Only output the rewritten text, no explanations.`,
+  rewrite: (tone) => `You are a professional writing assistant. Rewrite the following text in a ${tone} tone. Maintain the original meaning but improve clarity and flow. Output only plain text - no markdown, no bold, no asterisks, no special formatting. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the rewritten text. Do NOT include any introduction, preamble, explanation, or meta-commentary like "Here is the rewritten text:" - just output the result directly.`,
+  shorten: (tone) => `You are a professional editor. Shorten the following text significantly while keeping the key points. Use a ${tone} tone. Output only plain text - no markdown, no bold, no asterisks. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the shortened text. Do NOT include any introduction, preamble, explanation, or meta-commentary - just output the result directly.`,
+  expand: (tone) => `You are a professional writer. Expand the following text with more detail and examples. Use a ${tone} tone. Output only plain text - no markdown, no bold, no asterisks. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the expanded text. Do NOT include any introduction, preamble, explanation, or meta-commentary - just output the result directly.`,
+  simplify: (tone) => `You are a professional editor. Simplify the following text so it's easier to understand. Use simple words and shorter sentences. Use a ${tone} tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the simplified text. Do NOT include any introduction, preamble, explanation, or meta-commentary - just output the result directly.`,
+  clarity: (tone) => `You are a professional editor. Improve the clarity of the following text. Fix any confusing sentences, improve structure, and make the message clearer. Use a ${tone} tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the improved text. Do NOT include any introduction, preamble, explanation, or meta-commentary - just output the result directly.`,
+  tone_change: (tone) => `You are a professional writer. Rewrite the following text in a ${tone} tone. Keep the meaning but change the style to match the requested tone. Output only plain text - no markdown formatting. Use regular dashes (-) not em-dashes (—). IMPORTANT: Output ONLY the rewritten text. Do NOT include any introduction, preamble, explanation, or meta-commentary - just output the result directly.`,
   detection: () => `You are an AI content detection expert. Analyze the following text and determine the probability it was written by AI.\n\nRespond in this exact JSON format only, no other text:\n{\n  "score": <number 0-100>,\n  "confidence": "<low|medium|high>",\n  "signals": [\n    {"type": "<signal_type>", "description": "<brief explanation>"}\n  ],\n  "summary": "<one sentence summary>"\n}\n\nScoring guide:\n- 0-30: Likely human-written\n- 31-60: Uncertain\n- 61-100: Likely AI-generated`,
-  humanize_premium: (tone) => `You are an expert editor who transforms AI-generated text into natural, human-sounding writing.\n\nTransform the following text to sound more human and natural while preserving the core meaning. Apply these techniques:\n- Add natural sentence variation (mix short and long)\n- Include subtle imperfections humans make\n- Use more conversational transitions\n- Add personal touches and voice\n- Vary paragraph lengths\n- Use contractions where natural\n- Replace generic phrases with specific ones\n${tone !== 'neutral' ? `- Maintain a ${tone} tone throughout` : ''}\n\nOutput only plain text - no markdown, no bold, no asterisks. Only output the humanized text.`,
+  humanize_premium: (tone) => `You are an expert editor who transforms AI-generated text into natural, human-sounding writing. Your output must be the SAME LENGTH or LONGER than the input - do not shorten or summarize.\n\nTransform the following text to sound more human and natural while preserving ALL the content and meaning. Apply these techniques:\n- Add natural sentence variation (mix short and long)\n- Include subtle imperfections humans make\n- Use more conversational transitions\n- Add personal touches and voice\n- Vary paragraph lengths\n- Use contractions where natural\n- Replace generic phrases with specific ones\n${tone !== 'neutral' ? `- Maintain a ${tone} tone throughout` : ''}\n\nCRITICAL RULES:\n1. Output ONLY the humanized text - no introduction, no preamble, no "Here is the text" or similar\n2. Do NOT shorten or summarize - preserve ALL content from the original\n3. No markdown, no bold, no asterisks - plain text only\n4. Start directly with the transformed content`,
   plagiarism: () => `You are a plagiarism detection expert. Analyze the following text for potential plagiarism indicators.\n\nRespond in this exact JSON format only, no other text:\n{\n  "similarityScore": <number 0-100>,\n  "riskLevel": "<low|medium|high>",\n  "flags": [\n    {"type": "<flag_type>", "description": "<brief explanation>", "severity": "<low|medium|high>"}\n  ],\n  "summary": "<one sentence assessment>",\n  "recommendation": "<what the user should do next>"\n}`,
 };
 
@@ -86,8 +89,6 @@ export async function POST(request: NextRequest) {
     // --- Payment Verification ---
     if (isWalletPayment) {
       // Wallet path: verify device has a wallet and the debit already happened.
-      // The debit was done via /wallet/debit before this call.
-      // We verify the wallet exists for this device as a sanity check.
       const { data: wallet } = await supabase
         .from('mobile_wallets')
         .select('id, device_id')
@@ -195,7 +196,7 @@ export async function POST(request: NextRequest) {
                   { role: 'user', content: inputText },
                 ],
                 stream: true,
-                max_tokens: 4096,
+                max_tokens: MAX_OUTPUT_TOKENS,
               }),
             });
 
@@ -232,7 +233,7 @@ export async function POST(request: NextRequest) {
               },
               body: JSON.stringify({
                 model: routeDecision.model,
-                max_tokens: 4096,
+                max_tokens: MAX_OUTPUT_TOKENS,
                 stream: true,
                 messages: [
                   { role: 'user', content: `${systemPrompt}\n\nText to process:\n${inputText}` },
