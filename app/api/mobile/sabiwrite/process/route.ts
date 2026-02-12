@@ -193,10 +193,15 @@ export async function POST(request: NextRequest) {
             }),
           });
 
-          const reader = response.body?.getReader();
-          const decoder = new TextDecoder();
+          console.log('[mobile/process] Anthropic status:', response.status, 'hasBody:', !!response.body);
 
-          if (reader) {
+          if (!response.ok) {
+            const errBody = await response.text();
+            console.error('[mobile/process] Anthropic error:', errBody);
+          } else if (response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
             while (true) {
               const { done, value } = await reader.read();
               if (done) break;
@@ -213,6 +218,8 @@ export async function POST(request: NextRequest) {
                 } catch {}
               }
             }
+          } else {
+            console.error('[mobile/process] No response body - falling back to non-stream');
           }
 
           // Update operation as completed
