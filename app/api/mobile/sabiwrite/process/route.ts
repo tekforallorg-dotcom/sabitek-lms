@@ -18,7 +18,6 @@
  */
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { routeModel } from '@/lib/sabiwrite/model-router';
 import { getMobilePrice, type MobileToolType } from '@/lib/sabiwrite/mobile-pricing';
 import { type ToneType, type ToolType } from '@/lib/sabiwrite/types';
 
@@ -46,10 +45,6 @@ function getPromptKey(toolType: MobileToolType): string {
   return toolType;
 }
 
-function toWebToolType(toolType: MobileToolType): ToolType {
-  if (toolType === 'humanize_premium') return 'humanize';
-  return toolType as ToolType;
-}
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -180,84 +175,42 @@ export async function POST(request: NextRequest) {
         try {
           let fullOutput = '';
 
-          if (routeDecision.provider === 'deepseek') {
-            const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-              },
-              body: JSON.stringify({
-                model: routeDecision.model,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: inputText },
-                ],
-                stream: true,
-                max_tokens: MAX_OUTPUT_TOKENS,
-              }),
-            });
+  // Stream from Claude Haiku
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': process.env.ANTHROPIC_API_KEY!,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: routeDecision.model,
+              max_tokens: MAX_OUTPUT_TOKENS,
+              stream: true,
+              messages: [
+                { role: 'user', content: `${systemPrompt}\n\nText to process:\n${inputText}` },
+              ],
+            }),
+          });
 
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
+          const reader = response.body?.getReader();
+          const decoder = new TextDecoder();
 
-            if (reader) {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                for (const line of chunk.split('\n')) {
-                  const trimmed = line.trim();
-                  if (!trimmed || trimmed === 'data: [DONE]' || !trimmed.startsWith('data: ')) continue;
-                  try {
-                    const json = JSON.parse(trimmed.slice(6));
-                    const content = json.choices?.[0]?.delta?.content;
-                    if (content) {
-                      fullOutput += content;
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-                    }
-                  } catch {}
-                }
-              }
-            }
-          } else {
-            // Anthropic Claude
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.ANTHROPIC_API_KEY!,
-                'anthropic-version': '2023-06-01',
-              },
-              body: JSON.stringify({
-                model: routeDecision.model,
-                max_tokens: MAX_OUTPUT_TOKENS,
-                stream: true,
-                messages: [
-                  { role: 'user', content: `${systemPrompt}\n\nText to process:\n${inputText}` },
-                ],
-              }),
-            });
-
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
-
-            if (reader) {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                for (const line of chunk.split('\n')) {
-                  const trimmed = line.trim();
-                  if (!trimmed || !trimmed.startsWith('data: ')) continue;
-                  try {
-                    const json = JSON.parse(trimmed.slice(6));
-                    if (json.type === 'content_block_delta' && json.delta?.text) {
-                      fullOutput += json.delta.text;
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: json.delta.text })}\n\n`));
-                    }
-                  } catch {}
-                }
+          if (reader) {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              const chunk = decoder.decode(value, { stream: true });
+              for (const line of chunk.split('\n')) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith('data: ')) continue;
+                try {
+                  const json = JSON.parse(trimmed.slice(6));
+                  if (json.type === 'content_block_delta' && json.delta?.text) {
+                    fullOutput += json.delta.text;
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: json.delta.text })}\n\n`));
+                  }
+                } catch {}
               }
             }
           }
