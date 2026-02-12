@@ -137,14 +137,12 @@ export async function POST(request: NextRequest) {
     }
 
     const inputTokens = estimateTokens(inputText);
-    const webToolType = toWebToolType(toolType);
-    const routeDecision = routeModel({
-      toolType: webToolType,
-      planTier: 'free',
-      inputTokens,
-      tone,
-      modelPreference: toolType === 'humanize_premium' ? 'haiku' : 'auto',
-    });
+    // Mobile always uses Claude Haiku — skip model router
+    const routeDecision = {
+      provider: 'anthropic' as const,
+      model: 'claude-3-haiku-20240307',
+      reason: 'mobile_always_haiku',
+    };
 
     // --- Create Operation Record ---
     const { data: operation } = await supabase
