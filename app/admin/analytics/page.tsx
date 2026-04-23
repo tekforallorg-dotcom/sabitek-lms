@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
                       borderRadius: '12px',
                       boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                     }}
-                    labelFormatter={(date: string) => format(new Date(date), 'MMM d, yyyy')}
+                    labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
                   <Legend />
                   <Area 
@@ -481,7 +481,7 @@ export default function AnalyticsPage() {
                       borderRadius: '12px',
                       boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                     }}
-                    labelFormatter={(date: string) => format(new Date(date), 'MMM d, yyyy')}
+                    labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
                   <Legend />
                   <Area 
@@ -530,7 +530,7 @@ export default function AnalyticsPage() {
                       borderRadius: '12px',
                       boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                     }}
-                    labelFormatter={(date: string) => format(new Date(date), 'MMM d, yyyy')}
+                    labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
                   <Bar 
                     dataKey="count" 

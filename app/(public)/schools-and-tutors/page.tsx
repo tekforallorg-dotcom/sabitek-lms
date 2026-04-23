@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
+import {
   Users,
   Sparkles,
   Award,
@@ -49,73 +48,26 @@ const scaleIn = {
 };
 
 export default function SchoolsAndTutorsPage() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    organisation: '',
-    role: '',
-    country: '',
-    type: '',
-    learnerCount: '',
-    description: ''
-  });
-
-  const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormState('loading');
-
-    try {
-      const response = await fetch('/api/contact/schools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setFormState('success');
-        setFormData({
-          fullName: '',
-          email: '',
-          organisation: '',
-          role: '',
-          country: '',
-          type: '',
-          learnerCount: '',
-          description: ''
-        });
-      } else {
-        setFormState('error');
-      }
-    } catch (error) {
-      setFormState('error');
-    }
-  };
-
   return (
     <main className="min-h-screen bg-white overflow-hidden">
       {/* ========================================== */}
       {/* HERO SECTION */}
       {/* ========================================== */}
       <section className="relative pt-8 pb-12 sm:pt-12 sm:pb-16 overflow-hidden">
-        {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-red-50/80 via-white to-white" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-red-100/40 to-transparent rounded-full blur-3xl opacity-60" />
-        
-        {/* Floating orbs */}
-        <motion.div 
+
+        <motion.div
           className="absolute top-20 right-[20%] w-24 h-24 rounded-full bg-red-200/25 blur-2xl"
           animate={{ y: [0, -10, 0], opacity: [0.25, 0.4, 0.25] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-10 left-[15%] w-32 h-32 rounded-full bg-rose-200/20 blur-2xl"
           animate={{ y: [0, 15, 0], opacity: [0.2, 0.35, 0.2] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        {/* Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4">
@@ -128,27 +80,27 @@ export default function SchoolsAndTutorsPage() {
               <motion.div variants={fadeInUp} className="mb-4">
                 <span className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-red-100 text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm">
                   <Building2 className="w-3.5 h-3.5" />
-                  For Institutions & Educators
+                  For Institutions &amp; Educators
                 </span>
               </motion.div>
 
-              <motion.h1 
+              <motion.h1
                 variants={fadeInUp}
                 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight"
               >
-                Sabitek for Schools and{' '}
+                Sabitek for Institutions,{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
-                  Training Providers
+                  Training Centers, and Educators
                 </span>
               </motion.h1>
 
-              <motion.p 
+              <motion.p
                 variants={fadeInUp}
                 className="text-base text-gray-600 mb-6 leading-relaxed"
               >
-                Deliver structured learning with clear progress and proof of completion. 
-                Programs can be run for students, beneficiaries, or staff, with visibility 
-                into participation, progress, and outcomes.
+                Deliver structured learning with clear progress and proof of completion.
+                Schools, NGOs, government agencies, training centers, and verified instructors
+                use Sabitek to run programs with full visibility into participation and outcomes.
               </motion.p>
 
               <motion.div variants={fadeInUp} className="space-y-2 mb-6">
@@ -165,15 +117,15 @@ export default function SchoolsAndTutorsPage() {
                 ))}
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-3"
               >
                 <a
-                  href="#contact"
+                  href="/request-access"
                   className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all duration-300 hover:-translate-y-0.5"
                 >
-                  Talk to our team
+                  Get Started
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
                 <a
@@ -185,7 +137,6 @@ export default function SchoolsAndTutorsPage() {
               </motion.div>
             </motion.div>
 
-            {/* Stats Card */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -242,39 +193,39 @@ export default function SchoolsAndTutorsPage() {
       {/* ========================================== */}
       <section className="py-10 sm:py-14 bg-white">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.span 
+            <motion.span
               variants={fadeInUp}
               className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Why Sabitek
             </motion.span>
-            <motion.h2 
+            <motion.h2
               variants={fadeInUp}
               className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
             >
-              Why schools and training providers{' '}
+              Why institutions and training providers{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
                 choose Sabitek
               </span>
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={fadeInUp}
               className="text-sm text-gray-600 max-w-2xl mx-auto"
             >
-              Chosen by organisations that need learning delivery to be clear, manageable, 
-              and accountable, without building or maintaining their own systems.
+              Chosen by schools, NGOs, government programs, and training centers that need
+              learning delivery to be clear, manageable, and accountable.
             </motion.p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid md:grid-cols-3 gap-4"
             initial="hidden"
             whileInView="visible"
@@ -304,7 +255,7 @@ export default function SchoolsAndTutorsPage() {
                 shadow: 'shadow-green-500/15'
               },
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 variants={scaleIn}
                 whileHover={{ y: -4 }}
@@ -329,21 +280,21 @@ export default function SchoolsAndTutorsPage() {
       {/* ========================================== */}
       <section id="features" className="py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.span 
+            <motion.span
               variants={fadeInUp}
               className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
             >
               <ClipboardList className="w-3.5 h-3.5" />
               Features
             </motion.span>
-            <motion.h2 
+            <motion.h2
               variants={fadeInUp}
               className="text-2xl sm:text-3xl font-bold text-gray-900"
             >
@@ -351,7 +302,7 @@ export default function SchoolsAndTutorsPage() {
             </motion.h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
             initial="hidden"
             whileInView="visible"
@@ -369,7 +320,7 @@ export default function SchoolsAndTutorsPage() {
               { icon: LineChart, label: 'Reports and analytics', color: 'text-indigo-500 bg-indigo-50' },
               { icon: Globe, label: 'No technical overhead', color: 'text-teal-500 bg-teal-50' },
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 variants={scaleIn}
                 className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
@@ -396,25 +347,25 @@ export default function SchoolsAndTutorsPage() {
               viewport={{ once: true }}
               variants={staggerContainer}
             >
-              <motion.span 
+              <motion.span
                 variants={fadeInUp}
                 className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
               >
                 <Building2 className="w-3.5 h-3.5" />
                 For Institutions
               </motion.span>
-              <motion.h2 
+              <motion.h2
                 variants={fadeInUp}
                 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
               >
-                For schools, NGOs, and organisations
+                For schools, NGOs, government, and organizations
               </motion.h2>
-              
-              <motion.p 
+
+              <motion.p
                 variants={fadeInUp}
                 className="text-sm text-gray-600 leading-relaxed mb-5"
               >
-                Sabitek supports institutions delivering learning at scale, whether for 
+                Sabitek supports institutions delivering learning at scale, whether for
                 students, beneficiaries, or staff.
               </motion.p>
 
@@ -434,7 +385,7 @@ export default function SchoolsAndTutorsPage() {
                 ))}
               </motion.div>
 
-              <motion.p 
+              <motion.p
                 variants={fadeInUp}
                 className="text-xs text-gray-500 italic"
               >
@@ -442,7 +393,7 @@ export default function SchoolsAndTutorsPage() {
               </motion.p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="space-y-3"
               initial="hidden"
               whileInView="visible"
@@ -454,7 +405,7 @@ export default function SchoolsAndTutorsPage() {
                 { icon: BarChart3, title: 'Clear Analytics', desc: 'Track enrolment, completion rates, and performance', color: 'border-blue-500 from-blue-50' },
                 { icon: Clock, title: 'Time Saved', desc: 'We handle infrastructure so your team focuses on teaching', color: 'border-green-500 from-green-50' },
               ].map((item, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   variants={scaleIn}
                   className={`bg-gradient-to-r ${item.color} to-transparent p-4 rounded-xl border-l-4 ${item.color.split(' ')[0]}`}
@@ -478,27 +429,27 @@ export default function SchoolsAndTutorsPage() {
       {/* ========================================== */}
       <section className="py-10 sm:py-14 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.span 
+            <motion.span
               variants={fadeInUp}
               className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
             >
               <GraduationCap className="w-3.5 h-3.5" />
               For Educators
             </motion.span>
-            <motion.h2 
+            <motion.h2
               variants={fadeInUp}
               className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
             >
-              For tutors, trainers, and academies
+              For verified instructors, trainers, and academies
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={fadeInUp}
               className="text-sm text-gray-600 max-w-xl mx-auto"
             >
@@ -506,7 +457,7 @@ export default function SchoolsAndTutorsPage() {
             </motion.p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
             initial="hidden"
             whileInView="visible"
@@ -519,7 +470,7 @@ export default function SchoolsAndTutorsPage() {
               { icon: Play, title: 'Deliver', desc: 'Built-in practice and support', gradient: 'from-green-500 to-emerald-500' },
               { icon: Award, title: 'Certify', desc: 'Verifiable certificates', gradient: 'from-purple-500 to-violet-500' },
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 variants={scaleIn}
                 whileHover={{ y: -4 }}
@@ -541,21 +492,21 @@ export default function SchoolsAndTutorsPage() {
       {/* ========================================== */}
       <section className="py-10 sm:py-14 bg-white">
         <div className="max-w-5xl mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.span 
+            <motion.span
               variants={fadeInUp}
               className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
             >
               <Heart className="w-3.5 h-3.5" />
               Responsible Access
             </motion.span>
-            <motion.h2 
+            <motion.h2
               variants={fadeInUp}
               className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
             >
@@ -563,7 +514,7 @@ export default function SchoolsAndTutorsPage() {
             </motion.h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid md:grid-cols-3 gap-4"
             initial="hidden"
             whileInView="visible"
@@ -575,7 +526,7 @@ export default function SchoolsAndTutorsPage() {
               { icon: Users, title: 'Community partnerships', desc: 'Partnerships with community programmes help extend reach', color: 'bg-blue-100 text-blue-600' },
               { icon: GraduationCap, title: 'Supports educators', desc: 'Technology designed to support educators, not replace them', color: 'bg-green-100 text-green-600' },
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 variants={scaleIn}
                 className="bg-gray-50 rounded-xl p-5 border border-gray-100 text-center"
@@ -596,21 +547,21 @@ export default function SchoolsAndTutorsPage() {
       {/* ========================================== */}
       <section className="py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-4xl mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <motion.span 
+            <motion.span
               variants={fadeInUp}
               className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
             >
               <Zap className="w-3.5 h-3.5" />
               Getting Started
             </motion.span>
-            <motion.h2 
+            <motion.h2
               variants={fadeInUp}
               className="text-2xl sm:text-3xl font-bold text-gray-900"
             >
@@ -618,7 +569,7 @@ export default function SchoolsAndTutorsPage() {
             </motion.h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid md:grid-cols-3 gap-6 mb-6"
             initial="hidden"
             whileInView="visible"
@@ -630,7 +581,7 @@ export default function SchoolsAndTutorsPage() {
               { step: '2', icon: Building2, title: 'Set Up Your Program', desc: 'Courses organised with the right tools for your needs', color: 'bg-blue-100 text-blue-600' },
               { step: '3', icon: TrendingUp, title: 'Launch and Improve', desc: 'Invite learners, monitor progress, refine over time', color: 'bg-green-100 text-green-600' },
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 variants={scaleIn}
                 className="text-center"
@@ -649,7 +600,7 @@ export default function SchoolsAndTutorsPage() {
             ))}
           </motion.div>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -661,210 +612,54 @@ export default function SchoolsAndTutorsPage() {
       </section>
 
       {/* ========================================== */}
-      {/* CONTACT FORM */}
+      {/* CTA SECTION */}
       {/* ========================================== */}
       <section id="contact" className="py-10 sm:py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.h2
+              variants={fadeInUp}
+              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3"
             >
-              <motion.h2 
-                variants={fadeInUp}
-                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
+              Ready to get started?
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="text-sm text-gray-600 mb-6 max-w-lg mx-auto"
+            >
+              Apply for a Sabitek workspace for your institution or training program.
+              We review applications within 2-5 working days.
+            </motion.p>
+            <motion.div variants={fadeInUp}>
+              <a
+                href="/request-access"
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all duration-300 hover:-translate-y-0.5"
               >
-                Explore Sabitek for your school or training program
-              </motion.h2>
-              
-              <motion.p 
-                variants={fadeInUp}
-                className="text-sm text-gray-600 leading-relaxed mb-4"
-              >
-                Share a few details about your organisation or training goals, and we'll 
-                respond with options that fit your context.
-              </motion.p>
-
-              <motion.p 
-                variants={fadeInUp}
-                className="text-sm text-gray-600 leading-relaxed mb-5"
-              >
-                No complex sales process, just a conversation about whether Sabitek is 
-                the right fit.
-              </motion.p>
-
-              <motion.div 
-                variants={fadeInUp}
-                className="p-4 bg-blue-50 rounded-xl border border-blue-100"
-              >
-                <p className="text-xs text-blue-700 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  We typically respond within a few working days
-                </p>
-              </motion.div>
+                Get Started
+                <ArrowRight className="w-4 h-4" />
+              </a>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="bg-gray-50 rounded-2xl p-6 border border-gray-200 shadow-sm"
-            >
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-700 mb-1">
-                      Full name
-                    </label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      required
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">
-                      Work email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="organisation" className="block text-xs font-semibold text-gray-700 mb-1">
-                      Organisation name
-                    </label>
-                    <input
-                      type="text"
-                      id="organisation"
-                      required
-                      value={formData.organisation}
-                      onChange={(e) => setFormData({ ...formData, organisation: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="role" className="block text-xs font-semibold text-gray-700 mb-1">
-                      Your role
-                    </label>
-                    <input
-                      type="text"
-                      id="role"
-                      required
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="country" className="block text-xs font-semibold text-gray-700 mb-1">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      id="country"
-                      required
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="type" className="block text-xs font-semibold text-gray-700 mb-1">
-                      I am a
-                    </label>
-                    <select
-                      id="type"
-                      required
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    >
-                      <option value="">Select type</option>
-                      <option value="school">School or College</option>
-                      <option value="ngo">NGO or Non-profit</option>
-                      <option value="company">Company or Training department</option>
-                      <option value="tutor">Independent tutor or trainer</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="learnerCount" className="block text-xs font-semibold text-gray-700 mb-1">
-                    Approximate number of learners
-                  </label>
-                  <input
-                    type="text"
-                    id="learnerCount"
-                    value={formData.learnerCount}
-                    onChange={(e) => setFormData({ ...formData, learnerCount: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="description" className="block text-xs font-semibold text-gray-700 mb-1">
-                    What would you like to do with Sabitek?
-                  </label>
-                  <textarea
-                    id="description"
-                    required
-                    rows={3}
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="e.g. Run digital skills training for 200 students"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                </div>
-
-                {formState === 'success' && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Thank you! We'll get back to you soon.
-                    </p>
-                  </div>
-                )}
-
-                {formState === 'error' && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-800">
-                      Something went wrong. Please email us at impact@tekforall.org
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={formState === 'loading'}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-red-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {formState === 'loading' ? 'Sending...' : 'Send enquiry'}
-                </button>
-              </form>
+            <motion.div variants={fadeInUp} className="mt-6 flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                Free to apply
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Clock className="w-3.5 h-3.5 text-blue-500" />
+                2-5 day review
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                No commitment
+              </div>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -881,7 +676,7 @@ export default function SchoolsAndTutorsPage() {
 
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <p className="text-white/90 text-sm font-medium">
-            Sabitek — Structured learning for institutions and educators who need training to lead somewhere.
+            Sabitek - Learning infrastructure for institutions, training centers, and verified instructors across Africa.
           </p>
         </div>
       </section>

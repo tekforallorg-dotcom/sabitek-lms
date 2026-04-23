@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { formatNaira } from '@/lib/wallet'
+import { validateBody, extractBearerToken } from '@/lib/validations'
+import { topupSchema, WALLET_LIMITS } from '@/lib/validations/wallet'
+import { apiSuccess, ApiErrors } from '@/lib/api-response'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,12 +13,8 @@ const supabaseAdmin = createClient(
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'
 
-// Limits in kobo
-const MIN_TOPUP_KOBO = 10000      // ₦100
-const MAX_TOPUP_KOBO = 10000000   // ₦100,000
-
 // Preset amounts for quick selection (in kobo)
-export const TOPUP_PRESETS = [
+const TOPUP_PRESETS = [
   { kobo: 50000, label: '₦500' },
   { kobo: 100000, label: '₦1,000' },
   { kobo: 200000, label: '₦2,000' },
@@ -29,46 +28,28 @@ export const TOPUP_PRESETS = [
  */
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // 1. Authenticate user
+    const token = extractBearerToken(request.headers.get('authorization'))
+    if (!token) {
+      return ApiErrors.unauthorized()
     }
 
-    const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return ApiErrors.unauthorized()
     }
 
-    // Parse request body
+    // 2. Validate request body with Zod
     const body = await request.json()
-    const { amount_kobo, callback_url } = body
-
-    // Validate amount
-    if (!amount_kobo || typeof amount_kobo !== 'number') {
-      return NextResponse.json(
-        { error: 'Amount is required' }, 
-        { status: 400 }
-      )
+    const validation = validateBody(topupSchema, body)
+    
+    if (!validation.success) {
+      return validation.error
     }
+    
+    const { amount_kobo, callback_url } = validation.data
 
-    if (amount_kobo < MIN_TOPUP_KOBO) {
-      return NextResponse.json(
-        { error: `Minimum top-up amount is ${formatNaira(MIN_TOPUP_KOBO)}` }, 
-        { status: 400 }
-      )
-    }
-
-    if (amount_kobo > MAX_TOPUP_KOBO) {
-      return NextResponse.json(
-        { error: `Maximum top-up amount is ${formatNaira(MAX_TOPUP_KOBO)}` }, 
-        { status: 400 }
-      )
-    }
-
-    // Get user email
+    // 3. Get user email
     const { data: userProfile } = await supabaseAdmin
       .from('users')
       .select('email')
@@ -76,18 +57,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     const email = userProfile?.email || user.email
-
     if (!email) {
-      return NextResponse.json(
-        { error: 'User email not found' }, 
-        { status: 400 }
-      )
+      return ApiErrors.badRequest('User email not found')
     }
 
-    // Generate unique reference
+    // 4. Generate unique reference
     const reference = `sabitek_topup_${user.id.slice(0, 8)}_${Date.now()}`
 
-    // Create pending transaction record
+    // 5. Create pending transaction record
     const { error: txError } = await supabaseAdmin
       .from('wallet_transactions')
       .insert({
@@ -108,7 +85,7 @@ export async function POST(request: NextRequest) {
       // Continue anyway - we can reconcile later
     }
 
-    // Initialize Paystack payment
+    // 6. Initialize Paystack payment
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -151,13 +128,10 @@ export async function POST(request: NextRequest) {
         .update({ status: 'failed' })
         .eq('reference', reference)
 
-      return NextResponse.json(
-        { error: paystackData.message || 'Payment initialization failed' }, 
-        { status: 400 }
-      )
+      return ApiErrors.badRequest(paystackData.message || 'Payment initialization failed')
     }
 
-    return NextResponse.json({
+    return apiSuccess({
       authorization_url: paystackData.data.authorization_url,
       access_code: paystackData.data.access_code,
       reference: paystackData.data.reference,
@@ -165,10 +139,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Topup API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return ApiErrors.internal()
   }
 }
 
@@ -177,13 +148,13 @@ export async function POST(request: NextRequest) {
  * Get top-up presets and limits
  */
 export async function GET() {
-  return NextResponse.json({
+  return apiSuccess({
     presets: TOPUP_PRESETS,
     limits: {
-      min_kobo: MIN_TOPUP_KOBO,
-      max_kobo: MAX_TOPUP_KOBO,
-      min_formatted: formatNaira(MIN_TOPUP_KOBO),
-      max_formatted: formatNaira(MAX_TOPUP_KOBO),
+      min_kobo: WALLET_LIMITS.MIN_TOPUP_KOBO,
+      max_kobo: WALLET_LIMITS.MAX_TOPUP_KOBO,
+      min_formatted: formatNaira(WALLET_LIMITS.MIN_TOPUP_KOBO),
+      max_formatted: formatNaira(WALLET_LIMITS.MAX_TOPUP_KOBO),
     }
   })
 }

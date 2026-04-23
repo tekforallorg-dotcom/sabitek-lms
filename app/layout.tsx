@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import ConditionalLayout from '@/components/layout/ConditionalLayout'
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  display: 'swap',
-  fallback: ['system-ui', 'arial']
-})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -28,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen`}>
+      <body className="min-h-screen font-sans antialiased">
         <AuthProvider>
           <ConditionalLayout>
             {children}

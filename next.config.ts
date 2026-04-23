@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // Required for pdf-parse to work in API routes
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
 
+  // Turbopack config (Next.js 16 defaults to Turbopack)
+  turbopack: {},
   // Webpack config for PDF.js worker support
   webpack: (config) => {
     config.resolve.alias.canvas = false

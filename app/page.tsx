@@ -58,7 +58,7 @@ export default function HomePage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
-                School of the Free
+                For Institutions, Training Centers, and Verified Instructors
               </div>
               
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
@@ -69,9 +69,11 @@ export default function HomePage() {
                 {' '}Education
               </h1>
               
-              <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-lg mx-auto lg:mx-0">
-                Your personal AI classroom with structured courses, smart quizzes, 
-                career guidance, peer mentorship and certificates, all in one place.
+              <p className="text-sm sm:text-base text-gray-600 mb-3 max-w-lg mx-auto lg:mx-0">
+                Learning infrastructure for institutions. Structured courses, smart quizzes, credentials, and cohort tools in one place.
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500 mb-6 max-w-lg mx-auto lg:mx-0">
+                Powering schools, NGOs, government training programs, and verified training providers across Africa.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-6">
@@ -91,9 +93,9 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    <Link href="/auth/register">
+                    <Link href="/request-access">
                       <Button className="w-full sm:w-auto bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-5 text-sm font-semibold rounded-xl shadow-lg shadow-red-500/25 transition-all hover:shadow-xl hover:-translate-y-0.5">
-                        Get Started Free
+                        Get Started
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </Link>
@@ -388,15 +390,15 @@ export default function HomePage() {
             Ready to Start Learning?
           </h2>
           <p className="text-base sm:text-lg text-white/90 mb-6 max-w-xl mx-auto">
-            Join thousands advancing their skills with AI-powered education
+            Bring structured learning to your institution, training center, or program.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {!user && (
               <>
-                <Link href="/auth/register">
+                <Link href="/request-access">
                   <Button className="w-full sm:w-auto bg-white text-red-500 hover:bg-gray-100 px-8 py-5 text-base font-bold rounded-xl shadow-xl transition-all hover:shadow-2xl hover:-translate-y-0.5">
-                    Get Started Free
+                    Get Started
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
@@ -406,6 +408,11 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </>
+            )}
+            {!user && (
+              <p className="text-sm text-white/70 mt-4">
+                Individual learner? <Link href="/waitlist" className="text-white underline underline-offset-2 hover:text-white/90 font-medium">Join the waitlist</Link>
+              </p>
             )}
             {user && (
               <Link href="/courses">

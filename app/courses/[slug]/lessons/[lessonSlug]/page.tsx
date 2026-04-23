@@ -11,19 +11,21 @@ import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
 import SabiLoader from '@/components/ui/SabiLoader'
-import { 
-  Save, 
-  BookOpen, 
-  Clock, 
-  CheckCircle, 
-  PlayCircle, 
-  ChevronLeft, 
+import {
+  Save,
+  BookOpen,
+  Clock,
+  CheckCircle,
+  PlayCircle,
+  ChevronLeft,
   ChevronRight,
+  ChevronDown,
   FileText,
   Award,
   X,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Layers,
 } from 'lucide-react'
 
 interface Lesson {
@@ -39,6 +41,15 @@ interface Lesson {
   lesson_order: number
   duration_minutes?: number
   course_id: string
+  module_id?: string | null
+}
+
+interface Module {
+  id: string
+  course_id: string
+  title: string
+  description: string | null
+  order_index: number
 }
 
 interface Course {
@@ -67,7 +78,6 @@ interface Quiz {
   created_by: string
 }
 
-// Custom Modal Component (replaces alert/confirm)
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -88,27 +98,20 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
     info: <AlertCircle className="w-6 h-6 text-blue-500" />,
     success: <CheckCircle className="w-6 h-6 text-green-500" />,
     error: <X className="w-6 h-6 text-red-500" />,
-    warning: <AlertTriangle className="w-6 h-6 text-amber-500" />
+    warning: <AlertTriangle className="w-6 h-6 text-amber-500" />,
   }
 
   const bgMap = {
     info: 'from-blue-500 to-blue-600',
     success: 'from-green-500 to-green-600',
     error: 'from-red-500 to-red-600',
-    warning: 'from-amber-500 to-amber-600'
+    warning: 'from-amber-500 to-amber-600',
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        {/* Gradient header */}
         <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -117,13 +120,9 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
             <h3 className="text-lg font-bold text-white">{title}</h3>
           </div>
         </div>
-        
-        {/* Content */}
         <div className="p-5">
           <p className="text-gray-600 text-sm whitespace-pre-line">{message}</p>
         </div>
-        
-        {/* Actions */}
         <div className="px-5 pb-5 flex gap-3 justify-end">
           {actions ? (
             actions.map((action, i) => (
@@ -131,9 +130,10 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
                 key={i}
                 onClick={action.onClick}
                 variant={action.variant === 'secondary' ? 'outline' : 'default'}
-                className={action.variant === 'primary' 
-                  ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
-                  : ''
+                className={
+                  action.variant === 'primary'
+                    ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+                    : ''
                 }
                 size="sm"
               >
@@ -162,16 +162,19 @@ export default function LessonViewerPage() {
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [course, setCourse] = useState<Course | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
+  const [modules, setModules] = useState<Module[]>([])
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [isCompleted, setIsCompleted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
-  
+
   // Notes state
   const [notesContent, setNotesContent] = useState('')
   const [notesId, setNotesId] = useState<string | null>(null)
   const [savingNotes, setSavingNotes] = useState(false)
   const [notesSaved, setNotesSaved] = useState(false)
-  
+
   // Quiz state
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [showQuiz, setShowQuiz] = useState(false)
@@ -185,7 +188,6 @@ export default function LessonViewerPage() {
     totalQuestions: number
   } | null>(null)
 
-  // Modal state (replaces alert)
   const [modal, setModal] = useState<{
     isOpen: boolean
     title: string
@@ -196,27 +198,30 @@ export default function LessonViewerPage() {
     isOpen: false,
     title: '',
     message: '',
-    type: 'info'
+    type: 'info',
   })
 
-  const showModal = (title: string, message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info', actions?: ModalProps['actions']) => {
+  const showModal = (
+    title: string,
+    message: string,
+    type: 'info' | 'success' | 'error' | 'warning' = 'info',
+    actions?: ModalProps['actions']
+  ) => {
     setModal({ isOpen: true, title, message, type, actions })
   }
 
   const closeModal = () => {
-    setModal(prev => ({ ...prev, isOpen: false }))
+    setModal((prev) => ({ ...prev, isOpen: false }))
   }
 
   useEffect(() => {
     if (!authLoading && !user) {
-      console.log('No user found after auth loaded, redirecting to login')
       router.push('/auth/login')
     }
   }, [authLoading, user, router])
 
   useEffect(() => {
     if (user && !authLoading) {
-      console.log('User authenticated, fetching lesson data')
       fetchLessonData()
     }
   }, [user, authLoading, params.slug, params.lessonSlug])
@@ -226,13 +231,15 @@ export default function LessonViewerPage() {
 
     try {
       setLoading(true)
-      
+
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select(`
+        .select(
+          `
           *,
           instructor:users!courses_instructor_id_fkey(full_name)
-        `)
+        `
+        )
         .eq('slug', params.slug)
         .single()
 
@@ -245,19 +252,17 @@ export default function LessonViewerPage() {
       setCourse(courseData)
 
       const isInstructor = courseData.instructor_id === user.id
-      
+
       if (isInstructor) {
-        console.log('User is instructor, granting access')
         setEnrollmentStatus(true)
       } else {
-        const { data: enrollment, error: enrollError } = await supabase
+        const { data: enrollment } = await supabase
           .from('course_enrollments')
           .select('id')
           .eq('user_id', user.id)
           .eq('course_id', courseData.id)
           .single()
 
-        console.log('Enrollment check:', enrollment, enrollError)
         setEnrollmentStatus(!!enrollment)
       }
 
@@ -271,25 +276,35 @@ export default function LessonViewerPage() {
         console.error('Lessons fetch error:', lessonsError)
         return
       }
-      
-      const mappedLessons: Lesson[] = (lessonsData || []).map(lesson => ({
-        id: lesson.id,
-        title: lesson.title,
-        slug: lesson.slug,
-        content: lesson.content || '',
-        content_type: lesson.content_type || 'text',
-        youtube_url: lesson.youtube_url,
-        pdf_url: lesson.pdf_url,
-        powerpoint_url: lesson.powerpoint_url,
-        video_url: lesson.video_url,
-        lesson_order: lesson.lesson_order,
-        duration_minutes: lesson.duration_minutes,
-        course_id: lesson.course_id
+
+      const mappedLessons: Lesson[] = (lessonsData || []).map((l) => ({
+        id: l.id,
+        title: l.title,
+        slug: l.slug,
+        content: l.content || '',
+        content_type: l.content_type || 'text',
+        youtube_url: l.youtube_url,
+        pdf_url: l.pdf_url,
+        powerpoint_url: l.powerpoint_url,
+        video_url: l.video_url,
+        lesson_order: l.lesson_order,
+        duration_minutes: l.duration_minutes,
+        course_id: l.course_id,
+        module_id: l.module_id,
       }))
-      
+
       setLessons(mappedLessons)
 
-      const currentLesson = mappedLessons.find(l => l.slug === params.lessonSlug)
+      // Fetch modules for this course
+      const { data: modulesData } = await supabase
+        .from('modules')
+        .select('id, course_id, title, description, order_index')
+        .eq('course_id', courseData.id)
+        .order('order_index', { ascending: true })
+
+      setModules(modulesData || [])
+
+      const currentLesson = mappedLessons.find((l) => l.slug === params.lessonSlug)
       if (!currentLesson) {
         console.error('Lesson not found')
         router.push(`/courses/${params.slug}`)
@@ -297,91 +312,80 @@ export default function LessonViewerPage() {
       }
       setLesson(currentLesson)
 
-      const { data: progress } = await supabase
-        .from('user_progress')
-        .select('completed_at')
-        .eq('user_id', user.id)
-        .eq('lesson_id', currentLesson.id)
-        .maybeSingle()
+      // Expand the module containing the current lesson by default
+      if (currentLesson.module_id) {
+        setExpandedModules(new Set([currentLesson.module_id]))
+      } else if (modulesData && modulesData.length > 0) {
+        setExpandedModules(new Set([modulesData[0].id]))
+      }
 
-      setIsCompleted(!!progress?.completed_at)
-      
-      console.log('Fetching notes for lesson:', currentLesson.id, 'and user:', user.id)
-      
-      const { data: notesData, error: notesError } = await supabase
+      // Fetch completion status for all lessons in this course
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('lesson_id, completed_at')
+        .eq('user_id', user.id)
+        .eq('course_id', courseData.id)
+        .not('completed_at', 'is', null)
+
+      const completedSet = new Set((progressData || []).map((p) => p.lesson_id))
+      setCompletedLessonIds(completedSet)
+      setIsCompleted(completedSet.has(currentLesson.id))
+
+      // Fetch notes
+      const { data: notesData } = await supabase
         .from('lesson_notes')
         .select('*')
         .eq('lesson_id', currentLesson.id)
         .eq('user_id', user.id)
         .maybeSingle()
 
-      console.log('Notes fetch result:', notesData, 'Error:', notesError)
-      
       if (notesData) {
         const noteText = notesData.notes || notesData.content || notesData.note_content || ''
         setNotesContent(noteText)
         setNotesId(notesData.id)
-        console.log('Notes loaded successfully')
       } else {
-        console.log('No existing notes found for this lesson')
+        setNotesContent('')
+        setNotesId(null)
       }
-      
-      console.log('Fetching quiz for lesson ID:', currentLesson.id)
-      
-      const { data: quizData, error: quizError } = await supabase
+
+      // Fetch quiz
+      const { data: quizData } = await supabase
         .from('quizzes')
         .select('*')
         .eq('lesson_id', currentLesson.id)
         .maybeSingle()
-      
-      console.log('Raw quiz data from DB:', quizData)
-      console.log('Quiz fetch error:', quizError)
-      
+
       if (quizData) {
-        console.log('Quiz found, checking questions...')
-        console.log('Questions type:', typeof quizData.questions)
-        console.log('Questions value:', quizData.questions)
-        
         let parsedQuestions = quizData.questions
         if (typeof quizData.questions === 'string') {
           try {
             parsedQuestions = JSON.parse(quizData.questions)
-            console.log('Parsed questions:', parsedQuestions)
           } catch (e) {
             console.error('Failed to parse questions:', e)
             parsedQuestions = []
           }
         }
-        
+
         if (!Array.isArray(parsedQuestions)) {
-          console.log('Questions is not an array, converting...')
           parsedQuestions = []
         }
-        
-        const quizWithParsedQuestions = {
-          ...quizData,
-          questions: parsedQuestions
-        }
-        
-        console.log('Final quiz object:', quizWithParsedQuestions)
-        
+
         if (parsedQuestions.length > 0) {
-          setQuiz(quizWithParsedQuestions)
-          
+          setQuiz({ ...quizData, questions: parsedQuestions })
+
           const { data: attemptsData } = await supabase
             .from('quiz_attempts')
             .select('id')
             .eq('user_id', user.id)
             .eq('lesson_id', currentLesson.id)
-          
+
           setQuizAttempts(attemptsData?.length || 0)
         } else {
-          console.log('Quiz has no questions, not displaying')
+          setQuiz(null)
         }
       } else {
-        console.log('No quiz found for lesson ID:', currentLesson.id)
+        setQuiz(null)
       }
-      
     } catch (error) {
       console.error('Error fetching lesson data:', error)
     } finally {
@@ -390,40 +394,27 @@ export default function LessonViewerPage() {
   }
 
   const markAsComplete = async () => {
-    if (!lesson || !user) {
-      console.error('❌ Missing required data:', { lesson: !!lesson, user: !!user })
-      return
-    }
+    if (!lesson || !user) return
 
     try {
-      console.log('🔍 Attempting to mark complete:', {
-        user_id: user.id,
-        lesson_id: lesson.id,
-        course_id: course?.id,
-        timestamp: new Date().toISOString()
-      })
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_progress')
-        .upsert({
-          user_id: user.id,
-          lesson_id: lesson.id,
-          course_id: course?.id,
-          completed_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,lesson_id'
-        })
+        .upsert(
+          {
+            user_id: user.id,
+            lesson_id: lesson.id,
+            course_id: course?.id,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,lesson_id' }
+        )
         .select()
 
-      console.log('📊 Upsert response:', { data, error })
-
       if (error) {
-        console.error('❌ Database error:', error)
-        
         if (error.code === '42501' || error.message.includes('permission') || error.message.includes('policy')) {
           showModal(
             'Permission Error',
-            `You don't have permission to mark lessons as complete. This is a database security issue.\n\nError: ${error.message}\n\nPlease contact support or check your Supabase RLS policies.`,
+            `You don't have permission to mark lessons as complete.\n\nError: ${error.message}`,
             'warning'
           )
         } else {
@@ -432,147 +423,105 @@ export default function LessonViewerPage() {
         return
       }
 
-      console.log('✅ Progress saved successfully')
       setIsCompleted(true)
-      
-      const { data: completedLessons, error: progressError } = await supabase
+      setCompletedLessonIds((prev) => {
+        const next = new Set(prev)
+        next.add(lesson.id)
+        return next
+      })
+
+      const { data: completedLessons } = await supabase
         .from('user_progress')
         .select('id')
         .eq('user_id', user.id)
         .eq('course_id', course?.id)
         .not('completed_at', 'is', null)
 
-      if (progressError) {
-        console.error('Error fetching progress:', progressError)
-      }
+      const progress = Math.round(((completedLessons?.length || 0) / lessons.length) * 100)
 
-      const progress = Math.round((completedLessons?.length || 0) / lessons.length * 100)
-      
-      console.log('📈 Updating enrollment progress:', progress + '%')
-      
-      const { error: enrollError } = await supabase
+      await supabase
         .from('course_enrollments')
         .update({ progress_percentage: progress })
         .eq('user_id', user.id)
         .eq('course_id', course?.id)
-
-      if (enrollError) {
-        console.error('Error updating enrollment:', enrollError)
-      }
-      
-      console.log(`✅ Lesson marked complete - Course progress: ${progress}%`)
-      
     } catch (error) {
-      console.error('💥 Unexpected error:', error)
+      console.error('Unexpected error:', error)
       showModal('Error', `An unexpected error occurred: ${error}`, 'error')
     }
   }
 
   const saveNotes = async () => {
-    if (!lesson || !user || !notesContent.trim()) {
-      console.log('Missing required data:', { 
-        lesson: !!lesson, 
-        user: !!user, 
-        notesContent: notesContent.trim() 
-      })
-      return
-    }
-    
-    console.log('Starting save notes process...')
+    if (!lesson || !user || !notesContent.trim()) return
+
     setSavingNotes(true)
     setNotesSaved(false)
-    
+
     try {
-      const { data: existingNote, error: fetchError } = await supabase
+      const { data: existingNote } = await supabase
         .from('lesson_notes')
         .select('*')
         .eq('lesson_id', lesson.id)
         .eq('user_id', user.id)
         .maybeSingle()
-      
-      console.log('Existing note check:', { existingNote, fetchError })
-      
+
       if (existingNote) {
-        console.log('Updating existing note with ID:', existingNote.id)
-        
-        const updateData: any = {
-          updated_at: new Date().toISOString()
-        }
-        
-        if ('notes' in existingNote) {
-          updateData.notes = notesContent.trim()
-        } else if ('content' in existingNote) {
-          updateData.content = notesContent.trim()
-        } else if ('note_content' in existingNote) {
-          updateData.note_content = notesContent.trim()
-        } else {
-          updateData.content = notesContent.trim()
-        }
-        
-        const { data: updatedNote, error: updateError } = await supabase
+        const updateData: any = { updated_at: new Date().toISOString() }
+        if ('notes' in existingNote) updateData.notes = notesContent.trim()
+        else if ('content' in existingNote) updateData.content = notesContent.trim()
+        else if ('note_content' in existingNote) updateData.note_content = notesContent.trim()
+        else updateData.content = notesContent.trim()
+
+        const { error: updateError } = await supabase
           .from('lesson_notes')
           .update(updateData)
           .eq('id', existingNote.id)
           .eq('user_id', user.id)
-          .select()
-          .single()
-        
+
         if (updateError) {
-          console.error('Update failed:', updateError)
           showModal('Error', `Failed to update notes: ${updateError.message}`, 'error')
         } else {
-          console.log('Note updated successfully:', updatedNote)
           setNotesId(existingNote.id)
           setNotesSaved(true)
           setTimeout(() => setNotesSaved(false), 3000)
         }
       } else {
-        console.log('Creating new note...')
-        
         const noteData = {
           user_id: user.id,
           lesson_id: lesson.id,
           content: notesContent.trim(),
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         }
-        
-        console.log('Inserting note data:', noteData)
-        
+
         const { data: newNote, error: insertError } = await supabase
           .from('lesson_notes')
           .insert([noteData])
           .select()
           .single()
-        
+
         if (insertError) {
-          console.error('Insert failed with content column:', insertError)
-          
           const altNoteData = {
             user_id: user.id,
             lesson_id: lesson.id,
             notes: notesContent.trim(),
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }
-          
+
           const { data: altNewNote, error: altInsertError } = await supabase
             .from('lesson_notes')
             .insert([altNoteData])
             .select()
             .single()
-          
+
           if (altInsertError) {
-            console.error('Insert also failed with notes column:', altInsertError)
-            showModal('Error', 'Failed to create notes. Please check if the table structure is correct.', 'error')
+            showModal('Error', 'Failed to create notes. Please check the table structure.', 'error')
           } else {
-            console.log('Note created successfully with notes column:', altNewNote)
             setNotesId(altNewNote.id)
             setNotesSaved(true)
             setTimeout(() => setNotesSaved(false), 3000)
           }
         } else {
-          console.log('Note created successfully:', newNote)
           setNotesId(newNote.id)
           setNotesSaved(true)
           setTimeout(() => setNotesSaved(false), 3000)
@@ -587,15 +536,12 @@ export default function LessonViewerPage() {
   }
 
   const handleAnswerSelect = (questionId: string, answerIndex: number) => {
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [questionId]: answerIndex
-    }))
+    setSelectedAnswers((prev) => ({ ...prev, [questionId]: answerIndex }))
   }
 
   const submitQuiz = async () => {
     if (!quiz || !user || !lesson || !course) return
-    
+
     const answeredCount = Object.keys(selectedAnswers).length
     if (answeredCount < quiz.questions.length) {
       showModal(
@@ -605,65 +551,59 @@ export default function LessonViewerPage() {
       )
       return
     }
-    
+
     try {
       let correctCount = 0
       const answers = quiz.questions.map((question, index) => {
         const questionId = question.id || `q-${index}`
         const selectedAnswer = selectedAnswers[questionId]
         const isCorrect = selectedAnswer === question.correct_answer
-        
+
         if (isCorrect) correctCount++
-        
+
         return {
           question_id: questionId,
           selected_answer: selectedAnswer,
           correct_answer: question.correct_answer,
-          is_correct: isCorrect
+          is_correct: isCorrect,
         }
       })
-      
+
       const score = Math.round((correctCount / quiz.questions.length) * 100)
       const passed = score >= quiz.pass_percentage
-      
-      const attemptData = {
-        user_id: user.id,
-        lesson_id: lesson.id,
-        course_id: course.id,
-        score_percentage: score,
-        passed: passed,
-        answers: answers
-      }
-      
-      console.log('Submitting quiz attempt:', attemptData)
-      
-      const { data: attemptResult, error: attemptError } = await supabase
+
+      const { error: attemptError } = await supabase
         .from('quiz_attempts')
-        .insert([attemptData])
+        .insert([
+          {
+            user_id: user.id,
+            lesson_id: lesson.id,
+            course_id: course.id,
+            score_percentage: score,
+            passed,
+            answers,
+          },
+        ])
         .select()
         .single()
-      
+
       if (attemptError) {
-        console.error('Error saving quiz attempt:', attemptError)
         showModal('Error', `Failed to save quiz attempt: ${attemptError.message}`, 'error')
         return
       }
-      
-      console.log('Quiz attempt saved:', attemptResult)
-      
+
       setQuizResults({
         score,
         passed,
         correctAnswers: correctCount,
-        totalQuestions: quiz.questions.length
+        totalQuestions: quiz.questions.length,
       })
       setQuizSubmitted(true)
-      setQuizAttempts(prev => prev + 1)
-      
+      setQuizAttempts((prev) => prev + 1)
+
       if (passed && !isCompleted) {
         await markAsComplete()
       }
-      
     } catch (error) {
       console.error('Error submitting quiz:', error)
       showModal('Error', 'An error occurred while submitting the quiz. Please try again.', 'error')
@@ -681,6 +621,15 @@ export default function LessonViewerPage() {
     router.push(`/courses/${params.slug}/lessons/${nextLesson.slug}`)
   }
 
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules((prev) => {
+      const next = new Set(prev)
+      if (next.has(moduleId)) next.delete(moduleId)
+      else next.add(moduleId)
+      return next
+    })
+  }
+
   const getYouTubeEmbedUrl = useCallback((url: string) => {
     if (!url) return ''
     const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)?.[1]
@@ -695,10 +644,7 @@ export default function LessonViewerPage() {
         return (
           <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
             {lesson.youtube_url?.includes('<iframe') ? (
-              <div 
-                className="w-full h-full"
-                dangerouslySetInnerHTML={{ __html: lesson.youtube_url }}
-              />
+              <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: lesson.youtube_url }} />
             ) : (
               <iframe
                 key={lesson.id}
@@ -714,12 +660,7 @@ export default function LessonViewerPage() {
       case 'video':
         return (
           <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
-            <video
-              key={lesson.id}
-              src={lesson.video_url}
-              controls
-              className="absolute inset-0 w-full h-full"
-            >
+            <video key={lesson.id} src={lesson.video_url} controls className="absolute inset-0 w-full h-full">
               Your browser does not support the video tag.
             </video>
           </div>
@@ -766,9 +707,9 @@ export default function LessonViewerPage() {
       case 'powerpoint':
         return (
           <div className="w-full">
-            {lesson.powerpoint_url?.includes('docs.google.com/presentation') || 
-             lesson.powerpoint_url?.includes('onedrive.live.com') || 
-             lesson.powerpoint_url?.includes('office.com') ? (
+            {lesson.powerpoint_url?.includes('docs.google.com/presentation') ||
+            lesson.powerpoint_url?.includes('onedrive.live.com') ||
+            lesson.powerpoint_url?.includes('office.com') ? (
               <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
                 <iframe
                   key={lesson.id}
@@ -832,7 +773,7 @@ export default function LessonViewerPage() {
       default:
         return (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 shadow-sm">
-            <div 
+            <div
               className="prose prose-sm md:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-red-500 prose-strong:text-gray-900"
               dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
             />
@@ -841,16 +782,14 @@ export default function LessonViewerPage() {
     }
   }
 
-  // Loading state with gradient
   if (authLoading || loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
-      <SabiLoader text={authLoading ? 'Checking authentication...' : 'Loading lesson...'} />
-    </div>
-  )
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+        <SabiLoader text={authLoading ? 'Checking authentication...' : 'Loading lesson...'} />
+      </div>
+    )
+  }
 
-  // Enrollment required state
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
@@ -865,7 +804,7 @@ export default function LessonViewerPage() {
             <p className="text-gray-600 text-sm mb-5">
               You need to be enrolled in this course to access the lessons.
             </p>
-            <Button 
+            <Button
               onClick={() => router.push(`/courses/${params.slug}`)}
               className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
             >
@@ -877,13 +816,31 @@ export default function LessonViewerPage() {
     )
   }
 
-  const currentIndex = lessons.findIndex(l => l.id === lesson?.id)
+  const currentIndex = lessons.findIndex((l) => l.id === lesson?.id)
   const previousLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null
   const nextLesson = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null
 
+  // Global lesson index map (for display numbering)
+  const lessonIndexMap = new Map<string, number>()
+  lessons.forEach((l, idx) => lessonIndexMap.set(l.id, idx))
+
+  // Group lessons by module
+  const lessonsByModule: Record<string, Lesson[]> = {}
+  const unassignedLessons: Lesson[] = []
+  for (const l of lessons) {
+    if (l.module_id) {
+      if (!lessonsByModule[l.module_id]) lessonsByModule[l.module_id] = []
+      lessonsByModule[l.module_id].push(l)
+    } else {
+      unassignedLessons.push(l)
+    }
+  }
+  for (const mid of Object.keys(lessonsByModule)) {
+    lessonsByModule[mid].sort((a, b) => a.lesson_order - b.lesson_order)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Modal */}
       <Modal
         isOpen={modal.isOpen}
         onClose={closeModal}
@@ -893,7 +850,7 @@ export default function LessonViewerPage() {
         actions={modal.actions}
       />
 
-      {/* Header with gradient */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700 sticky top-0 z-10 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
@@ -998,8 +955,8 @@ export default function LessonViewerPage() {
                   rows={6}
                   className="w-full resize-none text-sm border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-xl"
                 />
-                <Button 
-                  onClick={saveNotes} 
+                <Button
+                  onClick={saveNotes}
                   disabled={savingNotes || !notesContent.trim()}
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white text-sm rounded-xl"
                   size="sm"
@@ -1020,9 +977,7 @@ export default function LessonViewerPage() {
                     </div>
                     {quiz.title}
                   </CardTitle>
-                  {quiz.description && (
-                    <CardDescription className="text-xs">{quiz.description}</CardDescription>
-                  )}
+                  {quiz.description && <CardDescription className="text-xs">{quiz.description}</CardDescription>}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4 text-xs bg-gray-50 rounded-xl p-3">
@@ -1050,12 +1005,11 @@ export default function LessonViewerPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   {showQuiz ? (
                     <div className="space-y-4">
                       {!quizSubmitted ? (
                         <>
-                          {/* Display quiz questions */}
                           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
@@ -1066,14 +1020,16 @@ export default function LessonViewerPage() {
                                   </p>
                                   <div className="space-y-2">
                                     {question.options.map((option, optIndex) => (
-                                      <label 
-                                        key={optIndex} 
+                                      <label
+                                        key={optIndex}
                                         className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer hover:bg-white transition-colors ${
-                                          selectedAnswers[questionId] === optIndex ? 'bg-red-50 border-red-300 border' : 'border border-transparent'
+                                          selectedAnswers[questionId] === optIndex
+                                            ? 'bg-red-50 border-red-300 border'
+                                            : 'border border-transparent'
                                         }`}
                                       >
-                                        <input 
-                                          type="radio" 
+                                        <input
+                                          type="radio"
                                           name={`question-${questionId}`}
                                           checked={selectedAnswers[questionId] === optIndex}
                                           onChange={() => handleAnswerSelect(questionId, optIndex)}
@@ -1087,10 +1043,9 @@ export default function LessonViewerPage() {
                               )
                             })}
                           </div>
-                          
-                          {/* Submit and Cancel buttons */}
+
                           <div className="space-y-2">
-                            <Button 
+                            <Button
                               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm rounded-xl"
                               onClick={submitQuiz}
                               size="sm"
@@ -1112,38 +1067,41 @@ export default function LessonViewerPage() {
                           </div>
                         </>
                       ) : (
-                        /* Quiz Results */
                         <div className="space-y-3">
-                          <div className={`p-4 rounded-xl text-center ${
-                            quizResults?.passed 
-                              ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500' 
-                              : 'bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-500'
-                          }`}>
-                            <h3 className={`text-xl font-bold mb-1 ${
-                              quizResults?.passed ? 'text-green-800' : 'text-red-800'
-                            }`}>
+                          <div
+                            className={`p-4 rounded-xl text-center ${
+                              quizResults?.passed
+                                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500'
+                                : 'bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-500'
+                            }`}
+                          >
+                            <h3
+                              className={`text-xl font-bold mb-1 ${
+                                quizResults?.passed ? 'text-green-800' : 'text-red-800'
+                              }`}
+                            >
                               {quizResults?.passed ? '🎉 Passed!' : '📚 Keep Learning!'}
                             </h3>
-                            <p className="text-lg font-semibold">
-                              Score: {quizResults?.score}%
-                            </p>
+                            <p className="text-lg font-semibold">Score: {quizResults?.score}%</p>
                             <p className="text-xs mt-1">
                               {quizResults?.correctAnswers} out of {quizResults?.totalQuestions} correct
                             </p>
                           </div>
-                          
-                          {/* Review Answers */}
+
                           <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                             <h4 className="font-semibold text-sm sticky top-0 bg-white py-2">Review Answers:</h4>
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               const selectedAnswer = selectedAnswers[questionId]
                               const isCorrect = selectedAnswer === question.correct_answer
-                              
+
                               return (
-                                <div key={questionId} className={`p-3 border rounded-xl text-sm ${
-                                  isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
-                                }`}>
+                                <div
+                                  key={questionId}
+                                  className={`p-3 border rounded-xl text-sm ${
+                                    isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
+                                  }`}
+                                >
                                   <p className="font-medium mb-1">
                                     {index + 1}. {question.question}
                                   </p>
@@ -1158,20 +1116,17 @@ export default function LessonViewerPage() {
                                       </p>
                                     )}
                                     {question.explanation && (
-                                      <p className="text-gray-600 italic mt-1">
-                                        {question.explanation}
-                                      </p>
+                                      <p className="text-gray-600 italic mt-1">{question.explanation}</p>
                                     )}
                                   </div>
                                 </div>
                               )
                             })}
                           </div>
-                          
-                          {/* Action Buttons */}
+
                           <div className="space-y-2">
                             {!quizResults?.passed && (
-                              <Button 
+                              <Button
                                 className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm rounded-xl"
                                 onClick={() => {
                                   setSelectedAnswers({})
@@ -1196,7 +1151,7 @@ export default function LessonViewerPage() {
                       )}
                     </div>
                   ) : (
-                    <Button 
+                    <Button
                       onClick={() => {
                         setShowQuiz(true)
                         setQuizSubmitted(false)
@@ -1214,43 +1169,30 @@ export default function LessonViewerPage() {
               </Card>
             )}
 
-            {/* AI Tools - Available to all users */}
+            {/* AI Tools */}
             {lesson?.content_type === 'text' && lesson?.content && (
               <>
                 <div>
-                  <LessonSummary
-                    lessonId={lesson.id}
-                    lessonContent={lesson.content}
-                    contentType={lesson.content_type}
-                  />
+                  <LessonSummary lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
                 </div>
                 <div>
-                  <LessonQA
-                    lessonId={lesson.id}
-                    lessonContent={lesson.content}
-                    contentType={lesson.content_type}
-                  />
+                  <LessonQA lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
                 </div>
               </>
             )}
-            
+
             {lesson && lesson.content_type !== 'text' && (
               <>
                 <div>
-                  <LessonSummary
-                    lessonId={lesson.id}
-                    contentType={lesson.content_type}
-                  />
+                  <LessonSummary lessonId={lesson.id} contentType={lesson.content_type} />
                 </div>
                 <div>
-                  <LessonQA
-                    lessonId={lesson.id}
-                    contentType={lesson.content_type}
-                  />
+                  <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
                 </div>
               </>
             )}
-            {/* Practice Quiz Component (fallback if no instructor quiz) */}
+
+            {/* Practice Quiz (fallback) */}
             {!quiz && (
               <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
@@ -1265,65 +1207,185 @@ export default function LessonViewerPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <QuizTaker 
-                    lessonId={lesson?.id || ''}
-                    onComplete={() => {
-                      console.log('Practice quiz completed')
-                    }}
-                  />
+                  <QuizTaker lessonId={lesson?.id || ''} onComplete={() => {}} />
                 </CardContent>
               </Card>
             )}
 
-            {/* Course Lessons */}
+            {/* ══════════════════════════════════════════════════════
+                 COURSE NAVIGATION (Modules → Lessons)
+                 ══════════════════════════════════════════════════════ */}
             <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center">
-                    <BookOpen className="w-4 h-4 text-white" />
-                  </div>
-                  Course Lessons
+                <CardTitle className="text-base flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                      <Layers className="w-4 h-4 text-white" />
+                    </div>
+                    Course Navigation
+                  </span>
+                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {completedLessonIds.size}/{lessons.length}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                  {lessons.map((l, index) => {
-                    const isActive = l.id === lesson?.id
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {/* Modules */}
+                  {modules.map((module) => {
+                    const moduleLessons = lessonsByModule[module.id] || []
+                    if (moduleLessons.length === 0) return null
+
+                    const isExpanded = expandedModules.has(module.id)
+                    const completedInModule = moduleLessons.filter((l) => completedLessonIds.has(l.id)).length
+                    const moduleAllComplete = completedInModule === moduleLessons.length && moduleLessons.length > 0
+
                     return (
-                      <button
-                        key={l.id}
-                        onClick={() => navigateToLesson(l)}
-                        className={`w-full text-left p-3 rounded-xl transition-all text-sm group ${
-                          isActive
-                            ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/20'
-                            : 'hover:bg-gray-50 border border-gray-100 hover:border-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                              Lesson {index + 1}
-                            </p>
-                            <p className={`font-medium truncate ${isActive ? 'text-white' : 'text-gray-900'}`}>
-                              {l.title}
-                            </p>
+                      <div key={module.id} className="border border-gray-100 rounded-xl overflow-hidden bg-white">
+                        <button
+                          onClick={() => toggleModule(module.id)}
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                moduleAllComplete
+                                  ? 'bg-gradient-to-br from-green-400 to-green-500'
+                                  : 'bg-gradient-to-br from-indigo-100 to-purple-100'
+                              }`}
+                            >
+                              {moduleAllComplete ? (
+                                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                              ) : (
+                                <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">{module.title}</p>
+                              <p className="text-xs text-gray-500">
+                                {completedInModule}/{moduleLessons.length} lessons
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {l.content_type === 'youtube' && <span title="YouTube" className="text-xs">📺</span>}
-                            {l.content_type === 'video' && <span title="Video" className="text-xs">🎥</span>}
-                            {l.content_type === 'pdf' && <span title="PDF" className="text-xs">📄</span>}
-                            {l.content_type === 'powerpoint' && <span title="PowerPoint" className="text-xs">📊</span>}
-                            {l.content_type === 'text' && <span title="Text" className="text-xs">📝</span>}
-                            {l.duration_minutes && (
-                              <span className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                                {l.duration_minutes}m
-                              </span>
-                            )}
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+                          )}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="px-2 pb-2 pt-0 border-t border-gray-100 bg-gray-50/30">
+                            <div className="pt-2 space-y-1">
+                              {moduleLessons.map((l) => {
+                                const isActive = l.id === lesson?.id
+                                const isLessonCompleted = completedLessonIds.has(l.id)
+                                const globalIndex = lessonIndexMap.get(l.id) ?? 0
+                                return (
+                                  <button
+                                    key={l.id}
+                                    onClick={() => navigateToLesson(l)}
+                                    className={`w-full text-left p-2.5 rounded-lg transition-all text-sm group ${
+                                      isActive
+                                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md shadow-red-500/20'
+                                        : 'hover:bg-white border border-transparent hover:border-gray-200'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        {isLessonCompleted && !isActive ? (
+                                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                        ) : (
+                                          <span
+                                            className={`text-xs font-semibold flex-shrink-0 w-5 text-center ${
+                                              isActive ? 'text-white/90' : 'text-gray-400'
+                                            }`}
+                                          >
+                                            {globalIndex + 1}
+                                          </span>
+                                        )}
+                                        <p
+                                          className={`text-xs font-medium truncate ${
+                                            isActive ? 'text-white' : 'text-gray-900'
+                                          }`}
+                                        >
+                                          {l.title}
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center gap-1 flex-shrink-0">
+                                        {l.content_type === 'youtube' && <span className="text-xs">📺</span>}
+                                        {l.content_type === 'video' && <span className="text-xs">🎥</span>}
+                                        {l.content_type === 'pdf' && <span className="text-xs">📄</span>}
+                                        {l.content_type === 'powerpoint' && <span className="text-xs">📊</span>}
+                                        {l.content_type === 'text' && <span className="text-xs">📝</span>}
+                                        {l.duration_minutes && (
+                                          <span
+                                            className={`text-xs ${
+                                              isActive ? 'text-white/80' : 'text-gray-400'
+                                            }`}
+                                          >
+                                            {l.duration_minutes}m
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      </button>
+                        )}
+                      </div>
                     )
                   })}
+
+                  {/* Unassigned lessons fallback */}
+                  {unassignedLessons.length > 0 && (
+                    <div className="border border-gray-100 rounded-xl p-3 bg-white">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                        Other Lessons
+                      </p>
+                      <div className="space-y-1">
+                        {unassignedLessons.map((l) => {
+                          const isActive = l.id === lesson?.id
+                          const isLessonCompleted = completedLessonIds.has(l.id)
+                          const globalIndex = lessonIndexMap.get(l.id) ?? 0
+                          return (
+                            <button
+                              key={l.id}
+                              onClick={() => navigateToLesson(l)}
+                              className={`w-full text-left p-2.5 rounded-lg transition-all text-sm ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md'
+                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {isLessonCompleted && !isActive ? (
+                                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                ) : (
+                                  <span
+                                    className={`text-xs font-semibold w-5 text-center ${
+                                      isActive ? 'text-white/90' : 'text-gray-400'
+                                    }`}
+                                  >
+                                    {globalIndex + 1}
+                                  </span>
+                                )}
+                                <p
+                                  className={`text-xs font-medium truncate ${
+                                    isActive ? 'text-white' : 'text-gray-900'
+                                  }`}
+                                >
+                                  {l.title}
+                                </p>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -10,10 +10,11 @@ import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
 export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, userProfile, signOut } = useAuth()
+ const { user, userProfile, signOut, displayRole } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isSabiSuiteOpen, setIsSabiSuiteOpen] = useState(false)
+
 
   const handleLogout = async () => {
     try {
@@ -165,9 +166,9 @@ export default function Header() {
                       <p className="text-sm font-medium text-gray-900">
                         {userProfile?.full_name || user.email}
                       </p>
-                      {userProfile?.role && (
+                      {displayRole && (
                         <p className="text-xs text-gray-500 capitalize">
-                          {userProfile.role}
+                          {displayRole}
                         </p>
                       )}
                     </div>
@@ -288,9 +289,9 @@ export default function Header() {
                       <p className="text-sm font-medium text-gray-900">
                         {userProfile?.full_name || user.email}
                       </p>
-                      {userProfile?.role && (
+                      {displayRole && (
                         <p className="text-xs text-gray-500 capitalize">
-                          {userProfile.role}
+                          {displayRole}
                         </p>
                       )}
                     </div>

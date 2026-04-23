@@ -9,6 +9,9 @@ interface AuthReturn {
   user: User | null
   userProfile: UserProfile | null
   loading: boolean
+  routeResolving: boolean
+  displayRole: string | null
+  institutionName: string | null
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any; needsVerification?: boolean }>
   signOut: () => Promise<void>
@@ -21,6 +24,9 @@ export function useAuth(): AuthReturn {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [routeResolving, setRouteResolving] = useState(false)
+  const [displayRole, setDisplayRole] = useState<string | null>(null)
+  const [institutionName, setInstitutionName] = useState<string | null>(null)
   const router = useRouter()
 
   const fetchUserProfile = useCallback(async (userId: string) => {
@@ -49,12 +55,44 @@ export function useAuth(): AuthReturn {
     return null
   }, [])
 
+  /**
+   * Ask the server for the correct post-login route and display role.
+   * Server uses service role (bypasses RLS on institution_members).
+   */
+  const resolvePostLoginRoute = async (): Promise<string> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return '/dashboard'
+
+      const res = await fetch('/api/auth/resolve-route', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+
+      if (!res.ok) return '/dashboard'
+
+      const json = await res.json()
+      const payload = json.data || json
+
+      // Store display role and institution name for the header
+      if (payload.display_role) {
+        setDisplayRole(payload.display_role)
+      }
+      if (payload.institution_name) {
+        setInstitutionName(payload.institution_name)
+      }
+
+      return payload.route || '/dashboard'
+    } catch (err) {
+      console.error('Error resolving post-login route:', err)
+      return '/dashboard'
+    }
+  }
+
   useEffect(() => {
     let mounted = true
 
     const initAuth = async () => {
       try {
-        // Get cached session first (faster)
         const { data: { session } } = await supabase.auth.getSession()
         
         if (!mounted) return
@@ -62,21 +100,43 @@ export function useAuth(): AuthReturn {
         if (session?.user) {
           setUser(session.user)
           await fetchUserProfile(session.user.id)
+          // Also resolve role on page refresh / returning session
+          const res = await fetch('/api/auth/resolve-route', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          if (res.ok) {
+            const json = await res.json()
+            const payload = json.data || json
+            if (mounted && payload.display_role) {
+              setDisplayRole(payload.display_role)
+            }
+            if (mounted && payload.institution_name) {
+              setInstitutionName(payload.institution_name)
+            }
+          }
         } else {
           setUser(null)
           setUserProfile(null)
+          setDisplayRole(null)
+          setInstitutionName(null)
         }
-        setLoading(false)
       } catch (error) {
-        console.error('Auth error:', error)
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          console.warn('Auth session check aborted, retrying...')
+          if (mounted) {
+            setTimeout(() => { if (mounted) initAuth() }, 500)
+            return
+          }
+        } else {
+          console.error('Auth error:', error)
+        }
+      } finally {
         if (mounted) setLoading(false)
       }
     }
 
-    // Initialize immediately
     initAuth()
 
-    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return
 
@@ -85,10 +145,11 @@ export function useAuth(): AuthReturn {
         await fetchUserProfile(session.user.id)
         setLoading(false)
       } else if (event === 'SIGNED_OUT') {
-        // Clear cache on signout
         profileCache = {}
         setUser(null)
         setUserProfile(null)
+        setDisplayRole(null)
+        setInstitutionName(null)
         setLoading(false)
       }
     })
@@ -114,15 +175,15 @@ export function useAuth(): AuthReturn {
 
       if (data.user) {
         setUser(data.user)
-        const profile = await fetchUserProfile(data.user.id)
-        
-        // Use Next.js router instead of window.location
-        if (profile?.role === 'instructor') {
-          router.push('/instructor')
-        } else {
-          router.push('/dashboard')
-        }
+        setRouteResolving(true)
+        await fetchUserProfile(data.user.id)
+        const route = await resolvePostLoginRoute()
+        router.push(route)
+        // Keep routeResolving true — the page navigation will unmount this
+        // so we don't need to set it false. If push fails, fall through.
       }
+
+      setLoading(false)
 
       setLoading(false)
       return { error: null }
@@ -152,20 +213,19 @@ export function useAuth(): AuthReturn {
         return { error }
       }
 
-      // Check if email confirmation is required
       const needsVerification = data.user && !data.session
 
       if (needsVerification) {
-        // User needs to verify email - don't redirect
         setLoading(false)
         return { error: null, needsVerification: true }
       }
 
-      // If no verification needed (auto-login), redirect
       if (data.user && data.session) {
         setUser(data.user)
+        setRouteResolving(true)
         await fetchUserProfile(data.user.id)
-        router.push('/dashboard')
+        const route = await resolvePostLoginRoute()
+        router.push(route)
       }
 
       setLoading(false)
@@ -179,11 +239,13 @@ export function useAuth(): AuthReturn {
   const signOut = async () => {
     try {
       setLoading(true)
-      // Clear cache
       profileCache = {}
       await supabase.auth.signOut()
       setUser(null)
       setUserProfile(null)
+      setDisplayRole(null)
+      setInstitutionName(null)
+      setRouteResolving(false)
       router.push('/')
       setLoading(false)
     } catch (error) {
@@ -196,6 +258,9 @@ export function useAuth(): AuthReturn {
     user,
     userProfile,
     loading,
+    routeResolving,
+    displayRole,
+    institutionName,
     signIn,
     signUp,
     signOut,

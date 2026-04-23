@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sparkles, Mail, Lock, ArrowRight, BookOpen, GraduationCap, Users, Award } from 'lucide-react'
+import { Sparkles, Mail, Lock, ArrowRight, Building2, Award, Users } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
@@ -20,7 +20,32 @@ type LoginInput = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [publicSignupOpen, setPublicSignupOpen] = useState(false)
   const { signIn } = useAuth()
+
+  // Ask the gate endpoint whether public signup is open, so the footer
+  // link matches reality. Fail closed = show "Request Access".
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      try {
+        const res = await fetch('/api/auth/signup-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        const json = await res.json()
+        const decision = json.data || json
+        if (!cancelled) {
+          setPublicSignupOpen(decision?.allowed === true && decision?.reason === 'public_open')
+        }
+      } catch {
+        if (!cancelled) setPublicSignupOpen(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [])
 
   const {
     register,
@@ -35,28 +60,26 @@ export default function LoginPage() {
     setError(null)
 
     const result = await signIn(data.email, data.password)
-    
+
     if (result.error) {
       setError(result.error.message)
     }
-    
+
     setIsLoading(false)
   }
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Branding (hidden on mobile) */}
+      {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         <div className="absolute inset-0 bg-gradient-to-tr from-red-900/30 via-transparent to-pink-900/30" />
-        
-        {/* Floating elements */}
+
         <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-3xl rotate-12 blur-sm" />
         <div className="absolute bottom-32 left-20 w-24 h-24 bg-gradient-to-br from-pink-500/20 to-red-500/20 rounded-2xl -rotate-12 blur-sm" />
         <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
-        
+
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-12">
             <h1 className="text-4xl font-bold flex items-center gap-1">
               <span className="text-white">Sabitek</span>
@@ -65,35 +88,34 @@ export default function LoginPage() {
               </span>
             </h1>
           </Link>
-          
+
           <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
             Welcome back to<br />
             <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-              learning
+              Sabitek
             </span>
           </h2>
           <p className="text-gray-400 text-lg mb-12 max-w-md">
-            Continue your learning journey. Access your courses, track progress, and achieve your goals.
+            Sign in to your institution workspace. Built for educators, administrators, and learners.
           </p>
-          
-          {/* Features */}
+
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-red-400" />
+                <Building2 className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">100+ Courses</h3>
-                <p className="text-gray-500 text-sm">Learn at your own pace</p>
+                <h3 className="text-white font-medium">Institutions &amp; NGOs</h3>
+                <p className="text-gray-500 text-sm">Run programs and cohorts at scale</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-green-400" />
+                <Award className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Earn Certificates</h3>
-                <p className="text-gray-500 text-sm">Showcase your achievements</p>
+                <h3 className="text-white font-medium">Training Centers</h3>
+                <p className="text-gray-500 text-sm">Publish structured tracks and credentials</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -101,8 +123,8 @@ export default function LoginPage() {
                 <Users className="w-6 h-6 text-blue-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Join Community</h3>
-                <p className="text-gray-500 text-sm">Connect with other learners</p>
+                <h3 className="text-white font-medium">Verified Instructors</h3>
+                <p className="text-gray-500 text-sm">Approved subject experts, teaching with rigor</p>
               </div>
             </div>
           </div>
@@ -112,7 +134,6 @@ export default function LoginPage() {
       {/* Right Side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
         <div className="max-w-md w-full py-12">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 justify-center">
               <h1 className="text-3xl font-bold flex items-center gap-1">
@@ -215,18 +236,26 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Don&apos;t have an account?{' '}
-                    <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-semibold">
-                      Sign up for free
-                    </Link>
-                  </p>
+                  {publicSignupOpen ? (
+                    <p className="text-sm text-gray-600">
+                      Don&apos;t have an account?{' '}
+                      <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-semibold">
+                        Sign up for free
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-600">
+                      New to Sabitek?{' '}
+                      <Link href="/request-access" className="text-red-500 hover:text-red-600 font-semibold">
+                        Get Started
+                      </Link>
+                    </p>
+                  )}
                 </div>
               </form>
             </CardContent>
           </Card>
 
-          {/* Footer text */}
           <p className="text-center text-xs text-gray-500 mt-8">
             By signing in, you agree to our{' '}
             <Link href="/terms" className="text-red-500 hover:text-red-600">

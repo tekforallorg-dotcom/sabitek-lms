@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,19 +9,26 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Sparkles, 
-  Mail, 
-  Lock, 
-  ArrowRight, 
-  BookOpen, 
-  GraduationCap, 
+import {
+  Sparkles,
+  Mail,
+  Lock,
+  ArrowRight,
+  BookOpen,
+  GraduationCap,
   User,
   CheckCircle,
   Rocket,
   Award,
-  Globe
+  Globe,
+  Building2,
+  Loader2,
+  AlertCircle,
+  Ticket,
 } from 'lucide-react'
+import SabiLoader from '@/components/ui/SabiLoader'
+import type { SignupGateDecision } from '@/lib/validations/auth-gating'
+
 
 const registerSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -41,6 +49,40 @@ export default function RegisterPage() {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const { signUp } = useAuth()
 
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('invite')
+
+  const [gate, setGate] = useState<SignupGateDecision | null>(null)
+  const [gateLoading, setGateLoading] = useState(true)
+
+  // Check signup eligibility on mount and whenever the invite token changes.
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      setGateLoading(true)
+      try {
+        const res = await fetch('/api/auth/signup-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invite_token: inviteToken || undefined }),
+        })
+        const json = await res.json()
+        if (!cancelled) {
+          // apiSuccess returns the payload directly (flat envelope).
+          setGate((json.data || json) as SignupGateDecision)
+        }
+      } catch {
+        if (!cancelled) {
+          setGate({ allowed: false, reason: 'invite_required' })
+        }
+      } finally {
+        if (!cancelled) setGateLoading(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [inviteToken])
+
   const {
     register,
     handleSubmit,
@@ -53,37 +95,39 @@ export default function RegisterPage() {
   })
 
   const onSubmit = async (data: RegisterInput) => {
+    if (!gate?.allowed) {
+      setError('Signup is not available. Please use an invite link or request access.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
-    const result = await signUp(data.email, data.password, data.fullName, data.role)
-    
+    // When arriving via invite, always register as learner.
+    const roleToUse = gate.reason === 'valid_invite' ? 'learner' : data.role
+
+    const result = await signUp(data.email, data.password, data.fullName, roleToUse)
+
     if (result.error) {
       setError(result.error.message)
       setIsLoading(false)
     } else if (result.needsVerification) {
-      // Email verification required - show success screen
       setRegisteredEmail(data.email)
       setIsLoading(false)
     } else {
-      // No verification needed - user will be auto-redirected by useAuth
       setIsLoading(false)
     }
   }
 
-  // Show verification success screen
+  // ── Verification success screen ──
   if (registeredEmail) {
     return (
       <div className="min-h-screen flex">
-        {/* Left Side - Branding (hidden on mobile) */}
         <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
           <div className="absolute inset-0 bg-gradient-to-tr from-green-900/30 via-transparent to-emerald-900/30" />
-          
-          {/* Floating elements */}
           <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-3xl rotate-12 blur-sm" />
           <div className="absolute bottom-32 left-20 w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-2xl -rotate-12 blur-sm" />
-          
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
             <Link href="/" className="flex items-center gap-2 mb-12">
               <h1 className="text-4xl font-bold flex items-center gap-1">
@@ -91,7 +135,6 @@ export default function RegisterPage() {
                 <Sparkles className="w-7 h-7 text-green-500" />
               </h1>
             </Link>
-            
             <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
               You&apos;re almost<br />
               <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
@@ -99,15 +142,13 @@ export default function RegisterPage() {
               </span>
             </h2>
             <p className="text-gray-400 text-lg mb-8 max-w-md">
-              Just one more step to unlock your learning potential.
+              Just one more step to unlock your learning.
             </p>
           </div>
         </div>
 
-        {/* Right Side - Success Message */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-green-50/30">
           <div className="max-w-md w-full py-12">
-            {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-8">
               <Link href="/" className="inline-flex items-center gap-2 justify-center">
                 <h1 className="text-3xl font-bold flex items-center gap-1">
@@ -180,47 +221,222 @@ export default function RegisterPage() {
     )
   }
 
-  // Show registration form
+  // ── Gate loading shell ──
+  if (gateLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+        <SabiLoader text="Checking access..." size="lg" />
+      </div>
+    )
+  }
+
+  // ── Blocked state: invite required or invite invalid/expired/revoked ──
+  if (!gate?.allowed) {
+    const reasonCopy: Record<string, { title: string; desc: string }> = {
+      invite_required: {
+        title: 'Sign up is by invite',
+        desc: 'Sabitek accounts are provisioned through institutions and verified training providers. Use an invite link to create your account, or request access for your organization.',
+      },
+      invite_invalid: {
+        title: 'Invite link not recognized',
+        desc: 'We could not verify this invite. It may have been mistyped or disabled. Please ask the admin who sent it for a fresh link.',
+      },
+      invite_expired: {
+        title: 'This invite has expired',
+        desc: 'The invite link you used is no longer active. Please request a new invite from your institution or training provider.',
+      },
+      invite_revoked: {
+        title: 'This invite was revoked',
+        desc: 'The admin has revoked this invite. Please contact them to request a new one.',
+      },
+      invite_exhausted: {
+        title: 'This invite is fully used',
+        desc: 'The invite has reached its usage limit. Please request a new invite from the admin who sent it.',
+      },
+    }
+    const copy = reasonCopy[gate?.reason || 'invite_required'] || reasonCopy.invite_required
+
+    return (
+      <div className="min-h-screen flex">
+        {/* Left branding panel */}
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-red-900/30 via-transparent to-pink-900/30" />
+          <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-3xl rotate-12 blur-sm" />
+          <div className="absolute bottom-32 left-20 w-24 h-24 bg-gradient-to-br from-pink-500/20 to-red-500/20 rounded-2xl -rotate-12 blur-sm" />
+
+          <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
+            <Link href="/" className="flex items-center gap-2 mb-12">
+              <h1 className="text-4xl font-bold flex items-center gap-1">
+                <span className="text-white">Sabitek</span>
+                <Sparkles className="w-7 h-7 text-red-500" />
+              </h1>
+            </Link>
+
+            <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
+              Learning built for<br />
+              <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+                institutions
+              </span>
+            </h2>
+            <p className="text-gray-400 text-lg mb-12 max-w-md">
+              Schools, NGOs, government programs, and verified training providers use Sabitek to deliver structured learning at scale.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Institutions &amp; NGOs</h3>
+                  <p className="text-gray-500 text-sm">Run cohorts, track outcomes, export evidence</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Training Centers</h3>
+                  <p className="text-gray-500 text-sm">Publish structured tracks, issue credentials</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Verified Instructors</h3>
+                  <p className="text-gray-500 text-sm">Join as an approved subject expert</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right blocked state */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+          <div className="max-w-md w-full py-12">
+            <div className="lg:hidden text-center mb-6">
+              <Link href="/" className="inline-flex items-center gap-2 justify-center">
+                <h1 className="text-3xl font-bold flex items-center gap-1">
+                  <span className="text-black">Sabitek</span>
+                  <Sparkles className="w-6 h-6 text-red-500" />
+                </h1>
+              </Link>
+            </div>
+
+            <Card className="shadow-xl border-0 rounded-2xl overflow-hidden">
+              <CardHeader className="text-center pb-4 bg-gradient-to-r from-gray-50 to-gray-100/50">
+                <div className="mx-auto w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-red-500/20">
+                  <Ticket className="w-7 h-7 text-white" />
+                </div>
+                <CardTitle className="text-xl font-bold text-gray-900">{copy.title}</CardTitle>
+                <CardDescription className="text-gray-600 mt-2 px-2">
+                  {copy.desc}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="p-6 space-y-4">
+                <Link href="/request-access" className="block">
+                  <Button className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/20">
+                    <span className="flex items-center justify-center gap-2">
+                      Get Started
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Button>
+                </Link>
+
+                <Link href="/auth/login" className="block">
+                  <Button variant="outline" className="w-full h-12 border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-xl">
+                    I already have an account
+                  </Button>
+                </Link>
+
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-xs text-blue-900">
+                    <strong>Have an invite link?</strong> Paste it into your browser to continue. Invite links look like <code className="bg-white px-1.5 py-0.5 rounded text-[11px]">/join/&lt;token&gt;</code>.
+                  </p>
+                </div>
+
+                <div className="text-center pt-2">
+                  <p className="text-xs text-gray-500">
+                    Individual learner? <Link href="/waitlist" className="text-red-500 hover:text-red-600 font-medium">Join the waitlist</Link>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <p className="text-center text-xs text-gray-500 mt-6">
+              Need help?{' '}
+              <a href="mailto:support@sabitek.store" className="text-red-500 hover:text-red-600 font-medium">
+                Contact support
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Allowed: render the registration form ──
+  const isInviteSignup = gate.reason === 'valid_invite'
+  const invite = isInviteSignup ? gate.invite : null
+
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Branding (hidden on mobile) */}
+      {/* Left branding panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         <div className="absolute inset-0 bg-gradient-to-tr from-red-900/30 via-transparent to-pink-900/30" />
-        
-        {/* Floating elements */}
         <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-3xl rotate-12 blur-sm" />
         <div className="absolute bottom-32 left-20 w-24 h-24 bg-gradient-to-br from-pink-500/20 to-red-500/20 rounded-2xl -rotate-12 blur-sm" />
         <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
-        
+
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-12">
             <h1 className="text-4xl font-bold flex items-center gap-1">
               <span className="text-white">Sabitek</span>
               <Sparkles className="w-7 h-7 text-red-500" />
             </h1>
           </Link>
-          
-          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
-            Start your<br />
-            <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-              learning journey
-            </span>
-          </h2>
-          <p className="text-gray-400 text-lg mb-12 max-w-md">
-            Join thousands of learners across Africa. Access quality education designed for you.
-          </p>
-          
-          {/* Features */}
+
+          {isInviteSignup && invite ? (
+            <>
+              <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
+                Join<br />
+                <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+                  {invite.cohort_name}
+                </span>
+              </h2>
+              <p className="text-gray-400 text-lg mb-12 max-w-md">
+                You&apos;ve been invited by <span className="text-white font-medium">{invite.institution_name}</span>
+                {invite.program_name ? <> to the <span className="text-white font-medium">{invite.program_name}</span> program.</> : '.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
+                Start your<br />
+                <span className="bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+                  learning journey
+                </span>
+              </h2>
+              <p className="text-gray-400 text-lg mb-12 max-w-md">
+                Create your account to continue.
+              </p>
+            </>
+          )}
+
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Learn Anything</h3>
-                <p className="text-gray-500 text-sm">Tech, Business, Design & more</p>
+                <h3 className="text-white font-medium">Structured programs</h3>
+                <p className="text-gray-500 text-sm">Courses, modules, and lessons</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -228,8 +444,8 @@ export default function RegisterPage() {
                 <Award className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Get Certified</h3>
-                <p className="text-gray-500 text-sm">Earn verifiable certificates</p>
+                <h3 className="text-white font-medium">Verifiable certificates</h3>
+                <p className="text-gray-500 text-sm">QR-backed credentials</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -245,10 +461,9 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Side - Register Form */}
+      {/* Right form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
         <div className="max-w-md w-full py-8">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-6">
             <Link href="/" className="inline-flex items-center gap-2 justify-center">
               <h1 className="text-3xl font-bold flex items-center gap-1">
@@ -256,23 +471,42 @@ export default function RegisterPage() {
                 <Sparkles className="w-6 h-6 text-red-500" />
               </h1>
             </Link>
-            <p className="text-gray-600 mt-2 text-sm">Start your learning journey today</p>
+            <p className="text-gray-600 mt-2 text-sm">
+              {isInviteSignup && invite
+                ? `Join ${invite.cohort_name}`
+                : 'Create your account'}
+            </p>
           </div>
+
+          {/* Invite confirmation strip (desktop shows context on left, so this is mainly for mobile clarity) */}
+          {isInviteSignup && invite && (
+            <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-900">
+                <p className="font-semibold">Invite verified</p>
+                <p className="mt-0.5">
+                  Joining <strong>{invite.cohort_name}</strong> at <strong>{invite.institution_name}</strong>.
+                </p>
+              </div>
+            </div>
+          )}
 
           <Card className="shadow-xl border-0 rounded-2xl overflow-hidden">
             <CardHeader className="space-y-1 pb-4 bg-gradient-to-r from-gray-50 to-gray-100/50">
-              <CardTitle className="text-2xl font-bold text-center text-gray-900">Create Account</CardTitle>
+              <CardTitle className="text-2xl font-bold text-center text-gray-900">
+                {isInviteSignup ? 'Create your account' : 'Create Account'}
+              </CardTitle>
               <CardDescription className="text-center text-gray-600 text-sm">
-                Sign up to access world-class education
+                {isInviteSignup
+                  ? 'Complete your details to finish joining.'
+                  : 'Sign up to continue.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {error && (
                   <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-200 flex items-start gap-2">
-                    <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-red-500 text-xs">!</span>
-                    </div>
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -312,24 +546,33 @@ export default function RegisterPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    I want to
-                  </label>
-                  <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <select
-                      {...register('role')}
-                      className="w-full h-12 pl-10 pr-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-red-500 bg-white text-sm"
-                    >
-                      <option value="learner">Learn (Student)</option>
-                      <option value="instructor">Teach (Instructor)</option>
-                    </select>
+                {/* Role selector only when NOT arriving via invite.
+                    Invite signups are always learner. */}
+                {!isInviteSignup && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      I want to
+                    </label>
+                    <div className="relative">
+                      <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <select
+                        {...register('role')}
+                        className="w-full h-12 pl-10 pr-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-red-500 bg-white text-sm"
+                      >
+                        <option value="learner">Learn (Student)</option>
+                        <option value="instructor">Teach (Instructor)</option>
+                      </select>
+                    </div>
+                    {errors.role && (
+                      <p className="text-red-500 text-sm">{errors.role.message}</p>
+                    )}
                   </div>
-                  {errors.role && (
-                    <p className="text-red-500 text-sm">{errors.role.message}</p>
-                  )}
-                </div>
+                )}
+
+                {/* Hidden role input when invite-arrived, so RHF submit sees 'learner'. */}
+                {isInviteSignup && (
+                  <input type="hidden" value="learner" {...register('role')} />
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -381,7 +624,7 @@ export default function RegisterPage() {
                     </div>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Create Account
+                      {isInviteSignup ? 'Join & Create Account' : 'Create Account'}
                       <ArrowRight className="w-4 h-4" />
                     </span>
                   )}
@@ -408,7 +651,6 @@ export default function RegisterPage() {
             </CardContent>
           </Card>
 
-          {/* Footer text */}
           <p className="text-center text-xs text-gray-500 mt-6">
             By signing up, you agree to our{' '}
             <Link href="/terms" className="text-red-500 hover:text-red-600">

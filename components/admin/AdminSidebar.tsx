@@ -20,7 +20,9 @@ import {
   FileText,
   MessageSquare,
   TrendingUp,
-  CreditCard
+  CreditCard,
+  Building2,
+  ClipboardList
 } from 'lucide-react'
 import { useAuthContext } from '@/components/providers/auth-provider'
 
@@ -34,6 +36,8 @@ interface NavItem {
 const navigation: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Institutions', href: '/admin/institutions', icon: Building2 },
+  { label: 'Applications', href: '/admin/applications', icon: ClipboardList },
   { label: 'Courses', href: '/admin/courses', icon: BookOpen },
   { label: 'Certificates', href: '/admin/certificates', icon: Award },
   { label: 'Billing', href: '/admin/billing', icon: CreditCard },
@@ -52,7 +56,7 @@ const navigation: NavItem[] = [
 
 export default function AdminSidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [openSubmenu, setOpenSubmenu] = useState<string | null>('SabiQuiz') // Open by default
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>('SabiQuiz')
   const pathname = usePathname()
   const { signOut } = useAuthContext()
 
@@ -124,7 +128,6 @@ export default function AdminSidebar() {
             if (hasChildren) {
               return (
                 <div key={item.label}>
-                  {/* Parent Item */}
                   <button
                     onClick={() => toggleSubmenu(item.label)}
                     className={`
@@ -144,7 +147,6 @@ export default function AdminSidebar() {
                     )}
                   </button>
 
-                  {/* Children */}
                   {isSubmenuOpen && (
                     <div className="mt-1 ml-4 space-y-1">
                       {item.children?.map((child) => {

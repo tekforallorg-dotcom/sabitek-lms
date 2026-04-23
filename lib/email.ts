@@ -276,3 +276,102 @@ export async function sendPaymentFailedEmail({
     return { success: false, error }
   }
 }
+
+export async function sendWorkspaceWelcomeEmail({
+  to,
+  userName,
+  organisationName,
+  loginUrl,
+  isNewUser,
+  tempPassword,
+}: {
+  to: string
+  userName: string
+  organisationName: string
+  loginUrl: string
+  isNewUser: boolean
+  tempPassword?: string
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Your Sabitek workspace is ready - ${organisationName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 24px;">Your Workspace is Ready!</h2>
+            <p style="margin: 0; opacity: 0.9;">${organisationName}</p>
+          </div>
+
+          <p>Hi ${userName},</p>
+
+          <p>Great news! Your application for <strong>${organisationName}</strong> has been approved. Your Sabitek workspace is now active.</p>
+
+          ${isNewUser && tempPassword ? `
+          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">Your login credentials</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #92400e; font-size: 14px;">Email</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 600; font-size: 14px;">${to}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #92400e; font-size: 14px;">Temporary Password</td>
+                <td style="padding: 6px 0; text-align: right; font-weight: 600; font-family: monospace; font-size: 14px;">${tempPassword}</td>
+              </tr>
+            </table>
+            <p style="margin: 10px 0 0 0; color: #92400e; font-size: 12px;">Please change your password after your first login.</p>
+          </div>
+          ` : `
+          <p>Sign in with your existing account to access your new workspace.</p>
+          `}
+
+          <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #1a1a1a; font-size: 14px;">What you can do now</h3>
+            <ul style="color: #666; margin: 0; padding-left: 20px; font-size: 14px;">
+              <li style="margin-bottom: 8px;">Create your first program and add courses</li>
+              <li style="margin-bottom: 8px;">Set up cohorts and invite learners</li>
+              <li style="margin-bottom: 8px;">Customize your workspace settings</li>
+              <li style="margin-bottom: 8px;">Track progress and issue certificates</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${loginUrl}" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Sign In to Your Workspace</a>
+          </div>
+
+          <p style="color: #666; font-size: 14px;">If you have any questions, email us at support@sabitek.school</p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            &copy; ${new Date().getFullYear()} Sabitek. Learning infrastructure for Africa.
+          </p>
+        </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Failed to send workspace welcome email:', error)
+      return { success: false, error }
+    }
+
+    console.log('Workspace welcome email sent:', data?.id)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending workspace welcome email:', error)
+    return { success: false, error }
+  }
+}

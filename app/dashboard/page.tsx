@@ -20,6 +20,7 @@ import {
   Users,
   HelpCircle,
   Play,
+  GraduationCap,
   ChevronRight
 } from 'lucide-react'
 
@@ -51,12 +52,133 @@ interface Certificate {
   }
 }
 
+/* ── My Cohorts / Programs Section (receives data, no fetching) ── */
+function MyCohorts({ cohorts }: { cohorts: any[] }) {
+  if (cohorts.length === 0) return null
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+          <GraduationCap className="w-5 h-5 text-red-500" />
+          My Programs
+        </h2>
+        <Link href="/cohorts/join">
+          <Button variant="outline" size="sm" className="text-xs border-gray-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+            Join Cohort
+            <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {cohorts.map((item) => {
+          const isCompleted = item.progress === 100
+
+          return (
+            <div
+              key={item.cohort_id}
+              className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-red-100 transition-all p-5"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-gray-900 truncate">
+                    {item.program?.name || 'Program'}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    {item.cohort_name}
+                  </p>
+                </div>
+                <span
+                  className={`px-2 py-1 text-xs rounded-full font-medium flex-shrink-0 ml-2 ${
+                    isCompleted
+                      ? 'bg-green-100 text-green-700'
+                      : item.progress > 0
+                      ? 'bg-orange-100 text-orange-700'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {isCompleted ? 'Completed' : item.progress > 0 ? `${item.progress}%` : 'Not started'}
+                </span>
+              </div>
+
+              {/* Sponsorship badge */}
+              {item.sponsorship === 'institution_sponsored' && (
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 rounded-lg px-2.5 py-1.5 mb-3 w-fit">
+                  <Sparkles className="w-3 h-3" />
+                  <span className="font-medium">Sponsored Access</span>
+                </div>
+              )}
+
+              {/* Progress bar */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-gray-500">
+                    {item.completed_courses}/{item.total_courses} courses
+                  </span>
+                  <span className="text-gray-500 font-medium">{item.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      isCompleted
+                        ? 'bg-gradient-to-r from-green-400 to-green-500'
+                        : item.progress > 0
+                        ? 'bg-gradient-to-r from-red-400 to-pink-500'
+                        : 'bg-gray-200'
+                    }`}
+                    style={{ width: `${Math.max(item.progress, 2)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Course pills */}
+              {item.courses.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {item.courses.slice(0, 4).map((course: any) => (
+                    <Link
+                      key={course.id}
+                      href={`/courses/${course.slug}`}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        course.progress === 100
+                          ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                          : course.progress > 0
+                          ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                          : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {course.progress === 100 ? (
+                        <CheckCircle className="w-3 h-3" />
+                      ) : (
+                        <BookOpen className="w-3 h-3" />
+                      )}
+                      <span className="truncate max-w-[120px]">{course.title}</span>
+                    </Link>
+                  ))}
+                  {item.courses.length > 4 && (
+                    <span className="px-2.5 py-1 bg-gray-50 text-gray-500 rounded-lg text-xs font-medium">
+                      +{item.courses.length - 4} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, userProfile, loading } = useAuth()
+  const { user, userProfile, loading, routeResolving } = useAuth()
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([])
   const [certificates, setCertificates] = useState<Certificate[]>([])
   const [coursesLoading, setCoursesLoading] = useState(true)
+  const [cohorts, setCohorts] = useState<any[]>([])
 
   useEffect(() => {
     if (!loading) {
@@ -119,6 +241,23 @@ export default function DashboardPage() {
         .limit(3)
 
       setCertificates(certsData || [])
+
+      // Fetch cohort memberships
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          const res = await fetch('/api/cohorts/my-cohorts', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          const json = await res.json()
+          const cohortData = json.data?.cohorts || json.cohorts
+          if (res.ok && cohortData) {
+            setCohorts(cohortData)
+          }
+        }
+      } catch (cohortErr) {
+        console.error('Failed to load cohorts:', cohortErr)
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -129,13 +268,13 @@ export default function DashboardPage() {
   const completedCount = enrolledCourses.filter(c => c.progress_percentage === 100).length
   const inProgressCount = enrolledCourses.filter(c => c.progress_percentage > 0 && c.progress_percentage < 100).length
 
-  if (loading || coursesLoading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <SabiLoader text="Loading your dashboard..." size="lg" />
-    </div>
-  )
-}
+  if (loading || routeResolving || coursesLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <SabiLoader text="Loading your dashboard..." size="lg" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -234,6 +373,9 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* My Programs & Cohorts */}
+        <MyCohorts cohorts={cohorts} />
+
         {/* Certificates Section */}
         {certificates.length > 0 && (
           <div className="mb-6">
@@ -310,7 +452,7 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-base font-bold text-gray-900 mb-2">Start Your Learning Journey</h3>
               <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
-                You haven't enrolled in any courses yet. Explore our catalog and start learning today!
+                You haven&apos;t enrolled in any courses yet. Explore our catalog and start learning today!
               </p>
               <Link href="/courses">
                 <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-4 text-sm font-semibold rounded-xl shadow-lg shadow-red-500/25">

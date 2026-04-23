@@ -1,0 +1,215 @@
+// ============================================
+// INSTITUTION TYPES
+// ============================================
+
+export type InstitutionType = 
+  | 'school'
+  | 'ngo'
+  | 'government'
+  | 'training_center'
+  | 'company'
+  | 'other'
+
+export type InstitutionStatus = 
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'suspended'
+  | 'archived'
+
+export type InstitutionRole = 
+  | 'institution_admin'
+  | 'program_manager'
+  | 'facilitator'
+  | 'viewer'
+
+export type InstitutionMemberStatus = 
+  | 'active'
+  | 'invited'
+  | 'suspended'
+
+export type PlatformRole = 
+  | 'super_admin'
+  | 'ops'
+  | 'trust_safety'
+  | 'partnerships'
+  | 'support'
+
+export type InstructorStatus = 
+  | 'pending'
+  | 'approved'
+  | 'limited'
+  | 'suspended'
+
+// ============================================
+// INSTITUTION INTERFACES
+// ============================================
+
+export interface Institution {
+  id: string
+  name: string
+  slug: string
+  type: InstitutionType
+  description: string | null
+  
+  // Location
+  country: string | null
+  state: string | null
+  lga: string | null
+  address: string | null
+  
+  // Contact
+  website: string | null
+  contact_email: string | null
+  contact_phone: string | null
+  email_domain_allowlist: string[] | null
+  
+  // Branding
+  logo_url: string | null
+  accent_color: string
+  banner_url: string | null
+  
+  // Status
+  status: InstitutionStatus
+  verified_at: string | null
+  reviewed_by: string | null
+  review_notes: string | null
+  rejection_reason: string | null
+  
+  // Ownership
+  created_by: string
+  
+  // Timestamps
+  created_at: string
+  updated_at: string
+}
+
+export interface InstitutionMember {
+  id: string
+  institution_id: string
+  user_id: string
+  role: InstitutionRole
+  status: InstitutionMemberStatus
+  
+  // Invitation tracking
+  invited_by: string | null
+  invited_at: string | null
+  accepted_at: string | null
+  
+  // Suspension tracking
+  suspended_at: string | null
+  suspended_by: string | null
+  suspension_reason: string | null
+  
+  // Timestamps
+  created_at: string
+  updated_at: string
+}
+
+export interface InstructorProfile {
+  id: string
+  user_id: string
+  headline: string | null
+  bio: string | null
+  specializations: string[] | null
+  years_experience: number | null
+  institution_id: string | null
+  status: InstructorStatus
+  approved_at: string | null
+  approved_by: string | null
+  rejection_reason: string | null
+  can_publish_public: boolean
+  can_monetize: boolean
+  created_at: string
+  updated_at: string
+}
+
+// ============================================
+// EXTENDED TYPES (with relations)
+// ============================================
+
+export interface InstitutionWithCreator extends Institution {
+  creator?: {
+    id: string
+    full_name: string
+    email: string
+  }
+}
+
+export interface InstitutionMemberWithUser extends InstitutionMember {
+  user?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url: string | null
+  }
+}
+
+export interface InstitutionWithStats extends Institution {
+  member_count?: number
+  program_count?: number
+  active_learners?: number
+}
+
+// ============================================
+// API INPUT TYPES
+// ============================================
+
+export interface CreateInstitutionInput {
+  name: string
+  type: InstitutionType
+  description?: string
+  country?: string
+  state?: string
+  lga?: string
+  address?: string
+  website?: string
+  contact_email?: string
+  contact_phone?: string
+  logo_url?: string
+  accent_color?: string
+}
+
+export interface UpdateInstitutionInput {
+  name?: string
+  type?: InstitutionType
+  description?: string
+  country?: string
+  state?: string
+  lga?: string
+  address?: string
+  website?: string
+  contact_email?: string
+  contact_phone?: string
+  email_domain_allowlist?: string[]
+  logo_url?: string
+  accent_color?: string
+  banner_url?: string
+}
+
+export interface InviteMemberInput {
+  email: string
+  role: InstitutionRole
+}
+
+export interface ApproveInstitutionInput {
+  status: 'approved' | 'rejected'
+  review_notes?: string
+  rejection_reason?: string
+}
+
+// ============================================
+// API RESPONSE TYPES
+// ============================================
+
+export interface InstitutionListResponse {
+  institutions: InstitutionWithStats[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface InstitutionMemberListResponse {
+  members: InstitutionMemberWithUser[]
+  total: number
+}
