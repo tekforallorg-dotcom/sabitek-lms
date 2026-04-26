@@ -172,6 +172,15 @@ export default function InstitutionDashboardPage() {
   // Terminology hook — labels adapt based on institution type
   const t = useTerminology(institution)
 
+// Onboarding checklist state
+  const [checklistData, setChecklistData] = useState<{
+    hasProgram: boolean
+    hasCohort: boolean
+    hasCourse: boolean
+    hasLearner: boolean
+    hasSettings: boolean
+  } | null>(null)
+
   // Invite member state
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
@@ -216,6 +225,34 @@ export default function InstitutionDashboardPage() {
       setInstitution(membership.institution as Institution)
       setUserRole(membership.role)
 
+// Fetch onboarding checklist data
+      try {
+        const instId = membership.institution_id
+        const token = session.access_token
+
+        const [programsRes, cohortsRes] = await Promise.all([
+          fetch(`/api/programs?institution_id=${instId}&limit=1`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`/api/cohorts?institution_id=${instId}&limit=1`, { headers: { Authorization: `Bearer ${token}` } }),
+        ])
+
+        const programsJson = programsRes.ok ? await programsRes.json() : {}
+        const cohortsJson = cohortsRes.ok ? await cohortsRes.json() : {}
+
+        const programsList = programsJson.data?.programs || programsJson.programs || []
+        const cohortsList = cohortsJson.data?.cohorts || cohortsJson.cohorts || []
+
+        const inst = membership.institution as Institution
+        setChecklistData({
+          hasProgram: programsList.length > 0,
+          hasCohort: cohortsList.length > 0,
+          hasCourse: false, // Will be true once courses are linked to institution
+          hasLearner: false, // Updated below if members are fetched
+          hasSettings: !!(inst.terminology_pack || inst.contact_email),
+        })
+      } catch {
+        // Non-critical: checklist is optional
+      }
+
       if (membership.role === 'institution_admin' || membership.role === 'program_manager') {
         const membersResponse = await fetch(`/api/institutions/${membership.institution_id}/members`, {
           headers: {
@@ -227,6 +264,7 @@ export default function InstitutionDashboardPage() {
           const data = await membersResponse.json()
           const membersData = data.data?.members || data.members || []
           setMembers(membersData)
+          setChecklistData((prev) => prev ? { ...prev, hasLearner: membersData.length > 1 } : prev)
         }
       }
     } catch (err) {
@@ -431,6 +469,8 @@ export default function InstitutionDashboardPage() {
           </div>
         )}
 
+
+
         {/* Quick Actions — uses vertical terminology */}
         {institution.status === 'approved' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -448,6 +488,65 @@ export default function InstitutionDashboardPage() {
             ))}
           </div>
         )}
+
+{/* ── Onboarding Checklist ── */}
+        {institution.status === 'approved' && checklistData && (() => {
+          const steps = [
+            { key: 'hasProgram', label: `Create your first ${t.program.toLowerCase()}`, href: '/institution/programs', done: checklistData.hasProgram },
+            { key: 'hasCohort', label: `Set up a ${t.cohort.toLowerCase()}`, href: '/institution/cohorts', done: checklistData.hasCohort },
+            { key: 'hasLearner', label: `Invite your first ${t.learner.toLowerCase()}`, href: '/institution/cohorts', done: checklistData.hasLearner },
+            { key: 'hasSettings', label: 'Customize your workspace settings', href: '/institution/settings', done: checklistData.hasSettings },
+          ]
+          const completedCount = steps.filter((s) => s.done).length
+          const allDone = completedCount === steps.length
+
+          if (allDone) return null
+
+          return (
+            <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Get Started</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">Complete these steps to set up your workspace</p>
+                </div>
+                <span className="text-sm font-medium text-gray-500">{completedCount}/{steps.length}</span>
+              </div>
+
+              <div className="w-full bg-gray-100 rounded-full h-2 mb-5">
+                <div
+                  className="bg-gradient-to-r from-red-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${(completedCount / steps.length) * 100}%` }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                {steps.map((step) => (
+                  <Link
+                    key={step.key}
+                    href={step.href}
+                    className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                      step.done
+                        ? 'bg-emerald-50 border border-emerald-100'
+                        : 'bg-gray-50 hover:bg-gray-100 border border-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {step.done ? (
+                        <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                      )}
+                      <span className={`text-sm font-medium ${step.done ? 'text-emerald-700 line-through' : 'text-gray-700'}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                    {!step.done && <ArrowRight className="w-4 h-4 text-gray-400" />}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Vertical-Aware Stats Grid */}
         {institution.status === 'approved' && (

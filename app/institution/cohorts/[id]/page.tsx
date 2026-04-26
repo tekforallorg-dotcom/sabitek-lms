@@ -39,6 +39,9 @@ import {
   Download,
   Info,
   Zap,
+  Upload,
+  FileSpreadsheet,
+  X,
 } from 'lucide-react'
 
 /* ── Types ── */
@@ -98,6 +101,21 @@ interface CohortInvite {
   creator?: { id: string; full_name: string; email: string } | null
 }
 
+interface BulkResult {
+  email: string
+  status: 'invited' | 'already_member' | 'not_found' | 'seat_limit' | 'error'
+  message: string
+}
+
+interface BulkSummary {
+  total: number
+  invited: number
+  already_member: number
+  not_found: number
+  seat_limit: number
+  errors: number
+}
+
 /* ── Status configs ── */
 
 const statusColors: Record<string, { dot: string; bg: string; text: string }> = {
@@ -139,6 +157,15 @@ const statusFilterOptions = [
   { value: 'removed', label: 'Removed' },
 ]
 
+/* ── CSV parser helper ── */
+
+function parseEmailsFromCSV(text: string): string[] {
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
+  const matches = text.match(emailRegex) || []
+  // Deduplicate and lowercase
+  return [...new Set(matches.map((e) => e.toLowerCase().trim()))]
+}
+
 /* ── Page ── */
 
 export default function CohortDetailPage() {
@@ -165,13 +192,22 @@ export default function CohortDetailPage() {
   // ── Invite Learners panel state ──
   const [invites, setInvites] = useState<CohortInvite[]>([])
   const [invitesLoading, setInvitesLoading] = useState(false)
-  const [inviteTab, setInviteTab] = useState<'link' | 'qr'>('link')
+  const [inviteTab, setInviteTab] = useState<'link' | 'qr' | 'csv'>('link')
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [copiedInviteId, setCopiedInviteId] = useState<string | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
   const [selectedQrInviteId, setSelectedQrInviteId] = useState<string | null>(null)
   const qrContainerRef = useRef<HTMLDivElement>(null)
+
+  // ── CSV bulk invite state ──
+  const [csvEmails, setCsvEmails] = useState<string[]>([])
+  const [csvFileName, setCsvFileName] = useState<string | null>(null)
+  const [csvUploading, setCsvUploading] = useState(false)
+  const [csvError, setCsvError] = useState<string | null>(null)
+  const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null)
+  const [bulkSummary, setBulkSummary] = useState<BulkSummary | null>(null)
+  const csvInputRef = useRef<HTMLInputElement>(null)
 
   // ── Confirm dialog state ──
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -253,7 +289,6 @@ export default function CohortDetailPage() {
     }
   }
 
-  // Debounced search
   useEffect(() => {
     if (user && cohortId) {
       const timer = setTimeout(() => { fetchMembers() }, 300)
@@ -261,7 +296,6 @@ export default function CohortDetailPage() {
     }
   }, [memberSearch])
 
-  // Load invites when user switches to the Invite Learners tab
   useEffect(() => {
     if (user && cohortId && activeTab === 'invite') {
       fetchInvites()
@@ -369,10 +403,7 @@ export default function CohortDetailPage() {
       const res = await fetch(`/api/cohorts/${cohortId}/invites?status=ACTIVE&limit=50`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
-      if (!res.ok) {
-        setInvites([])
-        return
-      }
+      if (!res.ok) { setInvites([]); return }
       const json = await res.json()
       const list: CohortInvite[] = json.data?.invites || json.invites || []
       setInvites(list)
@@ -395,10 +426,7 @@ export default function CohortDetailPage() {
       if (!session) return
       const res = await fetch(`/api/cohorts/${cohortId}/invites`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ type: 'LINK' }),
       })
       if (!res.ok) {
@@ -413,9 +441,7 @@ export default function CohortDetailPage() {
         await navigator.clipboard.writeText(newInvite.join_url)
         setCopiedInviteId(newInvite.id)
         setTimeout(() => setCopiedInviteId(null), 2000)
-      } catch {
-        // Clipboard permission denied
-      }
+      } catch { /* clipboard denied */ }
     } catch (err: unknown) {
       setGenerateError(err instanceof Error ? err.message : 'Failed to generate invite')
     } finally {
@@ -428,9 +454,7 @@ export default function CohortDetailPage() {
       await navigator.clipboard.writeText(invite.join_url)
       setCopiedInviteId(invite.id)
       setTimeout(() => setCopiedInviteId(null), 2000)
-    } catch (err) {
-      console.error('Clipboard error:', err)
-    }
+    } catch (err) { console.error('Clipboard error:', err) }
   }
 
   const handleRevokeInvite = (inviteId: string) => {
@@ -453,14 +477,9 @@ export default function CohortDetailPage() {
             return
           }
           setInvites((prev) => prev.filter((inv) => inv.id !== inviteId))
-          if (selectedQrInviteId === inviteId) {
-            setSelectedQrInviteId(null)
-          }
-        } catch (err) {
-          console.error('Error revoking invite:', err)
-        } finally {
-          setRevokingId(null)
-        }
+          if (selectedQrInviteId === inviteId) setSelectedQrInviteId(null)
+        } catch (err) { console.error('Error revoking invite:', err) }
+        finally { setRevokingId(null) }
       }
     )
   }
@@ -478,6 +497,125 @@ export default function CohortDetailPage() {
     document.body.removeChild(link)
   }
 
+  /* ── CSV Bulk Invite handlers ── */
+
+  const handleCSVFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setCsvError(null)
+    setBulkResults(null)
+    setBulkSummary(null)
+
+    if (!file.name.match(/\.(csv|txt)$/i)) {
+      setCsvError('Please upload a .csv or .txt file')
+      return
+    }
+
+    if (file.size > 1024 * 1024) {
+      setCsvError('File is too large. Maximum 1MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string
+      const emails = parseEmailsFromCSV(text)
+      if (emails.length === 0) {
+        setCsvError('No valid email addresses found in the file')
+        return
+      }
+      if (emails.length > 200) {
+        setCsvError(`Found ${emails.length} emails. Maximum 200 per batch.`)
+        return
+      }
+      setCsvEmails(emails)
+      setCsvFileName(file.name)
+    }
+    reader.onerror = () => {
+      setCsvError('Failed to read the file')
+    }
+    reader.readAsText(file)
+
+    // Reset the input so same file can be re-selected
+    e.target.value = ''
+  }
+
+  const handleCSVClear = () => {
+    setCsvEmails([])
+    setCsvFileName(null)
+    setCsvError(null)
+    setBulkResults(null)
+    setBulkSummary(null)
+  }
+
+  const handleCSVRemoveEmail = (emailToRemove: string) => {
+    setCsvEmails((prev) => prev.filter((e) => e !== emailToRemove))
+  }
+
+  const handleCSVSubmit = async () => {
+    if (csvEmails.length === 0) return
+    setCsvUploading(true)
+    setCsvError(null)
+
+    try {
+      const session = await getSession()
+      if (!session) return
+
+      const res = await fetch(`/api/cohorts/${cohortId}/members/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ emails: csvEmails }),
+      })
+
+      const json = await res.json().catch(() => ({}))
+      const payload = json.data || json
+
+      if (!res.ok) {
+        throw new Error(payload.error || 'Bulk invite failed')
+      }
+
+      setBulkResults(payload.results || [])
+      setBulkSummary(payload.summary || null)
+      fetchMembers()
+      fetchCohort()
+    } catch (err: unknown) {
+      setCsvError(err instanceof Error ? err.message : 'Bulk invite failed')
+    } finally {
+      setCsvUploading(false)
+    }
+  }
+
+/* ── Export Members CSV ── */
+
+  const handleExportCSV = () => {
+    const rows = filteredMembers.map((m) => ({
+      name: m.user.full_name || 'Unknown',
+      email: m.user.email,
+      status: m.status,
+      progress: m.progress_pct || 0,
+      joined: m.joined_at || m.invited_at || m.applied_at || '',
+    }))
+
+    const header = 'Name,Email,Status,Progress (%),Date\n'
+    const csv = header + rows.map((r) =>
+      `"${r.name}","${r.email}","${r.status}",${r.progress},"${r.joined ? new Date(r.joined).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}"`
+    ).join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${cohort?.name || 'cohort'}-members-${statusFilter}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   const formatInviteExpiry = (expiresAt: string | null): string => {
     if (!expiresAt) return 'No expiry'
     const expiry = new Date(expiresAt)
@@ -491,9 +629,7 @@ export default function CohortDetailPage() {
   }
 
   const copyAccessCode = () => {
-    if (cohort?.access_code) {
-      navigator.clipboard.writeText(cohort.access_code)
-    }
+    if (cohort?.access_code) navigator.clipboard.writeText(cohort.access_code)
   }
 
   const formatDate = (dateString: string | null) => {
@@ -509,10 +645,7 @@ export default function CohortDetailPage() {
     : members.filter((m) => m.status === statusFilter)
 
   const pendingCount = members.filter((m) => m.status === 'pending_approval').length
-  const activeCount = members.filter((m) => m.status === 'active').length
-  const invitedCount = members.filter((m) => m.status === 'invited').length
 
-  // ── Loading ──
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -521,7 +654,6 @@ export default function CohortDetailPage() {
     )
   }
 
-  // ── Not found ──
   if (!cohort) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -548,6 +680,14 @@ export default function CohortDetailPage() {
 
   const cohortStatusStyle = getStatusStyle(cohort.status)
   const enrollMode = enrollmentModeLabels[cohort.enrollment_mode] || enrollmentModeLabels.invite_only
+
+  const bulkResultStatusStyle: Record<string, { bg: string; text: string }> = {
+    invited: { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+    already_member: { bg: 'bg-blue-50', text: 'text-blue-700' },
+    not_found: { bg: 'bg-amber-50', text: 'text-amber-700' },
+    seat_limit: { bg: 'bg-red-50', text: 'text-red-700' },
+    error: { bg: 'bg-red-50', text: 'text-red-700' },
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -624,9 +764,7 @@ export default function CohortDetailPage() {
                 {tab.badge !== null && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                     activeTab === tab.id ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {tab.badge}
-                  </span>
+                  }`}>{tab.badge}</span>
                 )}
                 {tab.id === 'members' && pendingCount > 0 && (
                   <span className="bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded-full font-medium">
@@ -662,7 +800,6 @@ export default function CohortDetailPage() {
                   </div>
                 ))}
               </div>
-
               <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-gray-400" />Schedule
@@ -694,7 +831,6 @@ export default function CohortDetailPage() {
                   <p className="text-sm text-gray-500 mt-2">Share this code with learners to let them join</p>
                 </div>
               )}
-
               <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <UserPlus className="w-5 h-5 text-gray-400" />Quick Invite
@@ -716,7 +852,6 @@ export default function CohortDetailPage() {
                   </Button>
                 </form>
               </div>
-
               {pendingCount > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -737,34 +872,17 @@ export default function CohortDetailPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                          <button
-                            onClick={() => handleApproveMember(member.id)}
-                            disabled={actionLoading === member.id}
-                            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
-                            title="Approve"
-                          >
-                            {actionLoading === member.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <CheckCircle className="w-4 h-4" />
-                            )}
+                          <button onClick={() => handleApproveMember(member.id)} disabled={actionLoading === member.id} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50" title="Approve">
+                            {actionLoading === member.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                           </button>
-                          <button
-                            onClick={() => handleRejectMember(member.id)}
-                            disabled={actionLoading === member.id}
-                            className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                            title="Reject"
-                          >
+                          <button onClick={() => handleRejectMember(member.id)} disabled={actionLoading === member.id} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50" title="Reject">
                             <XCircle className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
                     ))}
                     {pendingCount > 5 && (
-                      <button
-                        onClick={() => { setActiveTab('members'); setStatusFilter('pending_approval') }}
-                        className="text-sm text-red-600 hover:text-red-700 font-medium"
-                      >
+                      <button onClick={() => { setActiveTab('members'); setStatusFilter('pending_approval') }} className="text-sm text-red-600 hover:text-red-700 font-medium">
                         View all {pendingCount} pending
                       </button>
                     )}
@@ -786,50 +904,35 @@ export default function CohortDetailPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {statusFilterOptions.map((opt) => {
-                    const count = opt.value === 'all'
-                      ? members.length
-                      : members.filter((m) => m.status === opt.value).length
+                    const count = opt.value === 'all' ? members.length : members.filter((m) => m.status === opt.value).length
                     if (count === 0 && opt.value !== 'all') return null
                     return (
-                      <button
-                        key={opt.value}
-                        onClick={() => setStatusFilter(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                          statusFilter === opt.value
-                            ? 'bg-red-100 text-red-700 border border-red-200'
-                            : 'bg-gray-100 text-gray-600 border border-transparent hover:bg-gray-200'
-                        }`}
+                      <button key={opt.value} onClick={() => setStatusFilter(opt.value)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${statusFilter === opt.value ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-600 border border-transparent hover:bg-gray-200'}`}
                       >
-                        {opt.label}
-                        <span className="ml-1 opacity-70">{count}</span>
+                        {opt.label}<span className="ml-1 opacity-70">{count}</span>
                       </button>
                     )
                   })}
                 </div>
               </div>
-              <Button onClick={() => setActiveTab('invite')} className="bg-red-600 hover:bg-red-700 flex-shrink-0">
-                <UserPlus className="w-4 h-4 mr-2" />Invite Members
-              </Button>
-            </div>
-
-            {filteredMembers.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {statusFilter !== 'all' ? `No ${statusFilter.replace('_', ' ')} members` : 'No members yet'}
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {statusFilter !== 'all'
-                    ? 'Try a different filter or invite new members'
-                    : 'Invite learners to join this cohort'}
-                </p>
-                {statusFilter !== 'all' && (
-                  <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
-                    Show all members
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {members.length > 0 && (
+                  <Button variant="outline" onClick={handleExportCSV} className="border-gray-300">
+                    <Download className="w-4 h-4 mr-2" />Export CSV
                   </Button>
                 )}
+                <Button onClick={() => setActiveTab('invite')} className="bg-red-600 hover:bg-red-700">
+                  <UserPlus className="w-4 h-4 mr-2" />Invite Members
+                </Button>
+              </div>
+            </div>
+            {filteredMembers.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"><Users className="w-8 h-8 text-gray-400" /></div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{statusFilter !== 'all' ? `No ${statusFilter.replace('_', ' ')} members` : 'No members yet'}</h3>
+                <p className="text-gray-500 mb-4">{statusFilter !== 'all' ? 'Try a different filter or invite new members' : 'Invite learners to join this cohort'}</p>
+                {statusFilter !== 'all' && <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>Show all members</Button>}
               </div>
             ) : (
               <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -854,11 +957,7 @@ export default function CohortDetailPage() {
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
-                                  {member.user.avatar_url ? (
-                                    <img src={member.user.avatar_url} alt={member.user.full_name} className="w-10 h-10 rounded-full object-cover" />
-                                  ) : (
-                                    <span className="text-red-600 font-medium">{member.user.full_name?.charAt(0) || 'U'}</span>
-                                  )}
+                                  {member.user.avatar_url ? <img src={member.user.avatar_url} alt={member.user.full_name} className="w-10 h-10 rounded-full object-cover" /> : <span className="text-red-600 font-medium">{member.user.full_name?.charAt(0) || 'U'}</span>}
                                 </div>
                                 <div className="min-w-0">
                                   <div className="font-medium text-gray-900 truncate">{member.user.full_name || 'Unknown'}</div>
@@ -876,69 +975,36 @@ export default function CohortDetailPage() {
                               {member.status === 'active' || member.status === 'completed' ? (
                                 <div className="flex items-center gap-2">
                                   <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-red-500 rounded-full transition-all"
-                                      style={{ width: `${member.progress_pct || 0}%` }}
-                                    />
+                                    <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${member.progress_pct || 0}%` }} />
                                   </div>
                                   <span className="text-sm text-gray-600">{member.progress_pct || 0}%</span>
                                 </div>
-                              ) : (
-                                <span className="text-sm text-gray-400">-</span>
-                              )}
+                              ) : <span className="text-sm text-gray-400">-</span>}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-500">
-                              {displayDate
-                                ? new Date(displayDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
-                                : '-'}
-                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500">{displayDate ? new Date(displayDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                             <td className="px-6 py-4 text-right">
                               {member.status === 'pending_approval' ? (
                                 <div className="flex items-center justify-end gap-1.5">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleApproveMember(member.id)}
-                                    disabled={isLoading}
-                                    className="h-8 gap-1 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                                  >
-                                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                                    Approve
+                                  <Button size="sm" variant="outline" onClick={() => handleApproveMember(member.id)} disabled={isLoading} className="h-8 gap-1 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50">
+                                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}Approve
                                   </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRejectMember(member.id)}
-                                    disabled={isLoading}
-                                    className="h-8 gap-1 text-xs text-red-700 border-red-200 hover:bg-red-50"
-                                  >
-                                    <XCircle className="w-3.5 h-3.5" />
-                                    Reject
+                                  <Button size="sm" variant="outline" onClick={() => handleRejectMember(member.id)} disabled={isLoading} className="h-8 gap-1 text-xs text-red-700 border-red-200 hover:bg-red-50">
+                                    <XCircle className="w-3.5 h-3.5" />Reject
                                   </Button>
                                 </div>
-                              ) : (
-                                ['active', 'invited'].includes(member.status) && (
-                                  <div className="relative inline-block">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setOpenMemberMenu(openMemberMenu === member.id ? null : member.id)}
-                                      disabled={isLoading}
-                                    >
-                                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreVertical className="w-4 h-4" />}
-                                    </Button>
-                                    {openMemberMenu === member.id && (
-                                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 z-10">
-                                        <button
-                                          onClick={() => handleRemoveMember(member.id)}
-                                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                                        >
-                                          <Trash2 className="w-4 h-4" />Remove Member
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                )
+                              ) : ['active', 'invited'].includes(member.status) && (
+                                <div className="relative inline-block">
+                                  <Button variant="ghost" size="sm" onClick={() => setOpenMemberMenu(openMemberMenu === member.id ? null : member.id)} disabled={isLoading}>
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreVertical className="w-4 h-4" />}
+                                  </Button>
+                                  {openMemberMenu === member.id && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 z-10">
+                                      <button onClick={() => handleRemoveMember(member.id)} className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">
+                                        <Trash2 className="w-4 h-4" />Remove Member
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -953,12 +1019,7 @@ export default function CohortDetailPage() {
         )}
 
         {/* ── Confirm Dialog ── */}
-        <ConfirmDialog
-          isOpen={confirmDialog.isOpen}
-          onClose={closeConfirm}
-          title={confirmDialog.title}
-          message={confirmDialog.message}
-          type="confirm"
+        <ConfirmDialog isOpen={confirmDialog.isOpen} onClose={closeConfirm} title={confirmDialog.title} message={confirmDialog.message} type="confirm"
           actions={[
             { label: 'Cancel', onClick: closeConfirm, variant: 'secondary' },
             { label: 'Confirm', onClick: confirmDialog.onConfirm, variant: 'danger' },
@@ -986,38 +1047,34 @@ export default function CohortDetailPage() {
             {cohort.status === 'archived' && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-2.5">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-amber-800">
-                  This cohort is archived. Existing invite links still work for already-started joins, but you cannot generate new ones.
-                </div>
+                <div className="text-sm text-amber-800">This cohort is archived. You cannot invite new members.</div>
               </div>
             )}
 
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+              {/* ── Sub-tab switcher (Link / QR / CSV) ── */}
               <div className="border-b flex">
-                <button
-                  onClick={() => setInviteTab('link')}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    inviteTab === 'link'
-                      ? 'border-red-500 text-red-600 bg-red-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Link2 className="w-4 h-4" />
-                  Share Link
-                </button>
-                <button
-                  onClick={() => setInviteTab('qr')}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    inviteTab === 'qr'
-                      ? 'border-red-500 text-red-600 bg-red-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" />
-                  QR Code
-                </button>
+                {[
+                  { id: 'link' as const, icon: Link2, label: 'Share Link' },
+                  { id: 'qr' as const, icon: QrCode, label: 'QR Code' },
+                  { id: 'csv' as const, icon: FileSpreadsheet, label: 'CSV Upload' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setInviteTab(tab.id)}
+                    className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      inviteTab === tab.id
+                        ? 'border-red-500 text-red-600 bg-red-50/50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
+              {/* ── LINK SUB-TAB ── */}
               {inviteTab === 'link' && (
                 <div className="p-5 sm:p-6 space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
@@ -1025,39 +1082,22 @@ export default function CohortDetailPage() {
                       <h3 className="text-sm font-medium text-gray-900">Generate a new invite link</h3>
                       <p className="text-xs text-gray-500 mt-0.5">Links can be revoked anytime. Default: no expiry, unlimited uses.</p>
                     </div>
-                    <Button
-                      onClick={handleGenerateInvite}
-                      disabled={generating || cohort.status === 'archived'}
-                      className="bg-red-600 hover:bg-red-700 flex-shrink-0"
-                    >
-                      {generating ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
-                      ) : (
-                        <><Zap className="w-4 h-4 mr-2" />Generate Link</>
-                      )}
+                    <Button onClick={handleGenerateInvite} disabled={generating || cohort.status === 'archived'} className="bg-red-600 hover:bg-red-700 flex-shrink-0">
+                      {generating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</> : <><Zap className="w-4 h-4 mr-2" />Generate Link</>}
                     </Button>
                   </div>
-
                   {generateError && (
                     <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span>{generateError}</span>
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /><span>{generateError}</span>
                     </div>
                   )}
-
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-medium text-gray-900">Active invite links</h3>
-                      {invites.length > 0 && (
-                        <span className="text-xs text-gray-500">{invites.length} active</span>
-                      )}
+                      {invites.length > 0 && <span className="text-xs text-gray-500">{invites.length} active</span>}
                     </div>
-
                     {invitesLoading ? (
-                      <div className="text-center py-8 text-sm text-gray-500">
-                        <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-gray-400" />
-                        Loading invites...
-                      </div>
+                      <div className="text-center py-8 text-sm text-gray-500"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-gray-400" />Loading invites...</div>
                     ) : invites.length === 0 ? (
                       <div className="bg-gray-50 border border-dashed rounded-lg p-8 text-center">
                         <Link2 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
@@ -1069,65 +1109,31 @@ export default function CohortDetailPage() {
                         {invites.map((inv) => {
                           const isCopied = copiedInviteId === inv.id
                           const isRevoking = revokingId === inv.id
-                          const usesLabel = inv.max_uses === null
-                            ? `${inv.use_count} uses`
-                            : `${inv.use_count} / ${inv.max_uses} uses`
+                          const usesLabel = inv.max_uses === null ? `${inv.use_count} uses` : `${inv.use_count} / ${inv.max_uses} uses`
                           return (
                             <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1.5">
-                                    <code className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700">
-                                      ...{inv.token.slice(-8)}
-                                    </code>
+                                    <code className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700">...{inv.token.slice(-8)}</code>
                                     {inv.is_usable ? (
-                                      <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                        Active
-                                      </span>
+                                      <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Active</span>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-full px-2 py-0.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                                        Exhausted
-                                      </span>
+                                      <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-full px-2 py-0.5"><span className="w-1.5 h-1.5 rounded-full bg-gray-400" />Exhausted</span>
                                     )}
                                   </div>
                                   <div className="text-xs text-gray-500 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                    <span>{formatInviteExpiry(inv.expires_at)}</span>
-                                    <span>&#183;</span>
-                                    <span>{usesLabel}</span>
-                                    <span>&#183;</span>
+                                    <span>{formatInviteExpiry(inv.expires_at)}</span><span>&#183;</span><span>{usesLabel}</span><span>&#183;</span>
                                     <span>Created {new Date(inv.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}</span>
                                   </div>
-                                  <div className="mt-2">
-                                    <code className="text-xs text-gray-600 break-all">{inv.join_url}</code>
-                                  </div>
+                                  <div className="mt-2"><code className="text-xs text-gray-600 break-all">{inv.join_url}</code></div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleCopyInvite(inv)}
-                                    className="h-8 text-xs"
-                                  >
-                                    {isCopied ? (
-                                      <><CheckCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />Copied</>
-                                    ) : (
-                                      <><Copy className="w-3.5 h-3.5 mr-1.5" />Copy</>
-                                    )}
+                                  <Button size="sm" variant="outline" onClick={() => handleCopyInvite(inv)} className="h-8 text-xs">
+                                    {isCopied ? <><CheckCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />Copied</> : <><Copy className="w-3.5 h-3.5 mr-1.5" />Copy</>}
                                   </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRevokeInvite(inv.id)}
-                                    disabled={isRevoking}
-                                    className="h-8 text-xs text-red-700 border-red-200 hover:bg-red-50"
-                                  >
-                                    {isRevoking ? (
-                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    ) : (
-                                      <><Trash2 className="w-3.5 h-3.5 mr-1.5" />Revoke</>
-                                    )}
+                                  <Button size="sm" variant="outline" onClick={() => handleRevokeInvite(inv.id)} disabled={isRevoking} className="h-8 text-xs text-red-700 border-red-200 hover:bg-red-50">
+                                    {isRevoking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Trash2 className="w-3.5 h-3.5 mr-1.5" />Revoke</>}
                                   </Button>
                                 </div>
                               </div>
@@ -1140,124 +1146,193 @@ export default function CohortDetailPage() {
                 </div>
               )}
 
+              {/* ── QR SUB-TAB ── */}
               {inviteTab === 'qr' && (
                 <div className="p-5 sm:p-6">
                   {invitesLoading ? (
-                    <div className="text-center py-12 text-sm text-gray-500">
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-gray-400" />
-                      Loading invites...
-                    </div>
+                    <div className="text-center py-12 text-sm text-gray-500"><Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-gray-400" />Loading invites...</div>
                   ) : invites.length === 0 ? (
                     <div className="bg-gray-50 border border-dashed rounded-lg p-10 text-center">
                       <QrCode className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                       <p className="text-sm text-gray-600 font-medium">No invite link to display</p>
                       <p className="text-xs text-gray-500 mt-1 mb-4">Generate a link first, then come back here for the QR code.</p>
-                      <Button
-                        onClick={() => setInviteTab('link')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Link2 className="w-4 h-4 mr-2" />Go to Share Link
-                      </Button>
+                      <Button onClick={() => setInviteTab('link')} variant="outline" size="sm"><Link2 className="w-4 h-4 mr-2" />Go to Share Link</Button>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                       <div className="space-y-4 order-2 md:order-1">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                            Invite link
-                          </label>
-                          <select
-                            value={selectedQrInviteId || ''}
-                            onChange={(e) => setSelectedQrInviteId(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          >
-                            {invites.map((inv) => (
-                              <option key={inv.id} value={inv.id}>
-                                ...{inv.token.slice(-8)} &nbsp;&#183;&nbsp; {formatInviteExpiry(inv.expires_at)}
-                              </option>
-                            ))}
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Invite link</label>
+                          <select value={selectedQrInviteId || ''} onChange={(e) => setSelectedQrInviteId(e.target.value)} className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            {invites.map((inv) => <option key={inv.id} value={inv.id}>...{inv.token.slice(-8)} &nbsp;&#183;&nbsp; {formatInviteExpiry(inv.expires_at)}</option>)}
                           </select>
                         </div>
-
                         {(() => {
                           const selected = invites.find((inv) => inv.id === selectedQrInviteId) || invites[0]
                           if (!selected) return null
-                          const usesLabel = selected.max_uses === null
-                            ? `${selected.use_count} uses (unlimited)`
-                            : `${selected.use_count} of ${selected.max_uses} uses`
+                          const usesLabel = selected.max_uses === null ? `${selected.use_count} uses (unlimited)` : `${selected.use_count} of ${selected.max_uses} uses`
                           return (
                             <>
                               <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1.5 border">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">Expiry</span>
-                                  <span className="text-gray-900 font-medium">{formatInviteExpiry(selected.expires_at)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">Uses</span>
-                                  <span className="text-gray-900 font-medium">{usesLabel}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">Status</span>
-                                  <span className={`font-medium ${selected.is_usable ? 'text-emerald-700' : 'text-gray-600'}`}>
-                                    {selected.is_usable ? 'Active' : 'Exhausted'}
-                                  </span>
-                                </div>
+                                <div className="flex justify-between"><span className="text-gray-500">Expiry</span><span className="text-gray-900 font-medium">{formatInviteExpiry(selected.expires_at)}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Uses</span><span className="text-gray-900 font-medium">{usesLabel}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Status</span><span className={`font-medium ${selected.is_usable ? 'text-emerald-700' : 'text-gray-600'}`}>{selected.is_usable ? 'Active' : 'Exhausted'}</span></div>
                               </div>
-
                               <div>
                                 <label className="block text-xs font-medium text-gray-700 mb-1.5">Direct URL</label>
                                 <div className="flex items-center gap-2">
-                                  <code className="flex-1 text-xs bg-gray-50 border rounded-lg px-3 py-2 text-gray-700 break-all">
-                                    {selected.join_url}
-                                  </code>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleCopyInvite(selected)}
-                                    className="h-9 flex-shrink-0"
-                                  >
-                                    {copiedInviteId === selected.id ? (
-                                      <CheckCircle className="w-4 h-4 text-emerald-600" />
-                                    ) : (
-                                      <Copy className="w-4 h-4" />
-                                    )}
+                                  <code className="flex-1 text-xs bg-gray-50 border rounded-lg px-3 py-2 text-gray-700 break-all">{selected.join_url}</code>
+                                  <Button size="sm" variant="outline" onClick={() => handleCopyInvite(selected)} className="h-9 flex-shrink-0">
+                                    {copiedInviteId === selected.id ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                                   </Button>
                                 </div>
                               </div>
-
-                              <Button
-                                onClick={handleDownloadQR}
-                                className="w-full bg-gray-900 hover:bg-gray-800 text-white"
-                              >
-                                <Download className="w-4 h-4 mr-2" />
-                                Download PNG
-                              </Button>
+                              <Button onClick={handleDownloadQR} className="w-full bg-gray-900 hover:bg-gray-800 text-white"><Download className="w-4 h-4 mr-2" />Download PNG</Button>
                             </>
                           )
                         })()}
                       </div>
-
                       <div className="order-1 md:order-2 flex flex-col items-center">
                         {(() => {
                           const selected = invites.find((inv) => inv.id === selectedQrInviteId) || invites[0]
                           if (!selected) return null
                           return (
                             <div ref={qrContainerRef} className="bg-white border-2 border-gray-100 rounded-xl p-4 sm:p-6 shadow-sm">
-                              <QRCodeCanvas
-                                value={selected.join_url}
-                                size={240}
-                                level="M"
-                                includeMargin={false}
-                                bgColor="#ffffff"
-                                fgColor="#111827"
-                              />
+                              <QRCodeCanvas value={selected.join_url} size={240} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#111827" />
                             </div>
                           )
                         })()}
-                        <p className="text-xs text-gray-500 mt-3 text-center">
-                          Scan with a phone camera to open the join page.
-                        </p>
+                        <p className="text-xs text-gray-500 mt-3 text-center">Scan with a phone camera to open the join page.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── CSV UPLOAD SUB-TAB ── */}
+              {inviteTab === 'csv' && (
+                <div className="p-5 sm:p-6 space-y-5">
+                  {/* Upload area */}
+                  {csvEmails.length === 0 && !bulkResults && (
+                    <div>
+                      <div
+                        onClick={() => csvInputRef.current?.click()}
+                        className="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center cursor-pointer hover:border-red-300 hover:bg-red-50/30 transition-colors"
+                      >
+                        <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                        <p className="text-sm font-medium text-gray-700 mb-1">Upload a CSV file with email addresses</p>
+                        <p className="text-xs text-gray-500">One email per row, or a column with emails. Max 200 emails, 1MB file size.</p>
+                        <p className="text-xs text-gray-400 mt-2">Accepts .csv and .txt files</p>
+                      </div>
+                      <input
+                        ref={csvInputRef}
+                        type="file"
+                        accept=".csv,.txt"
+                        onChange={handleCSVFileSelect}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+
+                  {csvError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{csvError}</p>
+                    </div>
+                  )}
+
+                  {/* Preview */}
+                  {csvEmails.length > 0 && !bulkResults && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="w-4 h-4 text-gray-400" />
+                          <h3 className="text-sm font-medium text-gray-900">{csvFileName}</h3>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{csvEmails.length} emails</span>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={handleCSVClear} className="h-8 text-xs">
+                          <X className="w-3.5 h-3.5 mr-1" />Clear
+                        </Button>
+                      </div>
+
+                      <div className="border rounded-lg max-h-60 overflow-y-auto divide-y">
+                        {csvEmails.map((email, i) => (
+                          <div key={email} className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-50">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xs text-gray-400 w-6 text-right">{i + 1}</span>
+                              <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-700 truncate">{email}</span>
+                            </div>
+                            <button onClick={() => handleCSVRemoveEmail(email)} className="p-1 text-gray-400 hover:text-red-500 flex-shrink-0">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-3 mt-4">
+                        <Button
+                          onClick={handleCSVSubmit}
+                          disabled={csvUploading || csvEmails.length === 0}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          {csvUploading ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Inviting {csvEmails.length} learners...</>
+                          ) : (
+                            <><UserPlus className="w-4 h-4 mr-2" />Invite All ({csvEmails.length})</>
+                          )}
+                        </Button>
+                        <button onClick={() => csvInputRef.current?.click()} className="text-sm text-gray-500 hover:text-gray-700">
+                          Upload a different file
+                        </button>
+                        <input ref={csvInputRef} type="file" accept=".csv,.txt" onChange={handleCSVFileSelect} className="hidden" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Results */}
+                  {bulkResults && bulkSummary && (
+                    <div className="space-y-4">
+                      {/* Summary cards */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {[
+                          { label: 'Invited', value: bulkSummary.invited, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+                          { label: 'Already members', value: bulkSummary.already_member, color: 'text-blue-700 bg-blue-50 border-blue-200' },
+                          { label: 'Not found', value: bulkSummary.not_found, color: 'text-amber-700 bg-amber-50 border-amber-200' },
+                          { label: 'Errors', value: bulkSummary.errors + bulkSummary.seat_limit, color: 'text-red-700 bg-red-50 border-red-200' },
+                        ].map((item) => (
+                          <div key={item.label} className={`rounded-lg border p-3 text-center ${item.color}`}>
+                            <div className="text-xl font-bold">{item.value}</div>
+                            <div className="text-xs font-medium">{item.label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Per-row results */}
+                      <div className="border rounded-lg max-h-60 overflow-y-auto divide-y">
+                        {bulkResults.map((result, i) => {
+                          const style = bulkResultStatusStyle[result.status] || bulkResultStatusStyle.error
+                          return (
+                            <div key={i} className={`flex items-center justify-between px-4 py-2 text-sm ${style.bg}`}>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                                <span className="text-gray-700 truncate">{result.email}</span>
+                              </div>
+                              <span className={`text-xs font-medium flex-shrink-0 ${style.text}`}>
+                                {result.message}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={handleCSVClear}>
+                          <Upload className="w-4 h-4 mr-2" />Upload Another CSV
+                        </Button>
+                        <Button variant="outline" onClick={() => setActiveTab('members')}>
+                          <Users className="w-4 h-4 mr-2" />View Members
+                        </Button>
                       </div>
                     </div>
                   )}

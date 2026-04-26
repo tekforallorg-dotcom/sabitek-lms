@@ -453,7 +453,10 @@ export default function SchoolsAndTutorsPage() {
               variants={fadeInUp}
               className="text-sm text-gray-600 max-w-xl mx-auto"
             >
-              Focus on teaching while Sabitek supports delivery and structure.
+              Focus on teaching while Sabitek supports delivery and structure.{' '}
+              <a href="/become-a-provider" className="text-red-500 font-medium hover:text-red-600">
+                Apply to become a provider
+              </a>
             </motion.p>
           </motion.div>
 

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STANDARD } from '@/lib/rate-limit'
+import { checkDomainAllowlist } from '@/lib/domain-check'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -116,6 +117,15 @@ export async function POST(
         cohort_name: cohort.name,
         program_name: cohort.program.name,
       })
+    }
+
+    // ── 4b. Domain allowlist check ──
+    const domainCheck = await checkDomainAllowlist(
+      cohort.program.institution_id,
+      user.email || ''
+    )
+    if (!domainCheck.allowed) {
+      return ApiErrors.forbidden(domainCheck.reason || 'Your email domain is not allowed for this institution')
     }
 
     // ── 5. Seat limit check (only counts active + pending) ──

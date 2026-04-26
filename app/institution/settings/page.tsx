@@ -145,7 +145,9 @@ export default function InstitutionSettingsPage() {
 
   // Terminology pack — full TerminologyPack with current values (defaults + overrides)
   const [terminology, setTerminology] = useState<TerminologyPack>(getDefaultTerminology('other'))
-
+// Domain allowlist
+  const [domainAllowlist, setDomainAllowlist] = useState<string[]>([])
+  const [newDomain, setNewDomain] = useState('')
   useEffect(() => {
     if (!authLoading && user) {
       fetchInstitution()
@@ -188,6 +190,8 @@ export default function InstitutionSettingsPage() {
       setContactEmail(inst.contact_email || '')
       setContactPhone(inst.contact_phone || '')
 
+      // Load domain allowlist
+      setDomainAllowlist((inst as any).email_domain_allowlist || [])
       // Merge defaults with stored overrides for the terminology editor
       const verticalType = (inst.type || 'other') as InstitutionVerticalType
       const defaults = getDefaultTerminology(verticalType)
@@ -235,6 +239,7 @@ export default function InstitutionSettingsPage() {
 
       // Send the full terminology pack — Supabase JSONB stores the object
       payload.terminology_pack = terminology
+      payload.email_domain_allowlist = domainAllowlist
 
       const res = await fetch(`/api/institutions/${institution.id}`, {
         method: 'PATCH',
@@ -467,6 +472,78 @@ export default function InstitutionSettingsPage() {
                   <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://www.institution.edu" className="pl-10" />
                 </div>
               </div>
+            </div>
+          </div>
+
+{/* ── Domain Allowlist ── */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <Shield className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Email Domain Allowlist</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Restrict who can join your institution by email domain. Leave empty to allow any email.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mb-4">
+              <Input
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                placeholder="e.g. school.edu.ng"
+                className="max-w-xs"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    const domain = newDomain.toLowerCase().replace(/^@/, '').trim()
+                    if (domain && !domainAllowlist.includes(domain)) {
+                      setDomainAllowlist((prev) => [...prev, domain])
+                      setNewDomain('')
+                    }
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const domain = newDomain.toLowerCase().replace(/^@/, '').trim()
+                  if (domain && !domainAllowlist.includes(domain)) {
+                    setDomainAllowlist((prev) => [...prev, domain])
+                    setNewDomain('')
+                  }
+                }}
+              >
+                Add Domain
+              </Button>
+            </div>
+
+            {domainAllowlist.length === 0 ? (
+              <p className="text-sm text-gray-500 italic">No domains configured. Any email can join via invite links.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {domainAllowlist.map((domain) => (
+                  <span key={domain} className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-sm px-3 py-1.5 rounded-full">
+                    @{domain}
+                    <button
+                      type="button"
+                      onClick={() => setDomainAllowlist((prev) => prev.filter((d) => d !== domain))}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <span className="sr-only">Remove</span>
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l6 6M10 4l-6 6" /></svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-4">
+              <p className="text-xs text-blue-700">
+                When domains are configured and domain enforcement is enabled, only learners with matching email addresses can join through invite links. Institution admins can still manually add any learner.
+              </p>
             </div>
           </div>
 

@@ -10,27 +10,27 @@ import {
   CheckCircle,
   Mail,
   User,
-  Building2,
-  MapPin,
-  Users,
-  Briefcase,
+  BookOpen,
+  Globe,
   FileText,
-  Clock,
   Loader2,
   AlertCircle,
   Rocket,
   Send,
+  Award,
+  Users,
+  Clock,
+  GraduationCap,
 } from 'lucide-react'
 
-export default function RequestAccessPage() {
+export default function BecomeProviderPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    organisation: '',
-    role: '',
+    brandName: '',
     country: '',
-    type: '',
-    learnerCount: '',
+    expertise: '',
+    experience: '',
     description: '',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -54,11 +54,11 @@ export default function RequestAccessPage() {
         body: JSON.stringify({
           full_name: formData.fullName,
           email: formData.email,
-          organisation_name: formData.organisation,
-          role_title: formData.role || undefined,
+          organisation_name: formData.brandName || `${formData.fullName}'s Training`,
+          role_title: formData.expertise || undefined,
           country: formData.country || undefined,
-          org_type: formData.type || 'other',
-          learner_count: formData.learnerCount || undefined,
+          org_type: 'tutor',
+          learner_count: formData.experience || undefined,
           description: formData.description,
         }),
       })
@@ -82,7 +82,7 @@ export default function RequestAccessPage() {
   // ── Success state ──
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30">
         <div className="max-w-xl mx-auto px-4 py-16 sm:py-24">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-1">
@@ -92,35 +92,35 @@ export default function RequestAccessPage() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-500 to-green-600 p-8 text-center">
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-8 text-center">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-white mb-2">Application Received</h1>
-              <p className="text-emerald-100 text-sm">
+              <p className="text-purple-100 text-sm">
                 We will review your application and respond to <strong className="text-white">{submittedEmail}</strong>
               </p>
             </div>
 
             <div className="p-6 sm:p-8 space-y-6">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
-                <p className="text-sm font-semibold text-blue-900 mb-4 flex items-center gap-2">
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-5">
+                <p className="text-sm font-semibold text-purple-900 mb-4 flex items-center gap-2">
                   <Rocket className="w-4 h-4" />
                   What happens next
                 </p>
                 <div className="space-y-4">
                   {[
-                    { step: '1', label: 'Application review', desc: 'Our team reviews your details within 2-5 working days.', icon: Clock },
-                    { step: '2', label: 'Approval email', desc: 'You receive an approval email with your workspace setup link.', icon: Mail },
-                    { step: '3', label: 'Set up your workspace', desc: 'Create your first program, set up cohorts, and invite learners.', icon: Building2 },
+                    { step: '1', label: 'Application review', desc: 'Our team reviews your profile and expertise within 2-5 working days.' },
+                    { step: '2', label: 'Approval and workspace setup', desc: 'Once approved, you receive a welcome email with your workspace login.' },
+                    { step: '3', label: 'Start creating', desc: 'Build your first training program, create cohorts, and invite learners.' },
                   ].map((item) => (
                     <div key={item.step} className="flex items-start gap-3">
-                      <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-blue-700">{item.step}</span>
+                      <div className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-purple-700">{item.step}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">{item.label}</p>
-                        <p className="text-xs text-blue-700 mt-0.5">{item.desc}</p>
+                        <p className="text-sm font-medium text-purple-900">{item.label}</p>
+                        <p className="text-xs text-purple-700 mt-0.5">{item.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -154,7 +154,7 @@ export default function RequestAccessPage() {
 
   // ── Form state ──
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30">
       <div className="max-w-2xl mx-auto px-4 py-10 sm:py-16">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -164,15 +164,30 @@ export default function RequestAccessPage() {
           </Link>
         </div>
 
+        {/* Value prop strip */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {[
+            { icon: BookOpen, label: 'Create programs', desc: 'Structured tracks' },
+            { icon: Users, label: 'Manage cohorts', desc: 'Invite and track' },
+            { icon: Award, label: 'Issue certificates', desc: 'QR-verifiable' },
+          ].map((item, i) => (
+            <div key={i} className="text-center p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+              <item.icon className="w-5 h-5 text-purple-500 mx-auto mb-1.5" />
+              <p className="text-xs font-semibold text-gray-900">{item.label}</p>
+              <p className="text-[10px] text-gray-500">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-red-500 to-pink-600 p-6 sm:p-8 text-center">
+          <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6 sm:p-8 text-center">
             <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <Building2 className="w-7 h-7 text-white" />
+              <GraduationCap className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Get Started with Sabitek</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Become a Verified Training Provider</h1>
             <p className="text-sm text-white/80">
-              Tell us about your institution or training program. We review applications within 2-5 working days.
+              Get your own workspace to create programs, manage cohorts, and issue credentials.
             </p>
           </div>
 
@@ -196,13 +211,13 @@ export default function RequestAccessPage() {
                       value={formData.fullName}
                       onChange={(e) => handleChange('fullName', e.target.value)}
                       placeholder="Your full name"
-                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Work email *</label>
+                  <label className="text-sm font-medium text-gray-700">Email *</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
@@ -210,8 +225,8 @@ export default function RequestAccessPage() {
                       required
                       value={formData.email}
                       onChange={(e) => handleChange('email', e.target.value)}
-                      placeholder="you@organisation.com"
-                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      placeholder="you@email.com"
+                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                 </div>
@@ -219,100 +234,85 @@ export default function RequestAccessPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Organisation name *</label>
+                  <label className="text-sm font-medium text-gray-700">Brand or training name</label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
-                      required
-                      value={formData.organisation}
-                      onChange={(e) => handleChange('organisation', e.target.value)}
-                      placeholder="Your organisation"
-                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      value={formData.brandName}
+                      onChange={(e) => handleChange('brandName', e.target.value)}
+                      placeholder="e.g. TechSkills Academy"
+                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
+                  <p className="text-[10px] text-gray-400">Leave blank to use your name</p>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Your role</label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      value={formData.role}
-                      onChange={(e) => handleChange('role', e.target.value)}
-                      placeholder="e.g. Director, Program Manager"
-                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-gray-700">Country</label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
                       value={formData.country}
                       onChange={(e) => handleChange('country', e.target.value)}
                       placeholder="e.g. Nigeria"
-                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-700">Area of expertise *</label>
+                  <div className="relative">
+                    <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      required
+                      value={formData.expertise}
+                      onChange={(e) => handleChange('expertise', e.target.value)}
+                      placeholder="e.g. Data Analysis, Web Development"
+                      className="h-11 pl-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Organisation type *</label>
+                  <label className="text-sm font-medium text-gray-700">Teaching experience</label>
                   <select
-                    required
-                    value={formData.type}
-                    onChange={(e) => handleChange('type', e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-red-500 bg-white text-sm"
+                    value={formData.experience}
+                    onChange={(e) => handleChange('experience', e.target.value)}
+                    className="w-full h-11 px-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-purple-500 bg-white text-sm"
                   >
-                    <option value="">Select type</option>
-                    <option value="school">School or College</option>
-                    <option value="ngo">NGO or Non-profit</option>
-                    <option value="government">Government Agency or Program</option>
-                    <option value="training_center">Training Center or Academy</option>
-                    <option value="company">Company or Corporate Training</option>
-                    <option value="tutor">Independent Instructor or Trainer</option>
-                    <option value="other">Other</option>
+                    <option value="">Select experience</option>
+                    <option value="Less than 1 year">Less than 1 year</option>
+                    <option value="1-3 years">1-3 years</option>
+                    <option value="3-5 years">3-5 years</option>
+                    <option value="5-10 years">5-10 years</option>
+                    <option value="10+ years">10+ years</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Approximate number of learners</label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    value={formData.learnerCount}
-                    onChange={(e) => handleChange('learnerCount', e.target.value)}
-                    placeholder="e.g. 50, 200, 1000+"
-                    className="h-11 pl-10 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">What would you like to do with Sabitek? *</label>
+                <label className="text-sm font-medium text-gray-700">Tell us about your training *</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <textarea
                     required
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}
-                    placeholder="e.g. Run digital skills training for 200 youth in Lagos"
-                    rows={3}
+                    placeholder="What topics do you teach? Who are your typical learners? What formats do you use (live sessions, self-paced, workshops)?"
+                    rows={4}
                     maxLength={2000}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-red-500 focus:outline-none text-sm resize-none"
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-purple-500 focus:outline-none text-sm resize-none"
                   />
                 </div>
               </div>
 
               <Button
                 type="submit"
-                disabled={submitting || !formData.fullName || !formData.email || !formData.organisation || !formData.type || !formData.description}
-                className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/20 text-base"
+                disabled={submitting || !formData.fullName || !formData.email || !formData.expertise || !formData.description}
+                className="w-full h-12 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-medium rounded-xl shadow-lg shadow-purple-500/20 text-base"
               >
                 {submitting ? (
                   <div className="flex items-center gap-2">
@@ -329,16 +329,14 @@ export default function RequestAccessPage() {
             </form>
 
             <div className="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-gray-500">
-              <span>Independent instructor? <Link href="/become-a-provider" className="text-purple-500 font-medium">Become a Provider</Link></span>
+              <span>Representing an institution? <Link href="/request-access" className="text-red-500 font-medium">Get Started here</Link></span>
               <span className="hidden sm:inline text-gray-300">|</span>
               <span>Already have an account? <Link href="/auth/login" className="text-red-500 font-medium">Sign in</Link></span>
-              <span className="hidden sm:inline text-gray-300">|</span>
-              <span>Individual learner? <Link href="/waitlist" className="text-red-500 font-medium">Join the waitlist</Link></span>
             </div>
           </div>
 
-          <p className="text-center text-xs text-gray-400 mt-6 mb-4">
-            We review applications within 2-5 working days. No spam.
+          <p className="text-center text-xs text-gray-400 mt-4 mb-4">
+            We review applications within 2-5 working days. Approved providers get a full workspace.
           </p>
         </div>
       </div>

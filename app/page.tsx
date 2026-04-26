@@ -299,12 +299,19 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <Link href="/schools-and-tutors">
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white px-5 py-4 text-sm font-semibold rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
-                  Learn More
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/schools-and-tutors">
+                  <Button className="bg-gray-900 hover:bg-gray-800 text-white px-5 py-4 text-sm font-semibold rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
+                    Learn More
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/become-a-provider">
+                  <Button variant="outline" className="border-gray-300 px-5 py-4 text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5">
+                    Become a Provider
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

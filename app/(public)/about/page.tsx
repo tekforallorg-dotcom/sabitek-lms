@@ -53,13 +53,9 @@ export default function AboutPage() {
       {/* HERO SECTION */}
       {/* ========================================== */}
       <section className="relative pt-8 pb-12 sm:pt-12 sm:pb-16 overflow-hidden">
-        {/* Clean gradient background */}
         <div className="absolute inset-0 bg-gradient-to-b from-red-50/80 via-white to-white" />
-        
-        {/* Subtle radial accent */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-red-100/40 to-transparent rounded-full blur-3xl opacity-60" />
-        
-        {/* Floating soft orbs */}
+
         <motion.div 
           className="absolute top-20 right-[20%] w-24 h-24 rounded-full bg-red-200/25 blur-2xl"
           animate={{ y: [0, -10, 0], opacity: [0.25, 0.4, 0.25] }}
@@ -71,7 +67,6 @@ export default function AboutPage() {
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        {/* Subtle grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4">
@@ -81,18 +76,16 @@ export default function AboutPage() {
             animate="visible"
             variants={staggerContainer}
           >
-            {/* Badge */}
             <motion.div variants={fadeInUp} className="mb-4">
               <span className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-red-100 text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
                 </span>
-                School of the Free
+                Learning Infrastructure for Africa
               </span>
             </motion.div>
-            
-            {/* Main heading */}
+
             <motion.h1 
               variants={fadeInUp}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight"
@@ -102,18 +95,16 @@ export default function AboutPage() {
                 Sabitek
               </span>
             </motion.h1>
-            
-            {/* Subtitle */}
+
             <motion.p 
               variants={fadeInUp}
               className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-6 leading-relaxed"
             >
-              A digital learning school built for{' '}
-              <span className="text-gray-900 font-medium">structured learning</span>{' '}
-              with measureable outcome.
+              Learning infrastructure for{' '}
+              <span className="text-gray-900 font-medium">institutions, training centers, and verified instructors</span>{' '}
+              delivering structured programs with measurable outcomes.
             </motion.p>
 
-            {/* CTA buttons */}
             <motion.div 
               variants={fadeInUp}
               className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-10"
@@ -136,7 +127,6 @@ export default function AboutPage() {
               </Link>
             </motion.div>
 
-            {/* Stats row */}
             <motion.div 
               variants={fadeInUp}
               className="grid grid-cols-3 gap-6 max-w-sm mx-auto"
@@ -206,7 +196,6 @@ export default function AboutPage() {
               </motion.div>
             </motion.div>
 
-            {/* Floating card */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -224,7 +213,7 @@ export default function AboutPage() {
                       <GraduationCap className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold text-sm">School of the Free</h3>
+                      <h3 className="text-white font-semibold text-sm">Learning that Leads Somewhere</h3>
                       <p className="text-gray-400 text-xs">Our Core Philosophy</p>
                     </div>
                   </div>
@@ -346,21 +335,21 @@ export default function AboutPage() {
               },
               {
                 icon: UserCheck,
-                title: 'Educators',
-                desc: 'Teachers and trainers delivering structured courses with progress visibility.',
+                title: 'Training Providers',
+                desc: 'Verified instructors and trainers delivering structured programs with their own workspace.',
                 gradient: 'from-blue-500 to-cyan-500',
                 shadow: 'shadow-blue-500/15',
-                link: '/teach',
-                linkText: 'Become an instructor'
+                link: '/become-a-provider',
+                linkText: 'Become a provider'
               },
               {
                 icon: Building2,
                 title: 'Institutions',
-                desc: 'Schools and NGOs delivering training at scale with verifiable proof.',
+                desc: 'Schools, NGOs, government agencies, and companies delivering training at scale.',
                 gradient: 'from-emerald-500 to-green-500',
                 shadow: 'shadow-emerald-500/15',
-                link: '/schools-and-tutors',
-                linkText: 'Partner with us'
+                link: '/request-access',
+                linkText: 'Get Started'
               },
             ].map((item, i) => (
               <motion.div 
@@ -673,14 +662,14 @@ export default function AboutPage() {
             variants={fadeInUp}
             className="text-2xl sm:text-3xl font-bold text-white mb-4"
           >
-            Join the School of the Free
+            Start delivering structured learning
           </motion.h2>
           
           <motion.p 
             variants={fadeInUp}
             className="text-sm text-white/80 mb-8 max-w-lg mx-auto leading-relaxed"
           >
-            Structured learning for individuals and institutions that need training to lead somewhere.
+            Schools, NGOs, training centers, and verified instructors use Sabitek to run programs with clear progress and proof of completion.
           </motion.p>
           
           <motion.div 
@@ -696,9 +685,9 @@ export default function AboutPage() {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-left border border-white/20">
               <UserCheck className="w-7 h-7 text-white mb-2" />
-              <h3 className="font-semibold text-white text-sm mb-1">For Educators</h3>
+              <h3 className="font-semibold text-white text-sm mb-1">For Institutions &amp; Providers</h3>
               <p className="text-xs text-white/70 leading-relaxed">
-                Deliver programs with measurable progress and proof of completion.
+                Get your own workspace to create programs, manage cohorts, and issue credentials.
               </p>
             </div>
           </motion.div>
@@ -708,17 +697,17 @@ export default function AboutPage() {
             className="flex flex-col sm:flex-row gap-3 justify-center"
           >
             <Link
-              href="/courses"
+              href="/request-access"
               className="group inline-flex items-center justify-center gap-2 bg-white text-red-600 hover:bg-gray-100 px-6 py-3 rounded-xl text-sm font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
             >
-              Start Learning
+              Get Started
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              href="/schools-and-tutors"
+              href="/become-a-provider"
               className="inline-flex items-center justify-center gap-2 bg-transparent text-white hover:bg-white/10 px-6 py-3 rounded-xl text-sm font-semibold border border-white/30 hover:border-white/50 transition-all duration-300 hover:-translate-y-0.5"
             >
-              For Schools and Tutors
+              Become a Provider
             </Link>
           </motion.div>
         </motion.div>
