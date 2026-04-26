@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
@@ -168,7 +168,7 @@ function parseEmailsFromCSV(text: string): string[] {
 
 /* ── Page ── */
 
-export default function CohortDetailPage() {
+function CohortDetailPageContent() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
@@ -1343,5 +1343,18 @@ export default function CohortDetailPage() {
         )}
       </div>
     </div>
+  )
+}
+export default function CohortDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <SabiLoader text="Loading cohort..." size="lg" />
+        </div>
+      }
+    >
+      <CohortDetailPageContent />
+    </Suspense>
   )
 }
