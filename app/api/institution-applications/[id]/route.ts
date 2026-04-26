@@ -4,7 +4,7 @@ import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STANDARD } from '@/lib/rate-limit'
 import { extractBearerToken, validateBody } from '@/lib/validations'
 import { reviewApplicationSchema } from '@/lib/validations/institution-application'
-import { sendWorkspaceWelcomeEmail } from '@/lib/email'
+import { sendWorkspaceWelcomeEmail, sendApplicationRejectionEmail } from '@/lib/email'
 import crypto from 'crypto'
 
 const supabaseAdmin = createClient(
@@ -15,7 +15,8 @@ const supabaseAdmin = createClient(
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'
 
 /**
- * Map application org_type to institution_type enum.
+ * Map application org_type to the institution_type enum.
+ * 'tutor' maps to 'training_center' (verified instructors get a workspace).
  */
 function mapOrgType(orgType: string): string {
   const map: Record<string, string> = {
@@ -31,7 +32,8 @@ function mapOrgType(orgType: string): string {
 }
 
 /**
- * Generate a URL-safe slug from an organisation name.
+ * Generate a slug from organisation name.
+ * Lowercase, replace spaces/special chars with hyphens, trim.
  */
 function generateSlug(name: string): string {
   return name
@@ -39,186 +41,181 @@ function generateSlug(name: string): string {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .slice(0, 50)
     .replace(/^-|-$/g, '')
-    || `org-${Date.now()}`
+    .slice(0, 60)
 }
 
 /**
- * Generate a random temporary password.
+ * Generate a random temporary password (16 chars, URL-safe).
  */
 function generateTempPassword(): string {
-  return crypto.randomBytes(12).toString('base64url').slice(0, 16)
+  return crypto.randomBytes(12).toString('base64url')
 }
 
 /**
- * Auto-provision: create institution + user + membership.
+ * Provision an institution workspace from an approved application.
+ *
+ * Steps:
+ *   1. Find or create the auth user for the applicant email
+ *   2. Ensure a users profile row exists
+ *   3. Create the institutions row
+ *   4. Make slug unique if collision
+ *   5. Insert institution_members as institution_admin
+ *   6. Update the application with institution_id
+ *   7. Send workspace welcome email
  */
-async function provisionInstitution(
-  application: {
-    id: string
-    full_name: string
-    email: string
-    organisation_name: string
-    org_type: string
-    country: string | null
-    role_title: string | null
-  },
-  reviewerId: string
-): Promise<{ success: boolean; institution_id?: string; is_new_user?: boolean; temp_password?: string; error?: string }> {
-  try {
-    // 1. Check if auth user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1,
-    })
+async function provisionWorkspace(application: {
+  id: string
+  full_name: string
+  email: string
+  organisation_name: string
+  org_type: string
+  country: string | null
+  role_title: string | null
+}, reviewerId: string): Promise<{ success: boolean; error?: string; institution_id?: string }> {
+  const email = application.email.toLowerCase()
+  let isNewUser = false
+  let tempPassword: string | undefined
+  let userId: string
 
-    // Search by email manually since listUsers doesn't filter by email directly
-    let authUser: { id: string } | null = null
-    let isNewUser = false
-    let tempPassword: string | undefined
+  // 1. Find or create auth user
+  const { data: existingAuth } = await supabaseAdmin.auth.admin.listUsers()
+  const existingUser = existingAuth?.users?.find(
+    (u) => u.email?.toLowerCase() === email
+  )
 
-    // Try to get user by email
-    const { data: userList } = await supabaseAdmin
-      .from('users')
-      .select('id, email')
-      .eq('email', application.email.toLowerCase())
-      .maybeSingle()
-
-    const existingProfile = userList as { id: string; email: string } | null
-
-    if (existingProfile) {
-      // User exists in our users table
-      authUser = { id: existingProfile.id }
-    } else {
-      // Create new auth user with temporary password
-      tempPassword = generateTempPassword()
-
-      const { data: newAuthUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: application.email.toLowerCase(),
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          full_name: application.full_name,
-          role: 'institution_admin',
-        },
-      })
-
-      if (createError) {
-        // User might exist in auth but not in users table
-        if (createError.message?.includes('already been registered')) {
-          // Find them via auth
-          const { data: { users } } = await supabaseAdmin.auth.admin.listUsers()
-          const found = users?.find(u => u.email === application.email.toLowerCase())
-          if (found) {
-            authUser = { id: found.id }
-          } else {
-            return { success: false, error: `Could not find or create user: ${createError.message}` }
-          }
-        } else {
-          return { success: false, error: `Failed to create user: ${createError.message}` }
-        }
-      } else if (newAuthUser?.user) {
-        authUser = { id: newAuthUser.user.id }
-        isNewUser = true
-      }
-    }
-
-    if (!authUser) {
-      return { success: false, error: 'Could not resolve user account.' }
-    }
-
-    // 2. Ensure users table profile exists
-    const { data: profileCheck } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('id', authUser.id)
-      .maybeSingle()
-
-    if (!profileCheck) {
-      await supabaseAdmin.from('users').insert({
-        id: authUser.id,
-        email: application.email.toLowerCase(),
+  if (existingUser) {
+    userId = existingUser.id
+  } else {
+    // Create new auth user with temp password
+    tempPassword = generateTempPassword()
+    const { data: newAuth, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
         full_name: application.full_name,
         role: 'learner',
-        status: 'active',
-      })
+      },
+    })
+
+    if (createError || !newAuth.user) {
+      console.error('Failed to create auth user:', createError)
+      return { success: false, error: 'Failed to create user account.' }
     }
 
-    // 3. Generate unique slug
-    let slug = generateSlug(application.organisation_name)
-    const { data: slugCheck } = await supabaseAdmin
+    userId = newAuth.user.id
+    isNewUser = true
+  }
+
+  // 2. Ensure users profile row exists
+  const { data: existingProfile } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (!existingProfile) {
+    await supabaseAdmin.from('users').insert({
+      id: userId,
+      email,
+      full_name: application.full_name,
+      role: 'learner', // base role; institution access via institution_members
+    })
+  }
+
+  // 3. Generate unique slug
+  let slug = generateSlug(application.organisation_name)
+  let slugSuffix = 0
+  while (true) {
+    const candidateSlug = slugSuffix === 0 ? slug : `${slug}-${slugSuffix}`
+    const { data: existing } = await supabaseAdmin
       .from('institutions')
       .select('id')
-      .eq('slug', slug)
+      .eq('slug', candidateSlug)
       .maybeSingle()
 
-    if (slugCheck) {
+    if (!existing) {
+      slug = candidateSlug
+      break
+    }
+    slugSuffix++
+    if (slugSuffix > 10) {
       slug = `${slug}-${Date.now().toString(36)}`
+      break
     }
-
-    // 4. Create institution
-    const institutionType = mapOrgType(application.org_type)
-    const { data: institution, error: instError } = await supabaseAdmin
-      .from('institutions')
-      .insert({
-        name: application.organisation_name,
-        slug,
-        type: institutionType,
-        status: 'approved',
-        created_by: authUser.id,
-        contact_email: application.email.toLowerCase(),
-        country: application.country || null,
-      })
-      .select('id')
-      .single()
-
-    if (instError) {
-      return { success: false, error: `Failed to create institution: ${instError.message}` }
-    }
-
-    const instRow = institution as { id: string }
-
-    // 5. Add user as institution_admin
-    const { error: memberError } = await supabaseAdmin
-      .from('institution_members')
-      .insert({
-        institution_id: instRow.id,
-        user_id: authUser.id,
-        role: 'institution_admin',
-        status: 'active',
-      })
-
-    if (memberError) {
-      // If duplicate, that's fine
-      if (memberError.code !== '23505') {
-        console.error('Error adding institution member:', memberError)
-      }
-    }
-
-    // 6. Update application with institution_id
-    await supabaseAdmin
-      .from('institution_applications')
-      .update({ institution_id: instRow.id })
-      .eq('id', application.id)
-
-    return {
-      success: true,
-      institution_id: instRow.id,
-      is_new_user: isNewUser,
-      temp_password: tempPassword,
-    }
-  } catch (error) {
-    console.error('Provision error:', error)
-    return { success: false, error: 'Unexpected error during provisioning.' }
   }
+
+  // 4. Create institution
+  const institutionType = mapOrgType(application.org_type)
+
+  const { data: institution, error: instError } = await supabaseAdmin
+    .from('institutions')
+    .insert({
+      name: application.organisation_name,
+      slug,
+      type: institutionType,
+      status: 'approved',
+      created_by: userId,
+      contact_email: email,
+      country: application.country || null,
+    })
+    .select('id')
+    .single()
+
+  if (instError || !institution) {
+    console.error('Failed to create institution:', instError)
+    return { success: false, error: 'Failed to create institution workspace.' }
+  }
+
+  const institutionId = (institution as { id: string }).id
+
+  // 5. Add as institution_admin
+  const { error: memberError } = await supabaseAdmin
+    .from('institution_members')
+    .insert({
+      institution_id: institutionId,
+      user_id: userId,
+      role: 'institution_admin',
+      status: 'active',
+    })
+
+  if (memberError) {
+    console.error('Failed to add institution member:', memberError)
+    // Non-fatal: institution exists, member can be added manually
+  }
+
+  // 6. Update application with institution_id
+  await supabaseAdmin
+    .from('institution_applications')
+    .update({ institution_id: institutionId })
+    .eq('id', application.id)
+
+  // 7. Send welcome email
+  const loginUrl = `${APP_URL}/auth/login`
+  try {
+    await sendWorkspaceWelcomeEmail({
+      to: email,
+      userName: application.full_name,
+      organisationName: application.organisation_name,
+      loginUrl,
+      isNewUser,
+      tempPassword,
+    })
+  } catch (emailErr) {
+    console.error('Failed to send workspace welcome email:', emailErr)
+    // Non-fatal: workspace is provisioned, email can be resent
+  }
+
+  return { success: true, institution_id: institutionId }
 }
 
 /**
  * PATCH /api/institution-applications/[id]
  *
  * Approve or reject an application. Super admin only.
- * On approve: auto-provisions institution workspace + sends welcome email.
+ * On approve: auto-provisions institution workspace + sends email.
+ * On reject: persists optional rejection_reason and sends rejection email.
  */
 export async function PATCH(
   request: NextRequest,
@@ -290,6 +287,12 @@ export async function PATCH(
 
     const newStatus = action === 'approve' ? 'approved' : 'rejected'
 
+    // Normalise rejection reason: trim whitespace; empty becomes null.
+    const normalisedRejectionReason =
+      action === 'reject' && rejection_reason && rejection_reason.trim().length > 0
+        ? rejection_reason.trim()
+        : null
+
     // Update application status
     const { error: updateError } = await supabaseAdmin
       .from('institution_applications')
@@ -298,7 +301,7 @@ export async function PATCH(
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
         review_notes: review_notes || null,
-        rejection_reason: action === 'reject' ? (rejection_reason || null) : null,
+        rejection_reason: action === 'reject' ? normalisedRejectionReason : null,
       })
       .eq('id', appId)
 
@@ -308,33 +311,33 @@ export async function PATCH(
     }
 
     // Auto-provision on approval
-    let provisionResult = null
+    let provisionResult: { success: boolean; error?: string; institution_id?: string } | null = null
     if (action === 'approve') {
-      provisionResult = await provisionInstitution(app, user.id)
-
-      if (provisionResult.success) {
-        // Send welcome email
-        const loginUrl = `${APP_URL}/auth/login`
-        try {
-          await sendWorkspaceWelcomeEmail({
-            to: app.email,
-            userName: app.full_name,
-            organisationName: app.organisation_name,
-            loginUrl,
-            isNewUser: provisionResult.is_new_user || false,
-            tempPassword: provisionResult.temp_password,
-          })
-        } catch (emailErr) {
-          console.error('Welcome email failed (non-blocking):', emailErr)
-        }
-      } else {
-        console.error('Provisioning failed:', provisionResult.error)
-        // Status is already approved but provision failed.
-        // We don't revert the approval - admin can retry or provision manually.
+      provisionResult = await provisionWorkspace(app, user.id)
+      if (!provisionResult.success) {
+        console.error('Workspace provisioning failed:', provisionResult.error)
+        // Status is already approved. Log the failure but don't revert.
+        // Admin can see the error and retry or provision manually.
       }
     }
 
-    // Audit log
+    // Send rejection email (non-blocking)
+    if (action === 'reject') {
+      try {
+        await sendApplicationRejectionEmail({
+          to: app.email,
+          userName: app.full_name,
+          organisationName: app.organisation_name,
+          reason: normalisedRejectionReason,
+        })
+        console.info('[applications] rejected', { id: appId, hasReason: !!normalisedRejectionReason })
+      } catch (emailErr) {
+        console.error('[applications] rejection email failed', emailErr)
+        // Non-fatal: the rejection itself is recorded; admin can communicate manually.
+      }
+    }
+
+    // Audit log (non-blocking)
     try {
       await supabaseAdmin.from('audit_logs').insert({
         actor_user_id: user.id,
@@ -345,23 +348,26 @@ export async function PATCH(
         after: {
           status: newStatus,
           review_notes,
-          rejection_reason,
+          rejection_reason: action === 'reject' ? normalisedRejectionReason : null,
           institution_id: provisionResult?.institution_id || null,
-          provisioned: provisionResult?.success || false,
         },
       })
     } catch {}
 
-    return apiSuccess({
-      status: newStatus,
-      provisioned: provisionResult?.success || false,
-      institution_id: provisionResult?.institution_id || null,
-      is_new_user: provisionResult?.is_new_user || false,
-      message: action === 'approve'
-        ? provisionResult?.success
+    if (action === 'approve') {
+      return apiSuccess({
+        status: 'approved',
+        provisioned: provisionResult?.success || false,
+        institution_id: provisionResult?.institution_id || null,
+        message: provisionResult?.success
           ? 'Application approved. Workspace created and welcome email sent.'
-          : `Application approved but provisioning failed: ${provisionResult?.error}. Please provision manually.`
-        : 'Application rejected.',
+          : `Application approved, but workspace provisioning had an issue: ${provisionResult?.error || 'Unknown error'}. You may need to provision manually.`,
+      })
+    }
+
+    return apiSuccess({
+      status: 'rejected',
+      message: 'Application rejected. Notification email sent.',
     })
   } catch (error) {
     console.error('PATCH /api/institution-applications/[id] error:', error)

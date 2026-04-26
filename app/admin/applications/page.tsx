@@ -12,7 +12,6 @@ import {
   MapPin,
   Users,
   Loader2,
-  AlertCircle,
   FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -35,6 +34,8 @@ interface Application {
   created_at: string
   institution_id: string | null
 }
+
+const REASON_MAX_LENGTH = 1000
 
 const statusStyles: Record<string, { bg: string; text: string; dot: string }> = {
   pending: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', dot: 'bg-amber-400' },
@@ -65,6 +66,12 @@ export default function ApplicationsPage() {
     message: string
     onConfirm: () => void
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
+  const [rejectModal, setRejectModal] = useState<{
+    isOpen: boolean
+    app: Application | null
+    reason: string
+    submitting: boolean
+  }>({ isOpen: false, app: null, reason: '', submitting: false })
 
   const getSession = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -116,7 +123,7 @@ export default function ApplicationsPage() {
         body: JSON.stringify({
           action,
           review_notes: action === 'approve' ? 'Approved by platform admin' : undefined,
-          rejection_reason: reason || (action === 'reject' ? 'Application did not meet requirements' : undefined),
+          rejection_reason: action === 'reject' ? (reason || undefined) : undefined,
         }),
       })
 
@@ -147,15 +154,26 @@ export default function ApplicationsPage() {
   }
 
   const showRejectConfirm = (app: Application) => {
-    setConfirmDialog({
-      isOpen: true,
-      title: 'Reject Application',
-      message: `Reject the application from ${app.organisation_name} (${app.email})? They will be notified.`,
-      onConfirm: async () => {
-        setConfirmDialog(prev => ({ ...prev, isOpen: false }))
-        await handleReview(app.id, 'reject')
-      },
-    })
+    setRejectModal({ isOpen: true, app, reason: '', submitting: false })
+  }
+
+  const closeRejectModal = () => {
+    if (rejectModal.submitting) return
+    setRejectModal({ isOpen: false, app: null, reason: '', submitting: false })
+  }
+
+  const submitRejection = async () => {
+    if (!rejectModal.app || rejectModal.submitting) return
+    const targetApp = rejectModal.app
+    const trimmed = rejectModal.reason.trim()
+    setRejectModal(prev => ({ ...prev, submitting: true }))
+    try {
+      await handleReview(targetApp.id, 'reject', trimmed.length > 0 ? trimmed : undefined)
+      setRejectModal({ isOpen: false, app: null, reason: '', submitting: false })
+    } catch (err) {
+      console.error('Error submitting rejection:', err)
+      setRejectModal(prev => ({ ...prev, submitting: false }))
+    }
   }
 
   const formatDate = (dateStr: string) =>
@@ -174,6 +192,82 @@ export default function ApplicationsPage() {
           { label: 'Confirm', onClick: confirmDialog.onConfirm, variant: 'danger' },
         ]}
       />
+
+      {/* Reject modal with optional reason */}
+      {rejectModal.isOpen && rejectModal.app && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={closeRejectModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reject-modal-title"
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <XCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="min-w-0">
+                <h2 id="reject-modal-title" className="text-lg font-semibold text-gray-900">
+                  Reject Application
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5 break-words">
+                  Reject the application from {rejectModal.app.organisation_name}? They will be notified by email.
+                </p>
+              </div>
+            </div>
+
+            <label htmlFor="reject-reason" className="block text-sm font-medium text-gray-700 mb-1.5">
+              Reason for rejection{' '}
+              <span className="text-gray-400 font-normal">(optional, visible to applicant)</span>
+            </label>
+            <textarea
+              id="reject-reason"
+              value={rejectModal.reason}
+              onChange={(e) => setRejectModal(prev => ({ ...prev, reason: e.target.value }))}
+              disabled={rejectModal.submitting}
+              maxLength={REASON_MAX_LENGTH}
+              rows={4}
+              placeholder="Share any context that might help the applicant understand or strengthen a future application."
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              {rejectModal.reason.length}/{REASON_MAX_LENGTH}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 mt-5">
+              <Button
+                variant="outline"
+                onClick={closeRejectModal}
+                disabled={rejectModal.submitting}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitRejection}
+                disabled={rejectModal.submitting}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
+              >
+                {rejectModal.submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                    Rejecting...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4 mr-1.5" />
+                    Reject Application
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="mb-6">

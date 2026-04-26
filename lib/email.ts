@@ -4,6 +4,19 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FROM_EMAIL = 'Sabitek <noreply@sabitek.school>'
 
+/**
+ * HTML-escape user-supplied text for safe inclusion in email bodies.
+ * Used for reviewer-authored fields that pass through to recipients.
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 export async function sendSubscriptionReceiptEmail({
   to,
   userName,
@@ -372,6 +385,103 @@ export async function sendWorkspaceWelcomeEmail({
     return { success: true, data }
   } catch (error) {
     console.error('Error sending workspace welcome email:', error)
+    return { success: false, error }
+  }
+}
+
+/**
+ * Sends an empathetic notification when an institution application is rejected.
+ * Optional `reason` is HTML-escaped and rendered as a "Reviewer note" callout.
+ * If reason is empty, the callout is omitted entirely (no placeholder text).
+ */
+export async function sendApplicationRejectionEmail({
+  to,
+  userName,
+  organisationName,
+  reason,
+}: {
+  to: string
+  userName: string
+  organisationName: string
+  reason?: string | null
+}) {
+  try {
+    const trimmedReason = (reason || '').trim()
+    const truncatedReason =
+      trimmedReason.length > 2000 ? `${trimmedReason.slice(0, 2000)}...` : trimmedReason
+    const hasReason = truncatedReason.length > 0
+    const escapedReason = hasReason ? escapeHtml(truncatedReason) : ''
+    const safeUserName = escapeHtml(userName)
+    const safeOrgName = escapeHtml(organisationName)
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Update on your Sabitek application for ${organisationName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
+          </div>
+
+          <div style="background: #f9fafb; color: #1f2937; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 10px 0; font-size: 22px; color: #111827;">Application Update</h2>
+            <p style="margin: 0; color: #6b7280; font-size: 14px;">${safeOrgName}</p>
+          </div>
+
+          <p>Hi ${safeUserName},</p>
+
+          <p>Thank you for your interest in bringing <strong>${safeOrgName}</strong> onto Sabitek and for taking the time to share your application with us.</p>
+
+          <p>After careful review, we are unable to approve your workspace request at this time.</p>
+
+          ${hasReason ? `
+          <div style="background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 8px; padding: 16px 20px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0; color: #92400e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Reviewer note</p>
+            <p style="margin: 0; color: #78350f; font-size: 14px; white-space: pre-line;">${escapedReason}</p>
+          </div>
+          ` : ''}
+
+          <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h3 style="margin: 0 0 12px 0; color: #111827; font-size: 14px;">What you can do next</h3>
+            <ul style="color: #4b5563; margin: 0; padding-left: 20px; font-size: 14px;">
+              <li style="margin-bottom: 8px;">Reach out if you have questions about this decision</li>
+              <li style="margin-bottom: 8px;">Reapply later once your circumstances have changed</li>
+              <li style="margin-bottom: 8px;">Continue exploring Sabitek as an individual learner</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="mailto:support@sabitek.school" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Contact Support</a>
+          </div>
+
+          <p style="color: #6b7280; font-size: 14px;">We genuinely appreciate the time you put into your application.</p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            &copy; ${new Date().getFullYear()} Sabitek. Learning infrastructure for Africa.
+          </p>
+        </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Failed to send application rejection email:', error)
+      return { success: false, error }
+    }
+
+    console.log('Application rejection email sent:', data?.id)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending application rejection email:', error)
     return { success: false, error }
   }
 }
