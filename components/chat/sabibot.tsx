@@ -64,7 +64,7 @@ export default function SabiBot() {
       setIsOpen(false)
       setIsMinimized(false)
       previousUserId.current = user?.id || null
-      
+
       if (user?.id) {
         loadUserProfile()
       } else {
@@ -91,20 +91,20 @@ export default function SabiBot() {
       }
 
       setUserProfile(profile)
-      
+
       if (profile?.preferred_language) {
         setPreferredLanguage(profile.preferred_language as Language)
       }
-      
+
       const welcomeContent = getWelcomeMessage(profile?.full_name, profile?.preferred_language || 'english')
-      
+
       const welcomeMessage: Message = {
         id: 'welcome',
         role: 'assistant',
         content: welcomeContent,
         timestamp: new Date()
       }
-      
+
       setMessages([welcomeMessage])
     } catch (error) {
       console.error('Error loading profile:', error)
@@ -114,7 +114,7 @@ export default function SabiBot() {
 
   const getWelcomeMessage = (userName: string | null, lang: string) => {
     const name = userName ? `, ${userName}` : ''
-    
+
     switch (lang) {
       case 'pidgin':
         return `Wetin dey happen${name}! Na me be SabiBot, your learning paddy.
@@ -128,7 +128,7 @@ I fit help you with:
 • Certification and adult education
 
 Wetin you wan learn today?`
-      
+
       case 'yoruba':
         return `Bawo ni${name}! Mo ni SabiBot, oluranlọwọ ikẹkọ rẹ.
 
@@ -141,7 +141,7 @@ Mo le ran ọ lọwọ pẹlu:
 • Iwe-ẹri ọjọgbọn ati ẹkọ agbalagba
 
 Kini o fẹ kọ loni?`
-      
+
       case 'hausa':
         return `Sannu${name}! Ni ne SabiBot, mataimakin koyo naka.
 
@@ -154,7 +154,7 @@ Zan iya taimaka maka da:
 • Takardar shaidar ƙwararru da ilimin manya
 
 Me kake son koyo yau?`
-      
+
       case 'igbo':
         return `Kedu${name}! Abụ m SabiBot, onye enyemaka ọmụmụ gị.
 
@@ -167,7 +167,7 @@ Enwere m ike inyere gị aka na:
 • Asambodo ndị ọkachamara na agụmakwụkwọ
 
 Gịnị ka ịchọrọ ịmụta taa?`
-      
+
       default:
         return `Welcome${name}! I'm SabiBot, your personal learning assistant.
 
@@ -302,13 +302,16 @@ What would you like to learn today?`
     }
   }
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+  // Accepts optional text so quick actions can send immediately without
+  // racing the input state (the old setTimeout approach sent stale input).
+  const handleSend = async (textOverride?: string) => {
+    const messageText = (textOverride ?? input).trim()
+    if (!messageText || isLoading) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim(),
+      content: messageText,
       timestamp: new Date()
     }
 
@@ -341,7 +344,7 @@ What would you like to learn today?`
       })
 
       const contentType = response.headers.get('content-type') || ''
-      
+
       if (contentType.includes('text/event-stream') || contentType.includes('stream')) {
         const reader = response.body?.getReader()
         const decoder = new TextDecoder()
@@ -367,7 +370,7 @@ What would you like to learn today?`
                   const json = JSON.parse(jsonStr)
                   if (json.content) {
                     fullContent += json.content
-                    
+
                     if (!messageAdded) {
                       setIsTyping(false)
                       setMessages(prev => [...prev, {
@@ -378,8 +381,8 @@ What would you like to learn today?`
                       }])
                       messageAdded = true
                     } else {
-                      setMessages(prev => prev.map(m => 
-                        m.id === assistantMessageId 
+                      setMessages(prev => prev.map(m =>
+                        m.id === assistantMessageId
                           ? { ...m, content: fullContent }
                           : m
                       ))
@@ -412,7 +415,7 @@ What would you like to learn today?`
       } else {
         const data = await response.json()
         setIsTyping(false)
-        
+
         const content = data.content || getErrorMessage(preferredLanguage)
         setMessages(prev => [...prev, {
           id: assistantMessageId,
@@ -451,7 +454,7 @@ What would you like to learn today?`
         assistant_message: assistantMsg.content,
         created_at: new Date().toISOString()
       })
-      
+
       if (error && error.code === '42P01') {
         console.log('Chat history table not found, skipping save')
       } else if (error) {
@@ -478,8 +481,7 @@ What would you like to learn today?`
   }
 
   const handleQuickAction = (prompt: string) => {
-    setInput(prompt)
-    setTimeout(() => handleSend(), 100)
+    handleSend(prompt)
   }
 
   const formatTime = (date: Date) => {
@@ -539,10 +541,10 @@ What would you like to learn today?`
         onClick={() => setIsOpen(true)}
         className={`${
           isOpen ? 'scale-0 pointer-events-none' : 'scale-100'
-        } fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 transition-transform duration-200`}
+        } fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 transition-transform duration-200 cursor-pointer`}
         aria-label="Open SabiBot"
       >
-        <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 group">
+        <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-full ring-1 ring-white/40 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.6)] hover:shadow-[0_18px_38px_-10px_rgba(225,29,72,0.7)] transition-all hover:scale-105 active:scale-95 group">
           {/* Animated Robot Icon */}
           <svg
             className="w-7 h-7 sm:w-9 sm:h-9 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -552,18 +554,18 @@ What would you like to learn today?`
           >
             {/* Head */}
             <rect x="12" y="14" width="16" height="14" rx="3" fill="white" opacity="0.95"/>
-            
+
             {/* Eyes with Blink Animation */}
             <rect x="15" y="18" width="3" height="4" rx="1" fill="#ef4444" className="robot-eye robot-eye-left"/>
             <rect x="22" y="18" width="3" height="4" rx="1" fill="#ef4444" className="robot-eye"/>
-            
+
             {/* Antenna with Pulse */}
             <line x1="20" y1="14" x2="20" y2="9" stroke="white" strokeWidth="2"/>
             <circle cx="20" cy="8" r="2" fill="white" className="robot-antenna"/>
-            
+
             {/* Mouth */}
             <rect x="16" y="24" width="8" height="2" rx="1" fill="#ef4444" className="robot-mouth"/>
-            
+
             {/* Chat Indicator Dots */}
             <circle cx="28" cy="14" r="1" fill="white" opacity="0.6">
               <animate
@@ -583,7 +585,7 @@ What would you like to learn today?`
               />
             </circle>
           </svg>
-          
+
           {/* Online Status */}
           <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -592,318 +594,305 @@ What would you like to learn today?`
         </div>
       </button>
 
-      {/* Chat Widget */}
+      {/* Chat Widget: single floating panel on every screen size */}
       <div
-  className={`${
-    isOpen 
-      ? isMinimized 
-        ? 'h-14 w-72 sm:w-80' 
-        : 'h-[60vh] sm:h-[500px] w-[calc(100%-2rem)] sm:w-[360px]'
-      : 'h-0 w-0'
-  } ${
-    isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-  } bg-white rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border border-gray-200 m-4 fixed bottom-0 right-0`}
->
-        
-        <div
-          className={`${
-            isOpen 
-              ? isMinimized 
-                ? 'h-14 w-full sm:w-80' 
-                : 'h-full sm:h-[500px] w-full sm:w-[360px]'
-              : 'h-0 w-0'
-          } ${
-            isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          } bg-white sm:rounded-xl shadow-2xl transition-all duration-200 flex flex-col overflow-hidden border-0 sm:border sm:border-gray-200 sm:m-4 fixed bottom-0 right-0 sm:relative`}
-        >
-          {/* Header */}
-          <div className="relative bg-red-600 p-3 sm:p-3.5 flex items-center justify-between flex-shrink-0 safe-area-top">
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="text-white">
-                <h3 className="font-semibold text-sm">SabiBot</h3>
-                <p className="text-[10px] sm:text-xs opacity-90">
-                  {LANGUAGES.find(l => l.value === preferredLanguage)?.flag} {LANGUAGES.find(l => l.value === preferredLanguage)?.label}
-                </p>
-              </div>
+        className={`fixed z-50 inset-x-3 bottom-3 sm:inset-x-auto sm:right-5 sm:bottom-5 sm:w-[380px] flex flex-col overflow-hidden rounded-3xl border border-white ring-1 ring-rose-100 bg-white/95 backdrop-blur-2xl shadow-[0_40px_80px_-30px_rgba(225,29,72,0.5)] transition-all duration-300 origin-bottom-right ${
+          isOpen
+            ? 'opacity-100 translate-y-0 scale-100'
+            : 'opacity-0 translate-y-6 scale-95 pointer-events-none'
+        } ${
+          isMinimized ? 'h-[64px]' : 'h-[70dvh] sm:h-[min(600px,calc(100dvh-6rem))]'
+        }`}
+      >
+        {/* Header */}
+        <div className="relative bg-gradient-to-r from-red-500 to-rose-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
+          <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" aria-hidden="true" />
+          <div className="relative flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl ring-1 ring-white/30 flex items-center justify-center">
+              <Bot className="w-[18px] h-[18px] text-white" />
             </div>
-            
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              <div className="relative z-50" ref={languageMenuRef}>
-                <button
-                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                  className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                  aria-label="Change language"
-                >
-                  <Globe className="w-4 h-4 text-white" />
-                </button>
-                
-                {showLanguageMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-[9999]">
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.value}
-                        onClick={() => handleLanguageChange(lang.value as Language)}
-                        className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                          preferredLanguage === lang.value ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                        }`}
-                      >
-                        <span>{lang.label}</span>
-                        <span className="text-lg">{lang.flag}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              {user && (
-                <button
-                  onClick={() => setShowLearningStats(true)}
-                  className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                  aria-label="View learning stats"
-                >
-                  <BarChart3 className="w-4 h-4 text-white" />
-                </button>
-              )}
-              
-              <button
-                onClick={() => setIsMinimized(!isMinimized)}
-                className="hidden sm:block p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                aria-label="Minimize"
-              >
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <button
-                onClick={() => {
-                  setIsOpen(false)
-                  setIsMinimized(false)
-                }}
-                className="p-2 sm:p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
+            <div className="text-white">
+              <h3 className="font-semibold text-sm leading-tight">SabiBot</h3>
+              <p className="text-[11px] text-white/80">
+                {LANGUAGES.find(l => l.value === preferredLanguage)?.flag} {LANGUAGES.find(l => l.value === preferredLanguage)?.label}
+              </p>
             </div>
           </div>
 
-          {!isMinimized && (
-            <>
-              {/* Messages Area */}
-              <div 
-                ref={messagesContainerRef}
-                onScroll={handleScroll}
-                className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-3 bg-gray-50"
+          <div className="relative flex items-center gap-0.5">
+            <div className="relative" ref={languageMenuRef}>
+              <button
+                onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                className="p-2 hover:bg-white/15 rounded-lg transition-colors cursor-pointer"
+                aria-label="Change language"
               >
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[85%] sm:max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                      <div className="flex items-start gap-1.5 sm:gap-2">
-                        {message.role === 'assistant' && (
-                          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
-                          </div>
-                        )}
-                        
-                        <div className={`${
-                          message.role === 'user' 
-                            ? 'bg-gray-800 text-white' 
-                            : 'bg-white text-gray-800 border border-gray-200'
-                        } rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5`}>
-                          {message.role === 'assistant' ? (
-                            <div className="text-[13px] sm:text-sm leading-relaxed">
-                              <ReactMarkdown
-                                components={{
-                                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                  ul: ({ children }) => <ul className="ml-4 mb-2 last:mb-0">{children}</ul>,
-                                  li: ({ children }) => <li className="list-disc mb-1">{children}</li>,
-                                  strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                                  code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{children}</code>,
-                                }}
-                              >
-                                {message.content}
-                              </ReactMarkdown>
-                            </div>
-                          ) : (
-                            <p className="text-[13px] sm:text-sm">{message.content}</p>
-                          )}
-                        </div>
-                        
-                        {message.role === 'user' && (
-                          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className={`text-[10px] sm:text-xs text-gray-400 mt-1 ${
-                        message.role === 'user' ? 'text-right mr-8 sm:mr-9' : 'ml-8 sm:ml-9'
-                      }`}>
-                        {formatTime(message.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {/* Typing Indicator */}
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
-                      </div>
-                      <div className="bg-white rounded-2xl px-3.5 py-2.5 border border-gray-200">
-                        <div className="flex gap-1">
-                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
+                <Globe className="w-4 h-4 text-white" />
+              </button>
 
-              {/* Scroll to bottom button */}
-              {userScrolled && (
-                <button
-                  onClick={() => {
-                    setUserScrolled(false)
-                    scrollToBottom(true)
-                  }}
-                  className="absolute bottom-24 right-4 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                  aria-label="Scroll to bottom"
-                >
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
-                </button>
-              )}
-
-              {/* Quick Actions */}
-              {messages.length === 1 && (
-                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border-t border-gray-100">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-2">
-                    {preferredLanguage === 'pidgin' ? 'Quick actions' : 
-                     preferredLanguage === 'yoruba' ? 'Awọn iṣe yara' :
-                     preferredLanguage === 'hausa' ? 'Ayyuka masu sauri' :
-                     preferredLanguage === 'igbo' ? 'Omume ngwa ngwa' :
-                     'Quick actions'}
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                    {QUICK_ACTIONS.map((action, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleQuickAction(action.prompt)}
-                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-xl text-[11px] sm:text-xs text-gray-700 transition-colors"
-                      >
-                        <action.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-                        <span className="truncate">{action.label}</span>
-                      </button>
-                    ))}
-                  </div>
+              {showLanguageMenu && (
+                <div className="absolute right-0 top-full mt-2 w-44 bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)] py-1.5 z-[60] overflow-hidden">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.value}
+                      onClick={() => handleLanguageChange(lang.value as Language)}
+                      className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center justify-between cursor-pointer ${
+                        preferredLanguage === lang.value
+                          ? 'bg-rose-50 text-red-600 font-medium'
+                          : 'text-gray-700 hover:bg-rose-50/50'
+                      }`}
+                    >
+                      <span>{lang.label}</span>
+                      <span className="text-base">{lang.flag}</span>
+                    </button>
+                  ))}
                 </div>
               )}
+            </div>
 
-              {/* Input Area */}
-              <div className="p-3 bg-white border-t border-gray-100 safe-area-bottom">
-                <div className="flex gap-2">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                    placeholder={
-                      !user 
-                        ? (preferredLanguage === 'pidgin' ? 'Login to chat' : 
-                           preferredLanguage === 'yoruba' ? 'Wọle lati ba mi sọrọ' :
-                           preferredLanguage === 'hausa' ? 'Shiga don tattaunawa' :
-                           preferredLanguage === 'igbo' ? 'Banye iji kwurịta' :
-                           'Login to chat')
-                        : (preferredLanguage === 'pidgin' ? 'Type wetin you wan ask...' : 
-                           preferredLanguage === 'yoruba' ? 'Kọ ibeere rẹ...' :
-                           preferredLanguage === 'hausa' ? 'Rubuta tambayar ka...' :
-                           preferredLanguage === 'igbo' ? 'Pịnye ajụjụ gị...' :
-                           'Type your question...')
-                    }
-                    className="flex-1 px-3 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 placeholder-gray-400 disabled:opacity-50"
-                    disabled={isLoading || !user}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={!input.trim() || isLoading || !user}
-                    className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Send"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-                {!user && (
-                  <p className="text-[10px] sm:text-xs text-gray-400 mt-2 text-center">
-                    {preferredLanguage === 'pidgin' ? 'Abeg login to use SabiBot' : 
-                     preferredLanguage === 'yoruba' ? 'Jọwọ wọle lati lo SabiBot' :
-                     preferredLanguage === 'hausa' ? 'Da fatan za a shiga don amfani da SabiBot' :
-                     preferredLanguage === 'igbo' ? 'Biko banye iji SabiBot' :
-                     'Please login to use SabiBot'}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
+            {user && (
+              <button
+                onClick={() => setShowLearningStats(true)}
+                className="p-2 hover:bg-white/15 rounded-lg transition-colors cursor-pointer"
+                aria-label="View learning stats"
+              >
+                <BarChart3 className="w-4 h-4 text-white" />
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="hidden sm:block p-2 hover:bg-white/15 rounded-lg transition-colors cursor-pointer"
+              aria-label={isMinimized ? 'Expand' : 'Minimize'}
+            >
+              <ChevronDown className={`w-4 h-4 text-white transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
+            </button>
+
+            <button
+              onClick={() => {
+                setIsOpen(false)
+                setIsMinimized(false)
+              }}
+              className="p-2 hover:bg-white/15 rounded-lg transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
         </div>
+
+        {!isMinimized && (
+          <>
+            {/* Messages Area */}
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="relative flex-1 overflow-y-auto overscroll-contain p-4 space-y-3 bg-[#fffcfb]"
+            >
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                    <div className="flex items-start gap-2">
+                      {message.role === 'assistant' && (
+                        <div className="w-7 h-7 bg-rose-50 ring-1 ring-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-red-500" />
+                        </div>
+                      )}
+
+                      <div className={`${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-b from-red-500 to-rose-600 text-white rounded-2xl rounded-br-md shadow-[0_8px_18px_-8px_rgba(225,29,72,0.5)]'
+                          : 'bg-white text-gray-800 ring-1 ring-rose-100 rounded-2xl rounded-tl-md shadow-sm'
+                      } px-3.5 py-2.5`}>
+                        {message.role === 'assistant' ? (
+                          <div className="text-[13px] sm:text-sm leading-relaxed">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="ml-4 mb-2 last:mb-0">{children}</ul>,
+                                li: ({ children }) => <li className="list-disc mb-1">{children}</li>,
+                                strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                                code: ({ children }) => <code className="bg-rose-50 text-rose-700 px-1 py-0.5 rounded text-xs">{children}</code>,
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="text-[13px] sm:text-sm">{message.content}</p>
+                        )}
+                      </div>
+
+                      {message.role === 'user' && (
+                        <div className="w-7 h-7 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={`text-[10px] text-gray-400 mt-1 ${
+                      message.role === 'user' ? 'text-right mr-9' : 'ml-9'
+                    }`}>
+                      {formatTime(message.timestamp)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Typing Indicator */}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-rose-50 ring-1 ring-rose-100 rounded-full flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-red-500" />
+                    </div>
+                    <div className="bg-white rounded-2xl rounded-tl-md px-3.5 py-2.5 ring-1 ring-rose-100 shadow-sm">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-rose-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-rose-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-rose-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Scroll to bottom button */}
+            {userScrolled && (
+              <button
+                onClick={() => {
+                  setUserScrolled(false)
+                  scrollToBottom(true)
+                }}
+                className="absolute bottom-24 right-4 w-8 h-8 bg-white/90 backdrop-blur ring-1 ring-rose-100 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-colors z-10 cursor-pointer"
+                aria-label="Scroll to bottom"
+              >
+                <ChevronDown className="w-4 h-4 text-red-500" />
+              </button>
+            )}
+
+            {/* Quick Actions */}
+            {messages.length === 1 && (
+              <div className="px-4 py-3 bg-white/80 backdrop-blur border-t border-rose-100 flex-shrink-0">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-2">
+                  {preferredLanguage === 'pidgin' ? 'Quick actions' :
+                   preferredLanguage === 'yoruba' ? 'Awọn iṣe yara' :
+                   preferredLanguage === 'hausa' ? 'Ayyuka masu sauri' :
+                   preferredLanguage === 'igbo' ? 'Omume ngwa ngwa' :
+                   'Quick actions'}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {QUICK_ACTIONS.map((action, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleQuickAction(action.prompt)}
+                      disabled={isLoading || !user}
+                      className="flex items-center gap-2 px-3 py-2 bg-rose-50/60 hover:bg-rose-50 active:bg-rose-100 rounded-xl border border-rose-100 hover:border-rose-200 text-xs text-gray-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <action.icon className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                      <span className="truncate font-medium">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Area */}
+            <div className="p-3 bg-white/80 backdrop-blur border-t border-rose-100 safe-area-bottom flex-shrink-0">
+              <div className="flex gap-2 items-center">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder={
+                    !user
+                      ? (preferredLanguage === 'pidgin' ? 'Login to chat' :
+                         preferredLanguage === 'yoruba' ? 'Wọle lati ba mi sọrọ' :
+                         preferredLanguage === 'hausa' ? 'Shiga don tattaunawa' :
+                         preferredLanguage === 'igbo' ? 'Banye iji kwurịta' :
+                         'Login to chat')
+                      : (preferredLanguage === 'pidgin' ? 'Type wetin you wan ask...' :
+                         preferredLanguage === 'yoruba' ? 'Kọ ibeere rẹ...' :
+                         preferredLanguage === 'hausa' ? 'Rubuta tambayar ka...' :
+                         preferredLanguage === 'igbo' ? 'Pịnye ajụjụ gị...' :
+                         'Type your question...')
+                  }
+                  className="flex-1 h-11 px-4 bg-rose-50/70 border border-rose-100 rounded-full text-sm focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-400/20 placeholder-gray-400 disabled:opacity-50 transition-colors"
+                  disabled={isLoading || !user}
+                />
+                <button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || isLoading || !user}
+                  className="relative overflow-hidden w-11 h-11 flex items-center justify-center bg-gradient-to-b from-red-500 to-rose-600 text-white rounded-full shadow-[0_8px_18px_-6px_rgba(225,29,72,0.55)] hover:shadow-[0_10px_22px_-6px_rgba(225,29,72,0.65)] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer flex-shrink-0"
+                  aria-label="Send"
+                >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              {!user && (
+                <p className="text-[11px] text-gray-400 mt-2 text-center">
+                  {preferredLanguage === 'pidgin' ? 'Abeg login to use SabiBot' :
+                   preferredLanguage === 'yoruba' ? 'Jọwọ wọle lati lo SabiBot' :
+                   preferredLanguage === 'hausa' ? 'Da fatan za a shiga don amfani da SabiBot' :
+                   preferredLanguage === 'igbo' ? 'Biko banye iji SabiBot' :
+                   'Please login to use SabiBot'}
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
-      <LearningStats 
-        isOpen={showLearningStats} 
-        onClose={() => setShowLearningStats(false)} 
+      <LearningStats
+        isOpen={showLearningStats}
+        onClose={() => setShowLearningStats(false)}
       />
 
       {/* Animation styles */}
       <style jsx global>{`
-        .safe-area-top {
-          padding-top: max(0.75rem, env(safe-area-inset-top));
-        }
         .safe-area-bottom {
           padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
         }
-        
+
         @keyframes blink {
           0%, 90%, 100% { opacity: 1; }
           95% { opacity: 0.2; }
         }
-        
+
         .robot-eye {
           animation: blink 4s infinite;
         }
-        
+
         .robot-eye-left {
           animation-delay: 0.1s;
         }
-        
+
         @keyframes antenna-pulse {
           0%, 100% { transform-origin: center; transform: scale(1); }
           50% { transform-origin: center; transform: scale(1.2); }
         }
-        
+
         .robot-antenna {
           animation: antenna-pulse 2s ease-in-out infinite;
         }
-        
+
         @keyframes mouth-speak {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.7; }
         }
-        
+
         .robot-mouth {
           animation: mouth-speak 1.5s infinite;
         }

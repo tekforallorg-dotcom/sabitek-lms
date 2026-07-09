@@ -1,688 +1,338 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
+import Link from 'next/link'
 import {
-  Users,
-  Sparkles,
-  Award,
-  LineChart,
-  CheckCircle,
-  TrendingUp,
-  Clock,
-  BookOpen,
-  FileText,
-  Zap,
   Building2,
-  Heart,
-  Globe,
-  ArrowRight,
-  MessageCircle,
-  BarChart3,
-  Target,
-  Smartphone,
-  QrCode,
-  GraduationCap,
-  ClipboardList,
   UserCheck,
-  Layers,
+  ArrowRight,
+  CheckCircle,
+  BarChart3,
+  QrCode,
+  Clock,
   Upload,
-  Play
-} from 'lucide-react';
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 }
-  }
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } }
-};
+  Users,
+  Rocket,
+} from 'lucide-react'
+import { Reveal, SectionLabel, GRAIN } from '@/components/marketing/primitives'
 
 export default function SchoolsAndTutorsPage() {
   return (
-    <main className="min-h-screen bg-white overflow-hidden">
-      {/* ========================================== */}
-      {/* HERO SECTION */}
-      {/* ========================================== */}
-      <section className="relative pt-8 pb-12 sm:pt-12 sm:pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-50/80 via-white to-white" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-red-100/40 to-transparent rounded-full blur-3xl opacity-60" />
-
-        <motion.div
-          className="absolute top-20 right-[20%] w-24 h-24 rounded-full bg-red-200/25 blur-2xl"
-          animate={{ y: [0, -10, 0], opacity: [0.25, 0.4, 0.25] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+    <main className="min-h-screen bg-[#fffcfb] text-gray-900 overflow-x-clip">
+      {/* ============================================ */}
+      {/* HERO — the result, up front                   */}
+      {/* ============================================ */}
+      <section className="relative overflow-hidden">
+        <div className="absolute -top-28 right-[-10%] w-[32rem] h-[32rem] bg-rose-100/70 rounded-full blur-[110px]" />
+        <div className="absolute top-56 left-[-12%] w-80 h-80 bg-red-50 rounded-full blur-[90px]" />
+        <div
+          className="absolute inset-0 opacity-[0.3]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
+            backgroundSize: '26px 26px',
+            maskImage: 'radial-gradient(ellipse 60% 55% at 40% 30%, black, transparent)',
+            WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 40% 30%, black, transparent)',
+          }}
         />
-        <motion.div
-          className="absolute bottom-10 left-[15%] w-32 h-32 rounded-full bg-rose-200/20 blur-2xl"
-          animate={{ y: [0, 15, 0], opacity: [0.2, 0.35, 0.2] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: GRAIN }} />
 
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-14 sm:pt-20 sm:pb-18">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <Reveal>
+              <div>
+                <SectionLabel>For institutions and educators</SectionLabel>
+                <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5">
+                  Launch your first cohort{' '}
+                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-500 to-pink-600">
+                    in days, not months.
+                  </span>
+                </h1>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-7 max-w-lg">
+                  Schools, NGOs, government programs, and independent trainers use
+                  Sabitek to run structured training with live progress and
+                  certificates anyone can verify. No developers, no setup projects.
+                </p>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-            >
-              <motion.div variants={fadeInUp} className="mb-4">
-                <span className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-red-100 text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm">
-                  <Building2 className="w-3.5 h-3.5" />
-                  For Institutions &amp; Educators
-                </span>
-              </motion.div>
-
-              <motion.h1
-                variants={fadeInUp}
-                className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight"
-              >
-                Sabitek for Institutions,{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
-                  Training Centers, and Educators
-                </span>
-              </motion.h1>
-
-              <motion.p
-                variants={fadeInUp}
-                className="text-base text-gray-600 mb-6 leading-relaxed"
-              >
-                Deliver structured learning with clear progress and proof of completion.
-                Schools, NGOs, government agencies, training centers, and verified instructors
-                use Sabitek to run programs with full visibility into participation and outcomes.
-              </motion.p>
-
-              <motion.div variants={fadeInUp} className="space-y-2 mb-6">
-                {[
-                  'Branded learning portal for your organisation',
-                  'Structured programs with modules and lessons',
-                  'Progress tracking and completion certificates',
-                  'No technical overhead to manage'
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <CheckCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </motion.div>
-
-              <motion.div
-                variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-3"
-              >
-                <a
-                  href="/request-access"
-                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  Get Started
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-                <a
-                  href="#features"
-                  className="inline-flex items-center justify-center gap-2 bg-white/70 backdrop-blur-sm hover:bg-white text-gray-700 px-6 py-3 rounded-xl text-sm font-semibold border border-gray-200 shadow-sm transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  See what you get
-                </a>
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="absolute -inset-3 bg-gradient-to-r from-red-500/10 via-rose-500/10 to-red-400/10 rounded-2xl blur-xl" />
-              <div className="relative bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
-                    <BarChart3 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">What Matters Most</p>
-                    <p className="text-xs text-gray-500">Participation, follow-through, completion</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 mb-5">
-                  <div className="text-center p-3 bg-gray-50 rounded-xl">
-                    <div className="text-2xl font-bold text-gray-900">245</div>
-                    <div className="text-xs text-gray-500">Active learners</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-xl">
-                    <div className="text-2xl font-bold text-green-600">87%</div>
-                    <div className="text-xs text-gray-500">Completion rate</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-xl">
-                    <div className="text-2xl font-bold text-gray-900">198</div>
-                    <div className="text-xs text-gray-500">Certificates</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-3 mb-8">
                   {[
-                    { icon: Layers, label: 'Structured', color: 'bg-red-50 text-red-500' },
-                    { icon: TrendingUp, label: 'Trackable', color: 'bg-blue-50 text-blue-500' },
-                    { icon: Award, label: 'Certified', color: 'bg-green-50 text-green-500' },
+                    'Your own branded workspace, provisioned on approval',
+                    'See who is on track and who is falling behind, live',
+                    'QR-verified certificates funders and employers trust',
                   ].map((item, i) => (
-                    <div key={i} className={`${item.color.split(' ')[0]} p-3 rounded-xl text-center`}>
-                      <item.icon className={`w-5 h-5 ${item.color.split(' ')[1]} mx-auto mb-1`} />
-                      <p className="text-xs text-gray-600">{item.label}</p>
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-rose-500 shadow-sm shadow-rose-200 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </span>
+                      <span className="text-[15px] text-gray-700">{item}</span>
                     </div>
                   ))}
                 </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href="/request-access">
+                    <span className="group relative overflow-hidden inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-3.5 text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer">
+                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                      Get Started
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                  <Link href="/become-a-provider">
+                    <span className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 px-8 py-3.5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer">
+                      I teach independently
+                    </span>
+                  </Link>
+                </div>
               </div>
-            </motion.div>
+            </Reveal>
+
+            {/* Proof panel: cohort snapshot */}
+            <Reveal delay={150}>
+              <div className="relative max-w-md mx-auto lg:max-w-none">
+                <div className="absolute inset-4 rotate-3 rounded-3xl bg-gradient-to-br from-rose-200/70 to-pink-100/70 blur-[1px]" aria-hidden="true" />
+                <div className="relative bg-white/85 backdrop-blur-xl rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_40px_80px_-35px_rgba(225,29,72,0.45)] overflow-hidden">
+                  <div className="flex items-center gap-2 px-5 py-3.5 border-b border-rose-50">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-200" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-100" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-50 border border-rose-100" />
+                    <span className="ml-3 text-xs font-medium text-gray-400">Cohort overview</span>
+                  </div>
+                  <div className="p-5 sm:p-6 space-y-4">
+                    {[
+                      { name: 'Digital Skills, Cohort 3', pct: 82, meta: '41 of 50 on track' },
+                      { name: 'Teacher Upskilling Program', pct: 64, meta: '32 of 50 on track' },
+                    ].map((row, i) => (
+                      <div key={i}>
+                        <div className="flex items-baseline justify-between mb-1.5">
+                          <p className="text-xs font-semibold text-gray-800">{row.name}</p>
+                          <span className="text-[11px] font-medium text-rose-500 tabular-nums">{row.pct}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-rose-50 overflow-hidden mb-1">
+                          <div style={{ width: `${row.pct}%` }} className="h-full rounded-full bg-gradient-to-r from-red-500 to-pink-400" />
+                        </div>
+                        <p className="text-[11px] text-gray-400">{row.meta}</p>
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="rounded-xl bg-gradient-to-b from-rose-50/70 to-white border border-rose-100 px-3.5 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <QrCode className="w-3.5 h-3.5 text-red-500" />
+                          <span className="text-[11px] text-gray-500">Certificates issued</span>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900 tabular-nums">128 this term</p>
+                      </div>
+                      <div className="rounded-xl bg-gradient-to-b from-rose-50/70 to-white border border-rose-100 px-3.5 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <BarChart3 className="w-3.5 h-3.5 text-red-500" />
+                          <span className="text-[11px] text-gray-500">Completion</span>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900 tabular-nums">95% average</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ========================================== */}
-      {/* WHY SABITEK */}
-      {/* ========================================== */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Why Sabitek
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
-            >
-              Why institutions and training providers{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500">
-                choose Sabitek
-              </span>
-            </motion.h2>
-            <motion.p
-              variants={fadeInUp}
-              className="text-sm text-gray-600 max-w-2xl mx-auto"
-            >
-              Chosen by schools, NGOs, government programs, and training centers that need
-              learning delivery to be clear, manageable, and accountable.
-            </motion.p>
-          </motion.div>
+      {/* ============================================ */}
+      {/* OUTCOMES — what you walk away with            */}
+      {/* ============================================ */}
+      <section className="py-12 sm:py-14 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <SectionLabel centered>What you get</SectionLabel>
+              <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug">
+                Results you can{' '}
+                <span className="font-serif italic text-red-600">show, not tell</span>
+              </h2>
+            </div>
+          </Reveal>
 
-          <motion.div
-            className="grid md:grid-cols-3 gap-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              {
-                icon: Layers,
-                title: 'Structured Program Delivery',
-                desc: 'Content organised into modules and lessons that guide learners step by step, making it easier to stay on track and complete programs.',
-                gradient: 'from-red-500 to-rose-500',
-                shadow: 'shadow-red-500/15'
-              },
-              {
-                icon: Zap,
-                title: 'Reduced Administrative Load',
-                desc: 'Platform setup, hosting, updates, and learner access are handled centrally, allowing teams to focus on instruction and outcomes.',
-                gradient: 'from-blue-500 to-cyan-500',
-                shadow: 'shadow-blue-500/15'
-              },
-              {
-                icon: Target,
-                title: 'Built-In Accountability',
-                desc: 'Progress dashboards and completion data provide clear visibility into learner engagement and performance across cohorts.',
-                gradient: 'from-green-500 to-emerald-500',
-                shadow: 'shadow-green-500/15'
-              },
+              { icon: Rocket, title: 'Faster launches', desc: 'Upload videos, slides, and PDFs; AI turns them into quizzes and summaries. A full program in days.' },
+              { icon: BarChart3, title: 'No silent dropouts', desc: 'Live participation tracking flags who is behind while there is still time to act.' },
+              { icon: QrCode, title: 'Credible certificates', desc: 'QR-verified credentials that funders, boards, and employers can check in seconds.' },
+              { icon: Users, title: 'Learners who finish', desc: 'Structured paths plus AI support in 5 local languages keep completion high.' },
             ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                whileHover={{ y: -4 }}
-                className="group relative"
-              >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${item.gradient} rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300`} />
-                <div className="relative bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 h-full">
-                  <div className={`w-11 h-11 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg ${item.shadow} group-hover:scale-105 transition-transform duration-300`}>
+              <Reveal key={i} delay={i * 70}>
+                <div className="group h-full bg-gradient-to-b from-white to-rose-50/40 p-6 rounded-2xl border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)]">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
                     <item.icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                  <h3 className="font-semibold text-[15px] mb-1.5">{item.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
-              </motion.div>
+              </Reveal>
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ========================================== */}
-      {/* WHAT YOU GET */}
-      {/* ========================================== */}
-      <section id="features" className="py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-            >
-              <ClipboardList className="w-3.5 h-3.5" />
-              Features
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900"
-            >
-              What you get with Sabitek
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            {[
-              { icon: Building2, label: 'Custom portal for your organisation', color: 'text-red-500 bg-red-50' },
-              { icon: BookOpen, label: 'Structured courses with modules', color: 'text-blue-500 bg-blue-50' },
-              { icon: FileText, label: 'Built-in practice and assessments', color: 'text-green-500 bg-green-50' },
-              { icon: BarChart3, label: 'Learner dashboards and progress', color: 'text-purple-500 bg-purple-50' },
-              { icon: UserCheck, label: 'Instructor views for monitoring', color: 'text-orange-500 bg-orange-50' },
-              { icon: QrCode, label: 'QR-verifiable certificates', color: 'text-cyan-500 bg-cyan-50' },
-              { icon: Smartphone, label: 'Mobile, tablet, and desktop', color: 'text-pink-500 bg-pink-50' },
-              { icon: LineChart, label: 'Reports and analytics', color: 'text-indigo-500 bg-indigo-50' },
-              { icon: Globe, label: 'No technical overhead', color: 'text-teal-500 bg-teal-50' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className={`w-9 h-9 ${item.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <item.icon className="w-4 h-4" />
-                </div>
-                <span className="text-sm text-gray-700">{item.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ========================================== */}
-      {/* FOR SCHOOLS & ORGANISATIONS */}
-      {/* ========================================== */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-            >
-              <motion.span
-                variants={fadeInUp}
-                className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                For Institutions
-              </motion.span>
-              <motion.h2
-                variants={fadeInUp}
-                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
-              >
-                For schools, NGOs, government, and organizations
-              </motion.h2>
-
-              <motion.p
-                variants={fadeInUp}
-                className="text-sm text-gray-600 leading-relaxed mb-5"
-              >
-                Sabitek supports institutions delivering learning at scale, whether for
-                students, beneficiaries, or staff.
-              </motion.p>
-
-              <motion.div variants={fadeInUp} className="space-y-3 mb-5">
-                {[
-                  'Deploy structured learning programs with defined paths',
-                  'Monitor enrolment, progress, and completion',
-                  'Identify where learners struggle or disengage',
-                  'Generate reports and certificates that demonstrate outcomes'
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <div className="w-5 h-5 bg-red-100 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle className="w-3 h-3 text-red-500" />
-                    </div>
-                    <span className="text-sm text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </motion.div>
-
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs text-gray-500 italic"
-              >
-                Programs can be run independently or alongside existing systems.
-              </motion.p>
-            </motion.div>
-
-            <motion.div
-              className="space-y-3"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-            >
-              {[
-                { icon: TrendingUp, title: 'Better Engagement', desc: 'Structured paths keep learners active and progressing', color: 'border-red-500 from-red-50' },
-                { icon: BarChart3, title: 'Clear Analytics', desc: 'Track enrolment, completion rates, and performance', color: 'border-blue-500 from-blue-50' },
-                { icon: Clock, title: 'Time Saved', desc: 'We handle infrastructure so your team focuses on teaching', color: 'border-green-500 from-green-50' },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={scaleIn}
-                  className={`bg-gradient-to-r ${item.color} to-transparent p-4 rounded-xl border-l-4 ${item.color.split(' ')[0]}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <item.icon className={`w-5 h-5 ${item.color.includes('red') ? 'text-red-500' : item.color.includes('blue') ? 'text-blue-500' : 'text-green-500'} flex-shrink-0`} />
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-900 mb-0.5">{item.title}</h3>
-                      <p className="text-xs text-gray-600">{item.desc}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ========================================== */}
-      {/* FOR TUTORS */}
-      {/* ========================================== */}
-      <section className="py-10 sm:py-14 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-            >
-              <GraduationCap className="w-3.5 h-3.5" />
-              For Educators
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
-            >
-              For verified instructors, trainers, and academies
-            </motion.h2>
-            <motion.p
-              variants={fadeInUp}
-              className="text-sm text-gray-600 max-w-xl mx-auto"
-            >
-              Focus on teaching while Sabitek supports delivery and structure.{' '}
-              <a href="/become-a-provider" className="text-red-500 font-medium hover:text-red-600">
-                Apply to become a provider
-              </a>
-            </motion.p>
-          </motion.div>
+      {/* ============================================ */}
+      {/* TWO PATHS — institution vs independent        */}
+      {/* ============================================ */}
+      <section className="py-12 sm:py-14 bg-gradient-to-b from-white to-rose-50/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <SectionLabel centered>Two ways in</SectionLabel>
+              <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug">
+                Pick the path that{' '}
+                <span className="font-serif italic text-red-600">fits you</span>
+              </h2>
+            </div>
+          </Reveal>
 
-          <motion.div
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
+          <div className="grid md:grid-cols-2 gap-5">
             {[
-              { icon: Upload, title: 'Upload content', desc: 'Videos, slides, PDFs, and notes', gradient: 'from-red-500 to-rose-500' },
-              { icon: Layers, title: 'Organise', desc: 'Structured lessons and modules', gradient: 'from-blue-500 to-cyan-500' },
-              { icon: Play, title: 'Deliver', desc: 'Built-in practice and support', gradient: 'from-green-500 to-emerald-500' },
-              { icon: Award, title: 'Certify', desc: 'Verifiable certificates', gradient: 'from-purple-500 to-violet-500' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                whileHover={{ y: -4 }}
-                className="group bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300"
-              >
-                <div className={`w-10 h-10 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-105 transition-transform duration-300`}>
-                  <item.icon className="w-5 h-5 text-white" />
+              {
+                icon: Building2,
+                eyebrow: 'Organizations',
+                title: 'Schools, NGOs, government, companies',
+                points: [
+                  'Run multiple programs and cohorts under one workspace',
+                  'Add program managers and facilitators to share the work',
+                  'Export participation evidence for funders and boards',
+                ],
+                link: '/request-access',
+                linkText: 'Get Started',
+                primary: true,
+              },
+              {
+                icon: UserCheck,
+                eyebrow: 'Independent',
+                title: 'Instructors, trainers, academies',
+                points: [
+                  'Your own branded workspace, no institution required',
+                  'Publish structured tracks from content you already have',
+                  'Issue certificates under your own training brand',
+                ],
+                link: '/become-a-provider',
+                linkText: 'Become a Provider',
+                primary: false,
+              },
+            ].map((card, i) => (
+              <Reveal key={i} delay={i * 100}>
+                <div className="group h-full flex flex-col bg-white/85 backdrop-blur p-7 sm:p-8 rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_20px_45px_-25px_rgba(225,29,72,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-25px_rgba(225,29,72,0.45)] relative overflow-hidden">
+                  <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+                  <div className="flex items-center gap-3.5 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center">
+                      <card.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">{card.eyebrow}</p>
+                      <h3 className="font-semibold text-base leading-snug">{card.title}</h3>
+                    </div>
+                  </div>
+                  <div className="space-y-2.5 mb-7 flex-1">
+                    {card.points.map((point, j) => (
+                      <div key={j} className="flex items-start gap-2.5">
+                        <CheckCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600 leading-relaxed">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href={card.link}>
+                    <span
+                      className={`group/btn inline-flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold rounded-full transition-all hover:-translate-y-0.5 cursor-pointer ${
+                        card.primary
+                          ? 'relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50'
+                          : 'bg-white border border-rose-100 hover:border-rose-200 text-gray-700 shadow-sm'
+                      }`}
+                    >
+                      {card.primary && (
+                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                      )}
+                      {card.linkText}
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" />
+                    </span>
+                  </Link>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-600">{item.desc}</p>
-              </motion.div>
+              </Reveal>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ========================================== */}
-      {/* RESPONSIBLE ACCESS */}
-      {/* ========================================== */}
-      <section className="py-10 sm:py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-            >
-              <Heart className="w-3.5 h-3.5" />
-              Responsible Access
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
-            >
-              Designed for access and inclusion
-            </motion.h2>
-          </motion.div>
+      {/* ============================================ */}
+      {/* HOW IT WORKS — three steps                    */}
+      {/* ============================================ */}
+      <section className="py-12 sm:py-14 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <SectionLabel centered>How it works</SectionLabel>
+              <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug">
+                From application to{' '}
+                <span className="font-serif italic text-red-600">first certificate</span>
+              </h2>
+            </div>
+          </Reveal>
 
-          <motion.div
-            className="grid md:grid-cols-3 gap-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
+          <div className="grid sm:grid-cols-3 gap-4">
             {[
-              { icon: Heart, title: 'Cross-subsidised access', desc: 'Part of institutional usage supports sponsored learning access', color: 'bg-red-100 text-red-600' },
-              { icon: Users, title: 'Community partnerships', desc: 'Partnerships with community programmes help extend reach', color: 'bg-blue-100 text-blue-600' },
-              { icon: GraduationCap, title: 'Supports educators', desc: 'Technology designed to support educators, not replace them', color: 'bg-green-100 text-green-600' },
+              { icon: Clock, step: '1', title: 'Apply in 5 minutes', desc: 'Tell us about your organization or training. We review within 2-5 working days.' },
+              { icon: Upload, step: '2', title: 'Get your workspace', desc: 'On approval your workspace is provisioned. Upload content; AI builds quizzes and summaries.' },
+              { icon: QrCode, step: '3', title: 'Launch and certify', desc: 'Invite your cohort, watch progress live, and issue verified certificates at the finish line.' },
             ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                className="bg-gray-50 rounded-xl p-5 border border-gray-100 text-center"
-              >
-                <div className={`w-12 h-12 ${item.color} rounded-full flex items-center justify-center mx-auto mb-3`}>
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ========================================== */}
-      {/* GETTING STARTED */}
-      {/* ========================================== */}
-      <section className="py-10 sm:py-14 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-4xl mx-auto px-4">
-          <motion.div
-            className="text-center mb-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-1.5 text-red-500 text-xs font-bold tracking-wider uppercase mb-2"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Getting Started
-            </motion.span>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900"
-            >
-              Easy to start, easy to integrate
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-3 gap-6 mb-6"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            {[
-              { step: '1', icon: MessageCircle, title: 'Share Your Goals', desc: 'Tell us about your learners, objectives, and materials', color: 'bg-red-100 text-red-600' },
-              { step: '2', icon: Building2, title: 'Set Up Your Program', desc: 'Courses organised with the right tools for your needs', color: 'bg-blue-100 text-blue-600' },
-              { step: '3', icon: TrendingUp, title: 'Launch and Improve', desc: 'Invite learners, monitor progress, refine over time', color: 'bg-green-100 text-green-600' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={scaleIn}
-                className="text-center"
-              >
-                <div className={`w-14 h-14 ${item.color} rounded-full flex items-center justify-center mx-auto mb-3`}>
-                  <item.icon className="w-7 h-7" />
-                </div>
-                <div className="mb-2">
-                  <span className={`inline-block ${item.color.replace('100', '50')} text-xs font-semibold px-3 py-1 rounded-full`}>
-                    Step {item.step}
+              <Reveal key={i} delay={i * 90}>
+                <div className="relative h-full bg-gradient-to-b from-white to-rose-50/40 p-6 sm:p-7 rounded-2xl border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] overflow-hidden">
+                  <span className="absolute -right-2 -bottom-8 font-serif italic text-[5.5rem] leading-none text-rose-100/70 select-none pointer-events-none" aria-hidden="true">
+                    {item.step}
                   </span>
+                  <div className="relative">
+                    <item.icon className="w-5 h-5 text-red-500 mb-4" />
+                    <h3 className="font-semibold text-[15px] mb-1.5">{item.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed max-w-[28ch]">{item.desc}</p>
+                  </div>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">{item.desc}</p>
-              </motion.div>
+              </Reveal>
             ))}
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-xs text-gray-500 text-center italic"
-          >
-            Sabitek can operate as a primary learning platform or complement existing systems.
-          </motion.p>
+          </div>
         </div>
       </section>
 
-      {/* ========================================== */}
-      {/* CTA SECTION */}
-      {/* ========================================== */}
-      <section id="contact" className="py-10 sm:py-14 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.h2
-              variants={fadeInUp}
-              className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3"
-            >
-              Ready to get started?
-            </motion.h2>
-            <motion.p
-              variants={fadeInUp}
-              className="text-sm text-gray-600 mb-6 max-w-lg mx-auto"
-            >
-              Apply for a Sabitek workspace for your institution or training program.
-              We review applications within 2-5 working days.
-            </motion.p>
-            <motion.div variants={fadeInUp}>
-              <a
-                href="/request-access"
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3.5 rounded-xl text-sm font-semibold shadow-lg shadow-red-500/20 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Get Started
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </motion.div>
+      {/* ============================================ */}
+      {/* CTA                                           */}
+      {/* ============================================ */}
+      <section className="pb-16 pt-4 sm:pb-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-red-600 via-rose-600 to-pink-600 px-6 py-14 sm:px-14 sm:py-16 text-center ring-1 ring-white/20 shadow-[0_45px_90px_-35px_rgba(190,18,60,0.6)]">
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/15 to-transparent" aria-hidden="true" />
+              <div className="absolute -top-20 -right-16 w-72 h-72 bg-white/10 rounded-full blur-[80px]" />
+              <div className="absolute -bottom-24 -left-16 w-64 h-64 bg-pink-300/25 rounded-full blur-[70px]" />
+              <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: GRAIN }} />
 
-            <motion.div variants={fadeInUp} className="mt-6 flex items-center justify-center gap-4">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                Free to apply
+              <div className="relative">
+                <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+                  Your next cohort could start{' '}
+                  <span className="font-serif italic">next week.</span>
+                </h2>
+                <p className="text-base sm:text-lg text-white/85 mb-9 max-w-lg mx-auto">
+                  Apply today. Most applications are reviewed within 2-5 working days.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                  <Link href="/request-access">
+                    <span className="group inline-flex items-center justify-center gap-2 bg-white text-red-600 hover:bg-rose-50 px-9 py-3.5 text-sm font-semibold rounded-full shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-0.5 cursor-pointer">
+                      Get Started
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                  <Link href="/become-a-provider">
+                    <span className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/40 text-white hover:bg-white/20 px-9 py-3.5 text-sm font-semibold rounded-full transition-all hover:-translate-y-0.5 cursor-pointer">
+                      Become a Provider
+                    </span>
+                  </Link>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Clock className="w-3.5 h-3.5 text-blue-500" />
-                2-5 day review
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                No commitment
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ========================================== */}
-      {/* FOOTER CTA */}
-      {/* ========================================== */}
-      <section className="relative py-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-500 via-red-600 to-rose-600" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/15 via-transparent to-transparent" />
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-          backgroundSize: '28px 28px'
-        }} />
-
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <p className="text-white/90 text-sm font-medium">
-            Sabitek - Learning infrastructure for institutions, training centers, and verified instructors across Africa.
-          </p>
+            </div>
+          </Reveal>
         </div>
       </section>
     </main>
-  );
+  )
 }

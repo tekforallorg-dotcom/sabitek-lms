@@ -4,16 +4,45 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Settings, LogOut, ChevronDown, Zap, Sparkles, Wallet } from 'lucide-react'
-import { sabitoolsCatalog } from '@/lib/sabitools-catalog'
+import { User, Settings, LogOut, ChevronDown, Sparkles, Wallet } from 'lucide-react'
+
+/* Nav link with animated gradient underline */
+function NavLink({
+  href,
+  active,
+  children,
+  onClick,
+}: {
+  href: string
+  active?: boolean
+  children: React.ReactNode
+  onClick?: () => void
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`group relative py-1 text-sm font-medium transition-colors ${
+        active ? 'text-red-600' : 'text-gray-600 hover:text-red-600'
+      }`}
+    >
+      {children}
+      <span
+        className={`absolute -bottom-0.5 left-0 h-px w-full bg-gradient-to-r from-red-500 to-rose-400 origin-left transition-transform duration-300 ${
+          active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+        }`}
+        aria-hidden="true"
+      />
+    </Link>
+  )
+}
 
 export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
- const { user, userProfile, signOut, displayRole } = useAuth()
+  const { user, userProfile, signOut, displayRole } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [isSabiSuiteOpen, setIsSabiSuiteOpen] = useState(false)
 
 
   const handleLogout = async () => {
@@ -30,17 +59,12 @@ export default function Header() {
     return userProfile.role === 'instructor' ? '/instructor' : '/dashboard'
   }
 
-  const closeAllMenus = () => {
-    setIsSabiSuiteOpen(false)
-    setIsMenuOpen(false)
-  }
-
   if (pathname?.startsWith('/auth/')) {
     return null
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-rose-100/80 shadow-[0_10px_30px_-22px_rgba(225,29,72,0.35)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -52,91 +76,22 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/courses" 
-              className="text-gray-700 hover:text-red-500 transition-colors"
-            >
+            <NavLink href="/courses" active={pathname === '/courses'}>
               Courses
-            </Link>
-            
+            </NavLink>
+
             {user && (
               <>
-                <Link 
-                  href={getDashboardLink()} 
-                  className="text-gray-700 hover:text-red-500 transition-colors"
-                >
+                <NavLink href={getDashboardLink()} active={pathname === getDashboardLink()}>
                   Dashboard
-                </Link>
-
-                {/* SabiSuite Dropdown - Desktop */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setIsSabiSuiteOpen(true)}
-                  onMouseLeave={() => setIsSabiSuiteOpen(false)}
-                >
-                  <button 
-                    className="flex items-center space-x-1 text-gray-700 hover:text-red-500 transition-colors py-2"
-                    onClick={() => setIsSabiSuiteOpen(!isSabiSuiteOpen)}
-                  >
-                    <Zap className="w-4 h-4 text-red-500 drop-shadow-[0_0_3px_rgba(251,113,133,0.8)]" />
-                    <span>SabiSuite</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isSabiSuiteOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {isSabiSuiteOpen && (
-                    <div className="absolute left-0 top-full w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 mt-0">
-                      {/* View All link at top */}
-                      <Link
-                        href="/sabitools"
-                        className="flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:text-red-500 border-b border-gray-100 mb-1"
-                        onClick={() => setIsSabiSuiteOpen(false)}
-                      >
-                        <span>View all tools</span>
-                        <ChevronDown className="w-3 h-3 -rotate-90" />
-                      </Link>
-                      
-                      {sabitoolsCatalog.map((tool) => {
-                        const IconComponent = tool.icon
-                        return (
-                          <Link
-                            key={tool.id}
-                            href={tool.href}
-                            className="flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-                            onClick={() => setIsSabiSuiteOpen(false)}
-                          >
-                            <IconComponent className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{tool.name}</span>
-                                {tool.status === 'new' && (
-                                  <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded-full">
-                                    NEW
-                                  </span>
-                                )}
-                                {tool.status === 'popular' && (
-                                  <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-medium rounded-full">
-                                    HOT
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500">{tool.shortDescription}</p>
-                            </div>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
+                </NavLink>
               </>
             )}
 
             {userProfile?.role === 'instructor' && (
-              <Link 
-                href="/instructor/courses/create" 
-                className="text-gray-700 hover:text-red-500 transition-colors"
-              >
+              <NavLink href="/instructor/courses/create" active={pathname === '/instructor/courses/create'}>
                 Create Course
-              </Link>
+              </NavLink>
             )}
           </nav>
 
@@ -146,17 +101,17 @@ export default function Header() {
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center space-x-2 pl-1.5 pr-3 py-1.5 rounded-full border border-transparent hover:border-rose-100 hover:bg-rose-50/50 transition-all cursor-pointer"
                   >
                     {userProfile?.avatar_url ? (
                       <img
                         src={userProfile.avatar_url}
                         alt={userProfile.full_name}
-                        className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center border-2 border-gray-200">
-                        <span className="text-sm font-semibold text-red-600">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow-sm">
+                        <span className="text-sm font-semibold text-white">
                           {userProfile?.full_name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
@@ -173,18 +128,20 @@ export default function Header() {
                       )}
                     </div>
 
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isUserMenuOpen && (
                     <>
-                      <div 
-                        className="fixed inset-0 z-10" 
+                      <div
+                        className="fixed inset-0 z-10"
                         onClick={() => setIsUserMenuOpen(false)}
                       />
 
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
-                        <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="absolute right-0 mt-2 w-60 bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_30px_60px_-25px_rgba(225,29,72,0.4)] py-2 z-20 overflow-hidden">
+                        <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+
+                        <div className="px-4 py-3 border-b border-rose-50">
                           <p className="text-sm font-medium text-gray-900">
                             {userProfile?.full_name || 'User'}
                           </p>
@@ -193,42 +150,46 @@ export default function Header() {
                           </p>
                         </div>
 
-                        <Link
-                          href="/profile"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <User className="w-4 h-4" />
-                          <span>My Profile</span>
-                        </Link>
+                        <div className="px-1.5 pt-1.5">
+                          <Link
+                            href="/profile"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-700 hover:bg-rose-50/60 hover:text-red-600 transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>My Profile</span>
+                          </Link>
 
-                        <Link
-                          href={getDashboardLink()}
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <Settings className="w-4 h-4" />
-                          <span>Dashboard</span>
-                        </Link>
+                          <Link
+                            href={getDashboardLink()}
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-700 hover:bg-rose-50/60 hover:text-red-600 transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Dashboard</span>
+                          </Link>
 
-                        <Link
-                          href="/account/wallet"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <Wallet className="w-4 h-4" />
-                          <span>Wallet</span>
-                        </Link>
+                          <Link
+                            href="/account/wallet"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-700 hover:bg-rose-50/60 hover:text-red-600 transition-colors"
+                          >
+                            <Wallet className="w-4 h-4" />
+                            <span>Wallet</span>
+                          </Link>
+                        </div>
 
-                        <hr className="my-2 border-gray-100" />
+                        <hr className="my-2 border-rose-50" />
 
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
+                        <div className="px-1.5 pb-1">
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
@@ -237,12 +198,16 @@ export default function Header() {
             ) : (
               <div className="flex items-center space-x-3">
                 <Link href="/auth/login">
-                  <Button variant="outline" className="border-gray-300">
+                  <Button
+                    variant="outline"
+                    className="rounded-full bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 text-sm font-semibold px-5 shadow-sm transition-all hover:-translate-y-0.5"
+                  >
                     Login
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="bg-red-500 hover:bg-red-600 text-white">
+                  <Button className="group relative overflow-hidden rounded-full bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold px-5 ring-1 ring-red-600/50 shadow-[0_10px_22px_-8px_rgba(225,29,72,0.55)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-8px_rgba(225,29,72,0.6)]">
+                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                     Sign Up
                   </Button>
                 </Link>
@@ -251,10 +216,11 @@ export default function Header() {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden"
+              className="md:hidden p-2 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -268,19 +234,19 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-1 bg-white/90 backdrop-blur-xl rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-25px_rgba(225,29,72,0.35)] p-2 mb-2">
               {user && (
-                <div className="px-3 py-3 bg-gray-50 rounded-lg mb-2">
+                <div className="px-3 py-3 bg-rose-50/60 rounded-xl mb-1">
                   <div className="flex items-center space-x-3">
                     {userProfile?.avatar_url ? (
                       <img
                         src={userProfile.avatar_url}
                         alt={userProfile.full_name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <span className="text-lg font-semibold text-red-600">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow-sm">
+                        <span className="text-lg font-semibold text-white">
                           {userProfile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
@@ -299,82 +265,35 @@ export default function Header() {
                 </div>
               )}
 
-              <Link 
-                href="/courses" 
-                className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+              <Link
+                href="/courses"
+                className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Courses
               </Link>
-              
+
               {user && (
                 <>
-                  <Link 
-                    href={getDashboardLink()} 
-                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                  <Link
+                    href={getDashboardLink()}
+                    className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
 
-                  {/* SabiSuite - Mobile */}
-                  <div className="px-3 py-2">
-                    <button
-                      onClick={() => setIsSabiSuiteOpen(!isSabiSuiteOpen)}
-                      className="flex items-center justify-between w-full text-gray-700"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Zap className="w-4 h-4 text-red-500 drop-shadow-[0_0_3px_rgba(251,113,133,0.8)]" />
-                        <span>SabiSuite</span>
-                      </div>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isSabiSuiteOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {isSabiSuiteOpen && (
-                      <div className="ml-4 mt-2 space-y-1">
-                        {/* View all link for mobile */}
-                        <Link
-                          href="/sabitools"
-                          className="flex items-center space-x-2 px-3 py-2 text-xs text-red-600 font-medium hover:bg-red-50 rounded"
-                          onClick={closeAllMenus}
-                        >
-                          <span>View all tools →</span>
-                        </Link>
-                        
-                        {sabitoolsCatalog.map((tool) => {
-                          const IconComponent = tool.icon
-                          return (
-                            <Link
-                              key={tool.id}
-                              href={tool.href}
-                              className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
-                              onClick={closeAllMenus}
-                            >
-                              <IconComponent className="w-4 h-4 text-red-500" />
-                              <span>{tool.name}</span>
-                              {tool.status === 'new' && (
-                                <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded-full">
-                                  NEW
-                                </span>
-                              )}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  <Link 
-                    href="/profile" 
-                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                  <Link
+                    href="/profile"
+                    className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     My Profile
                   </Link>
 
-                  <Link 
-                    href="/account/wallet" 
-                    className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded flex items-center space-x-2"
+                  <Link
+                    href="/account/wallet"
+                    className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors flex items-center gap-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Wallet className="w-4 h-4" />
@@ -382,11 +301,11 @@ export default function Header() {
                   </Link>
                 </>
               )}
-              
+
               {userProfile?.role === 'instructor' && (
-                <Link 
-                  href="/instructor/courses/create" 
-                  className="px-3 py-2 text-gray-700 hover:bg-gray-50 rounded"
+                <Link
+                  href="/instructor/courses/create"
+                  className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Create Course

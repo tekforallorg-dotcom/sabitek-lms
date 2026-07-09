@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useState, use } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { 
+import {
   Award, 
   CheckCircle, 
   XCircle, 
@@ -44,32 +43,24 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
 
   const fetchCertificate = async () => {
     try {
-      const { data, error } = await supabase
-        .from('certificates')
-        .select(`
-          id,
-          certificate_number,
-          grade_percentage,
-          issued_at,
-          user:users!certificates_user_id_fkey(
-            full_name
-          ),
-          course:courses(
-            title,
-            instructor:users!courses_instructor_id_fkey(full_name)
-          )
-        `)
-        .eq('certificate_number', resolvedParams.certificateNumber)
-        .single()
+      // Certificates are RLS-protected; verification goes through a
+      // service-role API route instead of the anon supabase client.
+      const res = await fetch(
+        `/api/verify/${encodeURIComponent(resolvedParams.certificateNumber)}`
+      )
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows returned
-          setNotFound(true)
-        } else {
-          throw error
-        }
-      } else if (data) {
+      if (res.status === 404) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+      if (!res.ok) {
+        throw new Error('Verification request failed')
+      }
+
+      const { data } = await res.json()
+
+      if (data) {
         // Extract data from Supabase relations (may be arrays or objects)
         const userData = Array.isArray(data.user) ? data.user[0] : data.user
         const courseData = Array.isArray(data.course) ? data.course[0] : data.course
