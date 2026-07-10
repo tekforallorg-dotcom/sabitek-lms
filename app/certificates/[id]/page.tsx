@@ -5,15 +5,15 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { QRCodeCanvas } from 'qrcode.react'
-import jsPDF from 'jspdf'
+import type { jsPDF } from 'jspdf'
 import SabiLoader from '@/components/ui/SabiLoader'
-import { 
-  Award, 
-  ArrowLeft, 
-  Download, 
-  Share2, 
-  Mail, 
-  CheckCircle, 
+import {
+  Award,
+  ArrowLeft,
+  Download,
+  Share2,
+  Mail,
+  CheckCircle,
   Loader2,
   ExternalLink,
   Copy,
@@ -47,11 +47,11 @@ interface Certificate {
 function drawSparkle(pdf: jsPDF, cx: number, cy: number, size: number) {
   pdf.setFillColor(220, 38, 38) // Red
   pdf.setDrawColor(220, 38, 38)
-  
+
   // 4-point star vertices (outer and inner)
   const outer = size
   const inner = size * 0.35
-  
+
   // Calculate all 8 points (4 outer, 4 inner)
   const points: { x: number; y: number }[] = []
   for (let i = 0; i < 8; i++) {
@@ -62,13 +62,13 @@ function drawSparkle(pdf: jsPDF, cx: number, cy: number, size: number) {
       y: cy + Math.sin(angle) * r
     })
   }
-  
+
   // Draw filled star using triangles from center
   for (let i = 0; i < 8; i++) {
     const next = (i + 1) % 8
     pdf.triangle(cx, cy, points[i].x, points[i].y, points[next].x, points[next].y, 'F')
   }
-  
+
   // Small dot at top-right of star
   pdf.circle(cx + size * 0.6, cy - size * 0.6, size * 0.15, 'F')
 }
@@ -141,20 +141,22 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     day: '2-digit',
     year: 'numeric'
   }).toUpperCase()
-  const verifyUrl = certificate 
+  const verifyUrl = certificate
     ? `${typeof window !== 'undefined' ? window.location.origin : 'https://sabitek.school'}/verify/${certificate.certificate_number}`
     : ''
 
   // ============================================================
   // DIRECT jsPDF DRAWING - Perfect centering guaranteed
+  // jsPDF is lazy-loaded here so it stays out of the page bundle
   // ============================================================
-  const generatePDF = (): jsPDF => {
+  const generatePDF = async () => {
+    const { default: jsPDF } = await import('jspdf')
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    
+
     // Page dimensions
     const pageW = 297
     const pageH = 210
-    
+
     // Certificate area (centered on page)
     const margin = 12
     const certW = pageW - margin * 2  // 273mm
@@ -190,11 +192,11 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     pdf.setTextColor(17, 24, 39)
     const sabitexText = 'Sabitek'
     pdf.text(sabitexText, centerX, currentY, { align: 'center' })
-    
+
     // Draw sparkle to the right of "Sabitek"
     const textWidth = pdf.getTextWidth(sabitexText)
     drawSparkle(pdf, centerX + textWidth/2 + 5, currentY - 5, 3.5)
-    
+
     currentY += 4
 
     // Red underline (centered under Sabitek)
@@ -224,7 +226,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     pdf.setFontSize(26)
     pdf.setTextColor(17, 24, 39)
     pdf.text(certificate!.user.full_name, centerX, currentY, { align: 'center' })
-    
+
     // Underline for name
     const nameWidth = pdf.getTextWidth(certificate!.user.full_name)
     pdf.setDrawColor(209, 213, 219)
@@ -297,12 +299,12 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     pdf.setFontSize(18)
     pdf.setTextColor(17, 24, 39)
     pdf.text(certificate!.course.instructor.full_name, instructorX, footerY + 4, { align: 'center' })
-    
+
     // Instructor line
     pdf.setDrawColor(17, 24, 39)
     pdf.setLineWidth(0.6)
     pdf.line(instructorX - 35, footerY + 8, instructorX + 35, footerY + 8)
-    
+
     // "COURSE INSTRUCTOR" label
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(8)
@@ -322,7 +324,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       const qrSize = 20
       const qrData = qrCanvas.toDataURL('image/png')
       pdf.addImage(qrData, 'PNG', qrX - qrSize/2, footerY - 8, qrSize, qrSize)
-      
+
       // "Scan to verify" label
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(6)
@@ -341,7 +343,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     const stampW = 30
     const stampH = 16
     pdf.rect(stampX - stampW/2, stampY - stampH/2, stampW, stampH, 'S')
-    
+
     pdf.setFont('helvetica', 'bold')
     pdf.setFontSize(10)
     pdf.setTextColor(220, 38, 38)
@@ -353,7 +355,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     pdf.setDrawColor(17, 24, 39)
     pdf.setLineWidth(0.6)
     pdf.line(directorX - 35, footerY + 8, directorX + 35, footerY + 8)
-    
+
     // "SABITEK DIRECTOR" label
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(8)
@@ -368,7 +370,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     setIsDownloading(true)
 
     try {
-      const pdf = generatePDF()
+      const pdf = await generatePDF()
       pdf.save(`${certificate.certificate_number}.pdf`)
     } catch (e) {
       console.error(e)
@@ -386,9 +388,9 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
     setIsSendingEmail(true)
     try {
-      const pdf = generatePDF()
+      const pdf = await generatePDF()
       const pdfBase64 = pdf.output('dataurlstring').split(',')[1]
-      
+
       const pdfSizeInMB = (pdfBase64.length * 3) / 4 / (1024 * 1024)
       if (pdfSizeInMB > 10) {
         throw new Error('PDF is too large to email.')
@@ -440,7 +442,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
   if (loading || authLoading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+    <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
       <SabiLoader text="Loading certificate..." />
     </div>
   )
@@ -448,13 +450,13 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
   if (!certificate) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-red-50/50 p-4">
+      <div className="min-h-screen bg-[#fffcfb] p-4">
         <Link href="/certificates" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
         <div className="text-center py-20">
-          <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Certificate not found</h2>
+          <Award className="w-16 h-16 text-rose-200 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">Certificate not found</h2>
           <Link href="/certificates" className="text-red-600 hover:underline">Back to certificates</Link>
         </div>
       </div>
@@ -465,18 +467,32 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     <>
       <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Allura&display=swap" rel="stylesheet" />
 
-      <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-white to-red-50/30">
+      <div className="min-h-screen bg-[#fffcfb] relative">
+        {/* Backdrop washes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[32rem] h-[24rem] bg-rose-100/70 rounded-full blur-[100px]" />
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
+              backgroundSize: '22px 22px',
+              maskImage: 'radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent)',
+              WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent)'
+            }}
+          />
+        </div>
+
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-20 no-print">
+        <div className="bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-20 no-print">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <Link href="/certificates" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900">
+              <Link href="/certificates" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Certificates</span>
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
+              <ChevronRight className="w-4 h-4 text-rose-200" />
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_6px_12px_-4px_rgba(225,29,72,0.5)]">
                   <Award className="w-3.5 h-3.5 text-white" />
                 </div>
                 <span className="font-semibold text-gray-900 text-xs sm:text-sm truncate max-w-[150px]">
@@ -484,16 +500,17 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                 </span>
               </div>
             </div>
-            
+
             <div className="hidden sm:flex items-center gap-2">
-              <button onClick={handleShare} className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm flex items-center gap-1.5">
+              <button onClick={handleShare} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm flex items-center gap-1.5 disabled:opacity-50">
-                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Mail className="w-4 h-4" />}
+              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all disabled:opacity-50">
+                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Mail className="w-4 h-4" />}
                 {emailSent ? 'Sent!' : 'Email'}
               </button>
-              <button onClick={handleDownloadPDF} disabled={isDownloading} className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
+              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden px-3.5 py-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 disabled:opacity-50">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isDownloading ? 'Generating...' : 'Download PDF'}
               </button>
@@ -502,19 +519,21 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         </div>
 
         {/* Certificate Preview */}
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="sm:hidden flex items-center justify-center gap-2 text-xs text-gray-500 mb-3 bg-white/60 rounded-lg py-2">
+        <div className="relative max-w-5xl mx-auto px-4 py-6">
+          <div className="sm:hidden flex items-center justify-center gap-2 text-xs text-gray-500 mb-3 bg-white/70 backdrop-blur border border-rose-100 rounded-full py-2 shadow-sm">
             <ZoomIn className="w-3.5 h-3.5" />
             <span>Scroll horizontally to view</span>
           </div>
-          
+
           <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="bg-white shadow-xl rounded-lg overflow-hidden" style={{ width: 800, minWidth: 800, height: 566 }}>
+            <div className="relative overflow-hidden bg-white rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_50px_-25px_rgba(225,29,72,0.45)] p-3" style={{ width: 824, minWidth: 824 }}>
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <div className="bg-white rounded-lg overflow-hidden" style={{ width: 800, minWidth: 800, height: 566 }}>
               <div className="w-full h-full border-8 border-gray-900 bg-white">
                 <div className="w-full h-full border border-gray-300 relative">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-600" />
-                  
+
                   <div className="h-full flex flex-col px-12 py-8">
                     {/* Header - Sabitek with sparkle */}
                     <div className="text-center">
@@ -535,7 +554,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                       <h2 className="text-2xl font-bold text-gray-900 mb-3 border-b-2 border-gray-300 pb-1 px-6">{certificate.user.full_name}</h2>
                       <p className="text-gray-700 text-sm mb-2">has successfully completed the course</p>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">{certificate.course.title}</h3>
-                      
+
                       <div className="flex items-center gap-8">
                         <div className="text-center">
                           <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">Grade</p>
@@ -557,7 +576,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                           <div className="border-t-2 border-gray-900 mt-0.5 mb-0.5" />
                           <p className="text-[9px] text-gray-500 uppercase tracking-wider">Course Instructor</p>
                         </div>
-                        
+
                         <div className="text-center">
                           <p className="text-[9px] text-gray-500 font-mono">{certificate.certificate_number}</p>
                         </div>
@@ -586,51 +605,53 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           </div>
 
           {/* Info Card */}
-          <div className="no-print mt-6 bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+          <div className="no-print relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_8px_16px_-6px_rgba(225,29,72,0.5)]">
                 <Award className="w-4 h-4 text-white" />
               </div>
-              Certificate Details
+              Certificate <span className="font-serif italic text-red-600">details</span>
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Certificate ID</p>
                 <p className="font-mono text-gray-900 text-sm truncate">{certificate.certificate_number}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Issued Date</p>
                 <p className="text-gray-900 font-medium">{formattedDate}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Recipient</p>
                 <p className="text-gray-900 font-medium truncate">{certificate.user.full_name}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Grade</p>
-                <p className="text-red-600 font-bold">{certificate.grade_percentage}%</p>
+                <p className="text-red-600 font-semibold">{certificate.grade_percentage}%</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+            <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                <div className="w-8 h-8 bg-gradient-to-b from-emerald-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-[0_8px_16px_-6px_rgba(16,185,129,0.5)]">
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-green-900 mb-1">Verification Link</p>
+                  <p className="text-sm font-semibold text-emerald-900 mb-1">Verification Link</p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <code className="text-xs bg-white/80 px-2 py-1 rounded border border-green-200 text-green-800 truncate flex-1">{verifyUrl}</code>
-                    <button onClick={handleCopyLink} className="px-2 py-1 bg-white hover:bg-green-100 text-green-700 rounded border border-green-200 text-xs font-medium flex items-center gap-1">
+                    <code className="text-xs bg-white/80 px-2 py-1 rounded-full border border-emerald-100 text-emerald-800 truncate flex-1">{verifyUrl}</code>
+                    <button onClick={handleCopyLink} className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 hover:border-emerald-200 shadow-sm text-xs font-semibold flex items-center gap-1 transition-all">
                       {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
-                    <Link href={`/verify/${certificate.certificate_number}`} target="_blank" className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium flex items-center gap-1">
+                    <Link href={`/verify/${certificate.certificate_number}`} target="_blank" className="px-2.5 py-1 bg-gradient-to-b from-emerald-500 to-green-600 hover:to-green-500 text-white rounded-full text-xs font-semibold shadow-[0_8px_16px_-6px_rgba(16,185,129,0.5)] ring-1 ring-green-600/50 flex items-center gap-1 transition-all">
                       <ExternalLink className="w-3 h-3" /> View
                     </Link>
                   </div>
@@ -640,16 +661,17 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
           </div>
 
           {/* Mobile buttons */}
-          <div className="no-print sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t p-4 z-30">
+          <div className="no-print sm:hidden fixed bottom-0 left-0 right-0 bg-white/85 backdrop-blur border-t border-rose-100 p-4 z-30">
             <div className="flex gap-2">
-              <button onClick={handleShare} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm flex items-center justify-center gap-1.5">
+              <button onClick={handleShare} className="flex-1 py-2.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-1.5 transition-all">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm flex items-center justify-center gap-1.5 disabled:opacity-50">
-                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Mail className="w-4 h-4" />}
+              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="flex-1 py-2.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-1.5 transition-all disabled:opacity-50">
+                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Mail className="w-4 h-4" />}
                 {emailSent ? 'Sent!' : 'Email'}
               </button>
-              <button onClick={handleDownloadPDF} disabled={isDownloading} className="flex-[1.5] py-2.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-1.5 disabled:opacity-50">
+              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden flex-[1.5] py-2.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full font-semibold text-sm shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 flex items-center justify-center gap-1.5 transition-all disabled:opacity-50">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isDownloading ? 'Generating...' : 'Download'}
               </button>
@@ -671,7 +693,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 export default function CertificateViewPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={
-  <div className="min-h-screen flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
     <SabiLoader text="Loading certificate..." />
   </div>
 }>

@@ -434,104 +434,63 @@ export default function CourseDetailPage() {
     try {
       setFinishingCourse(true)
 
-      const { data: existingCert } = await supabase
-        .from('certificates')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('course_id', course.id)
-        .maybeSingle()
+      // Issuance is server-side: the API re-verifies lesson completion and
+      // quiz scores with the service role, so certificates cannot be minted
+      // or graded from the browser.
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        showModal('Error', 'Your session has expired. Please sign in again.', 'error')
+        return
+      }
 
-      if (existingCert) {
-        showModal('Certificate Exists', 'You already have a certificate for this course!', 'info', [
-          {
-            label: 'View Certificate',
-            onClick: () => {
-              closeModal()
-              router.push(`/certificates/${existingCert.id}`)
+      const res = await fetch('/api/certificates/issue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ course_id: course.id }),
+      })
+      const result = await res.json().catch(() => ({ code: 'issuance_failed' }))
+
+      switch (result.code) {
+        case 'already_exists':
+          showModal('Certificate Exists', 'You already have a certificate for this course!', 'info', [
+            {
+              label: 'View Certificate',
+              onClick: () => {
+                closeModal()
+                router.push(`/certificates/${result.certificate_id}`)
+              },
+              variant: 'primary',
             },
-            variant: 'primary',
-          },
-          { label: 'Close', onClick: closeModal, variant: 'secondary' },
-        ])
-        return
-      }
-
-      if (completedLessons.size < lessons.length) {
-        showModal(
-          'Incomplete Course',
-          `Please complete all lessons first.\n\nYou've completed ${completedLessons.size} out of ${lessons.length} lessons.`,
-          'warning'
-        )
-        return
-      }
-
-      const lessonIds = lessons.map((l) => l.id)
-      const { data: courseQuizzes } = await supabase.from('quizzes').select('id').in('lesson_id', lessonIds)
-
-      const courseHasQuizzes = courseQuizzes && courseQuizzes.length > 0
-      let avgScore = 100
-
-      if (courseHasQuizzes) {
-        const { data: quizAttempts } = await supabase
-          .from('quiz_attempts')
-          .select('score_percentage, passed')
-          .eq('user_id', user.id)
-          .eq('course_id', course.id)
-          .eq('passed', true)
-
-        if (!quizAttempts || quizAttempts.length === 0) {
-          showModal('Quizzes Required', 'Please pass all quizzes with at least 70% to earn your certificate.', 'warning')
+            { label: 'Close', onClick: closeModal, variant: 'secondary' },
+          ])
           return
-        }
-
-        avgScore = Math.round(
-          quizAttempts.reduce((sum, attempt) => sum + attempt.score_percentage, 0) / quizAttempts.length
-        )
-
-        if (avgScore < 70) {
+        case 'incomplete_lessons':
           showModal(
-            'Score Too Low',
-            `Your average quiz score is ${avgScore}%.\n\nYou need at least 70% to earn a certificate.`,
+            'Incomplete Course',
+            `Please complete all lessons first.\n\nYou've completed ${result.completed} out of ${result.total} lessons.`,
             'warning'
           )
           return
-        }
+        case 'quizzes_required':
+          showModal('Quizzes Required', 'Please pass all quizzes with at least 70% to earn your certificate.', 'warning')
+          return
+        case 'score_too_low':
+          showModal(
+            'Score Too Low',
+            `Your average quiz score is ${result.avg_score}%.\n\nYou need at least 70% to earn a certificate.`,
+            'warning'
+          )
+          return
+        case 'issued':
+          setGeneratedCertificateId(result.certificate.id)
+          setShowCongratsModal(true)
+          return
+        default:
+          throw new Error('Failed to complete course. Please try again.')
       }
-
-      const courseAbbrev = course.title
-        .split(' ')
-        .map((word) => word[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 5)
-      const timestamp = Date.now()
-      const certificateNumber = `SABITEK-${courseAbbrev}-${timestamp}`
-
-      const now = new Date().toISOString()
-
-      const { data: newCert, error: certError } = await supabase
-        .from('certificates')
-        .insert({
-          user_id: user.id,
-          course_id: course.id,
-          certificate_number: certificateNumber,
-          grade_percentage: avgScore,
-          issued_at: now,
-          completion_date: now,
-        })
-        .select()
-        .single()
-
-      if (certError) throw certError
-
-      await supabase
-        .from('course_enrollments')
-        .update({ progress_percentage: 100, completed_at: now })
-        .eq('user_id', user.id)
-        .eq('course_id', course.id)
-
-      setGeneratedCertificateId(newCert.id)
-      setShowCongratsModal(true)
     } catch (error: unknown) {
       console.error('Error finishing course:', error)
       const message = error instanceof Error ? error.message : 'Failed to complete course. Please try again.'

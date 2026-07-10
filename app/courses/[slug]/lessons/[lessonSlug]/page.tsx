@@ -111,13 +111,13 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
         <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               {iconMap[type]}
             </div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-white">{title}</h3>
           </div>
         </div>
         <div className="p-5">
@@ -132,8 +132,8 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
                 variant={action.variant === 'secondary' ? 'outline' : 'default'}
                 className={
                   action.variant === 'primary'
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
-                    : ''
+                    ? 'bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5'
+                    : 'bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm'
                 }
                 size="sm"
               >
@@ -143,7 +143,7 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
           ) : (
             <Button
               onClick={onClose}
-              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white"
+              className="bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
               size="sm"
             >
               OK
@@ -168,6 +168,7 @@ export default function LessonViewerPage() {
   const [isCompleted, setIsCompleted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
 
   // Notes state
   const [notesContent, setNotesContent] = useState('')
@@ -253,25 +254,38 @@ export default function LessonViewerPage() {
 
       const isInstructor = courseData.instructor_id === user.id
 
-      if (isInstructor) {
-        setEnrollmentStatus(true)
-      } else {
-        const { data: enrollment } = await supabase
-          .from('course_enrollments')
-          .select('id')
+      // Batch 2: everything that only needs the course id, in parallel
+      // (was a serial waterfall of 4 round-trips).
+      const [enrollmentRes, lessonsRes, modulesRes, progressRes] = await Promise.all([
+        isInstructor
+          ? Promise.resolve({ data: { id: 'instructor' } })
+          : supabase
+              .from('course_enrollments')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('course_id', courseData.id)
+              .single(),
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('course_id', courseData.id)
+          .order('lesson_order'),
+        supabase
+          .from('modules')
+          .select('id, course_id, title, description, order_index')
+          .eq('course_id', courseData.id)
+          .order('order_index', { ascending: true }),
+        supabase
+          .from('user_progress')
+          .select('lesson_id, completed_at')
           .eq('user_id', user.id)
           .eq('course_id', courseData.id)
-          .single()
+          .not('completed_at', 'is', null),
+      ])
 
-        setEnrollmentStatus(!!enrollment)
-      }
+      setEnrollmentStatus(!!enrollmentRes.data)
 
-      const { data: lessonsData, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', courseData.id)
-        .order('lesson_order')
-
+      const { data: lessonsData, error: lessonsError } = lessonsRes
       if (lessonsError) {
         console.error('Lessons fetch error:', lessonsError)
         return
@@ -295,13 +309,7 @@ export default function LessonViewerPage() {
 
       setLessons(mappedLessons)
 
-      // Fetch modules for this course
-      const { data: modulesData } = await supabase
-        .from('modules')
-        .select('id, course_id, title, description, order_index')
-        .eq('course_id', courseData.id)
-        .order('order_index', { ascending: true })
-
+      const modulesData = modulesRes.data
       setModules(modulesData || [])
 
       const currentLesson = mappedLessons.find((l) => l.slug === params.lessonSlug)
@@ -319,26 +327,33 @@ export default function LessonViewerPage() {
         setExpandedModules(new Set([modulesData[0].id]))
       }
 
-      // Fetch completion status for all lessons in this course
-      const { data: progressData } = await supabase
-        .from('user_progress')
-        .select('lesson_id, completed_at')
-        .eq('user_id', user.id)
-        .eq('course_id', courseData.id)
-        .not('completed_at', 'is', null)
-
-      const completedSet = new Set((progressData || []).map((p) => p.lesson_id))
+      // Completion status came back in batch 2.
+      const completedSet = new Set((progressRes.data || []).map((p) => p.lesson_id))
       setCompletedLessonIds(completedSet)
       setIsCompleted(completedSet.has(currentLesson.id))
 
-      // Fetch notes
-      const { data: notesData } = await supabase
-        .from('lesson_notes')
-        .select('*')
-        .eq('lesson_id', currentLesson.id)
-        .eq('user_id', user.id)
-        .maybeSingle()
+      // Batch 3: everything keyed on the current lesson, in parallel.
+      // Quiz attempts filter by lesson_id, so they don't wait on the quiz row.
+      const [notesRes, quizRes, attemptsRes] = await Promise.all([
+        supabase
+          .from('lesson_notes')
+          .select('*')
+          .eq('lesson_id', currentLesson.id)
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('quizzes')
+          .select('*')
+          .eq('lesson_id', currentLesson.id)
+          .maybeSingle(),
+        supabase
+          .from('quiz_attempts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('lesson_id', currentLesson.id),
+      ])
 
+      const notesData = notesRes.data
       if (notesData) {
         const noteText = notesData.notes || notesData.content || notesData.note_content || ''
         setNotesContent(noteText)
@@ -348,13 +363,7 @@ export default function LessonViewerPage() {
         setNotesId(null)
       }
 
-      // Fetch quiz
-      const { data: quizData } = await supabase
-        .from('quizzes')
-        .select('*')
-        .eq('lesson_id', currentLesson.id)
-        .maybeSingle()
-
+      const quizData = quizRes.data
       if (quizData) {
         let parsedQuestions = quizData.questions
         if (typeof quizData.questions === 'string') {
@@ -372,14 +381,7 @@ export default function LessonViewerPage() {
 
         if (parsedQuestions.length > 0) {
           setQuiz({ ...quizData, questions: parsedQuestions })
-
-          const { data: attemptsData } = await supabase
-            .from('quiz_attempts')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('lesson_id', currentLesson.id)
-
-          setQuizAttempts(attemptsData?.length || 0)
+          setQuizAttempts(attemptsRes.data?.length || 0)
         } else {
           setQuiz(null)
         }
@@ -642,7 +644,7 @@ export default function LessonViewerPage() {
     switch (lesson.content_type) {
       case 'youtube':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
             {lesson.youtube_url?.includes('<iframe') ? (
               <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: lesson.youtube_url }} />
             ) : (
@@ -659,7 +661,7 @@ export default function LessonViewerPage() {
 
       case 'video':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
             <video key={lesson.id} src={lesson.video_url} controls className="absolute inset-0 w-full h-full">
               Your browser does not support the video tag.
             </video>
@@ -669,7 +671,7 @@ export default function LessonViewerPage() {
       case 'pdf':
         return (
           <div className="w-full">
-            <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+            <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
               <iframe
                 key={lesson.id}
                 src={`${lesson.pdf_url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
@@ -683,7 +685,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.pdf_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
+                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Open in New Tab
               </Button>
@@ -696,7 +698,7 @@ export default function LessonViewerPage() {
                 }}
                 variant="outline"
                 size="sm"
-                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
+                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Download PDF
               </Button>
@@ -710,7 +712,7 @@ export default function LessonViewerPage() {
             {lesson.powerpoint_url?.includes('docs.google.com/presentation') ||
             lesson.powerpoint_url?.includes('onedrive.live.com') ||
             lesson.powerpoint_url?.includes('office.com') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
                 <iframe
                   key={lesson.id}
                   src={lesson.powerpoint_url.replace('/edit', '/embed').replace('/view', '/embed')}
@@ -721,7 +723,7 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : lesson.powerpoint_url?.includes('.ppt') || lesson.powerpoint_url?.includes('.pptx') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
                 <iframe
                   key={lesson.id}
                   src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.powerpoint_url)}`}
@@ -731,12 +733,13 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center">
+              <div className="bg-white/85 backdrop-blur rounded-2xl border-2 border-dashed border-rose-200 p-8 text-center">
                 <p className="text-gray-600 mb-4">PowerPoint preview loading...</p>
                 <Button
                   onClick={() => window.open(lesson.powerpoint_url, '_blank')}
-                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                 >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   Open Presentation
                 </Button>
               </div>
@@ -746,7 +749,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.powerpoint_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
+                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Open in New Tab
               </Button>
@@ -760,7 +763,7 @@ export default function LessonViewerPage() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="text-xs rounded-xl border-gray-200 hover:bg-gray-50"
+                  className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                 >
                   Download PowerPoint
                 </Button>
@@ -772,7 +775,8 @@ export default function LessonViewerPage() {
       case 'text':
       default:
         return (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-8 shadow-sm">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5 md:p-8">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
             <div
               className="prose prose-sm md:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-red-500 prose-strong:text-gray-900"
               dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
@@ -784,7 +788,7 @@ export default function LessonViewerPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
         <SabiLoader text={authLoading ? 'Checking authentication...' : 'Loading lesson...'} />
       </div>
     )
@@ -792,13 +796,14 @@ export default function LessonViewerPage() {
 
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-red-50/30">
-        <Card className="max-w-md w-full rounded-2xl border-gray-100 shadow-xl">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#fffcfb]">
+        <Card className="max-w-md w-full relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
           <CardHeader className="text-center pb-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-2xl flex items-center justify-center mx-auto mb-3">
               <Lock className="w-7 h-7 text-white" />
             </div>
-            <CardTitle className="text-xl">Enrollment Required</CardTitle>
+            <CardTitle className="text-xl font-semibold tracking-tight">Enrollment Required</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-gray-600 text-sm mb-5">
@@ -806,8 +811,9 @@ export default function LessonViewerPage() {
             </p>
             <Button
               onClick={() => router.push(`/courses/${params.slug}`)}
-              className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+              className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
             >
+              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
               Go to Course Page
             </Button>
           </CardContent>
@@ -840,7 +846,7 @@ export default function LessonViewerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffcfb]">
       <Modal
         isOpen={modal.isOpen}
         onClose={closeModal}
@@ -851,7 +857,8 @@ export default function LessonViewerPage() {
       />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700 sticky top-0 z-10 shadow-lg">
+      <div className="relative overflow-hidden bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-10 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -859,27 +866,27 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => router.push(`/courses/${params.slug}`)}
                 size="sm"
-                className="border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 flex-shrink-0 rounded-xl"
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 flex-shrink-0 rounded-full shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-400 break-words">{course?.title}</p>
-                <h1 className="text-sm md:text-base font-bold text-white break-words">
+                <p className="text-xs text-gray-500 break-words">{course?.title}</p>
+                <h1 className="text-sm md:text-base font-semibold tracking-tight text-gray-900 break-words">
                   Lesson {currentIndex + 1}: {lesson?.title}
                 </h1>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {lesson?.duration_minutes && (
-                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-                  <Clock className="w-3 h-3" />
+                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+                  <Clock className="w-3 h-3 text-red-500" />
                   {lesson.duration_minutes}m
                 </span>
               )}
               {isCompleted ? (
-                <span className="px-2 md:px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full text-xs font-medium flex items-center gap-1 shadow-lg shadow-green-500/20">
+                <span className="px-2 md:px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-semibold flex items-center gap-1">
                   <CheckCircle className="w-3 h-3" />
                   <span className="hidden sm:inline">Completed</span>
                 </span>
@@ -887,8 +894,9 @@ export default function LessonViewerPage() {
                 <Button
                   onClick={markAsComplete}
                   size="sm"
-                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-xs rounded-xl shadow-lg shadow-red-500/20"
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                 >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Complete
                 </Button>
@@ -900,6 +908,22 @@ export default function LessonViewerPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6">
+        {/* Mobile sidebar toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            variant="outline"
+            size="sm"
+            className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+          >
+            <Layers className="w-4 h-4 mr-2 text-red-500" />
+            {showMobileSidebar ? 'Hide Lessons & Tools' : 'Show Lessons & Tools'}
+            <ChevronDown
+              className={`w-4 h-4 ml-2 text-gray-400 transition-transform ${showMobileSidebar ? 'rotate-180' : ''}`}
+            />
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Lesson Content */}
           <div className="lg:col-span-2 space-y-5">
@@ -911,7 +935,7 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => previousLesson && navigateToLesson(previousLesson)}
                 disabled={!previousLesson}
-                className="border-gray-200 hover:bg-gray-50 rounded-xl disabled:opacity-50"
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm disabled:opacity-50"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
@@ -919,8 +943,9 @@ export default function LessonViewerPage() {
               <Button
                 onClick={() => nextLesson && navigateToLesson(nextLesson)}
                 disabled={!nextLesson}
-                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl disabled:opacity-50 shadow-lg shadow-red-500/20"
+                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
               >
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -928,19 +953,19 @@ export default function LessonViewerPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className={`${showMobileSidebar ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-4`}>
             {/* My Notes Card */}
-            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-red-500" />
                     </div>
                     My Notes
                   </span>
                   {notesSaved && (
-                    <span className="text-xs text-green-600 font-normal flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
                       <CheckCircle className="w-3 h-3" />
                       Saved
                     </span>
@@ -953,14 +978,15 @@ export default function LessonViewerPage() {
                   onChange={(e) => setNotesContent(e.target.value)}
                   placeholder="Take notes while learning..."
                   rows={6}
-                  className="w-full resize-none text-sm border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-xl"
+                  className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
                 />
                 <Button
                   onClick={saveNotes}
                   disabled={savingNotes || !notesContent.trim()}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white text-sm rounded-xl"
+                  className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
                   size="sm"
                 >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   <Save className="w-3 h-3 mr-2" />
                   {savingNotes ? 'Saving...' : 'Save Notes'}
                 </Button>
@@ -969,10 +995,10 @@ export default function LessonViewerPage() {
 
             {/* Instructor Quiz Card */}
             {quiz && quiz.questions && quiz.questions.length > 0 && (
-              <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+              <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-xl flex items-center justify-center">
                       <Award className="w-4 h-4 text-white" />
                     </div>
                     {quiz.title}
@@ -980,7 +1006,7 @@ export default function LessonViewerPage() {
                   {quiz.description && <CardDescription className="text-xs">{quiz.description}</CardDescription>}
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 mb-4 text-xs bg-gray-50 rounded-xl p-3">
+                  <div className="space-y-2 mb-4 text-xs bg-rose-50/60 border border-rose-100 rounded-xl p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Questions:</span>
                       <span className="font-semibold text-gray-900">{quiz.questions.length}</span>
@@ -1014,7 +1040,7 @@ export default function LessonViewerPage() {
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               return (
-                                <div key={questionId} className="p-3 border border-gray-200 rounded-xl bg-gray-50">
+                                <div key={questionId} className="p-3 border border-rose-100 rounded-xl bg-rose-50/40">
                                   <p className="font-medium text-sm mb-2">
                                     {index + 1}. {question.question}
                                   </p>
@@ -1024,7 +1050,7 @@ export default function LessonViewerPage() {
                                         key={optIndex}
                                         className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer hover:bg-white transition-colors ${
                                           selectedAnswers[questionId] === optIndex
-                                            ? 'bg-red-50 border-red-300 border'
+                                            ? 'bg-rose-50 border-rose-200 border'
                                             : 'border border-transparent'
                                         }`}
                                       >
@@ -1046,7 +1072,7 @@ export default function LessonViewerPage() {
 
                           <div className="space-y-2">
                             <Button
-                              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm rounded-xl"
+                              className="w-full bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
                               onClick={submitQuiz}
                               size="sm"
                               disabled={Object.keys(selectedAnswers).length === 0}
@@ -1059,7 +1085,7 @@ export default function LessonViewerPage() {
                                 setShowQuiz(false)
                                 setSelectedAnswers({})
                               }}
-                              className="w-full text-sm rounded-xl border-gray-200"
+                              className="w-full text-sm bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                               size="sm"
                             >
                               Cancel
@@ -1071,16 +1097,16 @@ export default function LessonViewerPage() {
                           <div
                             className={`p-4 rounded-xl text-center ${
                               quizResults?.passed
-                                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500'
-                                : 'bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-500'
+                                ? 'bg-emerald-50 border border-emerald-100'
+                                : 'bg-rose-50 border border-rose-100'
                             }`}
                           >
                             <h3
-                              className={`text-xl font-bold mb-1 ${
-                                quizResults?.passed ? 'text-green-800' : 'text-red-800'
+                              className={`text-xl font-semibold tracking-tight mb-1 ${
+                                quizResults?.passed ? 'text-emerald-700' : 'text-rose-600'
                               }`}
                             >
-                              {quizResults?.passed ? '🎉 Passed!' : '📚 Keep Learning!'}
+                              {quizResults?.passed ? 'Passed!' : 'Keep Learning!'}
                             </h3>
                             <p className="text-lg font-semibold">Score: {quizResults?.score}%</p>
                             <p className="text-xs mt-1">
@@ -1089,7 +1115,7 @@ export default function LessonViewerPage() {
                           </div>
 
                           <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                            <h4 className="font-semibold text-sm sticky top-0 bg-white py-2">Review Answers:</h4>
+                            <h4 className="font-semibold text-sm sticky top-0 bg-white/90 backdrop-blur py-2">Review Answers:</h4>
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               const selectedAnswer = selectedAnswers[questionId]
@@ -1099,19 +1125,19 @@ export default function LessonViewerPage() {
                                 <div
                                   key={questionId}
                                   className={`p-3 border rounded-xl text-sm ${
-                                    isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
+                                    isCorrect ? 'border-emerald-100 bg-emerald-50' : 'border-rose-100 bg-rose-50'
                                   }`}
                                 >
                                   <p className="font-medium mb-1">
                                     {index + 1}. {question.question}
                                   </p>
                                   <div className="space-y-1 text-xs">
-                                    <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
+                                    <p className={isCorrect ? 'text-emerald-700' : 'text-rose-600'}>
                                       Your: {question.options[selectedAnswer]}
                                       {isCorrect ? ' ✓' : ' ✗'}
                                     </p>
                                     {!isCorrect && (
-                                      <p className="text-green-700">
+                                      <p className="text-emerald-700">
                                         Correct: {question.options[question.correct_answer]}
                                       </p>
                                     )}
@@ -1127,7 +1153,7 @@ export default function LessonViewerPage() {
                           <div className="space-y-2">
                             {!quizResults?.passed && (
                               <Button
-                                className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm rounded-xl"
+                                className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                                 onClick={() => {
                                   setSelectedAnswers({})
                                   setQuizSubmitted(false)
@@ -1135,13 +1161,14 @@ export default function LessonViewerPage() {
                                 }}
                                 size="sm"
                               >
+                                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                                 Try Again
                               </Button>
                             )}
                             <Button
                               variant="outline"
                               onClick={resetQuiz}
-                              className="w-full text-sm rounded-xl border-gray-200"
+                              className="w-full text-sm bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                               size="sm"
                             >
                               Close
@@ -1158,9 +1185,10 @@ export default function LessonViewerPage() {
                         setQuizResults(null)
                         setSelectedAnswers({})
                       }}
-                      className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm rounded-xl shadow-lg shadow-red-500/20"
+                      className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                       size="sm"
                     >
+                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       <PlayCircle className="w-4 h-4 mr-2" />
                       {quizAttempts > 0 ? `Retake Quiz (#${quizAttempts + 1})` : 'Start Quiz'}
                     </Button>
@@ -1194,11 +1222,11 @@ export default function LessonViewerPage() {
 
             {/* Practice Quiz (fallback) */}
             {!quiz && (
-              <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+              <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
-                      <Award className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+                      <Award className="w-4 h-4 text-red-500" />
                     </div>
                     Practice Quiz
                   </CardTitle>
@@ -1215,16 +1243,17 @@ export default function LessonViewerPage() {
             {/* ══════════════════════════════════════════════════════
                  COURSE NAVIGATION (Modules → Lessons)
                  ══════════════════════════════════════════════════════ */}
-            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-xl flex items-center justify-center">
                       <Layers className="w-4 h-4 text-white" />
                     </div>
                     Course Navigation
                   </span>
-                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">
                     {completedLessonIds.size}/{lessons.length}
                   </span>
                 </CardTitle>
@@ -1241,23 +1270,23 @@ export default function LessonViewerPage() {
                     const moduleAllComplete = completedInModule === moduleLessons.length && moduleLessons.length > 0
 
                     return (
-                      <div key={module.id} className="border border-gray-100 rounded-xl overflow-hidden bg-white">
+                      <div key={module.id} className="border border-rose-100 rounded-xl overflow-hidden bg-white/70">
                         <button
                           onClick={() => toggleModule(module.id)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left"
+                          className="w-full flex items-center justify-between p-3 hover:bg-rose-50/50 transition-colors text-left"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <div
                               className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 moduleAllComplete
-                                  ? 'bg-gradient-to-br from-green-400 to-green-500'
-                                  : 'bg-gradient-to-br from-indigo-100 to-purple-100'
+                                  ? 'bg-gradient-to-br from-emerald-400 to-green-500'
+                                  : 'bg-rose-50 border border-rose-100'
                               }`}
                             >
                               {moduleAllComplete ? (
                                 <CheckCircle className="w-3.5 h-3.5 text-white" />
                               ) : (
-                                <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                                <Layers className="w-3.5 h-3.5 text-red-500" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -1275,7 +1304,7 @@ export default function LessonViewerPage() {
                         </button>
 
                         {isExpanded && (
-                          <div className="px-2 pb-2 pt-0 border-t border-gray-100 bg-gray-50/30">
+                          <div className="px-2 pb-2 pt-0 border-t border-rose-100 bg-rose-50/30">
                             <div className="pt-2 space-y-1">
                               {moduleLessons.map((l) => {
                                 const isActive = l.id === lesson?.id
@@ -1287,18 +1316,20 @@ export default function LessonViewerPage() {
                                     onClick={() => navigateToLesson(l)}
                                     className={`w-full text-left p-2.5 rounded-lg transition-all text-sm group ${
                                       isActive
-                                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md shadow-red-500/20'
-                                        : 'hover:bg-white border border-transparent hover:border-gray-200'
+                                        ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                        : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
                                     }`}
                                   >
                                     <div className="flex items-center justify-between gap-2">
                                       <div className="flex items-center gap-2 min-w-0 flex-1">
                                         {isLessonCompleted && !isActive ? (
-                                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                          <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+                                            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                          </span>
                                         ) : (
                                           <span
                                             className={`text-xs font-semibold flex-shrink-0 w-5 text-center ${
-                                              isActive ? 'text-white/90' : 'text-gray-400'
+                                              isActive ? 'text-red-500' : 'text-gray-400'
                                             }`}
                                           >
                                             {globalIndex + 1}
@@ -1306,22 +1337,29 @@ export default function LessonViewerPage() {
                                         )}
                                         <p
                                           className={`text-xs font-medium truncate ${
-                                            isActive ? 'text-white' : 'text-gray-900'
+                                            isActive ? 'text-red-600' : 'text-gray-900'
                                           }`}
                                         >
                                           {l.title}
                                         </p>
                                       </div>
                                       <div className="flex items-center gap-1 flex-shrink-0">
-                                        {l.content_type === 'youtube' && <span className="text-xs">📺</span>}
-                                        {l.content_type === 'video' && <span className="text-xs">🎥</span>}
-                                        {l.content_type === 'pdf' && <span className="text-xs">📄</span>}
-                                        {l.content_type === 'powerpoint' && <span className="text-xs">📊</span>}
-                                        {l.content_type === 'text' && <span className="text-xs">📝</span>}
+                                        {(l.content_type === 'youtube' || l.content_type === 'video') && (
+                                          <PlayCircle
+                                            className={`w-3.5 h-3.5 ${isActive ? 'text-red-400' : 'text-gray-400'}`}
+                                          />
+                                        )}
+                                        {(l.content_type === 'pdf' ||
+                                          l.content_type === 'powerpoint' ||
+                                          l.content_type === 'text') && (
+                                          <FileText
+                                            className={`w-3.5 h-3.5 ${isActive ? 'text-red-400' : 'text-gray-400'}`}
+                                          />
+                                        )}
                                         {l.duration_minutes && (
                                           <span
                                             className={`text-xs ${
-                                              isActive ? 'text-white/80' : 'text-gray-400'
+                                              isActive ? 'text-red-400' : 'text-gray-400'
                                             }`}
                                           >
                                             {l.duration_minutes}m
@@ -1341,7 +1379,7 @@ export default function LessonViewerPage() {
 
                   {/* Unassigned lessons fallback */}
                   {unassignedLessons.length > 0 && (
-                    <div className="border border-gray-100 rounded-xl p-3 bg-white">
+                    <div className="border border-rose-100 rounded-xl p-3 bg-white/70">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                         Other Lessons
                       </p>
@@ -1356,17 +1394,19 @@ export default function LessonViewerPage() {
                               onClick={() => navigateToLesson(l)}
                               className={`w-full text-left p-2.5 rounded-lg transition-all text-sm ${
                                 isActive
-                                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md'
-                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                                  ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                  : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 {isLessonCompleted && !isActive ? (
-                                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                  <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                  </span>
                                 ) : (
                                   <span
                                     className={`text-xs font-semibold w-5 text-center ${
-                                      isActive ? 'text-white/90' : 'text-gray-400'
+                                      isActive ? 'text-red-500' : 'text-gray-400'
                                     }`}
                                   >
                                     {globalIndex + 1}
@@ -1374,7 +1414,7 @@ export default function LessonViewerPage() {
                                 )}
                                 <p
                                   className={`text-xs font-medium truncate ${
-                                    isActive ? 'text-white' : 'text-gray-900'
+                                    isActive ? 'text-red-600' : 'text-gray-900'
                                   }`}
                                 >
                                   {l.title}
@@ -1391,7 +1431,7 @@ export default function LessonViewerPage() {
             </Card>
 
             {/* Instructor Info */}
-            <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
