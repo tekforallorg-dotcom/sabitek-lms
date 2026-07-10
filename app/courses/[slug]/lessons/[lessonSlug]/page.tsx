@@ -11,6 +11,8 @@ import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
 import SabiLoader from '@/components/ui/SabiLoader'
+import { toast } from '@/components/ui/toast'
+import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
 import {
   Save,
   BookOpen,
@@ -172,6 +174,33 @@ export default function LessonViewerPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   // Workspace tabs under the player: notes, AI summary, Q&A, practice quiz
   const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'practice'>('notes')
+  // Sequential gating: which lessons are locked and why
+  const [lockMap, setLockMap] = useState<Map<string, LockInfo>>(new Map())
+  // Inputs for gating that survive re-renders, so locks release live
+  // when a lesson is completed or a quiz is passed (no reload needed).
+  const [gatingBase, setGatingBase] = useState<{
+    quizIds: string[]
+    passedIds: string[]
+    instructor: boolean
+  } | null>(null)
+
+  // Recompute locks whenever completion or quiz-pass state changes.
+  useEffect(() => {
+    if (!gatingBase) return
+    if (gatingBase.instructor) {
+      setLockMap(new Map())
+      return
+    }
+    const sequence = buildLessonSequence(lessons, modules)
+    setLockMap(
+      computeLockMap(
+        sequence,
+        completedLessonIds,
+        new Set(gatingBase.quizIds),
+        new Set(gatingBase.passedIds)
+      )
+    )
+  }, [gatingBase, lessons, modules, completedLessonIds])
 
   // Notes state
   const [notesContent, setNotesContent] = useState('')
@@ -335,8 +364,9 @@ export default function LessonViewerPage() {
       setCompletedLessonIds(completedSet)
       setIsCompleted(completedSet.has(currentLesson.id))
 
-      // Batch 3: everything keyed on the current lesson, in parallel.
-      // Quiz attempts filter by lesson_id, so they don't wait on the quiz row.
+      // Batch 3: notes for the current lesson, plus quizzes and quiz
+      // attempts for the WHOLE course (needed for sequential gating).
+      const allLessonIds = mappedLessons.map((l) => l.id)
       const [notesRes, quizRes, attemptsRes] = await Promise.all([
         supabase
           .from('lesson_notes')
@@ -347,13 +377,12 @@ export default function LessonViewerPage() {
         supabase
           .from('quizzes')
           .select('*')
-          .eq('lesson_id', currentLesson.id)
-          .maybeSingle(),
+          .in('lesson_id', allLessonIds),
         supabase
           .from('quiz_attempts')
-          .select('id')
+          .select('lesson_id, passed')
           .eq('user_id', user.id)
-          .eq('lesson_id', currentLesson.id),
+          .in('lesson_id', allLessonIds),
       ])
 
       const notesData = notesRes.data
@@ -366,7 +395,43 @@ export default function LessonViewerPage() {
         setNotesId(null)
       }
 
-      const quizData = quizRes.data
+      // Sequential gating: lesson N+1 unlocks once lesson N is complete
+      // and its quiz (if any) is passed. Instructors bypass.
+      const quizRows = quizRes.data || []
+      const attemptRows = attemptsRes.data || []
+      const quizLessonIds = new Set(
+        quizRows
+          .filter((q) => {
+            let qs = q.questions
+            if (typeof qs === 'string') {
+              try { qs = JSON.parse(qs) } catch { qs = [] }
+            }
+            return Array.isArray(qs) && qs.length > 0
+          })
+          .map((q) => q.lesson_id)
+      )
+      const passedQuizIds = new Set(
+        attemptRows.filter((a) => a.passed).map((a) => a.lesson_id)
+      )
+      const sequence = buildLessonSequence(mappedLessons, modulesData || [])
+      const computedLockMap = isInstructor
+        ? new Map<string, LockInfo>()
+        : computeLockMap(sequence, completedSet, quizLessonIds, passedQuizIds)
+      setLockMap(computedLockMap)
+      setGatingBase({
+        quizIds: [...quizLessonIds],
+        passedIds: [...passedQuizIds],
+        instructor: isInstructor,
+      })
+
+      // Deep-link guard: bounce off a locked lesson.
+      if (computedLockMap.get(currentLesson.id)?.locked) {
+        toast.warning('That lesson is locked. Complete the previous lesson (and pass its quiz) first.')
+        router.push(`/courses/${params.slug}`)
+        return
+      }
+
+      const quizData = quizRows.find((q) => q.lesson_id === currentLesson.id) || null
       if (quizData) {
         let parsedQuestions = quizData.questions
         if (typeof quizData.questions === 'string') {
@@ -384,7 +449,7 @@ export default function LessonViewerPage() {
 
         if (parsedQuestions.length > 0) {
           setQuiz({ ...quizData, questions: parsedQuestions })
-          setQuizAttempts(attemptsRes.data?.length || 0)
+          setQuizAttempts(attemptRows.filter((a) => a.lesson_id === currentLesson.id).length)
         } else {
           setQuiz(null)
         }
@@ -606,6 +671,15 @@ export default function LessonViewerPage() {
       setQuizSubmitted(true)
       setQuizAttempts((prev) => prev + 1)
 
+      if (passed) {
+        // Release the sequential lock on the next lesson immediately.
+        setGatingBase((prev) =>
+          prev && !prev.passedIds.includes(lesson.id)
+            ? { ...prev, passedIds: [...prev.passedIds, lesson.id] }
+            : prev
+        )
+      }
+
       if (passed && !isCompleted) {
         await markAsComplete()
       }
@@ -623,6 +697,15 @@ export default function LessonViewerPage() {
   }
 
   const navigateToLesson = (nextLesson: Lesson) => {
+    const lock = lockMap.get(nextLesson.id)
+    if (lock?.locked) {
+      toast.warning(
+        lock.reason === 'quiz_required'
+          ? 'Pass the quiz in the previous lesson to unlock this one.'
+          : 'Complete the previous lesson to unlock this one.'
+      )
+      return
+    }
     router.push(`/courses/${params.slug}/lessons/${nextLesson.slug}`)
   }
 
@@ -945,10 +1028,18 @@ export default function LessonViewerPage() {
               </Button>
               <Button
                 onClick={() => nextLesson && navigateToLesson(nextLesson)}
-                disabled={!nextLesson}
+                disabled={!nextLesson || !!lockMap.get(nextLesson.id)?.locked}
+                title={
+                  nextLesson && lockMap.get(nextLesson.id)?.locked
+                    ? 'Complete this lesson (and pass its quiz) to continue'
+                    : undefined
+                }
                 className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
               >
                 <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                {nextLesson && lockMap.get(nextLesson.id)?.locked ? (
+                  <Lock className="w-4 h-4 mr-1.5" />
+                ) : null}
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -1325,14 +1416,18 @@ export default function LessonViewerPage() {
                               {moduleLessons.map((l) => {
                                 const isActive = l.id === lesson?.id
                                 const isLessonCompleted = completedLessonIds.has(l.id)
+                                const isLocked = !!lockMap.get(l.id)?.locked
                                 const globalIndex = lessonIndexMap.get(l.id) ?? 0
                                 return (
                                   <button
                                     key={l.id}
                                     onClick={() => navigateToLesson(l)}
+                                    title={isLocked ? 'Locked: finish the previous lesson first' : undefined}
                                     className={`w-full text-left p-2.5 rounded-lg transition-all text-sm group ${
                                       isActive
                                         ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                        : isLocked
+                                        ? 'opacity-55 cursor-not-allowed border border-transparent'
                                         : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
                                     }`}
                                   >
@@ -1341,6 +1436,10 @@ export default function LessonViewerPage() {
                                         {isLessonCompleted && !isActive ? (
                                           <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
                                             <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                          </span>
+                                        ) : isLocked ? (
+                                          <span className="w-5 h-5 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                            <Lock className="w-3 h-3 text-gray-400" />
                                           </span>
                                         ) : (
                                           <span
@@ -1353,7 +1452,7 @@ export default function LessonViewerPage() {
                                         )}
                                         <p
                                           className={`text-xs font-medium truncate ${
-                                            isActive ? 'text-red-600' : 'text-gray-900'
+                                            isActive ? 'text-red-600' : isLocked ? 'text-gray-500' : 'text-gray-900'
                                           }`}
                                         >
                                           {l.title}
@@ -1403,14 +1502,18 @@ export default function LessonViewerPage() {
                         {unassignedLessons.map((l) => {
                           const isActive = l.id === lesson?.id
                           const isLessonCompleted = completedLessonIds.has(l.id)
+                          const isLocked = !!lockMap.get(l.id)?.locked
                           const globalIndex = lessonIndexMap.get(l.id) ?? 0
                           return (
                             <button
                               key={l.id}
                               onClick={() => navigateToLesson(l)}
+                              title={isLocked ? 'Locked: finish the previous lesson first' : undefined}
                               className={`w-full text-left p-2.5 rounded-lg transition-all text-sm ${
                                 isActive
                                   ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                  : isLocked
+                                  ? 'opacity-55 cursor-not-allowed border border-transparent'
                                   : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
                               }`}
                             >
@@ -1418,6 +1521,10 @@ export default function LessonViewerPage() {
                                 {isLessonCompleted && !isActive ? (
                                   <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
                                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                  </span>
+                                ) : isLocked ? (
+                                  <span className="w-5 h-5 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                    <Lock className="w-3 h-3 text-gray-400" />
                                   </span>
                                 ) : (
                                   <span
@@ -1430,7 +1537,7 @@ export default function LessonViewerPage() {
                                 )}
                                 <p
                                   className={`text-xs font-medium truncate ${
-                                    isActive ? 'text-red-600' : 'text-gray-900'
+                                    isActive ? 'text-red-600' : isLocked ? 'text-gray-500' : 'text-gray-900'
                                   }`}
                                 >
                                   {l.title}

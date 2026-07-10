@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { PurchaseCourseModal } from '@/components/courses/PurchaseCourseModal'
 import SabiLoader from '@/components/ui/SabiLoader'
+import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
+import { toast } from '@/components/ui/toast'
 import {
   BookOpen,
   Users,
@@ -23,6 +25,7 @@ import {
   ChevronDown,
   ChevronRight,
   Layers,
+  Lock,
 } from 'lucide-react'
 
 /* ── Types ── */
@@ -167,24 +170,34 @@ interface LessonRowProps {
   index: number
   totalLessonsIndex: number
   isCompleted: boolean
+  locked?: boolean
   onClick: () => void
 }
 
-function LessonRow({ lesson, totalLessonsIndex, isCompleted, onClick }: LessonRowProps) {
+function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: LessonRowProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-white/70 hover:bg-rose-50/50 border border-rose-100 hover:border-rose-200 rounded-xl transition-all group hover:shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]"
+      title={locked ? 'Locked: finish the previous lesson first' : undefined}
+      className={`w-full flex items-center justify-between p-4 bg-white/70 border border-rose-100 rounded-xl transition-all group ${
+        locked
+          ? 'opacity-55 cursor-not-allowed'
+          : 'hover:bg-rose-50/50 hover:border-rose-200 hover:shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]'
+      }`}
     >
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div
           className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-            isCompleted
+            locked
+              ? 'bg-gray-50 border border-gray-200'
+              : isCompleted
               ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-md shadow-emerald-500/25'
               : 'bg-white border border-rose-100 group-hover:border-rose-200'
           }`}
         >
-          {isCompleted ? (
+          {locked ? (
+            <Lock className="w-4 h-4 text-gray-400" />
+          ) : isCompleted ? (
             <CheckCircle className="w-5 h-5 text-white" />
           ) : (
             <span className="text-sm font-semibold text-gray-500 group-hover:text-red-500 transition-colors">
@@ -194,7 +207,11 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, onClick }: LessonRo
         </div>
 
         <div className="flex-1 min-w-0 text-left">
-          <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors line-clamp-1">
+          <h3
+            className={`text-sm font-semibold transition-colors line-clamp-1 ${
+              locked ? 'text-gray-500' : 'text-gray-900 group-hover:text-red-600'
+            }`}
+          >
             {lesson.title}
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
@@ -208,7 +225,11 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, onClick }: LessonRo
         </div>
       </div>
 
-      <ArrowRight className="w-5 h-5 text-rose-200 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
+      {locked ? (
+        <Lock className="w-4 h-4 text-gray-300 flex-shrink-0 ml-2" />
+      ) : (
+        <ArrowRight className="w-5 h-5 text-rose-200 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
+      )}
     </button>
   )
 }
@@ -223,6 +244,7 @@ export default function CourseDetailPage() {
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [modules, setModules] = useState<Module[]>([])
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set())
+  const [lockMap, setLockMap] = useState<Map<string, LockInfo>>(new Map())
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -366,6 +388,54 @@ export default function CourseDetailPage() {
 
           const completed = new Set(progress?.map((p) => p.lesson_id) || [])
           setCompletedLessons(completed)
+
+          // Sequential lesson locking
+          if (courseData.instructor_id === user.id) {
+            // Instructors bypass gating entirely
+            setLockMap(new Map())
+          } else {
+            const lessonIds = (lessonsData || []).map((l) => l.id)
+            if (lessonIds.length > 0) {
+              const [{ data: quizzesData }, { data: attemptsData }] = await Promise.all([
+                supabase.from('quizzes').select('lesson_id, questions').in('lesson_id', lessonIds),
+                supabase
+                  .from('quiz_attempts')
+                  .select('lesson_id, passed')
+                  .eq('user_id', user.id)
+                  .in('lesson_id', lessonIds),
+              ])
+
+              const quizLessonIds = new Set<string>()
+              for (const q of quizzesData || []) {
+                let questions = q.questions
+                if (typeof questions === 'string') {
+                  try {
+                    questions = JSON.parse(questions)
+                  } catch {
+                    questions = []
+                  }
+                }
+                if (Array.isArray(questions) && questions.length > 0) {
+                  quizLessonIds.add(q.lesson_id)
+                }
+              }
+
+              const passedQuizIds = new Set<string>(
+                (attemptsData || []).filter((a) => a.passed === true).map((a) => a.lesson_id)
+              )
+
+              setLockMap(
+                computeLockMap(
+                  buildLessonSequence(lessonsData || [], modulesData || []),
+                  completed,
+                  quizLessonIds,
+                  passedQuizIds
+                )
+              )
+            } else {
+              setLockMap(new Map())
+            }
+          }
         }
       } else {
         const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
@@ -993,6 +1063,7 @@ export default function CourseDetailPage() {
                             <div className="pt-3 space-y-2">
                               {moduleLessons.map((lesson) => {
                                 const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
+                                const isLocked = !!lockMap.get(lesson.id)?.locked
                                 return (
                                   <LessonRow
                                     key={lesson.id}
@@ -1000,9 +1071,16 @@ export default function CourseDetailPage() {
                                     index={globalIndex}
                                     totalLessonsIndex={globalIndex}
                                     isCompleted={completedLessons.has(lesson.id)}
-                                    onClick={() =>
+                                    locked={isLocked}
+                                    onClick={() => {
+                                      if (isLocked) {
+                                        toast.warning(
+                                          'Complete the previous lesson (and pass its quiz) to unlock this one.'
+                                        )
+                                        return
+                                      }
                                       router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
-                                    }
+                                    }}
                                   />
                                 )
                               })}
@@ -1022,6 +1100,7 @@ export default function CourseDetailPage() {
                       <div className="space-y-2">
                         {unassignedLessons.map((lesson) => {
                           const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
+                          const isLocked = !!lockMap.get(lesson.id)?.locked
                           return (
                             <LessonRow
                               key={lesson.id}
@@ -1029,9 +1108,16 @@ export default function CourseDetailPage() {
                               index={globalIndex}
                               totalLessonsIndex={globalIndex}
                               isCompleted={completedLessons.has(lesson.id)}
-                              onClick={() =>
+                              locked={isLocked}
+                              onClick={() => {
+                                if (isLocked) {
+                                  toast.warning(
+                                    'Complete the previous lesson (and pass its quiz) to unlock this one.'
+                                  )
+                                  return
+                                }
                                 router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
-                              }
+                              }}
                             />
                           )
                         })}
