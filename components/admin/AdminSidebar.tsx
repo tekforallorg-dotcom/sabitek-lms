@@ -51,7 +51,7 @@ const navigation: NavItem[] = [
     ]
   },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { label: 'Settings', href: '/admin/settings', icon: Settings },
+  // '/admin/settings' link removed: the page does not exist yet (was a 404).
 ]
 
 export default function AdminSidebar() {

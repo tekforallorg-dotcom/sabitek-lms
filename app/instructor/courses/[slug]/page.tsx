@@ -33,7 +33,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/lib/supabase'
 import { generateSlug } from '@/lib/utils'
 import FileUploader from '@/components/upload/file-uploader'
-import RichTextEditor from '@/components/editor/rich-text-editor'
+import dynamic from 'next/dynamic'
+
+// Tiptap pulls ~18 extensions; load it only when the editor is actually
+// rendered instead of shipping it in the builder's initial bundle.
+const RichTextEditor = dynamic(() => import('@/components/editor/rich-text-editor'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full min-h-[200px] rounded-xl border border-rose-100 bg-rose-50/40 animate-pulse flex items-center justify-center text-sm text-gray-400">
+      Loading editor...
+    </div>
+  ),
+})
 
 interface Lesson {
   id: string
