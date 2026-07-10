@@ -32,6 +32,7 @@ import {
   SPOKEN_LANGUAGES,
   SKILL_LEVELS
 } from '@/types/community'
+import { toast } from '@/components/ui/toast'
 
 function BrowseMentorsContent() {
   const router = useRouter()
@@ -407,7 +408,7 @@ function BrowseMentorsContent() {
                         onClick={(e) => {
                           e.stopPropagation()
                           // TODO: Direct message or request
-                          alert('Coming soon: Send request')
+                          toast.info('Coming soon: Send request')
                         }}
                       >
                         <MessageSquare className="w-3.5 h-3.5" />

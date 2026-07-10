@@ -25,6 +25,7 @@ import {
   Calendar,
   AlertCircle,
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Institution {
   id: string
@@ -140,7 +141,7 @@ export default function AdminInstitutionsPage() {
 
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        alert('Not authenticated')
+        toast.error('Not authenticated')
         return
       }
 
@@ -167,10 +168,10 @@ export default function AdminInstitutionsPage() {
       setReviewNotes('')
       setRejectionReason('')
       fetchInstitutions()
-      alert(`Institution ${approvalAction} successfully`)
+      toast.success(`Institution ${approvalAction} successfully`)
     } catch (err: unknown) {
       console.error('Approval error:', err)
-      alert(err instanceof Error ? err.message : 'Failed to process approval')
+      toast.error(err instanceof Error ? err.message : 'Failed to process approval')
     } finally {
       setActionLoading(false)
     }

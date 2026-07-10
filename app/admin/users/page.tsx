@@ -6,6 +6,7 @@ import UsersTable from '@/components/admin/UsersTable'
 import UserFilters from '@/components/admin/UserFilters'
 import { Users as UsersIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/toast'
 
 export default function UsersManagementPage() {
   const { loading: authLoading, userProfile } = useAdminAuth()
@@ -75,7 +76,7 @@ export default function UsersManagementPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        alert('Not authenticated')
+        toast.error('Not authenticated')
         return
       }
 
@@ -103,10 +104,10 @@ export default function UsersManagementPage() {
         deactivate: 'User deactivated successfully',
         delete: 'User deleted successfully',
       }
-      alert(actionMessages[action as keyof typeof actionMessages] || 'Action completed')
+      toast.success(actionMessages[action as keyof typeof actionMessages] || 'Action completed')
     } catch (err: any) {
       console.error('Action error:', err)
-      alert(err.message || 'Failed to perform action')
+      toast.error(err.message || 'Failed to perform action')
     }
   }
 

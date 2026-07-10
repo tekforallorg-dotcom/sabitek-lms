@@ -35,6 +35,7 @@ import {
   REQUEST_URGENCIES,
   REQUEST_CONSTRAINTS
 } from '@/types/community'
+import { toast } from '@/components/ui/toast'
 
 function RequestsContent() {
   const router = useRouter()
@@ -142,15 +143,15 @@ function RequestsContent() {
 
   const handleCreateRequest = async () => {
     if (!form.title || form.title.length < 10) {
-      alert('Title must be at least 10 characters')
+      toast.warning('Title must be at least 10 characters')
       return
     }
     if (!form.description || form.description.length < 20) {
-      alert('Description must be at least 20 characters')
+      toast.warning('Description must be at least 20 characters')
       return
     }
     if (!form.skill_id) {
-      alert('Please select a skill')
+      toast.warning('Please select a skill')
       return
     }
 
@@ -179,13 +180,13 @@ function RequestsContent() {
         })
         await fetchData()
         setActiveTab('my')
-        alert('Request posted successfully!')
+        toast.success('Request posted successfully!')
       } else {
-        alert(data.error || 'Failed to create request')
+        toast.error(data.error || 'Failed to create request')
       }
     } catch (error) {
       console.error('Error creating request:', error)
-      alert('Failed to create request')
+      toast.error('Failed to create request')
     } finally {
       setCreating(false)
     }
@@ -204,7 +205,7 @@ function RequestsContent() {
       if (res.ok) {
         await fetchData()
       } else {
-        alert('Failed to close request')
+        toast.error('Failed to close request')
       }
     } catch (error) {
       console.error('Error closing request:', error)
@@ -250,15 +251,15 @@ function RequestsContent() {
       })
 
       if (res.ok) {
-        alert('Offer accepted! A session has been created.')
+        toast.success('Offer accepted! A session has been created.')
         await fetchData()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to accept offer')
+        toast.error(data.error || 'Failed to accept offer')
       }
     } catch (error) {
       console.error('Error accepting offer:', error)
-      alert('Failed to accept offer')
+      toast.error('Failed to accept offer')
     }
   }
 
@@ -276,11 +277,11 @@ function RequestsContent() {
         await fetchData()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to decline offer')
+        toast.error(data.error || 'Failed to decline offer')
       }
     } catch (error) {
       console.error('Error declining offer:', error)
-      alert('Failed to decline offer')
+      toast.error('Failed to decline offer')
     }
   }
 
@@ -298,11 +299,11 @@ function RequestsContent() {
         await fetchData()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to withdraw offer')
+        toast.error(data.error || 'Failed to withdraw offer')
       }
     } catch (error) {
       console.error('Error withdrawing offer:', error)
-      alert('Failed to withdraw offer')
+      toast.error('Failed to withdraw offer')
     }
   }
 

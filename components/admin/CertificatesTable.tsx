@@ -3,6 +3,7 @@ import { AdminCertificateListItem } from '@/types'
 import { MoreVertical, Eye, Award, XCircle, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
+import { toast } from '@/components/ui/toast'
 
 interface CertificatesTableProps {
   certificates: AdminCertificateListItem[]
@@ -166,7 +167,7 @@ export default function CertificatesTable({ certificates, onAction, loading }: C
                               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
                                 <button
                                   onClick={() => {
-                                    alert(`Certificate: ${cert.certificate_number}\n\nUser: ${cert.user_name}\nCourse: ${cert.course_title}\nGrade: ${cert.grade_percentage}%\nIssued: ${new Date(cert.issued_at).toLocaleDateString()}\n\n✅ Certificate verified in database!\n\nFull certificate viewer page coming soon.`)
+                                    toast.info(`Certificate: ${cert.certificate_number}\n\nUser: ${cert.user_name}\nCourse: ${cert.course_title}\nGrade: ${cert.grade_percentage}%\nIssued: ${new Date(cert.issued_at).toLocaleDateString()}\n\n✅ Certificate verified in database!\n\nFull certificate viewer page coming soon.`)
                                     setOpenMenuId(null)
                                   }}
                                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"

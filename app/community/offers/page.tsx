@@ -15,6 +15,7 @@ import {
   MessageSquare,
   User
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Offer {
   id: string
@@ -96,15 +97,15 @@ export default function OffersPage() {
       })
 
       if (res.ok) {
-        alert('Offer accepted! A session has been created.')
+        toast.success('Offer accepted! A session has been created.')
         await fetchOffers()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to accept offer')
+        toast.error(data.error || 'Failed to accept offer')
       }
     } catch (error) {
       console.error('Error accepting offer:', error)
-      alert('Failed to accept offer')
+      toast.error('Failed to accept offer')
     } finally {
       setActionLoading(null)
     }
@@ -125,11 +126,11 @@ export default function OffersPage() {
         await fetchOffers()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to decline offer')
+        toast.error(data.error || 'Failed to decline offer')
       }
     } catch (error) {
       console.error('Error declining offer:', error)
-      alert('Failed to decline offer')
+      toast.error('Failed to decline offer')
     } finally {
       setActionLoading(null)
     }

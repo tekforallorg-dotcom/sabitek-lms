@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/components/providers/auth-provider'
+import { toast } from '@/components/ui/toast'
 
 interface QuizTakerProps {
   lessonId: string
@@ -236,7 +237,7 @@ export default function QuizTaker({ lessonId, onComplete }: QuizTakerProps) {
       }
     } catch (error) {
       console.error('Error submitting quiz:', error)
-      alert('Failed to submit quiz')
+      toast.error('Failed to submit quiz')
     }
   }
 

@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
 import SabiBot from '@/components/chat/sabibot'
+import { Toaster } from '@/components/ui/toast'
 import { ReactNode } from 'react'
 
 export default function ConditionalLayout({ children }: { children: ReactNode }) {
@@ -12,7 +13,12 @@ export default function ConditionalLayout({ children }: { children: ReactNode })
   const showPublicLayout = !isAdminRoute && !isAuthRoute
 
   if (!showPublicLayout) {
-    return <>{children}</>
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    )
   }
 
   return (
@@ -23,6 +29,7 @@ export default function ConditionalLayout({ children }: { children: ReactNode })
       </main>
       <Footer />
       <SabiBot />
+      <Toaster />
     </div>
   )
 }

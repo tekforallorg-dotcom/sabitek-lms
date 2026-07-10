@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import FileUpload from '@/components/sabiquiz/FileUpload'
 import { getUserXP } from '@/lib/sabiquiz/quiz-utils'
 import type { Material } from '@/lib/sabiquiz/types'
+import { toast } from '@/components/ui/toast'
 
 interface QuickStats {
   level: number
@@ -124,7 +125,7 @@ export default function MaterialsPage() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        alert('You must be logged in to delete materials')
+        toast.warning('You must be logged in to delete materials')
         return
       }
 
@@ -141,7 +142,7 @@ export default function MaterialsPage() {
       fetchMaterials()
     } catch (error) {
       console.error('Error deleting material:', error)
-      alert('Failed to delete material')
+      toast.error('Failed to delete material')
     }
   }
 

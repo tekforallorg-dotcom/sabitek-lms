@@ -34,6 +34,7 @@ import {
   Sparkles,
   ChevronDown
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface CareerTrack {
   name: string
@@ -155,7 +156,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       pdf.save(`sabitek-career-path-${new Date().getTime()}.pdf`)
     } catch (error) {
       console.error('PDF generation error:', error)
-      alert('Failed to generate PDF. Please try again.')
+      toast.error('Failed to generate PDF. Please try again.')
     } finally {
       setExpandAllForPDF(false)
       setIsDownloading(false)
@@ -164,7 +165,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
   const handleSendEmail = async () => {
     if (!user?.email) {
-      alert('No email address found')
+      toast.warning('No email address found')
       return
     }
 
@@ -239,7 +240,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       setTimeout(() => setEmailSent(false), 5000)
     } catch (error: any) {
       console.error('Email send error:', error)
-      alert(error.message || 'Failed to send email. Please try downloading instead.')
+      toast.error(error.message || 'Failed to send email. Please try downloading instead.')
     } finally {
       setExpandAllForPDF(false)
       setIsSendingEmail(false)

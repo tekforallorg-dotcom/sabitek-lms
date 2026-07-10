@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Send, Calendar, Video, ExternalLink, Loader2, Info } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Message {
   id: string
@@ -120,7 +121,7 @@ useEffect(() => {
       if (res.ok) {
         setThread(data.thread)
       } else {
-        alert(data.error || 'Failed to load conversation')
+        toast.error(data.error || 'Failed to load conversation')
         router.push('/community/inbox')
       }
     } catch (error) {
@@ -180,7 +181,7 @@ useEffect(() => {
         setMessages(prev => prev.map(m => m.id === optimisticMessage.id ? data.message : m))
       } else {
         setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id))
-        alert(data.error || 'Failed to send message')
+        toast.error(data.error || 'Failed to send message')
         setNewMessage(messageContent)
       }
     } catch (error) {

@@ -21,6 +21,7 @@ import {
   Star
 } from 'lucide-react'
 import { CommunitySession, SESSION_STATUSES } from '@/types/community'
+import { toast } from '@/components/ui/toast'
 
 type TabType = 'upcoming' | 'proposed' | 'past'
 
@@ -119,11 +120,11 @@ export default function SessionsPage() {
         await fetchSessions()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to complete session')
+        toast.error(data.error || 'Failed to complete session')
       }
     } catch (error) {
       console.error('Error completing session:', error)
-      alert('Failed to complete session')
+      toast.error('Failed to complete session')
     } finally {
       setActionLoading(null)
     }
@@ -146,11 +147,11 @@ export default function SessionsPage() {
         await fetchSessions()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to cancel session')
+        toast.error(data.error || 'Failed to cancel session')
       }
     } catch (error) {
       console.error('Error cancelling session:', error)
-      alert('Failed to cancel session')
+      toast.error('Failed to cancel session')
     } finally {
       setActionLoading(null)
     }
@@ -181,7 +182,7 @@ export default function SessionsPage() {
       throw new Error(result.error || 'Failed to submit review')
     }
 
-    alert('Review submitted successfully!')
+    toast.success('Review submitted successfully!')
     await fetchSessions()
   }
 

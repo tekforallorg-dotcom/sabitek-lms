@@ -17,7 +17,6 @@ import {
   PartyPopper,
   X,
   ShoppingCart,
-  Sparkles,
   AlertCircle,
   AlertTriangle,
   GraduationCap,
@@ -99,15 +98,15 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
 
   const bgMap = {
     info: 'from-blue-500 to-blue-600',
-    success: 'from-green-500 to-green-600',
-    error: 'from-red-500 to-red-600',
+    success: 'from-emerald-500 to-green-600',
+    error: 'from-red-500 to-rose-600',
     warning: 'from-amber-500 to-amber-600',
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
         <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -128,20 +127,30 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
                 variant={action.variant === 'secondary' ? 'outline' : 'default'}
                 className={
                   action.variant === 'primary'
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl'
-                    : 'rounded-xl'
+                    ? 'relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5'
+                    : 'bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm'
                 }
                 size="sm"
               >
+                {action.variant === 'primary' && (
+                  <span
+                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                    aria-hidden="true"
+                  />
+                )}
                 {action.label}
               </Button>
             ))
           ) : (
             <Button
               onClick={onClose}
-              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+              className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
               size="sm"
             >
+              <span
+                className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                aria-hidden="true"
+              />
               OK
             </Button>
           )}
@@ -165,20 +174,20 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, onClick }: LessonRo
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 rounded-xl transition-all group hover:shadow-md"
+      className="w-full flex items-center justify-between p-4 bg-white/70 hover:bg-rose-50/50 border border-rose-100 hover:border-rose-200 rounded-xl transition-all group hover:shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]"
     >
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div
           className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
             isCompleted
-              ? 'bg-gradient-to-br from-green-400 to-green-500 shadow-md shadow-green-500/25'
-              : 'bg-white border-2 border-gray-200 group-hover:border-red-200'
+              ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-md shadow-emerald-500/25'
+              : 'bg-white border border-rose-100 group-hover:border-rose-200'
           }`}
         >
           {isCompleted ? (
             <CheckCircle className="w-5 h-5 text-white" />
           ) : (
-            <span className="text-sm font-bold text-gray-500 group-hover:text-red-500 transition-colors">
+            <span className="text-sm font-semibold text-gray-500 group-hover:text-red-500 transition-colors">
               {totalLessonsIndex + 1}
             </span>
           )}
@@ -189,17 +198,17 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, onClick }: LessonRo
             {lesson.title}
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-            {lesson.content_type === 'youtube' && <span>📺 YouTube</span>}
-            {lesson.content_type === 'video' && <span>🎥 Video</span>}
-            {lesson.content_type === 'pdf' && <span>📄 PDF</span>}
-            {lesson.content_type === 'powerpoint' && <span>📊 PPT</span>}
-            {lesson.content_type === 'text' && <span>📝 Text</span>}
+            {lesson.content_type === 'youtube' && <span className="uppercase tracking-wide font-medium text-rose-400">YouTube</span>}
+            {lesson.content_type === 'video' && <span className="uppercase tracking-wide font-medium text-rose-400">Video</span>}
+            {lesson.content_type === 'pdf' && <span className="uppercase tracking-wide font-medium text-rose-400">PDF</span>}
+            {lesson.content_type === 'powerpoint' && <span className="uppercase tracking-wide font-medium text-rose-400">PPT</span>}
+            {lesson.content_type === 'text' && <span className="uppercase tracking-wide font-medium text-rose-400">Text</span>}
             {lesson.duration_minutes && <span>• {lesson.duration_minutes}m</span>}
           </div>
         </div>
       </div>
 
-      <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
+      <ArrowRight className="w-5 h-5 text-rose-200 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
     </button>
   )
 }
@@ -533,7 +542,7 @@ export default function CourseDetailPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
         <SabiLoader text="Loading course..." />
       </div>
     )
@@ -541,16 +550,20 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4">
-            <BookOpen className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
+            <BookOpen className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-gray-600 mb-4">Course not found</p>
           <Button
             onClick={() => router.push('/courses')}
-            className="bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl"
+            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
           >
+            <span
+              className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+              aria-hidden="true"
+            />
             Browse Courses
           </Button>
         </div>
@@ -559,7 +572,7 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffcfb]">
       {/* Custom Modal */}
       <Modal
         isOpen={modal.isOpen}
@@ -588,28 +601,30 @@ export default function CourseDetailPage() {
       {/* Congratulations Modal */}
       {showCongratsModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-lg w-full p-6 sm:p-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300">
             <button
               onClick={() => setShowCongratsModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-full flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-rose-400" />
             </button>
 
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
                 <PartyPopper className="w-10 h-10 text-white" />
               </div>
 
-              <h2 className="text-2xl font-black text-gray-900 mb-2">🎉 Congratulations!</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2">
+                <span className="font-serif italic text-red-600">Congratulations!</span>
+              </h2>
 
               <p className="text-sm text-gray-600 mb-6">
                 You've successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
               </p>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
-                <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-sm font-medium text-green-800">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
+                <Award className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                <p className="text-sm font-medium text-emerald-800">
                   Your certificate has been generated and is ready to view!
                 </p>
               </div>
@@ -620,8 +635,12 @@ export default function CourseDetailPage() {
                     setShowCongratsModal(false)
                     router.push(`/certificates/${generatedCertificateId}`)
                   }}
-                  className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-5 rounded-xl font-semibold shadow-lg shadow-red-500/25"
+                  className="relative overflow-hidden w-full bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                 >
+                  <span
+                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <Award className="w-4 h-4 mr-2" />
                   View Certificate
                 </Button>
@@ -632,7 +651,7 @@ export default function CourseDetailPage() {
                     router.push('/dashboard')
                   }}
                   variant="outline"
-                  className="w-full border-gray-200 hover:bg-gray-50 py-5 rounded-xl"
+                  className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white py-5 rounded-full shadow-sm"
                 >
                   Go to Dashboard
                 </Button>
@@ -643,12 +662,19 @@ export default function CourseDetailPage() {
       )}
 
       {/* Course Header */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-50 to-red-50" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50" />
-
-        <div className="absolute top-6 right-[10%] w-16 h-16 bg-gradient-to-br from-red-200/30 to-rose-200/30 rounded-2xl rotate-12 blur-sm" />
-        <div className="absolute bottom-20 left-[5%] w-12 h-12 bg-gradient-to-br from-pink-200/30 to-red-200/30 rounded-xl -rotate-12 blur-sm" />
+      <section className="relative overflow-hidden bg-[#fffcfb]">
+        <div className="absolute -top-24 right-[5%] w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" aria-hidden="true" />
+        <div className="absolute -bottom-32 left-[0%] w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" aria-hidden="true" />
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+            WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+          }}
+          aria-hidden="true"
+        />
 
         <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
           {course.cover_image_url && (
@@ -661,7 +687,7 @@ export default function CourseDetailPage() {
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-3 py-1 rounded-full text-xs font-semibold border border-red-200">
+                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-semibold border border-rose-100">
                   <BookOpen className="w-3 h-3" />
                   Course
                 </div>
@@ -672,7 +698,7 @@ export default function CourseDetailPage() {
                   </div>
                 )}
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 mb-2">{course.title}</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 mb-2">{course.title}</h1>
             </div>
 
             {!isEnrolled && (
@@ -683,11 +709,15 @@ export default function CourseDetailPage() {
                     Sponsored
                   </span>
                 ) : isFree ? (
-                  <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25">
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-b from-emerald-400 to-green-500 text-white shadow-lg shadow-emerald-500/25 ring-1 ring-green-600/40">
                     Free
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-4 py-2 rounded-xl text-lg font-black bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25">
+                  <span className="relative overflow-hidden inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold bg-gradient-to-b from-red-500 to-rose-600 text-white shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50">
+                    <span
+                      className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                      aria-hidden="true"
+                    />
                     ₦{course.price?.toLocaleString()}
                   </span>
                 )}
@@ -696,24 +726,24 @@ export default function CourseDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
               <Users className="w-4 h-4 text-gray-500" />
               <span>{course.instructor?.full_name}</span>
             </div>
             {modules.length > 0 && (
-              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+              <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
                 <Layers className="w-4 h-4 text-gray-500" />
                 <span>
                   {modules.length} Module{modules.length !== 1 ? 's' : ''}
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
               <BookOpen className="w-4 h-4 text-gray-500" />
               <span>{lessons.length} Lessons</span>
             </div>
             {totalDuration > 0 && (
-              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+              <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <span>{totalDuration} min</span>
               </div>
@@ -723,9 +753,9 @@ export default function CourseDetailPage() {
           {course.description && <p className="text-sm text-gray-600 max-w-3xl mb-4">{course.description}</p>}
 
           {isCohortSponsored && accessResult?.cohort && !isEnrolled && (
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4 mb-4">
+            <div className="bg-white/85 backdrop-blur border border-purple-100 ring-1 ring-purple-100 rounded-2xl p-4 mb-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-purple-50 border border-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <GraduationCap className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
@@ -741,14 +771,18 @@ export default function CourseDetailPage() {
           )}
 
           {isEnrolled && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm mb-4">
+            <div className="bg-white/85 backdrop-blur rounded-2xl p-4 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold text-gray-700">Your Progress</span>
                 <span className="text-sm font-bold text-red-600">{progressPercentage}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-rose-50 rounded-full h-2.5 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-red-500 to-pink-500 h-2.5 rounded-full transition-all duration-500"
+                  className={`h-2.5 rounded-full transition-all duration-500 ${
+                    progressPercentage >= 100
+                      ? 'bg-gradient-to-r from-emerald-400 to-green-500'
+                      : 'bg-gradient-to-r from-red-500 to-pink-400'
+                  }`}
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
@@ -761,9 +795,13 @@ export default function CourseDetailPage() {
                 <Button
                   onClick={handleEnroll}
                   disabled={enrolling}
-                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-red-500/25 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                   size="lg"
                 >
+                  <span
+                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                    aria-hidden="true"
+                  />
                   {enrolling
                     ? 'Enrolling...'
                     : isCohortSponsored
@@ -781,9 +819,13 @@ export default function CourseDetailPage() {
                 <Button
                   onClick={handlePurchase}
                   disabled={purchasing}
-                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-red-500/25 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                   size="lg"
                 >
+                  <span
+                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
                 </Button>
@@ -794,26 +836,32 @@ export default function CourseDetailPage() {
 
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 40" fill="none" preserveAspectRatio="none" className="w-full h-6">
-            <path d="M0 40V15C360 0 720 0 1080 15C1260 22 1380 30 1440 30V40H0Z" fill="#F9FAFB" />
+            <path d="M0 40V15C360 0 720 0 1080 15C1260 22 1380 30 1440 30V40H0Z" fill="#fffcfb" />
           </svg>
         </div>
       </section>
 
       {/* Curriculum */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-100">
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <span
+            className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+            aria-hidden="true"
+          />
+          <div className="px-4 sm:px-6 py-4 border-b border-rose-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
                   <PlayCircle className="w-4 h-4 text-white" />
                 </div>
-                <h2 className="font-bold text-gray-900">Course Curriculum</h2>
+                <h2 className="font-semibold tracking-tight text-gray-900">
+                  Course <span className="font-serif italic text-red-600">Curriculum</span>
+                </h2>
               </div>
               {isEnrolled && (
                 <div className="flex items-center gap-2">
                   {modules.length > 0 && (
-                    <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                    <span className="text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
                       {Object.values(completedPerModule).filter((c, idx) => {
                         const m = modules[idx]
                         return m && c === (lessonsByModule[m.id]?.length || 0) && c > 0
@@ -822,7 +870,7 @@ export default function CourseDetailPage() {
                       {modules.filter((m) => (lessonsByModule[m.id]?.length || 0) > 0).length} modules
                     </span>
                   )}
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="text-xs font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                     {completedLessons.size} / {lessons.length} lessons
                   </span>
                 </div>
@@ -833,8 +881,8 @@ export default function CourseDetailPage() {
           <div className="p-4 sm:p-6">
             {!isEnrolled ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4">
-                  <BookOpen className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
+                  <BookOpen className="w-8 h-8 text-red-500" />
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
                   {isCohortSponsored
@@ -855,10 +903,10 @@ export default function CourseDetailPage() {
                     {modules.map((module, idx) => (
                       <div
                         key={module.id}
-                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100"
+                        className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-rose-100"
                       >
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-indigo-600">{idx + 1}</span>
+                        <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-red-500">{idx + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-gray-900 text-sm truncate">{module.title}</h4>
@@ -877,7 +925,7 @@ export default function CourseDetailPage() {
                       onClick={handlePurchase}
                       disabled={purchasing}
                       variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl"
+                      className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-red-600 rounded-full shadow-sm"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
@@ -903,28 +951,28 @@ export default function CourseDetailPage() {
                     return (
                       <div
                         key={module.id}
-                        className="border border-gray-100 rounded-xl overflow-hidden bg-white"
+                        className="border border-rose-100 rounded-xl overflow-hidden bg-white/70"
                       >
                         <button
                           onClick={() => toggleModule(module.id)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                          className="w-full flex items-center justify-between p-4 hover:bg-rose-50/50 transition-colors"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div
                               className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                 moduleAllComplete
-                                  ? 'bg-gradient-to-br from-green-400 to-green-500 shadow-md shadow-green-500/25'
-                                  : 'bg-gradient-to-br from-indigo-100 to-purple-100'
+                                  ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-md shadow-emerald-500/25'
+                                  : 'bg-rose-50 border border-rose-100'
                               }`}
                             >
                               {moduleAllComplete ? (
                                 <CheckCircle className="w-5 h-5 text-white" />
                               ) : (
-                                <Layers className="w-5 h-5 text-indigo-600" />
+                                <Layers className="w-5 h-5 text-red-500" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0 text-left">
-                              <h3 className="text-sm font-bold text-gray-900 truncate">{module.title}</h3>
+                              <h3 className="text-sm font-semibold text-gray-900 truncate">{module.title}</h3>
                               <p className="text-xs text-gray-500 mt-0.5">
                                 {completedInModule} of {totalInModule} completed
                                 {module.description && (
@@ -934,14 +982,14 @@ export default function CourseDetailPage() {
                             </div>
                           </div>
                           {isExpanded ? (
-                            <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
+                            <ChevronDown className="w-5 h-5 text-rose-300 flex-shrink-0 ml-2" />
                           ) : (
-                            <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
+                            <ChevronRight className="w-5 h-5 text-rose-300 flex-shrink-0 ml-2" />
                           )}
                         </button>
 
                         {isExpanded && (
-                          <div className="px-4 pb-4 pt-0 space-y-2 border-t border-gray-100 bg-gray-50/30">
+                          <div className="px-4 pb-4 pt-0 space-y-2 border-t border-rose-100 bg-rose-50/30">
                             <div className="pt-3 space-y-2">
                               {moduleLessons.map((lesson) => {
                                 const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
@@ -967,7 +1015,7 @@ export default function CourseDetailPage() {
 
                   {/* Unassigned lessons (shouldn't happen after backfill but guarded) */}
                   {unassignedLessons.length > 0 && (
-                    <div className="border border-gray-100 rounded-xl p-4 bg-white">
+                    <div className="border border-rose-100 rounded-xl p-4 bg-white/70">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
                         Other Lessons
                       </p>
@@ -993,14 +1041,14 @@ export default function CourseDetailPage() {
                 </div>
 
                 {/* Finish Course Button */}
-                <div className="mt-6 pt-6 border-t border-gray-100">
+                <div className="mt-6 pt-6 border-t border-rose-100">
                   <Button
                     onClick={handleFinishCourse}
                     disabled={finishingCourse || completedLessons.size < lessons.length}
-                    className={`w-full py-6 text-base font-bold rounded-xl transition-all ${
+                    className={`w-full py-6 text-base font-semibold rounded-full transition-all ${
                       completedLessons.size >= lessons.length
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/40 hover:-translate-y-0.5'
+                        : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
                     }`}
                     size="lg"
                   >
@@ -1024,7 +1072,7 @@ export default function CourseDetailPage() {
 
                   {completedLessons.size === lessons.length && (
                     <p className="text-center text-sm text-gray-600 mt-3 flex items-center justify-center gap-2">
-                      <Sparkles className="w-4 h-4 text-green-500" />
+                      <CheckCircle className="w-4 h-4 text-emerald-500" />
                       You've completed all lessons! Click above to get your certificate.
                     </p>
                   )}

@@ -26,6 +26,7 @@ import {
   isAdmin,
   type AdminQuestion,
 } from '@/lib/admin/sabiquiz-admin'
+import { toast } from '@/components/ui/toast'
 
 export default function QuestionsAdminPage() {
   const router = useRouter()
@@ -104,7 +105,7 @@ export default function QuestionsAdminPage() {
       await deleteQuestion(questionId, user.id)
       setQuestions(questions.filter(q => q.id !== questionId))
     } catch (err: any) {
-      alert(err.message || 'Failed to delete question')
+      toast.error(err.message || 'Failed to delete question')
     }
   }
 

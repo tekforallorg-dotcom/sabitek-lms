@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ZoomIn
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Certificate {
   id: string
@@ -374,7 +375,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       pdf.save(`${certificate.certificate_number}.pdf`)
     } catch (e) {
       console.error(e)
-      alert('Failed to generate PDF. Please try again.')
+      toast.error('Failed to generate PDF. Please try again.')
     } finally {
       setIsDownloading(false)
     }
@@ -382,7 +383,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
   const handleSendEmail = async () => {
     if (!certificate || !user?.email) {
-      alert('No email address found')
+      toast.warning('No email address found')
       return
     }
 
@@ -417,7 +418,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       setTimeout(() => setEmailSent(false), 5000)
     } catch (error: any) {
       console.error('Email send error:', error)
-      alert(error.message || 'Failed to send email.')
+      toast.error(error.message || 'Failed to send email.')
     } finally {
       setIsSendingEmail(false)
     }

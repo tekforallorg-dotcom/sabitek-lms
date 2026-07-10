@@ -18,6 +18,7 @@ import {
   Percent,
   AlertCircle
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Question {
   id: string
@@ -218,10 +219,10 @@ export default function QuizPage({ params }: PageProps) {
         }
       }
 
-      alert('Quiz saved successfully!')
+      toast.success('Quiz saved successfully!')
     } catch (error: any) {
       console.error('Error saving quiz:', error)
-      alert(`Failed to save quiz: ${error.message || 'Unknown error'}`)
+      toast.error(`Failed to save quiz: ${error.message || 'Unknown error'}`)
       setError(error.message || 'Failed to save quiz')
     } finally {
       setSaving(false)

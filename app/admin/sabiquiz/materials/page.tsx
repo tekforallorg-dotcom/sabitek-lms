@@ -27,6 +27,7 @@ import {
   isAdmin,
   type AdminMaterial,
 } from '@/lib/admin/sabiquiz-admin'
+import { toast } from '@/components/ui/toast'
 
 export default function MaterialsAdminPage() {
   const router = useRouter()
@@ -63,7 +64,7 @@ export default function MaterialsAdminPage() {
     
     if (!adminCheck) {
       console.error('User is not admin')
-      alert('Access denied. Admin privileges required.')
+      toast.error('Access denied. Admin privileges required.')
       router.push('/')
       return
     }
@@ -109,7 +110,7 @@ export default function MaterialsAdminPage() {
       await deleteMaterial(materialId, user.id)
       setMaterials(materials.filter(m => m.id !== materialId))
     } catch (err: any) {
-      alert(err.message || 'Failed to delete material')
+      toast.error(err.message || 'Failed to delete material')
     }
   }
 

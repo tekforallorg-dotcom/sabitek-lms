@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getWrongQuestionIds, getWeakTopics, createQuizAttempt } from '@/lib/sabiquiz/quiz-utils'
 import type { Question } from '@/lib/sabiquiz/types'
 import Link from 'next/link'
+import { toast } from '@/components/ui/toast'
 
 interface QuizAttempt {
   id: string
@@ -237,7 +238,7 @@ export default function ResultsPage() {
 
       if (error) throw error
       if (!weakQuestions || weakQuestions.length === 0) {
-        alert('No questions available for weak topics')
+        toast.warning('No questions available for weak topics')
         setStartingRetry(false)
         return
       }

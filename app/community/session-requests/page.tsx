@@ -19,6 +19,7 @@ import {
   Send
 } from 'lucide-react'
 import { SessionRequest, SESSION_REQUEST_STATUSES } from '@/types/community'
+import { toast } from '@/components/ui/toast'
 
 type TabType = 'received' | 'sent'
 
@@ -84,11 +85,11 @@ export default function SessionRequestsPage() {
         )
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to accept request')
+        toast.error(data.error || 'Failed to accept request')
       }
     } catch (error) {
       console.error('Error accepting request:', error)
-      alert('Failed to accept request')
+      toast.error('Failed to accept request')
     } finally {
       setActionLoading(null)
     }
@@ -116,11 +117,11 @@ export default function SessionRequestsPage() {
         )
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to decline request')
+        toast.error(data.error || 'Failed to decline request')
       }
     } catch (error) {
       console.error('Error declining request:', error)
-      alert('Failed to decline request')
+      toast.error('Failed to decline request')
     } finally {
       setActionLoading(null)
     }

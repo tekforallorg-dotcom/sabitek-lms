@@ -35,6 +35,7 @@ import {
   SKILL_LEVELS,
   SKILL_CATEGORIES
 } from '@/types/community'
+import { toast } from '@/components/ui/toast'
 
 export default function CommunityProfilePage() {
   const router = useRouter()
@@ -154,13 +155,13 @@ export default function CommunityProfilePage() {
       
       if (res.ok) {
         setProfile(data.profile)
-        alert('Profile saved successfully!')
+        toast.success('Profile saved successfully!')
       } else {
-        alert(data.error || 'Failed to save profile')
+        toast.error(data.error || 'Failed to save profile')
       }
     } catch (error) {
       console.error('Error saving profile:', error)
-      alert('Failed to save profile')
+      toast.error('Failed to save profile')
     } finally {
       setSaving(false)
     }
@@ -168,7 +169,7 @@ export default function CommunityProfilePage() {
 
   const handleAddSkill = async () => {
     if (!newSkill.skill_id) {
-      alert('Please select a skill')
+      toast.warning('Please select a skill')
       return
     }
 
@@ -192,11 +193,11 @@ export default function CommunityProfilePage() {
         setNewSkill({ skill_id: '', level: 'beginner', years_experience: 0, description: '' })
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to add skill')
+        toast.error(data.error || 'Failed to add skill')
       }
     } catch (error) {
       console.error('Error adding skill:', error)
-      alert('Failed to add skill')
+      toast.error('Failed to add skill')
     }
   }
 
@@ -213,11 +214,11 @@ export default function CommunityProfilePage() {
       if (res.ok) {
         await fetchData() // Refresh data
       } else {
-        alert('Failed to remove skill')
+        toast.error('Failed to remove skill')
       }
     } catch (error) {
       console.error('Error removing skill:', error)
-      alert('Failed to remove skill')
+      toast.error('Failed to remove skill')
     }
   }
 

@@ -48,6 +48,7 @@ import {
   FileText,
   CreditCard as CardIcon
 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface Stats {
   totalRevenue: number
@@ -388,7 +389,7 @@ export default function AdminBillingPage() {
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Export error:', error)
-      alert('Failed to export CSV')
+      toast.error('Failed to export CSV')
     } finally {
       setExporting(false)
     }
@@ -396,7 +397,7 @@ export default function AdminBillingPage() {
 
   const handleGrantPro = async () => {
     if (!grantEmail.trim()) {
-      alert('Please enter an email address')
+      toast.warning('Please enter an email address')
       return
     }
 
@@ -410,7 +411,7 @@ export default function AdminBillingPage() {
         .single()
 
       if (userError || !targetUser) {
-        alert('User not found with that email')
+        toast.error('User not found with that email')
         return
       }
 
@@ -421,7 +422,7 @@ export default function AdminBillingPage() {
         .single()
 
       if (!proPlan) {
-        alert('Pro plan not found')
+        toast.error('Pro plan not found')
         return
       }
 
@@ -459,13 +460,13 @@ export default function AdminBillingPage() {
           })
       }
 
-      alert(`Pro access granted to ${grantEmail} for 1 year!`)
+      toast.success(`Pro access granted to ${grantEmail} for 1 year!`)
       setGrantEmail('')
       fetchBillingData()
 
     } catch (error: any) {
       console.error('Grant error:', error)
-      alert(error.message || 'Failed to grant Pro access')
+      toast.error(error.message || 'Failed to grant Pro access')
     } finally {
       setGranting(false)
     }

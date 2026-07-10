@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { updateStreakAndMastery, awardXP, checkAndAwardBadges } from '@/lib/sabiquiz/quiz-utils'
 import type { Question } from '@/lib/sabiquiz/types'
+import { toast } from '@/components/ui/toast'
 
 // ============================================================================
 // PROGRESS BAR CHARACTERS & ANIMATIONS (PRESERVED)
@@ -1058,7 +1059,7 @@ export default function QuizPage() {
 
   async function handleSubmit() {
     if (state.answers.size === 0 && quizMode !== 'time_attack') {
-      alert('Please answer at least one question')
+      toast.warning('Please answer at least one question')
       return
     }
 

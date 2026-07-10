@@ -6,6 +6,7 @@ import CertificatesTable from '@/components/admin/CertificatesTable'
 import CertificateFilters from '@/components/admin/CertificateFilters'
 import { Award, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/toast'
 
 export default function CertificatesManagementPage() {
   const { loading: authLoading, userProfile } = useAdminAuth()
@@ -92,7 +93,7 @@ export default function CertificatesManagementPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        alert('Not authenticated')
+        toast.error('Not authenticated')
         return
       }
 
@@ -116,10 +117,10 @@ export default function CertificatesManagementPage() {
         revoke: 'Certificate revoked successfully',
         unrevoke: 'Certificate restored successfully',
       }
-      alert(actionMessages[action as keyof typeof actionMessages] || 'Action completed')
+      toast.success(actionMessages[action as keyof typeof actionMessages] || 'Action completed')
     } catch (err: any) {
       console.error('Action error:', err)
-      alert(err.message || 'Failed to perform action')
+      toast.error(err.message || 'Failed to perform action')
     }
   }
 

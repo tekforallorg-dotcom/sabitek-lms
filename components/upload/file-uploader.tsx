@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { Upload, X, File } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 interface FileUploaderProps {
   label: string
@@ -77,7 +78,7 @@ export default function FileUploader({
       console.log('✅ Upload complete!')
     } catch (error: any) {
       console.error('💥 Upload error:', error)
-      alert(`Error uploading file: ${error.message}`)
+      toast.error(`Error uploading file: ${error.message}`)
     } finally {
       console.log('🏁 Setting uploading to false')
       setUploading(false)

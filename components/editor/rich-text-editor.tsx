@@ -50,6 +50,7 @@ import {
 } from 'lucide-react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import DOMPurify from 'dompurify'
+import { toast } from '@/components/ui/toast'
 
 // Custom FontSize extension
 const FontSize = Extension.create({
@@ -347,7 +348,7 @@ export default function RichTextEditor({
         fileInputRef.current.value = ''
       }
     } catch (error: any) {
-      alert(`Error uploading image: ${error.message}`)
+      toast.error(`Error uploading image: ${error.message}`)
     } finally {
       setUploadingImage(false)
     }

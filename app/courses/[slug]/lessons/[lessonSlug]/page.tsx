@@ -21,6 +21,7 @@ import {
   ChevronRight,
   ChevronDown,
   FileText,
+  MessageSquare,
   Award,
   X,
   AlertCircle,
@@ -169,6 +170,8 @@ export default function LessonViewerPage() {
   const [loading, setLoading] = useState(true)
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
+  // Workspace tabs under the player: notes, AI summary, Q&A, practice quiz
+  const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'practice'>('notes')
 
   // Notes state
   const [notesContent, setNotesContent] = useState('')
@@ -917,7 +920,7 @@ export default function LessonViewerPage() {
             className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
           >
             <Layers className="w-4 h-4 mr-2 text-red-500" />
-            {showMobileSidebar ? 'Hide Lessons & Tools' : 'Show Lessons & Tools'}
+            {showMobileSidebar ? 'Hide Lessons' : 'Show Lessons'}
             <ChevronDown
               className={`w-4 h-4 ml-2 text-gray-400 transition-transform ${showMobileSidebar ? 'rotate-180' : ''}`}
             />
@@ -950,49 +953,105 @@ export default function LessonViewerPage() {
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
+
+            {/* ══════════════════════════════════════════════════════
+                 LESSON WORKSPACE — Notes / AI Summary / Ask AI / Practice
+                 ══════════════════════════════════════════════════════ */}
+            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <CardContent className="p-4 sm:p-5">
+                {/* Tab bar */}
+                <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
+                  {(() => {
+                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'practice'; label: string; icon: React.ElementType }[] = [
+                      { key: 'notes', label: 'My Notes', icon: FileText },
+                      { key: 'summary', label: 'AI Summary', icon: BookOpen },
+                      { key: 'qa', label: 'Ask AI', icon: MessageSquare },
+                    ]
+                    if (!quiz) tabs.push({ key: 'practice', label: 'Practice Quiz', icon: Award })
+                    return tabs.map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                          activeTab === tab.key
+                            ? 'bg-white text-red-600 shadow-sm ring-1 ring-rose-100'
+                            : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                      >
+                        <tab.icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    ))
+                  })()}
+                </div>
+
+                {/* Notes tab */}
+                {activeTab === 'notes' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-900">Notes for this lesson</p>
+                      {notesSaved && (
+                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
+                          <CheckCircle className="w-3 h-3" />
+                          Saved
+                        </span>
+                      )}
+                    </div>
+                    <Textarea
+                      value={notesContent}
+                      onChange={(e) => setNotesContent(e.target.value)}
+                      placeholder="Take notes while learning..."
+                      rows={7}
+                      className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={saveNotes}
+                        disabled={savingNotes || !notesContent.trim()}
+                        className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        size="sm"
+                      >
+                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                        <Save className="w-3 h-3 mr-2" />
+                        {savingNotes ? 'Saving...' : 'Save Notes'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Summary tab */}
+                {activeTab === 'summary' && lesson && (
+                  lesson.content_type === 'text' && lesson.content ? (
+                    <LessonSummary lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
+                  ) : (
+                    <LessonSummary lessonId={lesson.id} contentType={lesson.content_type} />
+                  )
+                )}
+
+                {/* Ask AI tab */}
+                {activeTab === 'qa' && lesson && (
+                  lesson.content_type === 'text' && lesson.content ? (
+                    <LessonQA lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
+                  ) : (
+                    <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
+                  )
+                )}
+
+                {/* Practice quiz tab (only when the lesson has no instructor quiz) */}
+                {activeTab === 'practice' && !quiz && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Practice quiz</p>
+                    <p className="text-xs text-gray-500 mb-3">Test your understanding with AI-generated questions</p>
+                    <QuizTaker lessonId={lesson?.id || ''} onComplete={() => {}} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className={`${showMobileSidebar ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-4`}>
-            {/* My Notes Card */}
-            <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-red-500" />
-                    </div>
-                    My Notes
-                  </span>
-                  {notesSaved && (
-                    <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
-                      <CheckCircle className="w-3 h-3" />
-                      Saved
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Textarea
-                  value={notesContent}
-                  onChange={(e) => setNotesContent(e.target.value)}
-                  placeholder="Take notes while learning..."
-                  rows={6}
-                  className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
-                />
-                <Button
-                  onClick={saveNotes}
-                  disabled={savingNotes || !notesContent.trim()}
-                  className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
-                  size="sm"
-                >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <Save className="w-3 h-3 mr-2" />
-                  {savingNotes ? 'Saving...' : 'Save Notes'}
-                </Button>
-              </CardContent>
-            </Card>
-
             {/* Instructor Quiz Card */}
             {quiz && quiz.questions && quiz.questions.length > 0 && (
               <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
@@ -1193,49 +1252,6 @@ export default function LessonViewerPage() {
                       {quizAttempts > 0 ? `Retake Quiz (#${quizAttempts + 1})` : 'Start Quiz'}
                     </Button>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* AI Tools */}
-            {lesson?.content_type === 'text' && lesson?.content && (
-              <>
-                <div>
-                  <LessonSummary lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
-                </div>
-                <div>
-                  <LessonQA lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
-                </div>
-              </>
-            )}
-
-            {lesson && lesson.content_type !== 'text' && (
-              <>
-                <div>
-                  <LessonSummary lessonId={lesson.id} contentType={lesson.content_type} />
-                </div>
-                <div>
-                  <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
-                </div>
-              </>
-            )}
-
-            {/* Practice Quiz (fallback) */}
-            {!quiz && (
-              <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
-                      <Award className="w-4 h-4 text-red-500" />
-                    </div>
-                    Practice Quiz
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Test your understanding with AI-generated questions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <QuizTaker lessonId={lesson?.id || ''} onComplete={() => {}} />
                 </CardContent>
               </Card>
             )}
