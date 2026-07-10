@@ -62,7 +62,9 @@ export async function resolveSignupGate(
       .maybeSingle()
 
     if (error || !data) {
-      return { allowed: false, reason: 'invite_invalid' }
+      // Not a cohort invite: it may be an institution TEAM invite
+      // (created from /institution dashboard for admins/instructors/etc).
+      return resolveTeamInvite(admin, inviteToken)
     }
 
     const row = data as {
@@ -99,6 +101,74 @@ export async function resolveSignupGate(
         cohort_name: row.cohort.name,
         institution_name: row.cohort.program.institution.name,
         program_name: row.cohort.program.name,
+      },
+    }
+  } catch {
+    return { allowed: false, reason: 'invite_invalid' }
+  }
+}
+
+const TEAM_ROLE_LABELS: Record<string, string> = {
+  institution_admin: 'Institution Admin',
+  program_manager: 'Program Manager',
+  facilitator: 'Facilitator',
+  instructor: 'Instructor',
+  viewer: 'Viewer',
+}
+
+/**
+ * Institution TEAM invite branch. Reuses the same decision shape so the
+ * register page needs no changes: cohort_name carries the team label.
+ * After registering, the invitee accepts via /join/team/[token], which
+ * assigns the institution_members role (and instructor upgrade).
+ */
+async function resolveTeamInvite(
+  admin: NonNullable<ReturnType<typeof getAdmin>>,
+  inviteToken: string
+): Promise<SignupGateDecision> {
+  try {
+    const { data, error } = await admin
+      .from('institution_invites')
+      .select('status, expires_at, max_uses, use_count, role, institution:institutions!inner(name)')
+      .eq('token', inviteToken)
+      .maybeSingle()
+
+    if (error || !data) {
+      return { allowed: false, reason: 'invite_invalid' }
+    }
+
+    const row = data as {
+      status: string
+      expires_at: string | null
+      max_uses: number | null
+      use_count: number
+      role: string
+      institution: { name: string }
+    }
+
+    if (row.status === 'REVOKED') {
+      return { allowed: false, reason: 'invite_revoked' }
+    }
+    if (row.status === 'EXHAUSTED') {
+      return { allowed: false, reason: 'invite_exhausted' }
+    }
+    if (row.expires_at && new Date(row.expires_at) < new Date()) {
+      return { allowed: false, reason: 'invite_expired' }
+    }
+    if (row.max_uses !== null && row.use_count >= row.max_uses) {
+      return { allowed: false, reason: 'invite_exhausted' }
+    }
+    if (row.status !== 'ACTIVE') {
+      return { allowed: false, reason: 'invite_invalid' }
+    }
+
+    return {
+      allowed: true,
+      reason: 'valid_invite',
+      invite: {
+        cohort_name: `${row.institution.name} team`,
+        institution_name: row.institution.name,
+        program_name: TEAM_ROLE_LABELS[row.role] || row.role,
       },
     }
   } catch {

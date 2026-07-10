@@ -52,10 +52,10 @@ interface Institution {
 }
 
 const statusColors: Record<string, { dot: string; bg: string; text: string }> = {
-  draft: { dot: 'bg-amber-400', bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700' },
-  active: { dot: 'bg-emerald-400', bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' },
-  closed: { dot: 'bg-blue-400', bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700' },
-  archived: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-700' },
+  draft: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-600' },
+  active: { dot: 'bg-emerald-400', bg: 'bg-emerald-50 border-emerald-100', text: 'text-emerald-700' },
+  closed: { dot: 'bg-amber-400', bg: 'bg-amber-50 border-amber-100', text: 'text-amber-700' },
+  archived: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-600' },
 }
 
 const enrollmentModeIcons: Record<string, React.ReactNode> = {
@@ -74,7 +74,7 @@ const enrollmentModeLabels: Record<string, string> = {
 
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -159,13 +159,13 @@ export default function CohortsPage() {
       const membershipData = await membershipRes.json()
       // Handle both { data: { institution: {...} } } and { institution: {...} } formats
       const membership = membershipData.data || membershipData
-      
+
       if (!membership?.institution) {
         console.error('No institution in membership response:', membershipData)
         router.push('/institution/apply')
         return
       }
-      
+
       setInstitution(membership.institution)
 
       const params = new URLSearchParams()
@@ -254,14 +254,15 @@ export default function CohortsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Something Went Wrong</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">Something Went Wrong</h2>
           <p className="text-gray-500 mb-6 text-sm">{error}</p>
-          <Button onClick={() => fetchInstitutionAndCohorts()} className="bg-red-600 hover:bg-red-700">
+          <Button onClick={() => fetchInstitutionAndCohorts()} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
             Try Again
           </Button>
         </div>
@@ -270,9 +271,9 @@ export default function CohortsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffcfb]">
       {/* Sub-header */}
-      <div className="bg-white border-b">
+      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -289,15 +290,17 @@ export default function CohortsPage() {
       </div>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
+      <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Cohorts</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Learner Groups</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Your <span className="font-serif italic text-red-600">cohorts</span></h1>
               <p className="text-gray-600 mt-1">Manage learner groups across your programs</p>
             </div>
             <Link href="/institution/cohorts/create">
-              <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 <Plus className="w-4 h-4" />
                 Create Cohort
               </Button>
@@ -309,7 +312,7 @@ export default function CohortsPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters */}
-        <div className="bg-white rounded-xl border p-4 mb-6">
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -317,13 +320,13 @@ export default function CohortsPage() {
                 placeholder="Search cohorts..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="px-4 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
             >
               <option value="">All statuses</option>
               <option value="draft">Draft</option>
@@ -336,14 +339,16 @@ export default function CohortsPage() {
 
         {/* Cohorts Grid */}
         {cohorts.length === 0 ? (
-          <div className="bg-white rounded-xl border p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-gray-400" />
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No cohorts yet</h3>
             <p className="text-gray-500 mb-6">Create your first cohort to start organizing learners</p>
             <Link href="/institution/cohorts/create">
-              <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 <Plus className="w-4 h-4" />
                 Create First Cohort
               </Button>
@@ -354,7 +359,7 @@ export default function CohortsPage() {
             {cohorts.map((cohort) => {
               const status = statusColors[cohort.status] || statusColors.draft
               return (
-                <div key={cohort.id} className="bg-white rounded-xl border hover:shadow-md transition-shadow">
+                <div key={cohort.id} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] hover:shadow-[0_20px_40px_-20px_rgba(225,29,72,0.45)] hover:-translate-y-0.5 transition-all">
                   <div className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
@@ -371,21 +376,21 @@ export default function CohortsPage() {
                       <div className="relative">
                         <button
                           onClick={() => setOpenMenu(openMenu === cohort.id ? null : cohort.id)}
-                          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-rose-50 rounded-lg transition-colors"
                         >
                           <MoreVertical className="w-4 h-4 text-gray-400" />
                         </button>
                         {openMenu === cohort.id && (
-                          <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border py-1 z-10">
-                            <Link href={`/institution/cohorts/${cohort.id}`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          <div className="absolute right-0 mt-1 w-40 bg-white/95 backdrop-blur rounded-xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] py-1 z-10">
+                            <Link href={`/institution/cohorts/${cohort.id}`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50/40">
                               <Eye className="w-4 h-4" />View
                             </Link>
-                            <Link href={`/institution/cohorts/${cohort.id}/edit`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <Link href={`/institution/cohorts/${cohort.id}/edit`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50/40">
                               <Edit className="w-4 h-4" />Edit
                             </Link>
                             <button
                               onClick={() => openArchiveModal(cohort.id, cohort.name)}
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-rose-50 w-full text-left"
                             >
                               <Archive className="w-4 h-4" />
                               Archive
@@ -396,11 +401,11 @@ export default function CohortsPage() {
                     </div>
 
                     <div className="flex items-center gap-2 mb-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${status.bg} ${status.text}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status.bg} ${status.text}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                         {cohort.status.charAt(0).toUpperCase() + cohort.status.slice(1)}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-rose-50 border border-rose-100 text-gray-600">
                         {enrollmentModeIcons[cohort.enrollment_mode]}
                         {enrollmentModeLabels[cohort.enrollment_mode]}
                       </span>
@@ -439,12 +444,12 @@ export default function CohortsPage() {
           />
           {/* Modal */}
           <div
-            className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
+            className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
             onKeyDown={(e) => { if (e.key === 'Escape') closeArchiveModal() }}
             tabIndex={-1}
             ref={(el) => el?.focus()}
           >
-            <div className="flex items-center justify-center w-14 h-14 bg-red-50 rounded-full mx-auto mb-4">
+            <div className="flex items-center justify-center w-14 h-14 bg-rose-50 border border-rose-100 rounded-xl mx-auto mb-4">
               <Archive className="w-7 h-7 text-red-500" />
             </div>
 
@@ -471,7 +476,7 @@ export default function CohortsPage() {
                 variant="outline"
                 onClick={closeArchiveModal}
                 disabled={!!archiving}
-                className="flex-1"
+                className="flex-1 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Cancel
               </Button>
@@ -479,8 +484,9 @@ export default function CohortsPage() {
                 type="button"
                 onClick={confirmArchive}
                 disabled={!!archiving}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2"
+                className="flex-1 relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2"
               >
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 {archiving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />

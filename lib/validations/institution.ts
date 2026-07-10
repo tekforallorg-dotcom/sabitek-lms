@@ -26,8 +26,17 @@ export const institutionRoleSchema = z.enum([
   'institution_admin',
   'program_manager',
   'facilitator',
+  'instructor',
   'viewer',
 ])
+
+// Token-based team invite (works for people with no account yet).
+export const createInstitutionInviteSchema = z.object({
+  role: institutionRoleSchema,
+  email: z.string().email('Please enter a valid email').optional(),
+  expires_in_days: z.number().int().min(1).max(90).optional(),
+  max_uses: z.number().int().min(1).max(500).optional(),
+})
 
 // ============================================
 // CREATE INSTITUTION SCHEMA

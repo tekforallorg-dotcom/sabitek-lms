@@ -85,9 +85,27 @@ const TERMINOLOGY_FIELDS: Array<{
   { key: 'invite_cta', label: 'Invite CTA', hint: 'Button label when inviting learners' },
 ]
 
+function PageBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" />
+      <div className="absolute top-1/3 -left-40 w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+          maskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
+        }}
+      />
+    </div>
+  )
+}
+
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -274,8 +292,9 @@ export default function InstitutionSettingsPage() {
 
   if (!institution) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
+      <div className="relative min-h-screen bg-[#fffcfb]">
+        <PageBackdrop />
+        <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Settings className="w-4 h-4 text-red-500" />
@@ -283,15 +302,20 @@ export default function InstitutionSettingsPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-center min-h-[60vh] p-4">
+        <div className="relative flex items-center justify-center min-h-[60vh] p-4">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No Institution Found</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+              No institution <span className="font-serif italic text-red-600">found</span>
+            </h2>
             <p className="text-gray-600 mb-6">{error || 'You need to be part of an institution to access settings.'}</p>
             <Link href="/institution/apply">
-              <Button className="bg-red-600 hover:bg-red-700">Apply for Institution</Button>
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                Apply for Institution
+              </Button>
             </Link>
           </div>
         </div>
@@ -300,8 +324,9 @@ export default function InstitutionSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="relative min-h-screen bg-[#fffcfb]">
+      <PageBackdrop />
+      <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -317,57 +342,62 @@ export default function InstitutionSettingsPage() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
+      <div className="relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center">
+            <div className="w-14 h-14 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center">
               {institution.logo_url ? (
-                <img src={institution.logo_url} alt={institution.name} className="w-10 h-10 rounded-lg object-cover" />
+                <img src={institution.logo_url} alt={institution.name} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
-                <Building2 className="w-7 h-7 text-gray-400" />
+                <Building2 className="w-7 h-7 text-red-500" />
               )}
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Institution Settings</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Institution</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                Institution <span className="font-serif italic text-red-600">settings</span>
+              </h1>
               <p className="text-gray-600 mt-0.5">Manage profile and preferences for {institution.name}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-6 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
         {success && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
             <span className="text-emerald-700 text-sm">{success}</span>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-gray-400" />
+              <div className="w-9 h-9 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-4 h-4 text-red-500" />
+              </div>
               <div>
                 <span className="text-sm font-medium text-gray-900">Account Status</span>
                 <p className="text-xs text-gray-500">Slug: {institution.slug}</p>
               </div>
             </div>
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
               institution.status === 'approved'
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                 : institution.status === 'pending'
-                ? 'bg-amber-50 border-amber-200 text-amber-700'
+                ? 'bg-rose-50 border-rose-200 text-rose-700'
                 : 'bg-gray-50 border-gray-200 text-gray-700'
             }`}>
               <span className={`w-1.5 h-1.5 rounded-full ${
                 institution.status === 'approved' ? 'bg-emerald-400'
-                : institution.status === 'pending' ? 'bg-amber-400'
+                : institution.status === 'pending' ? 'bg-rose-400'
                 : 'bg-gray-400'
               }`} />
               <span className="capitalize">{institution.status}</span>
@@ -376,111 +406,117 @@ export default function InstitutionSettingsPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Basic Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Institution Name <span className="text-red-500">*</span></label>
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">Institution Name <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Institution name" className="pl-10" required />
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Institution name" className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Institution Type</label>
+                <label className="block text-[13px] font-medium text-gray-700 mb-2">Institution Type</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {institutionTypeOptions.map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => setType(option.value)}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
-                        type === option.value ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        type === option.value ? 'border-red-400 bg-rose-50/70 ring-1 ring-rose-200' : 'border-rose-100 hover:border-rose-200 bg-white/70'
                       }`}
                     >
-                      <option.icon className={`w-5 h-5 mb-1 ${type === option.value ? 'text-red-600' : 'text-gray-400'}`} />
+                      <option.icon className={`w-5 h-5 mb-1 ${type === option.value ? 'text-red-500' : 'text-gray-400'}`} />
                       <div className={`text-sm font-medium ${type === option.value ? 'text-red-900' : 'text-gray-700'}`}>{option.label}</div>
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief description of your institution..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none text-sm"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Location</h2>
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Location</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Country</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Nigeria" className="pl-10" />
+                    <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Nigeria" className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                  <Input value={state} onChange={(e) => setState(e.target.value)} placeholder="e.g., Lagos" />
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">State</label>
+                  <Input value={state} onChange={(e) => setState(e.target.value)} placeholder="e.g., Lagos" className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">LGA (optional)</label>
-                  <Input value={lga} onChange={(e) => setLga(e.target.value)} placeholder="Local Government Area" />
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">LGA (optional)</label>
+                  <Input value={lga} onChange={(e) => setLga(e.target.value)} placeholder="Local Government Area" className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (optional)</label>
-                  <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" />
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Address (optional)</label>
+                  <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Contact Information</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Contact Email</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="admin@institution.edu" className="pl-10" />
+                    <Input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="admin@institution.edu" className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Contact Phone</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+234 800 000 0000" className="pl-10" />
+                    <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+234 800 000 0000" className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                   </div>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website (optional)</label>
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">Website (optional)</label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://www.institution.edu" className="pl-10" />
+                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://www.institution.edu" className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
             </div>
           </div>
 
 {/* ── Domain Allowlist ── */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-start gap-3 mb-4">
-              <Shield className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="w-9 h-9 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4 text-red-500" />
+              </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Email Domain Allowlist</h2>
+                <h2 className="text-lg font-semibold tracking-tight text-gray-900">Email Domain Allowlist</h2>
                 <p className="text-sm text-gray-500 mt-0.5">
                   Restrict who can join your institution by email domain. Leave empty to allow any email.
                 </p>
@@ -492,7 +528,7 @@ export default function InstitutionSettingsPage() {
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="e.g. school.edu.ng"
-                className="max-w-xs"
+                className="max-w-xs rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
@@ -508,6 +544,7 @@ export default function InstitutionSettingsPage() {
                 type="button"
                 variant="outline"
                 size="sm"
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                 onClick={() => {
                   const domain = newDomain.toLowerCase().replace(/^@/, '').trim()
                   if (domain && !domainAllowlist.includes(domain)) {
@@ -525,7 +562,7 @@ export default function InstitutionSettingsPage() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {domainAllowlist.map((domain) => (
-                  <span key={domain} className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-sm px-3 py-1.5 rounded-full">
+                  <span key={domain} className="inline-flex items-center gap-1.5 bg-white/70 border border-rose-100 text-gray-700 text-sm px-3 py-1.5 rounded-full">
                     @{domain}
                     <button
                       type="button"
@@ -540,20 +577,23 @@ export default function InstitutionSettingsPage() {
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-4">
-              <p className="text-xs text-blue-700">
+            <div className="bg-rose-50/70 border border-rose-100 rounded-xl p-3 mt-4">
+              <p className="text-xs text-gray-600">
                 When domains are configured and domain enforcement is enabled, only learners with matching email addresses can join through invite links. Institution admins can still manually add any learner.
               </p>
             </div>
           </div>
 
           {/* ── Vertical Customization (Terminology Pack) ── */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-start justify-between mb-2 gap-4">
               <div className="flex items-start gap-3">
-                <Languages className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="w-9 h-9 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Languages className="w-4 h-4 text-red-500" />
+                </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Vertical Customization</h2>
+                  <h2 className="text-lg font-semibold tracking-tight text-gray-900">Vertical Customization</h2>
                   <p className="text-sm text-gray-500 mt-0.5">
                     Customize the labels used throughout your dashboard. Defaults are based on your institution type.
                   </p>
@@ -564,7 +604,7 @@ export default function InstitutionSettingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleResetTerminology}
-                className="flex-shrink-0"
+                className="flex-shrink-0 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                 title="Reset all terminology to defaults for your institution type"
               >
                 <RotateCcw className="w-4 h-4 mr-1.5" />
@@ -572,7 +612,7 @@ export default function InstitutionSettingsPage() {
               </Button>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-5 text-xs text-gray-600">
+            <div className="bg-rose-50/70 border border-rose-100 rounded-xl p-3 mb-5 text-xs text-gray-600">
               <strong className="text-gray-900">Tip:</strong> A school might say &ldquo;Students&rdquo; and &ldquo;Subjects&rdquo;,
               an NGO &ldquo;Beneficiaries&rdquo; and &ldquo;Training Modules&rdquo;. These labels appear across your dashboard,
               navigation, and reports.
@@ -581,7 +621,7 @@ export default function InstitutionSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {TERMINOLOGY_FIELDS.map((field) => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">
                     {field.label}
                   </label>
                   <Input
@@ -590,6 +630,7 @@ export default function InstitutionSettingsPage() {
                       setTerminology((prev) => ({ ...prev, [field.key]: e.target.value }))
                     }
                     placeholder={field.hint}
+                    className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                   <p className="text-xs text-gray-400 mt-1">{field.hint}</p>
                 </div>
@@ -598,8 +639,9 @@ export default function InstitutionSettingsPage() {
           </div>
 
           <div className="flex justify-end gap-4">
-            <Link href="/institution/dashboard"><Button type="button" variant="outline">Cancel</Button></Link>
-            <Button type="submit" disabled={saving || !name.trim()} className="bg-red-600 hover:bg-red-700">
+            <Link href="/institution/dashboard"><Button type="button" variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">Cancel</Button></Link>
+            <Button type="submit" disabled={saving || !name.trim()} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
               {saving ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

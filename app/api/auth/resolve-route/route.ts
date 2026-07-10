@@ -22,13 +22,27 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) return ApiErrors.unauthorized()
 
+    // Platform super admins land in the admin console, not the learner
+    // dashboard (previously they were stranded on /dashboard).
+    const { data: adminProfile } = await supabaseAdmin
+      .from('users')
+      .select('role, is_super_admin')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const profileRow = adminProfile as { role: string; is_super_admin?: boolean } | null
+
+    if (profileRow?.is_super_admin) {
+      return apiSuccess({ route: '/admin', display_role: 'Platform Admin', institution_name: null })
+    }
+
     // Check institution membership (bypasses RLS via service role)
     const { data: institutionMembership } = await supabaseAdmin
       .from('institution_members')
       .select('role, institution:institutions!inner(name)')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .in('role', ['institution_admin', 'program_manager', 'facilitator'])
+      .in('role', ['institution_admin', 'program_manager', 'facilitator', 'instructor'])
       .limit(1)
       .maybeSingle()
 
@@ -42,24 +56,19 @@ export async function GET(request: NextRequest) {
         institution_admin: 'Institution Admin',
         program_manager: 'Program Manager',
         facilitator: 'Facilitator',
+        instructor: 'Instructor',
       }
+      const route = ['institution_admin', 'program_manager'].includes(row.role)
+        ? '/institution/dashboard'
+        : row.role === 'instructor'
+        ? '/instructor'
+        : '/dashboard'
       return apiSuccess({
-        route: ['institution_admin', 'program_manager'].includes(row.role)
-          ? '/institution/dashboard'
-          : '/dashboard',
+        route,
         display_role: roleLabels[row.role] || row.role,
         institution_name: inst?.name || null,
       })
     }
-
-    // Check user profile role
-    const { data: profile } = await supabaseAdmin
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    const profileRow = profile as { role: string } | null
 
     if (profileRow?.role === 'instructor') {
       return apiSuccess({ route: '/instructor', display_role: 'Instructor', institution_name: null })

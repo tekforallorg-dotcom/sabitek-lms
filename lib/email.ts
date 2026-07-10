@@ -485,3 +485,71 @@ export async function sendApplicationRejectionEmail({
     return { success: false, error }
   }
 }
+export async function sendInstitutionInviteEmail({
+  to,
+  institutionName,
+  roleLabel,
+  inviteUrl,
+  inviterName,
+}: {
+  to: string
+  institutionName: string
+  roleLabel: string
+  inviteUrl: string
+  inviterName?: string
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `You've been invited to join ${institutionName} on Sabitek`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 24px;">You're invited</h2>
+            <p style="margin: 0; opacity: 0.9;">${escapeHtml(institutionName)}</p>
+          </div>
+
+          <p>Hello,</p>
+          <p>
+            ${inviterName ? `${escapeHtml(inviterName)} has` : 'You have been'} invited you to join
+            <strong>${escapeHtml(institutionName)}</strong> on Sabitek as
+            <strong>${escapeHtml(roleLabel)}</strong>.
+          </p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${inviteUrl}"
+               style="background: #e11d48; color: white; padding: 14px 32px; border-radius: 999px; text-decoration: none; font-weight: 600; display: inline-block;">
+              Accept Invitation
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #666;">
+            Or copy this link into your browser:<br>
+            <a href="${inviteUrl}" style="color: #e11d48; word-break: break-all;">${inviteUrl}</a>
+          </p>
+
+          <p style="font-size: 13px; color: #999; margin-top: 30px;">
+            If you weren't expecting this invitation, you can safely ignore this email.
+          </p>
+        </body>
+        </html>
+      `,
+    })
+    if (error) console.error('Institution invite email error:', error)
+    return { data, error }
+  } catch (err) {
+    console.error('Institution invite email failed:', err)
+    return { data: null, error: err }
+  }
+}

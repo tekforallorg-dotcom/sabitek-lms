@@ -46,7 +46,7 @@ interface Cohort {
 
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -238,7 +238,7 @@ export default function EditCohortPage() {
       }
 
       setSuccess('Cohort updated successfully!')
-      
+
       // Redirect after short delay
       setTimeout(() => {
         router.push(`/institution/cohorts/${cohortId}`)
@@ -258,8 +258,8 @@ export default function EditCohortPage() {
   // ── Not found ──
   if (!cohort) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
+      <div className="min-h-screen bg-[#fffcfb]">
+        <div className="bg-white/85 backdrop-blur border-b border-rose-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Users className="w-4 h-4 text-red-500" />
@@ -269,10 +269,10 @@ export default function EditCohortPage() {
         </div>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Cohort not found</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">Cohort not found</h2>
             <Link href="/institution/cohorts" className="text-red-600 hover:underline text-sm">Back to Cohorts</Link>
           </div>
         </div>
@@ -281,9 +281,9 @@ export default function EditCohortPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffcfb]">
       {/* Sub-header */}
-      <div className="bg-white border-b">
+      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -304,14 +304,15 @@ export default function EditCohortPage() {
       </div>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
+      <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center gap-4">
-            <Link href={`/institution/cohorts/${cohort.id}`} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
+            <Link href={`/institution/cohorts/${cohort.id}`} className="p-2 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm transition-colors">
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Edit Cohort</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Cohort Settings</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Edit <span className="font-serif italic text-red-600">cohort</span></h1>
               <p className="text-gray-600 mt-1">Update settings for {cohort.name}</p>
             </div>
           </div>
@@ -323,7 +324,7 @@ export default function EditCohortPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Alerts */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-red-700 text-sm">{error}</p>
             </div>
@@ -337,12 +338,13 @@ export default function EditCohortPage() {
           )}
 
           {/* Basic Info */}
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-            
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Basic Information</h2>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
                   Cohort Name <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -350,11 +352,12 @@ export default function EditCohortPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Spring 2026 Batch"
                   required
+                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
                   Description
                 </label>
                 <textarea
@@ -362,15 +365,15 @@ export default function EditCohortPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief description of this cohort..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 focus:outline-none text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
                   Program
                 </label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+                <div className="px-3 py-2 bg-rose-50/60 border border-rose-100 rounded-xl text-sm text-gray-600">
                   {cohort.program?.name || 'No program assigned'}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Program cannot be changed after creation</p>
@@ -379,19 +382,20 @@ export default function EditCohortPage() {
           </div>
 
           {/* Status */}
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Status</h2>
-            
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Status</h2>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {statusOptions.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setStatus(opt.value)}
-                  className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  className={`p-3 rounded-xl border text-left transition-all ${
                     status === opt.value
-                      ? 'border-red-500 bg-red-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-red-400 bg-rose-50 ring-1 ring-red-200'
+                      : 'border-rose-100 bg-white/70 hover:border-rose-200'
                   }`}
                 >
                   <div className={`font-medium text-sm ${status === opt.value ? 'text-red-700' : 'text-gray-900'}`}>
@@ -404,9 +408,10 @@ export default function EditCohortPage() {
           </div>
 
           {/* Enrollment */}
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Enrollment Settings</h2>
-            
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Enrollment Settings</h2>
+
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {enrollmentModes.map((mode) => {
@@ -416,13 +421,13 @@ export default function EditCohortPage() {
                       key={mode.value}
                       type="button"
                       onClick={() => setEnrollmentMode(mode.value)}
-                      className={`p-4 rounded-lg border-2 text-left transition-all flex items-start gap-3 ${
+                      className={`p-4 rounded-xl border text-left transition-all flex items-start gap-3 ${
                         enrollmentMode === mode.value
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-red-400 bg-rose-50 ring-1 ring-red-200'
+                          : 'border-rose-100 bg-white/70 hover:border-rose-200'
                       }`}
                     >
-                      <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${enrollmentMode === mode.value ? 'text-red-600' : 'text-gray-400'}`} />
+                      <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${enrollmentMode === mode.value ? 'text-red-500' : 'text-gray-400'}`} />
                       <div>
                         <div className={`font-medium text-sm ${enrollmentMode === mode.value ? 'text-red-700' : 'text-gray-900'}`}>
                           {mode.label}
@@ -436,7 +441,7 @@ export default function EditCohortPage() {
 
               {enrollmentMode === 'access_code' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">
                     Access Code <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
@@ -444,10 +449,10 @@ export default function EditCohortPage() {
                       value={accessCode}
                       onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                       placeholder="e.g., SPRING2026"
-                      className="font-mono"
+                      className="font-mono rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                       required
                     />
-                    <Button type="button" variant="outline" onClick={generateAccessCode}>
+                    <Button type="button" variant="outline" onClick={generateAccessCode} className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
                       Generate
                     </Button>
                   </div>
@@ -455,8 +460,8 @@ export default function EditCohortPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Hash className="w-4 h-4 inline mr-1" />
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                  <Hash className="w-4 h-4 inline mr-1 text-red-500" />
                   Seat Limit
                 </label>
                 <Input
@@ -465,6 +470,7 @@ export default function EditCohortPage() {
                   onChange={(e) => setSeatLimit(e.target.value)}
                   placeholder="Leave empty for unlimited"
                   min="1"
+                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
                 <p className="text-xs text-gray-500 mt-1">Maximum number of members allowed</p>
               </div>
@@ -472,31 +478,34 @@ export default function EditCohortPage() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-400" />
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-red-500" />
               Schedule
             </h2>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
                   Start Date
                 </label>
                 <Input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-[13px] font-medium text-gray-700 mb-1">
                   End Date
                 </label>
                 <Input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
             </div>
@@ -505,15 +514,16 @@ export default function EditCohortPage() {
           {/* Actions */}
           <div className="flex items-center justify-between pt-4">
             <Link href={`/institution/cohorts/${cohort.id}`}>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
               disabled={saving}
-              className="bg-red-600 hover:bg-red-700 text-white gap-2"
+              className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2"
             >
+              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />

@@ -131,6 +131,15 @@ export async function POST(
       return ApiErrors.internal('Failed to invite member')
     }
 
+    // Instructor membership unlocks the platform instructor experience.
+    if (role === 'instructor') {
+      await supabaseAdmin
+        .from('users')
+        .update({ role: 'instructor' })
+        .eq('id', invitedUser.id)
+        .eq('role', 'learner') // never downgrade
+    }
+
     await supabaseAdmin.from('audit_logs').insert({
       actor_user_id: user.id,
       action: 'institution_member.invited',

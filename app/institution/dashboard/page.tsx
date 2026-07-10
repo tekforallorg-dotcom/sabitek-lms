@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { useTerminology } from '@/hooks/useTerminology'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from '@/components/ui/toast'
 import {
   Building2,
   Users,
@@ -18,10 +19,10 @@ import {
   Globe,
   MapPin,
   CheckCircle,
+  Check,
   Clock,
   AlertCircle,
   Layers,
-  ChevronRight,
   GraduationCap,
   X,
   Loader2,
@@ -33,6 +34,9 @@ import {
   Activity,
   FileText,
   ArrowRight,
+  Copy,
+  Trash2,
+  Link2,
 } from 'lucide-react'
 
 interface Institution {
@@ -66,9 +70,33 @@ interface InstitutionMember {
   }
 }
 
+interface TeamInvite {
+  id: string
+  role: string
+  email: string | null
+  status: string
+  use_count: number
+  max_uses: number | null
+  expires_at: string | null
+  created_at: string
+  invite_url: string
+}
+
+const ROLE_OPTIONS = [
+  { value: 'institution_admin', label: 'Institution Admin', hint: 'Full access to settings, team, and reports' },
+  { value: 'program_manager', label: 'Program Manager', hint: 'Manages programs, cohorts, and learners' },
+  { value: 'facilitator', label: 'Facilitator', hint: 'Runs cohorts and supports learners day-to-day' },
+  { value: 'instructor', label: 'Instructor', hint: 'Can create and manage courses' },
+  { value: 'viewer', label: 'Viewer', hint: 'Read-only access to dashboards and reports' },
+]
+
+function roleLabel(role: string) {
+  return ROLE_OPTIONS.find((o) => o.value === role)?.label || role.replace(/_/g, ' ')
+}
+
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -117,16 +145,16 @@ function getVerticalStats(
 
   // Base stats available for all types
   const baseStats = {
-    members: { label: 'Team Members', value: memberCount, icon: Users, color: 'bg-blue-100 text-blue-600' },
-    programs: { label: t.program_plural, value: 0, icon: Layers, color: 'bg-emerald-100 text-emerald-600' },
-    learners: { label: `Active ${t.learner_plural}`, value: 0, icon: GraduationCap, color: 'bg-purple-100 text-purple-600' },
-    certificates: { label: 'Certificates Issued', value: 0, icon: CheckCircle, color: 'bg-orange-100 text-orange-600' },
-    completion: { label: 'Completion Rate', value: '—', icon: TrendingUp, color: 'bg-green-100 text-green-600' },
-    compliance: { label: 'Compliance Score', value: '—', icon: Shield, color: 'bg-red-100 text-red-600' },
-    revenue: { label: 'Revenue / Cohort', value: '—', icon: DollarSign, color: 'bg-yellow-100 text-yellow-600' },
-    outcomes: { label: 'Outcomes Achieved', value: 0, icon: Target, color: 'bg-teal-100 text-teal-600' },
-    coverage: { label: 'Coverage Rate', value: '—', icon: BarChart3, color: 'bg-indigo-100 text-indigo-600' },
-    satisfaction: { label: 'Satisfaction Score', value: '—', icon: Activity, color: 'bg-pink-100 text-pink-600' },
+    members: { label: 'Team Members', value: memberCount as string | number, icon: Users },
+    programs: { label: t.program_plural, value: 0 as string | number, icon: Layers },
+    learners: { label: `Active ${t.learner_plural}`, value: 0 as string | number, icon: GraduationCap },
+    certificates: { label: 'Certificates Issued', value: 0 as string | number, icon: CheckCircle },
+    completion: { label: 'Completion Rate', value: '—' as string | number, icon: TrendingUp },
+    compliance: { label: 'Compliance Score', value: '—' as string | number, icon: Shield },
+    revenue: { label: 'Revenue / Cohort', value: '—' as string | number, icon: DollarSign },
+    outcomes: { label: 'Outcomes Achieved', value: 0 as string | number, icon: Target },
+    coverage: { label: 'Coverage Rate', value: '—' as string | number, icon: BarChart3 },
+    satisfaction: { label: 'Satisfaction Score', value: '—' as string | number, icon: Activity },
   }
 
   // Return 4 stats per vertical type
@@ -151,10 +179,10 @@ function getVerticalStats(
  */
 function getVerticalActions(t: ReturnType<typeof useTerminology>, institutionType: string) {
   const actions = [
-    { label: t.program_plural, href: '/institution/programs', icon: Layers, color: 'text-red-600 bg-red-50' },
-    { label: t.cohort_plural, href: '/institution/cohorts', icon: Users, color: 'text-purple-600 bg-purple-50' },
-    { label: t.course_plural, href: '/instructor', icon: BookOpen, color: 'text-emerald-600 bg-emerald-50' },
-    { label: 'Settings', href: '/institution/settings', icon: Settings, color: 'text-gray-600 bg-gray-100' },
+    { label: t.program_plural, href: '/institution/programs', icon: Layers },
+    { label: t.cohort_plural, href: '/institution/cohorts', icon: Users },
+    { label: t.course_plural, href: '/instructor', icon: BookOpen },
+    { label: 'Settings', href: '/institution/settings', icon: Settings },
   ]
 
   return actions
@@ -172,7 +200,7 @@ export default function InstitutionDashboardPage() {
   // Terminology hook — labels adapt based on institution type
   const t = useTerminology(institution)
 
-// Onboarding checklist state
+  // Onboarding checklist state
   const [checklistData, setChecklistData] = useState<{
     hasProgram: boolean
     hasCohort: boolean
@@ -181,13 +209,14 @@ export default function InstitutionDashboardPage() {
     hasSettings: boolean
   } | null>(null)
 
-  // Invite member state
+  // Invite state (token invite API)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('learner')
+  const [inviteRole, setInviteRole] = useState('instructor')
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState('')
-  const [inviteSuccess, setInviteSuccess] = useState('')
+  const [inviteResult, setInviteResult] = useState<{ url: string; emailSent: boolean; email: string } | null>(null)
+  const [invites, setInvites] = useState<TeamInvite[]>([])
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -196,6 +225,21 @@ export default function InstitutionDashboardPage() {
       router.push('/auth/login?redirect=/institution/dashboard')
     }
   }, [authLoading, user])
+
+  const fetchInvites = async (institutionId: string, token: string) => {
+    try {
+      const res = await fetch(`/api/institutions/${institutionId}/invites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const payload = json.data || json
+        setInvites(payload.invites || [])
+      }
+    } catch {
+      // Non-critical: pending invites list is optional
+    }
+  }
 
   const fetchInstitutionData = async () => {
     try {
@@ -225,7 +269,7 @@ export default function InstitutionDashboardPage() {
       setInstitution(membership.institution as Institution)
       setUserRole(membership.role)
 
-// Fetch onboarding checklist data
+      // Fetch onboarding checklist data
       try {
         const instId = membership.institution_id
         const token = session.access_token
@@ -267,6 +311,10 @@ export default function InstitutionDashboardPage() {
           setChecklistData((prev) => prev ? { ...prev, hasLearner: membersData.length > 1 } : prev)
         }
       }
+
+      if (membership.role === 'institution_admin') {
+        await fetchInvites(membership.institution_id, session.access_token)
+      }
     } catch (err) {
       console.error('Error fetching institution:', err)
       setError('Failed to load institution data')
@@ -275,45 +323,91 @@ export default function InstitutionDashboardPage() {
     }
   }
 
-  const handleInviteMember = async (e: React.FormEvent) => {
+  const handleCreateInvite = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!institution) return
 
     setInviting(true)
     setInviteError('')
-    setInviteSuccess('')
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch(`/api/institutions/${institution.id}/members`, {
+      const email = inviteEmail.trim()
+      const body: Record<string, unknown> = { role: inviteRole }
+      if (email) body.email = email
+
+      const res = await fetch(`/api/institutions/${institution.id}/invites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+        body: JSON.stringify(body),
       })
 
+      const json = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to invite member')
+        throw new Error(json.error || 'Failed to create invite')
       }
 
-      setInviteSuccess(`Invitation sent to ${inviteEmail}`)
-      setInviteEmail('')
-      setInviteRole('learner')
-      fetchInstitutionData()
-      setTimeout(() => {
-        setShowInviteModal(false)
-        setInviteSuccess('')
-      }, 2000)
+      const payload = json.data || json
+      const invite: TeamInvite | undefined = payload.invite
+      const emailSent = !!payload.email_sent
+
+      setInviteResult({ url: invite?.invite_url || '', emailSent, email })
+      if (invite) {
+        setInvites((prev) => [invite, ...prev.filter((i) => i.id !== invite.id)])
+      }
+      if (emailSent && email) {
+        toast.success(`Invite emailed to ${email}`)
+      } else {
+        toast.success('Invite link created')
+      }
     } catch (err) {
-      setInviteError(err instanceof Error ? err.message : 'Failed to invite member')
+      setInviteError(err instanceof Error ? err.message : 'Failed to create invite')
     } finally {
       setInviting(false)
     }
+  }
+
+  const copyInviteLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied')
+    } catch {
+      toast.error('Could not copy link')
+    }
+  }
+
+  const handleRevokeInvite = async (inviteId: string) => {
+    if (!institution) return
+    const previous = invites
+    setInvites((cur) => cur.filter((i) => i.id !== inviteId))
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not signed in')
+
+      const res = await fetch(`/api/institutions/${institution.id}/invites/${inviteId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!res.ok) throw new Error('Failed to revoke invite')
+      toast.success('Invite revoked')
+    } catch {
+      setInvites(previous)
+      toast.error('Failed to revoke invite')
+    }
+  }
+
+  const openInviteModal = () => {
+    setShowInviteModal(true)
+    setInviteError('')
+    setInviteResult(null)
+    setInviteEmail('')
+    setInviteRole('instructor')
   }
 
   if (authLoading || loading) {
@@ -322,8 +416,8 @@ export default function InstitutionDashboardPage() {
 
   if (error || !institution) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
+      <div className="min-h-screen bg-[#fffcfb]">
+        <div className="bg-white/85 backdrop-blur border-b border-rose-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Building2 className="w-4 h-4 text-red-500" />
@@ -333,20 +427,25 @@ export default function InstitutionDashboardPage() {
         </div>
         <div className="flex items-center justify-center min-h-[60vh] p-4">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No Institution Found</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+              No institution <span className="font-serif italic text-red-600">found</span>
+            </h2>
             <p className="text-gray-600 mb-6">{error || 'You are not a member of any institution yet.'}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/institution/apply">
-                <Button className="bg-red-600 hover:bg-red-700">
+                <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                   <Plus className="w-4 h-4 mr-2" />
                   Apply for Institution
                 </Button>
               </Link>
               <Link href="/dashboard">
-                <Button variant="outline">Go to Dashboard</Button>
+                <Button variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
+                  Go to Dashboard
+                </Button>
               </Link>
             </div>
           </div>
@@ -356,20 +455,25 @@ export default function InstitutionDashboardPage() {
   }
 
   const statusBadge = {
-    pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: 'Pending Approval' },
-    approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Approved' },
-    rejected: { color: 'bg-red-100 text-red-800', icon: AlertCircle, label: 'Rejected' },
-    suspended: { color: 'bg-orange-100 text-orange-800', icon: AlertCircle, label: 'Suspended' },
-  }[institution.status] || { color: 'bg-gray-100 text-gray-800', icon: Clock, label: institution.status }
+    pending: { color: 'bg-rose-50 text-rose-600 border border-rose-100', icon: Clock, label: 'Pending Approval' },
+    approved: { color: 'bg-emerald-50 text-emerald-700 border border-emerald-100', icon: CheckCircle, label: 'Approved' },
+    rejected: { color: 'bg-rose-50 text-rose-600 border border-rose-100', icon: AlertCircle, label: 'Rejected' },
+    suspended: { color: 'bg-gray-50 text-gray-500 border border-gray-100', icon: AlertCircle, label: 'Suspended' },
+  }[institution.status] || { color: 'bg-gray-50 text-gray-500 border border-gray-100', icon: Clock, label: institution.status }
 
   const StatusIcon = statusBadge.icon
   const stats = getVerticalStats(institution, members.length, t)
   const quickActions = getVerticalActions(t, institution.type)
+  const activeInvites = invites.filter((i) => i.status === 'active')
+
+  const nameWords = institution.name.trim().split(/\s+/)
+  const nameHead = nameWords.slice(0, -1).join(' ')
+  const nameTail = nameWords[nameWords.length - 1]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffcfb]">
       {/* Sub-header bar */}
-      <div className="bg-white border-b">
+      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -383,21 +487,29 @@ export default function InstitutionDashboardPage() {
         </div>
       </div>
 
-      {/* Gradient Hero */}
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      {/* Header / hero */}
+      <div className="relative overflow-hidden border-b border-rose-100">
+        <div className="absolute -top-24 -left-16 w-72 h-72 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"/>
+        <div className="absolute -bottom-32 right-0 w-96 h-96 bg-rose-100/60 rounded-full blur-3xl pointer-events-none" aria-hidden="true"/>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-            <div className="w-20 h-20 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center flex-shrink-0 overflow-hidden">
               {institution.logo_url ? (
-                <img src={institution.logo_url} alt={institution.name} className="w-full h-full object-cover rounded-xl" />
+                <img src={institution.logo_url} alt={institution.name} className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <Building2 className="w-10 h-10 text-red-600" />
+                <Building2 className="w-10 h-10 text-red-500" />
               )}
             </div>
             <div className="flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+                {t.dashboard_title}
+              </p>
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{institution.name}</h1>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusBadge.color}`}>
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                  {nameHead && <>{nameHead}{' '}</>}
+                  <span className="font-serif italic text-red-600">{nameTail}</span>
+                </h1>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusBadge.color}`}>
                   <StatusIcon className="w-3.5 h-3.5" />
                   {statusBadge.label}
                 </span>
@@ -406,13 +518,13 @@ export default function InstitutionDashboardPage() {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 {institution.state && (
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 text-red-500" />
                     {institution.state}, {institution.country}
                   </span>
                 )}
                 {institution.contact_email && (
                   <span className="flex items-center gap-1.5">
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 text-red-500" />
                     {institution.contact_email}
                   </span>
                 )}
@@ -426,7 +538,7 @@ export default function InstitutionDashboardPage() {
             </div>
             {userRole === 'institution_admin' && (
               <Link href="/institution/settings">
-                <Button variant="outline" className="border-gray-300 bg-white/80 hover:bg-white shadow-sm">
+                <Button variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
                 </Button>
@@ -439,12 +551,15 @@ export default function InstitutionDashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Pending Approval Notice */}
         {institution.status === 'pending' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-start gap-4">
-              <Clock className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-red-500" />
+              </div>
               <div>
-                <h3 className="font-semibold text-yellow-900 mb-1">Pending Approval</h3>
-                <p className="text-yellow-800 text-sm">
+                <h3 className="font-semibold text-gray-900 mb-1">Pending Approval</h3>
+                <p className="text-gray-600 text-sm">
                   Your institution application is being reviewed. You&apos;ll be notified once it&apos;s approved.
                   This usually takes 2-3 business days.
                 </p>
@@ -455,12 +570,15 @@ export default function InstitutionDashboardPage() {
 
         {/* Rejected Notice */}
         {institution.status === 'rejected' && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-start gap-4">
-              <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+              </div>
               <div>
-                <h3 className="font-semibold text-red-900 mb-1">Application Rejected</h3>
-                <p className="text-red-800 text-sm">
+                <h3 className="font-semibold text-gray-900 mb-1">Application Rejected</h3>
+                <p className="text-gray-600 text-sm">
                   Unfortunately, your institution application was not approved.
                   Please contact support for more information.
                 </p>
@@ -469,8 +587,6 @@ export default function InstitutionDashboardPage() {
           </div>
         )}
 
-
-
         {/* Quick Actions — uses vertical terminology */}
         {institution.status === 'approved' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -478,10 +594,10 @@ export default function InstitutionDashboardPage() {
               <Link
                 key={action.label}
                 href={action.href}
-                className="bg-white rounded-xl shadow-sm border p-4 flex flex-col items-center gap-3 hover:shadow-md hover:border-gray-300 transition-all text-center group"
+                className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 flex flex-col items-center gap-3 hover:-translate-y-0.5 hover:ring-rose-200 transition-all text-center group"
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
-                  <action.icon className="w-6 h-6" />
+                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <action.icon className="w-6 h-6 text-red-500" />
                 </div>
                 <span className="text-sm font-medium text-gray-900">{action.label}</span>
               </Link>
@@ -489,7 +605,7 @@ export default function InstitutionDashboardPage() {
           </div>
         )}
 
-{/* ── Onboarding Checklist ── */}
+        {/* ── Onboarding Checklist ── */}
         {institution.status === 'approved' && checklistData && (() => {
           const steps = [
             { key: 'hasProgram', label: `Create your first ${t.program.toLowerCase()}`, href: '/institution/programs', done: checklistData.hasProgram },
@@ -503,44 +619,54 @@ export default function InstitutionDashboardPage() {
           if (allDone) return null
 
           return (
-            <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Get Started</h2>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Onboarding</p>
+                  <h2 className="text-lg font-semibold tracking-tight text-gray-900">
+                    Get <span className="font-serif italic text-red-600">started</span>
+                  </h2>
                   <p className="text-sm text-gray-500 mt-0.5">Complete these steps to set up your workspace</p>
                 </div>
-                <span className="text-sm font-medium text-gray-500">{completedCount}/{steps.length}</span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">
+                  {completedCount}/{steps.length} done
+                </span>
               </div>
 
-              <div className="w-full bg-gray-100 rounded-full h-2 mb-5">
+              <div className="w-full bg-rose-50 rounded-full h-2 mb-5">
                 <div
-                  className="bg-gradient-to-r from-red-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-red-500 to-rose-500 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${(completedCount / steps.length) * 100}%` }}
                 />
               </div>
 
               <div className="space-y-2">
-                {steps.map((step) => (
+                {steps.map((step, index) => (
                   <Link
                     key={step.key}
                     href={step.href}
-                    className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
                       step.done
-                        ? 'bg-emerald-50 border border-emerald-100'
-                        : 'bg-gray-50 hover:bg-gray-100 border border-gray-100'
+                        ? 'bg-emerald-50/60 border-emerald-100'
+                        : 'bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       {step.done ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                        <span className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-4 h-4 text-emerald-600" />
+                        </span>
                       ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                        <span className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0 font-serif italic text-sm text-red-600">
+                          {index + 1}
+                        </span>
                       )}
                       <span className={`text-sm font-medium ${step.done ? 'text-emerald-700 line-through' : 'text-gray-700'}`}>
                         {step.label}
                       </span>
                     </div>
-                    {!step.done && <ArrowRight className="w-4 h-4 text-gray-400" />}
+                    {!step.done && <ArrowRight className="w-4 h-4 text-rose-300" />}
                   </Link>
                 ))}
               </div>
@@ -552,13 +678,13 @@ export default function InstitutionDashboardPage() {
         {institution.status === 'approved' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat) => (
-              <div key={stat.label} className="bg-white rounded-xl shadow-sm border p-6">
+              <div key={stat.label} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 ${stat.color} rounded-full flex items-center justify-center`}>
-                    <stat.icon className="w-6 h-6" />
+                  <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+                    <stat.icon className="w-6 h-6 text-red-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                    <div className="text-2xl font-semibold tracking-tight text-gray-900">{stat.value}</div>
                     <div className="text-sm text-gray-500">{stat.label}</div>
                   </div>
                 </div>
@@ -569,10 +695,12 @@ export default function InstitutionDashboardPage() {
 
         {/* Reporting Format Badge — shows what kind of reports this vertical gets */}
         {institution.status === 'approved' && institution.reporting_pack?.format && (
-          <div className="bg-white rounded-xl shadow-sm border p-4 mb-8">
+          <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-gray-400" />
+                <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-red-500" />
+                </div>
                 <div>
                   <span className="text-sm font-medium text-gray-900">Reporting Format</span>
                   <p className="text-xs text-gray-500">
@@ -585,7 +713,7 @@ export default function InstitutionDashboardPage() {
                 </div>
               </div>
               {institution.reporting_pack.evidence_pack_enabled && (
-                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full font-medium border border-emerald-200">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
                   Evidence Packs Enabled
                 </span>
               )}
@@ -593,23 +721,21 @@ export default function InstitutionDashboardPage() {
           </div>
         )}
 
-        {/* Team Members — uses vertical terminology for invite CTA */}
+        {/* Team Members + Pending Invites */}
         {institution.status === 'approved' && (userRole === 'institution_admin' || userRole === 'program_manager') && (
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Team Members</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-gray-900">
+                Team <span className="font-serif italic text-red-600">members</span>
+              </h2>
               {userRole === 'institution_admin' && (
                 <Button
                   size="sm"
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => {
-                    setShowInviteModal(true)
-                    setInviteError('')
-                    setInviteSuccess('')
-                    setInviteEmail('')
-                    setInviteRole('viewer')
-                  }}
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  onClick={openInviteModal}
                 >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                   <Plus className="w-4 h-4 mr-1" />
                   Invite Member
                 </Button>
@@ -618,19 +744,21 @@ export default function InstitutionDashboardPage() {
 
             {members.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-6 h-6 text-red-400" />
+                </div>
                 <p>No team members yet</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {members.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={member.id} className="flex items-center justify-between p-4 bg-white/70 border border-rose-100 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 bg-gradient-to-b from-red-500 to-rose-500 rounded-full flex items-center justify-center overflow-hidden">
                         {member.user.avatar_url ? (
                           <img src={member.user.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                          <span className="text-red-600 font-medium">
+                          <span className="text-white font-semibold">
                             {member.user.full_name?.charAt(0) || '?'}
                           </span>
                         )}
@@ -640,85 +768,216 @@ export default function InstitutionDashboardPage() {
                         <div className="text-sm text-gray-500">{member.user.email}</div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-medium capitalize">
-                      {member.role.replace('_', ' ')}
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100 capitalize">
+                      {member.role.replace(/_/g, ' ')}
                     </span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pending invites */}
+            {userRole === 'institution_admin' && activeInvites.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-rose-100">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Pending invites</h3>
+                <p className="text-xs text-gray-500 mb-4">Anyone with an active link can join your team in the selected role.</p>
+                <div className="space-y-3">
+                  {activeInvites.map((invite) => (
+                    <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white/70 border border-rose-100 rounded-xl">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                          {invite.email ? (
+                            <Mail className="w-5 h-5 text-red-500" />
+                          ) : (
+                            <Link2 className="w-5 h-5 text-red-500" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium text-gray-900 truncate">
+                              {invite.email || 'Link invite'}
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">
+                              {roleLabel(invite.role)}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            Uses: {invite.use_count}/{invite.max_uses ?? '∞'}
+                            {invite.expires_at && (
+                              <> · Expires {new Date(invite.expires_at).toLocaleDateString()}</>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => copyInviteLink(invite.invite_url)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm transition-colors"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRevokeInvite(invite.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-white/70 backdrop-blur border border-rose-100 hover:border-red-200 hover:bg-red-50 rounded-full shadow-sm transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
       </main>
 
-      {/* Invite Member Modal */}
+      {/* Invite team member modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Invite Team Member</h3>
+              <h3 className="text-lg font-semibold tracking-tight text-gray-900">
+                Invite team <span className="font-serif italic text-red-600">member</span>
+              </h3>
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
-            <form onSubmit={handleInviteMember} className="space-y-4">
-              {inviteError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />{inviteError}
+            {inviteResult ? (
+              <div className="space-y-4">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-center gap-2 text-sm text-emerald-700">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  {inviteResult.emailSent && inviteResult.email
+                    ? `Invite emailed to ${inviteResult.email}`
+                    : 'Invite link created'}
                 </div>
-              )}
-              {inviteSuccess && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2 text-sm text-emerald-700">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />{inviteSuccess}
-                </div>
-              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address <span className="text-red-500">*</span></label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="member@example.com"
-                    className="pl-10"
-                    required
-                  />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Shareable invite link</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      readOnly
+                      value={inviteResult.url}
+                      onFocus={(e) => e.target.select()}
+                      className="rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => copyInviteLink(inviteResult.url)}
+                      className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 flex-shrink-0"
+                    >
+                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Anyone with this link can join as {roleLabel(inviteRole)}.
+                  </p>
+                </div>
+
+                <div className="flex justify-between gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                    onClick={() => {
+                      setInviteResult(null)
+                      setInviteEmail('')
+                      setInviteError('')
+                    }}
+                  >
+                    Invite another
+                  </Button>
+                  <Button
+                    type="button"
+                    className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                    onClick={() => setShowInviteModal(false)}
+                  >
+                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                    Done
+                  </Button>
                 </div>
               </div>
+            ) : (
+              <form onSubmit={handleCreateInvite} className="space-y-4">
+                {inviteError && (
+                  <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex items-center gap-2 text-sm text-red-700">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />{inviteError}
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                >
-                  <option value="viewer">Viewer</option>
-                  <option value="facilitator">{t.instructor}</option>
-                  <option value="program_manager">Program Manager</option>
-                  <option value="institution_admin">Institution Admin</option>
-                </select>
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-2 focus:ring-red-400 focus:outline-none text-sm cursor-pointer"
+                  >
+                    {ROLE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    {ROLE_OPTIONS.find((o) => o.value === inviteRole)?.hint}
+                  </p>
+                </div>
 
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setShowInviteModal(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={inviting || !inviteEmail} className="bg-red-600 hover:bg-red-700">
-                  {inviting ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</>
-                  ) : (
-                    <><Mail className="w-4 h-4 mr-2" />Send Invite</>
-                  )}
-                </Button>
-              </div>
-            </form>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-300" />
+                    <Input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="member@example.com"
+                      className="pl-10 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    We&apos;ll email them an invite link. Leave blank to just copy a shareable link.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                    onClick={() => setShowInviteModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={inviting}
+                    className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  >
+                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                    {inviting ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</>
+                    ) : (
+                      <><Plus className="w-4 h-4 mr-2" />Create Invite</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

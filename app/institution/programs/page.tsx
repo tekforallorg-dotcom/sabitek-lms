@@ -50,9 +50,27 @@ const statusColors: Record<string, { dot: string; bg: string; text: string }> = 
   archived: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-700' },
 }
 
+function PageBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" />
+      <div className="absolute top-1/3 -left-40 w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+          maskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
+        }}
+      />
+    </div>
+  )
+}
+
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -177,8 +195,9 @@ export default function ProgramsPage() {
 
   if (error || !institution) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
+      <div className="relative min-h-screen bg-[#fffcfb]">
+        <PageBackdrop />
+        <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Layers className="w-4 h-4 text-red-500" />
@@ -186,15 +205,20 @@ export default function ProgramsPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-center min-h-[60vh] p-4">
+        <div className="relative flex items-center justify-center min-h-[60vh] p-4">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No Institution Found</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+              No institution <span className="font-serif italic text-red-600">found</span>
+            </h2>
             <p className="text-gray-600 mb-6">{error || 'You need to be part of an institution to manage programs.'}</p>
             <Link href="/institution/apply">
-              <Button className="bg-red-600 hover:bg-red-700">Apply for Institution</Button>
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                Apply for Institution
+              </Button>
             </Link>
           </div>
         </div>
@@ -203,8 +227,9 @@ export default function ProgramsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="relative min-h-screen bg-[#fffcfb]">
+      <PageBackdrop />
+      <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -222,15 +247,19 @@ export default function ProgramsPage() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
+      <div className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Programs</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Institution</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+                Your learning <span className="font-serif italic text-red-600">programs</span>
+              </h1>
               <p className="text-gray-600 mt-1">Manage learning programs for {institution.name}</p>
             </div>
             <Link href="/institution/programs/create">
-              <Button className="bg-red-600 hover:bg-red-700 shadow-sm">
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Program
               </Button>
@@ -239,8 +268,8 @@ export default function ProgramsPage() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -248,13 +277,13 @@ export default function ProgramsPage() {
                 placeholder="Search programs..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+              className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm cursor-pointer"
             >
               <option value="">All Statuses</option>
               <option value="draft">Draft</option>
@@ -266,16 +295,20 @@ export default function ProgramsPage() {
         </div>
 
         {programs.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
-            <div className="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <GraduationCap className="w-8 h-8 text-red-400" />
+          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <GraduationCap className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No programs yet</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-2">
+              No programs <span className="font-serif italic text-red-600">yet</span>
+            </h3>
             <p className="text-gray-600 mb-6">
               Create your first program to start organizing courses and cohorts.
             </p>
             <Link href="/institution/programs/create">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Program
               </Button>
@@ -289,19 +322,19 @@ export default function ProgramsPage() {
                 <Link
                   key={program.id}
                   href={`/institution/programs/${program.id}`}
-                  className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md hover:border-gray-300 transition-all group"
+                  className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 hover:shadow-[0_20px_40px_-20px_rgba(225,29,72,0.45)] hover:-translate-y-0.5 transition-all group"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors">
-                      <BookOpen className="w-6 h-6 text-red-600" />
+                    <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                      <BookOpen className="w-6 h-6 text-red-500" />
                     </div>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${style.bg} ${style.text}`}>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
                       <span className="capitalize">{program.status}</span>
                     </span>
                   </div>
 
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1 group-hover:text-red-600 transition-colors">
+                  <h3 className="font-semibold tracking-tight text-gray-900 mb-2 line-clamp-1 group-hover:text-red-600 transition-colors">
                     {program.name}
                   </h3>
                   <p className="text-sm text-gray-600 mb-4 line-clamp-2">
