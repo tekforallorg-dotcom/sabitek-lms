@@ -1,10 +1,10 @@
 import { formatDistanceToNow } from 'date-fns'
-import { 
-  UserX, 
-  UserCheck, 
-  UserMinus, 
+import {
+  UserX,
+  UserCheck,
+  UserMinus,
   Trash2,
-  Activity as ActivityIcon 
+  Activity as ActivityIcon
 } from 'lucide-react'
 
 interface ActivityItem {
@@ -29,15 +29,15 @@ export default function ActivityFeed({ activities, loading }: ActivityFeedProps)
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'USER_SUSPENDED':
-        return <UserX className="w-4 h-4 text-orange-600" />
+        return <UserX className="w-4 h-4 text-amber-600" />
       case 'USER_ACTIVATED':
-        return <UserCheck className="w-4 h-4 text-green-600" />
+        return <UserCheck className="w-4 h-4 text-emerald-600" />
       case 'USER_DEACTIVATED':
-        return <UserMinus className="w-4 h-4 text-gray-600" />
+        return <UserMinus className="w-4 h-4 text-gray-500" />
       case 'USER_DELETED':
         return <Trash2 className="w-4 h-4 text-red-600" />
       default:
-        return <ActivityIcon className="w-4 h-4 text-blue-600" />
+        return <ActivityIcon className="w-4 h-4 text-red-500" />
     }
   }
 
@@ -50,10 +50,10 @@ export default function ActivityFeed({ activities, loading }: ActivityFeedProps)
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="animate-pulse flex items-start gap-3">
-            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+            <div className="w-8 h-8 bg-rose-50/60 rounded-xl"></div>
             <div className="flex-1">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-rose-50/60 rounded-xl w-3/4 mb-2"></div>
+              <div className="h-3 bg-rose-50/60 rounded-xl w-1/2"></div>
             </div>
           </div>
         ))}
@@ -68,10 +68,13 @@ export default function ActivityFeed({ activities, loading }: ActivityFeedProps)
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       {activities.map((activity) => (
-        <div key={activity.id} className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <div
+          key={activity.id}
+          className="flex items-start gap-3 px-2 py-3 -mx-2 rounded-xl border-b border-rose-50 last:border-b-0 hover:bg-rose-50/40 transition-colors"
+        >
+          <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
             {getActionIcon(activity.action)}
           </div>
           <div className="flex-1 min-w-0">

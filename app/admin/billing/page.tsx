@@ -3,28 +3,27 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar
 } from 'recharts'
-import { 
-  CreditCard, 
-  Crown, 
+import {
+  CreditCard,
+  Crown,
   TrendingUp,
   TrendingDown,
-  CheckCircle, 
+  CheckCircle,
   Clock,
   Receipt,
   AlertCircle,
@@ -134,7 +133,7 @@ export default function AdminBillingPage() {
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  
+
   // Drawer
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -143,11 +142,11 @@ export default function AdminBillingPage() {
   const [dateFilter, setDateFilter] = useState('30days')
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  
+
   // Grant Pro
   const [grantEmail, setGrantEmail] = useState('')
   const [granting, setGranting] = useState(false)
-  
+
   // Export
   const [exporting, setExporting] = useState(false)
 
@@ -183,7 +182,7 @@ export default function AdminBillingPage() {
   const getDateRange = (filter: string) => {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    
+
     switch (filter) {
       case 'today':
         return { start: today, end: now }
@@ -220,16 +219,16 @@ export default function AdminBillingPage() {
         .eq('status', 'successful')
 
       const totalRevenue = allTx?.reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0
-      
-      const revenueToday = allTx?.filter(tx => 
+
+      const revenueToday = allTx?.filter(tx =>
         new Date(tx.created_at) >= today
       ).reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0
 
-      const revenue7Days = allTx?.filter(tx => 
+      const revenue7Days = allTx?.filter(tx =>
         new Date(tx.created_at) >= weekAgo
       ).reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0
 
-      const revenueThisMonth = allTx?.filter(tx => 
+      const revenueThisMonth = allTx?.filter(tx =>
         new Date(tx.created_at) >= monthStart
       ).reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0
 
@@ -287,7 +286,7 @@ export default function AdminBillingPage() {
   const generateChartData = async () => {
     const days = 30
     const chartData: ChartData[] = []
-    
+
     const { data: txData } = await supabase
       .from('transactions')
       .select('amount, created_at')
@@ -298,8 +297,8 @@ export default function AdminBillingPage() {
       const date = new Date()
       date.setDate(date.getDate() - i)
       const dateStr = date.toISOString().split('T')[0]
-      
-      const dayTx = txData?.filter(tx => 
+
+      const dayTx = txData?.filter(tx =>
         tx.created_at.startsWith(dateStr)
       ) || []
 
@@ -349,7 +348,7 @@ export default function AdminBillingPage() {
     if (!searchQuery.trim()) return transactions
 
     const query = searchQuery.toLowerCase()
-    return transactions.filter(tx => 
+    return transactions.filter(tx =>
       tx.user?.email?.toLowerCase().includes(query) ||
       tx.user?.full_name?.toLowerCase().includes(query) ||
       tx.provider_tx_ref?.toLowerCase().includes(query)
@@ -380,7 +379,7 @@ export default function AdminBillingPage() {
       const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = URL.createObjectURL(blob)
-      
+
       const a = document.createElement('a')
       a.href = url
       a.download = `sabitek-transactions-${new Date().toISOString().split('T')[0]}.csv`
@@ -484,9 +483,9 @@ export default function AdminBillingPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'successful': return 'bg-green-100 text-green-700 border-green-200'
-      case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200'
-      case 'refunded': return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'successful': return 'bg-emerald-50 text-emerald-700 border-emerald-100'
+      case 'pending': return 'bg-rose-50 text-rose-600 border-rose-100'
+      case 'refunded': return 'bg-gray-100 text-gray-600 border-gray-200'
       default: return 'bg-red-100 text-red-700 border-red-200'
     }
   }
@@ -511,10 +510,33 @@ export default function AdminBillingPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-red-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading billing dashboard...</p>
+      <div className="space-y-6 bg-[#fffcfb] rounded-3xl">
+        {/* Header skeleton */}
+        <div className="space-y-2 animate-pulse">
+          <div className="h-3 w-28 bg-rose-50/60 rounded-lg"></div>
+          <div className="h-8 w-64 bg-rose-50/60 rounded-lg"></div>
+          <div className="h-3 w-80 bg-rose-50/60 rounded-lg"></div>
+        </div>
+
+        {/* Stat card skeletons */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div
+              key={i}
+              className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 p-4 animate-pulse"
+            >
+              <div className="h-3 w-16 bg-rose-50/60 rounded-lg mb-3"></div>
+              <div className="h-6 w-24 bg-rose-50/60 rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Table skeleton */}
+        <div className="bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 p-6 space-y-3 animate-pulse">
+          <div className="h-4 w-40 bg-rose-50/60 rounded-lg mb-4"></div>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="animate-pulse bg-rose-50/60 rounded-lg h-10"></div>
+          ))}
         </div>
       </div>
     )
@@ -525,7 +547,10 @@ export default function AdminBillingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing Dashboard</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">Admin · Billing</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mt-1">
+            Billing <span className="font-serif italic text-red-600">dashboard</span>
+          </h1>
           <p className="text-sm text-gray-500 mt-1">Monitor revenue, transactions, and subscriptions</p>
         </div>
         <Button
@@ -533,6 +558,7 @@ export default function AdminBillingPage() {
           disabled={refreshing}
           variant="outline"
           size="sm"
+          className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -541,362 +567,346 @@ export default function AdminBillingPage() {
 
       {/* KPI Cards - Row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Today</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.revenueToday)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-green-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Today</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {formatCurrency(stats.revenueToday)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Last 7 Days</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.revenue7Days)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Last 7 Days</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {formatCurrency(stats.revenue7Days)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">This Month</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.revenueThisMonth)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-purple-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">This Month</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {formatCurrency(stats.revenueThisMonth)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">MRR</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(stats.mrr)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Crown className="w-5 h-5 text-amber-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">MRR</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {formatCurrency(stats.mrr)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Crown className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards - Row 2 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Total Revenue</p>
-                <p className="text-xl font-bold text-green-600 mt-1">
-                  {formatCurrency(stats.totalRevenue)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <ArrowUpRight className="w-5 h-5 text-green-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Total Revenue</p>
+              <p className="text-xl font-semibold tabular-nums text-emerald-600 mt-1">
+                {formatCurrency(stats.totalRevenue)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <ArrowUpRight className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Active Pro</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {stats.activeSubscriptions}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-amber-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Active Pro</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {stats.activeSubscriptions}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Users className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Transactions</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {stats.totalTransactions}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-blue-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Transactions</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {stats.totalTransactions}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Receipt className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">Course Sales</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {stats.coursePurchases}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-purple-600" />
-              </div>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">Course Sales</p>
+              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+                {stats.coursePurchases}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <ShoppingCart className="w-5 h-5 text-red-500" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Revenue Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Revenue Trend (Last 30 Days)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
-                  formatter={(value) => [formatCurrency((value as number) || 0), 'Revenue']}
-                  labelStyle={{ color: '#666' }}
-                />
-                <Bar dataKey="revenue" fill="#ef4444" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+        <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h2>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip
+                formatter={(value) => [formatCurrency((value as number) || 0), 'Revenue']}
+                labelStyle={{ color: '#666' }}
+              />
+              <Bar dataKey="revenue" fill="#e11d48" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       {/* Grant Pro Access */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Gift className="w-5 h-5 text-amber-500" />
-            Grant Pro Access
-          </CardTitle>
-          <CardDescription>
-            Manually grant Pro subscription to a user for 1 year
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Input
-              type="email"
-              placeholder="Enter user email..."
-              value={grantEmail}
-              onChange={(e) => setGrantEmail(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleGrantPro}
-              disabled={granting || !grantEmail.trim()}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
-            >
-              {granting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Granting...
-                </>
-              ) : (
-                <>
-                  <Crown className="w-4 h-4 mr-2" />
-                  Grant 1 Year Pro
-                </>
-              )}
-            </Button>
+      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <Gift className="w-4 h-4 text-red-500" />
           </div>
-        </CardContent>
-      </Card>
+          <h2 className="text-lg font-semibold tracking-tight text-gray-900">Grant Pro Access</h2>
+        </div>
+        <p className="text-sm text-gray-500 mt-1 mb-4">
+          Manually grant Pro subscription to a user for 1 year
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Input
+            type="email"
+            placeholder="Enter user email..."
+            value={grantEmail}
+            onChange={(e) => setGrantEmail(e.target.value)}
+            className="flex-1 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+          />
+          <Button
+            onClick={handleGrantPro}
+            disabled={granting || !grantEmail.trim()}
+            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+          >
+            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+            {granting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Granting...
+              </>
+            ) : (
+              <>
+                <Crown className="w-4 h-4 mr-2" />
+                Grant 1 Year Pro
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
 
       {/* Transactions Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Receipt className="w-5 h-5 text-gray-500" />
-              Transactions
-            </CardTitle>
-            <Button
-              onClick={handleExportCSV}
-              disabled={exporting || filteredTransactions.length === 0}
-              variant="outline"
-              size="sm"
-            >
-              <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-pulse' : ''}`} />
-              Export CSV
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search by email or reference..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Receipt className="w-4 h-4 text-red-500" />
             </div>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
-            >
-              {DATE_FILTERS.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
-            >
-              {STATUS_FILTERS.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900">Transactions</h2>
           </div>
+          <Button
+            onClick={handleExportCSV}
+            disabled={exporting || filteredTransactions.length === 0}
+            variant="outline"
+            size="sm"
+            className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+          >
+            <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-pulse' : ''}`} />
+            Export CSV
+          </Button>
+        </div>
 
-          {/* Table */}
-          {filteredTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">No transactions found</p>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search by email or reference..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+            />
+          </div>
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
+          >
+            {DATE_FILTERS.map(f => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
+          >
+            {STATUS_FILTERS.map(f => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Table */}
+        {filteredTransactions.length === 0 ? (
+          <div className="text-center py-12 bg-[#fffcfb] rounded-2xl border border-rose-100/70">
+            <div className="w-12 h-12 mx-auto mb-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+              <Receipt className="w-6 h-6 text-red-500" />
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3">User</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3 hidden sm:table-cell">Type</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3">Amount</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3">Status</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3 hidden lg:table-cell">Reference</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3 hidden md:table-cell">Date</th>
-                    <th className="text-left text-xs font-medium text-gray-500 pb-3 w-10"></th>
+            <p className="text-sm text-gray-500">No transactions found</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-rose-100">
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">User</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden sm:table-cell">Type</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">Amount</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">Status</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden lg:table-cell">Reference</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden md:table-cell">Date</th>
+                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTransactions.map((tx) => (
+                  <tr
+                    key={tx.id}
+                    className="border-b border-rose-50 hover:bg-rose-50/40 cursor-pointer"
+                    onClick={() => handleViewTransaction(tx)}
+                  >
+                    <td className="py-3">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-[180px]">
+                          {tx.user?.full_name || 'Unknown'}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate max-w-[120px] sm:max-w-[180px]">
+                          {tx.user?.email}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-3 hidden sm:table-cell">
+                      <p className="text-sm text-gray-900">
+                        {tx.transaction_type === 'subscription'
+                          ? tx.plan?.name || 'Pro'
+                          : tx.course?.title || 'Course'
+                        }
+                      </p>
+                      <p className="text-xs text-gray-500 capitalize">
+                        {tx.transaction_type?.replace('_', ' ')}
+                      </p>
+                    </td>
+                    <td className="py-3">
+                      <p className="text-sm font-semibold tabular-nums text-gray-900">
+                        {formatCurrency(tx.amount)}
+                      </p>
+                    </td>
+                    <td className="py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                        tx.status === 'successful' ? 'bg-emerald-50 text-emerald-700' :
+                        tx.status === 'pending' ? 'bg-rose-50 text-rose-600' :
+                        tx.status === 'refunded' ? 'bg-gray-100 text-gray-600' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {tx.status === 'successful' ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : tx.status === 'pending' ? (
+                          <Clock className="w-3 h-3" />
+                        ) : (
+                          <AlertCircle className="w-3 h-3" />
+                        )}
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="py-3 hidden lg:table-cell">
+                      <p className="text-xs text-gray-500 font-mono truncate max-w-[150px]">
+                        {tx.provider_tx_ref || '-'}
+                      </p>
+                    </td>
+                    <td className="py-3 hidden md:table-cell">
+                      <p className="text-xs text-gray-500">
+                        {formatDate(tx.created_at)}
+                      </p>
+                    </td>
+                    <td className="py-3">
+                      <Eye className="w-4 h-4 text-rose-300" />
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredTransactions.map((tx) => (
-                    <tr 
-                      key={tx.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => handleViewTransaction(tx)}
-                    >
-                      <td className="py-3">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 truncate max-w-[120px] sm:max-w-[180px]">
-                            {tx.user?.full_name || 'Unknown'}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate max-w-[120px] sm:max-w-[180px]">
-                            {tx.user?.email}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-3 hidden sm:table-cell">
-                        <p className="text-sm text-gray-900">
-                          {tx.transaction_type === 'subscription' 
-                            ? tx.plan?.name || 'Pro'
-                            : tx.course?.title || 'Course'
-                          }
-                        </p>
-                        <p className="text-xs text-gray-500 capitalize">
-                          {tx.transaction_type?.replace('_', ' ')}
-                        </p>
-                      </td>
-                      <td className="py-3">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(tx.amount)}
-                        </p>
-                      </td>
-                      <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          tx.status === 'successful' ? 'bg-green-100 text-green-700' : 
-                          tx.status === 'pending' ? 'bg-amber-100 text-amber-700' : 
-                          tx.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {tx.status === 'successful' ? (
-                            <CheckCircle className="w-3 h-3" />
-                          ) : tx.status === 'pending' ? (
-                            <Clock className="w-3 h-3" />
-                          ) : (
-                            <AlertCircle className="w-3 h-3" />
-                          )}
-                          {tx.status}
-                        </span>
-                      </td>
-                      <td className="py-3 hidden lg:table-cell">
-                        <p className="text-xs text-gray-500 font-mono truncate max-w-[150px]">
-                          {tx.provider_tx_ref || '-'}
-                        </p>
-                      </td>
-                      <td className="py-3 hidden md:table-cell">
-                        <p className="text-xs text-gray-500">
-                          {formatDate(tx.created_at)}
-                        </p>
-                      </td>
-                      <td className="py-3">
-                        <Eye className="w-4 h-4 text-gray-400" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Results count */}
-          <div className="mt-4 text-xs text-gray-500">
-            Showing {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+                ))}
+              </tbody>
+            </table>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Results count */}
+        <div className="mt-4 text-xs text-gray-500">
+          Showing {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+        </div>
+      </div>
 
       {/* Transaction Details Drawer */}
-      <Sheet 
-        open={drawerOpen} 
+      <Sheet
+        open={drawerOpen}
         onClose={closeDrawer}
         title="Transaction Details"
       >
@@ -904,7 +914,7 @@ export default function AdminBillingPage() {
           <div className="p-4 space-y-6">
             {/* Status Badge */}
             <div className="flex items-center justify-between">
-              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusColor(selectedTransaction.status)}`}>
+              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${getStatusColor(selectedTransaction.status)}`}>
                 {selectedTransaction.status === 'successful' ? (
                   <CheckCircle className="w-4 h-4" />
                 ) : selectedTransaction.status === 'pending' ? (
@@ -920,9 +930,9 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Amount */}
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
+            <div className="bg-rose-50/60 border border-rose-100 rounded-2xl p-4 text-center">
               <p className="text-sm text-gray-500 mb-1">Amount</p>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-3xl font-semibold tabular-nums text-gray-900">
                 {formatCurrency(selectedTransaction.amount)}
               </p>
               <p className="text-xs text-gray-500 mt-1">
@@ -931,21 +941,21 @@ export default function AdminBillingPage() {
             </div>
 
             {/* User Info */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-400" />
+                <User className="w-4 h-4 text-red-500" />
                 Customer
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   {selectedTransaction.user?.avatar_url ? (
-                    <img 
-                      src={selectedTransaction.user.avatar_url} 
-                      alt="" 
+                    <img
+                      src={selectedTransaction.user.avatar_url}
+                      alt=""
                       className="w-10 h-10 rounded-full"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
                       <span className="text-red-600 font-semibold">
                         {selectedTransaction.user?.full_name?.charAt(0) || '?'}
                       </span>
@@ -961,7 +971,7 @@ export default function AdminBillingPage() {
                   </div>
                 </div>
                 {selectedTransaction.user?.id && (
-                  <a 
+                  <a
                     href={`/admin/users?id=${selectedTransaction.user.id}`}
                     className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
                     onClick={(e) => e.stopPropagation()}
@@ -973,20 +983,20 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Transaction Details */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gray-400" />
+                <FileText className="w-4 h-4 text-red-500" />
                 Details
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="flex justify-between items-center py-2 border-b border-rose-50">
                   <span className="text-sm text-gray-500">Type</span>
                   <span className="text-sm font-medium text-gray-900 capitalize">
                     {selectedTransaction.transaction_type?.replace('_', ' ')}
                   </span>
                 </div>
                 {selectedTransaction.plan && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
                     <span className="text-sm text-gray-500">Plan</span>
                     <span className="text-sm font-medium text-gray-900">
                       {selectedTransaction.plan.name}
@@ -994,27 +1004,27 @@ export default function AdminBillingPage() {
                   </div>
                 )}
                 {selectedTransaction.course && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
                     <span className="text-sm text-gray-500">Course</span>
                     <span className="text-sm font-medium text-gray-900">
                       {selectedTransaction.course.title}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="flex justify-between items-center py-2 border-b border-rose-50">
                   <span className="text-sm text-gray-500">Currency</span>
                   <span className="text-sm font-medium text-gray-900">
                     {selectedTransaction.currency}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="flex justify-between items-center py-2 border-b border-rose-50">
                   <span className="text-sm text-gray-500">Created</span>
                   <span className="text-sm font-medium text-gray-900">
                     {formatDate(selectedTransaction.created_at)}
                   </span>
                 </div>
                 {selectedTransaction.updated_at && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
                     <span className="text-sm text-gray-500">Updated</span>
                     <span className="text-sm font-medium text-gray-900">
                       {formatDate(selectedTransaction.updated_at)}
@@ -1025,20 +1035,20 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Payment Info */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <CardIcon className="w-4 h-4 text-gray-400" />
+                <CardIcon className="w-4 h-4 text-red-500" />
                 Payment Info
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="flex justify-between items-center py-2 border-b border-rose-50">
                   <span className="text-sm text-gray-500">Provider</span>
                   <span className="text-sm font-medium text-gray-900 capitalize">
                     Paystack
                   </span>
                 </div>
                 {selectedTransaction.provider_tx_ref && (
-                  <div className="flex justify-between items-start py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-start py-2 border-b border-rose-50">
                     <span className="text-sm text-gray-500">Reference</span>
                     <span className="text-xs font-mono text-gray-900 text-right max-w-[200px] break-all">
                       {selectedTransaction.provider_tx_ref}
@@ -1046,7 +1056,7 @@ export default function AdminBillingPage() {
                   </div>
                 )}
                 {selectedTransaction.provider_transaction_id && (
-                  <div className="flex justify-between items-start py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-start py-2 border-b border-rose-50">
                     <span className="text-sm text-gray-500">Transaction ID</span>
                     <span className="text-xs font-mono text-gray-900">
                       {selectedTransaction.provider_transaction_id}
@@ -1057,16 +1067,16 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Timeline */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4 text-red-500" />
                 Timeline
               </h3>
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <div className="w-0.5 h-full bg-gray-200"></div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    <div className="w-0.5 h-full bg-rose-100"></div>
                   </div>
                   <div className="pb-4">
                     <p className="text-sm font-medium text-gray-900">Transaction Created</p>
@@ -1076,7 +1086,7 @@ export default function AdminBillingPage() {
                 {selectedTransaction.status === 'successful' && (
                   <div className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Payment Completed</p>
@@ -1087,7 +1097,7 @@ export default function AdminBillingPage() {
                 {selectedTransaction.status === 'failed' && (
                   <div className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Payment Failed</p>
@@ -1110,10 +1120,10 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Actions */}
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-rose-100">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
                 onClick={closeDrawer}
               >
                 Close

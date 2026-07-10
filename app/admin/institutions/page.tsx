@@ -59,11 +59,11 @@ const typeIcons: Record<string, typeof School> = {
 }
 
 const statusConfig = {
-  pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: 'Pending' },
-  approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Approved' },
-  rejected: { color: 'bg-red-100 text-red-800', icon: XCircle, label: 'Rejected' },
-  suspended: { color: 'bg-orange-100 text-orange-800', icon: AlertCircle, label: 'Suspended' },
-  archived: { color: 'bg-gray-100 text-gray-800', icon: X, label: 'Archived' },
+  pending: { color: 'bg-rose-50 text-rose-700 ring-1 ring-rose-100', icon: Clock, label: 'Pending' },
+  approved: { color: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100', icon: CheckCircle, label: 'Approved' },
+  rejected: { color: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200', icon: XCircle, label: 'Rejected' },
+  suspended: { color: 'bg-amber-50 text-amber-700 ring-1 ring-amber-100', icon: AlertCircle, label: 'Suspended' },
+  archived: { color: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200', icon: X, label: 'Archived' },
 }
 
 export default function AdminInstitutionsPage() {
@@ -76,7 +76,7 @@ export default function AdminInstitutionsPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
-  
+
   const [selectedInstitution, setSelectedInstitution] = useState<Institution | null>(null)
   const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [approvalAction, setApprovalAction] = useState<'approved' | 'rejected'>('approved')
@@ -200,9 +200,9 @@ export default function AdminInstitutionsPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full bg-[#fffcfb]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -214,17 +214,20 @@ export default function AdminInstitutionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Institutions</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Admin &middot; Workspaces</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
+            <span className="font-serif italic text-red-600">Institutions</span>
+          </h1>
           <p className="text-gray-600 mt-1">Review and manage institution applications</p>
         </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <Building2 className="w-5 h-5" />
+        <div className="flex items-center gap-2 rounded-full bg-white/70 backdrop-blur border border-rose-100 px-4 py-2 text-gray-600 shadow-sm">
+          <Building2 className="w-5 h-5 text-red-500" />
           <span className="font-semibold">{total} institutions</span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
+      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -235,7 +238,7 @@ export default function AdminInstitutionsPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="pl-10"
+              className="pl-10 rounded-full bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
             />
           </div>
 
@@ -245,7 +248,7 @@ export default function AdminInstitutionsPage() {
               setStatusFilter(e.target.value)
               setPage(1)
             }}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-gray-700 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -260,7 +263,7 @@ export default function AdminInstitutionsPage() {
               setTypeFilter(e.target.value)
               setPage(1)
             }}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-gray-700 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400"
           >
             <option value="">All Types</option>
             <option value="school">School</option>
@@ -275,7 +278,7 @@ export default function AdminInstitutionsPage() {
             <Button
               variant="outline"
               onClick={handleClearFilters}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
             >
               <X className="w-4 h-4" />
               Clear
@@ -286,21 +289,30 @@ export default function AdminInstitutionsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-red-50/80 backdrop-blur border border-red-100 ring-1 ring-red-100 rounded-2xl p-4 text-red-700">
           {error}
         </div>
       )}
 
       {/* Loading State */}
       {loading ? (
-        <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
-          <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading institutions...</p>
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-rose-50/60 rounded-lg h-10" />
+            ))}
+          </div>
         </div>
       ) : institutions.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
-          <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No institutions found</h3>
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-7 h-7 text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-2">
+            No institutions <span className="font-serif italic text-red-600">found</span>
+          </h3>
           <p className="text-gray-600">
             {search || statusFilter || typeFilter
               ? 'Try adjusting your filters'
@@ -308,38 +320,39 @@ export default function AdminInstitutionsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="relative bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="border-b border-rose-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Institution</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied By</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Institution</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Applied By</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody>
                 {institutions.map((institution) => {
                   const TypeIcon = typeIcons[institution.type] || Building2
                   const statusInfo = statusConfig[institution.status]
                   const StatusIcon = statusInfo?.icon || Clock
 
                   return (
-                    <tr key={institution.id} className="hover:bg-gray-50">
+                    <tr key={institution.id} className="border-b border-rose-50 hover:bg-rose-50/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <TypeIcon className="w-5 h-5 text-red-600" />
+                          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                            <TypeIcon className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">{institution.name}</div>
                             <div className="text-sm text-gray-500 flex items-center gap-2">
                               {institution.website && (
-                                <a href={institution.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                                <a href={institution.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-red-600 hover:underline">
                                   <Globe className="w-3 h-3" />
                                   Website
                                 </a>
@@ -371,7 +384,7 @@ export default function AdminInstitutionsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo?.color}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${statusInfo?.color}`}>
                           <StatusIcon className="w-3 h-3" />
                           {statusInfo?.label}
                         </span>
@@ -386,11 +399,12 @@ export default function AdminInstitutionsPage() {
                         <div className="flex items-center justify-end gap-2">
                           {institution.status === 'pending' ? (
                             <>
-                              <Button size="sm" onClick={() => openApprovalModal(institution, 'approved')} className="bg-green-600 hover:bg-green-700 text-white">
+                              <Button size="sm" onClick={() => openApprovalModal(institution, 'approved')} className="relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_10px_24px_-10px_rgba(16,185,129,0.6)] ring-1 ring-emerald-500/50 transition-all hover:-translate-y-0.5">
+                                <span className="absolute inset-x-2 top-0 h-px bg-white/40" aria-hidden="true" />
                                 <CheckCircle className="w-4 h-4 mr-1" />
                                 Approve
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => openApprovalModal(institution, 'rejected')} className="border-red-300 text-red-600 hover:bg-red-50">
+                              <Button size="sm" variant="outline" onClick={() => openApprovalModal(institution, 'rejected')} className="bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 rounded-full">
                                 <XCircle className="w-4 h-4 mr-1" />
                                 Reject
                               </Button>
@@ -410,16 +424,16 @@ export default function AdminInstitutionsPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="px-6 py-4 border-t flex items-center justify-between">
+            <div className="px-6 py-4 border-t border-rose-100 flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>
+                <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1} className="bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
-                <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
+                <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages} className="bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -431,9 +445,9 @@ export default function AdminInstitutionsPage() {
       {/* Approval Modal */}
       {showApprovalModal && selectedInstitution && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full">
+            <div className="p-6 border-b border-rose-100">
+              <h3 className="text-lg font-semibold tracking-tight text-gray-900">
                 {approvalAction === 'approved' ? 'Approve' : 'Reject'} Institution
               </h3>
               <p className="text-sm text-gray-600 mt-1">{selectedInstitution.name}</p>
@@ -447,7 +461,7 @@ export default function AdminInstitutionsPage() {
                   onChange={(e) => setReviewNotes(e.target.value)}
                   placeholder="Internal notes about this decision..."
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 resize-none"
                 />
               </div>
 
@@ -459,14 +473,14 @@ export default function AdminInstitutionsPage() {
                     onChange={(e) => setRejectionReason(e.target.value)}
                     placeholder="Explain why this application is being rejected..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 resize-none"
                   />
                   <p className="text-xs text-gray-500 mt-1">This will be shared with the applicant</p>
                 </div>
               )}
             </div>
 
-            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-xl">
+            <div className="p-6 border-t border-rose-100 bg-rose-50/40 flex justify-end gap-3 rounded-b-2xl">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -476,14 +490,18 @@ export default function AdminInstitutionsPage() {
                   setRejectionReason('')
                 }}
                 disabled={actionLoading}
+                className="bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleApprovalSubmit}
                 disabled={actionLoading || (approvalAction === 'rejected' && !rejectionReason)}
-                className={approvalAction === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+                className={approvalAction === 'approved'
+                  ? 'relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.6)] ring-1 ring-emerald-500/50 transition-all hover:-translate-y-0.5'
+                  : 'relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5'}
               >
+                <span className="absolute inset-x-2 top-0 h-px bg-white/40" aria-hidden="true" />
                 {actionLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

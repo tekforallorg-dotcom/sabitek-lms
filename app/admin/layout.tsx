@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
+import AdminGuard from '@/components/admin/AdminGuard'
 import { AuthProvider } from '@/components/providers/auth-provider'
 
 export const metadata = {
@@ -11,21 +12,23 @@ export const metadata = {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        {/* Sidebar */}
-        <AdminSidebar />
+      <AdminGuard>
+        <div className="flex h-screen bg-[#fffcfb] overflow-hidden">
+          {/* Sidebar */}
+          <AdminSidebar />
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
-          <AdminHeader />
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header */}
+            <AdminHeader />
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-6">
-            {children}
-          </main>
+            {/* Page Content */}
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </AdminGuard>
     </AuthProvider>
   )
 }

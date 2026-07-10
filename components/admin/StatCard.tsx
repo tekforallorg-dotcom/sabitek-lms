@@ -22,14 +22,14 @@ export default function StatCard({
   subtitle,
 }: StatCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow">
+    <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 hover:shadow-[0_16px_36px_-18px_rgba(225,29,72,0.45)] transition-shadow">
       <div className="flex items-center justify-between">
-        <div className={`w-12 h-12 ${bgColor} rounded-lg flex items-center justify-center`}>
+        <div className={`w-12 h-12 ${bgColor} rounded-xl flex items-center justify-center`}>
           <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
         {change !== undefined && (
           <div className={`flex items-center gap-1 text-sm font-medium ${
-            trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-600'
+            trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-rose-600' : 'text-gray-600'
           }`}>
             {trend === 'up' ? (
               <ArrowUp className="w-4 h-4" />
@@ -42,7 +42,7 @@ export default function StatCard({
       </div>
       <div className="mt-4">
         <p className="text-sm text-gray-600">{label}</p>
-        <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+        <p className="text-3xl font-semibold tabular-nums text-gray-900 mt-1">{value}</p>
         {subtitle && (
           <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
         )}

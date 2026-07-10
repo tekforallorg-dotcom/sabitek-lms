@@ -38,9 +38,9 @@ interface Application {
 const REASON_MAX_LENGTH = 1000
 
 const statusStyles: Record<string, { bg: string; text: string; dot: string }> = {
-  pending: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', dot: 'bg-amber-400' },
-  approved: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-400' },
-  rejected: { bg: 'bg-red-50 border-red-200', text: 'text-red-700', dot: 'bg-red-400' },
+  pending: { bg: 'bg-rose-50 ring-1 ring-rose-100', text: 'text-rose-700', dot: 'bg-rose-400' },
+  approved: { bg: 'bg-emerald-50 ring-1 ring-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-400' },
+  rejected: { bg: 'bg-gray-100 ring-1 ring-gray-200', text: 'text-gray-600', dot: 'bg-gray-400' },
 }
 
 const orgTypeLabels: Record<string, string> = {
@@ -203,15 +203,15 @@ export default function ApplicationsPage() {
           aria-labelledby="reject-modal-title"
         >
           <div
-            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            className="bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-rose-50 ring-1 ring-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <XCircle className="w-5 h-5 text-red-600" />
               </div>
               <div className="min-w-0">
-                <h2 id="reject-modal-title" className="text-lg font-semibold text-gray-900">
+                <h2 id="reject-modal-title" className="text-lg font-semibold tracking-tight text-gray-900">
                   Reject Application
                 </h2>
                 <p className="text-sm text-gray-500 mt-0.5 break-words">
@@ -232,7 +232,7 @@ export default function ApplicationsPage() {
               maxLength={REASON_MAX_LENGTH}
               rows={4}
               placeholder="Share any context that might help the applicant understand or strengthen a future application."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm placeholder:text-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
             <p className="text-xs text-gray-400 mt-1">
               {rejectModal.reason.length}/{REASON_MAX_LENGTH}
@@ -243,15 +243,16 @@ export default function ApplicationsPage() {
                 variant="outline"
                 onClick={closeRejectModal}
                 disabled={rejectModal.submitting}
-                className="rounded-xl"
+                className="bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
               >
                 Cancel
               </Button>
               <Button
                 onClick={submitRejection}
                 disabled={rejectModal.submitting}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
               >
+                <span className="absolute inset-x-2 top-0 h-px bg-white/40" aria-hidden="true" />
                 {rejectModal.submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
@@ -271,9 +272,9 @@ export default function ApplicationsPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="w-6 h-6 text-red-500" />
-          Institution Applications
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Admin &middot; Approval Queue</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          Institution <span className="font-serif italic text-red-600">Applications</span>
         </h1>
         <p className="text-sm text-gray-500 mt-1">Review and approve workspace requests from institutions and training providers.</p>
       </div>
@@ -289,10 +290,10 @@ export default function ApplicationsPage() {
           <button
             key={tab.value}
             onClick={() => setStatusFilter(tab.value)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               statusFilter === tab.value
-                ? 'bg-red-100 text-red-700 border border-red-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-rose-50 text-red-700 ring-1 ring-rose-200 shadow-sm'
+                : 'bg-white/70 backdrop-blur text-gray-600 border border-rose-100 hover:border-rose-200 hover:bg-white shadow-sm'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -304,14 +305,23 @@ export default function ApplicationsPage() {
 
       {/* List */}
       {loading ? (
-        <div className="text-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
-          <p className="text-sm text-gray-500">Loading applications...</p>
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-rose-50/60 rounded-lg h-10" />
+            ))}
+          </div>
         </div>
       ) : applications.length === 0 ? (
-        <div className="bg-white rounded-xl border shadow-sm p-12 text-center">
-          <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">No {statusFilter === 'all' ? '' : statusFilter} applications</h3>
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-4">
+            <ClipboardList className="w-7 h-7 text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-1">
+            No {statusFilter === 'all' ? '' : statusFilter} <span className="font-serif italic text-red-600">applications</span>
+          </h3>
           <p className="text-sm text-gray-500">
             {statusFilter === 'pending' ? 'No pending applications to review.' : 'No applications match this filter.'}
           </p>
@@ -326,23 +336,19 @@ export default function ApplicationsPage() {
             return (
               <div
                 key={app.id}
-                className="bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden hover:shadow-[0_16px_36px_-18px_rgba(225,29,72,0.45)] transition-shadow"
               >
                 {/* Summary row */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : app.id)}
                   className="w-full px-5 py-4 flex items-center gap-4 text-left"
                 >
-                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-5 h-5 text-red-600" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-semibold text-gray-900 truncate">{app.organisation_name}</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${style.bg} ${style.text}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                        {app.status}
-                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{app.email}</span>
@@ -350,12 +356,18 @@ export default function ApplicationsPage() {
                       {app.country && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{app.country}</span>}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 flex-shrink-0">{formatDate(app.created_at)}</span>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${style.bg} ${style.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                      {app.status}
+                    </span>
+                    <span className="text-xs text-gray-400">{formatDate(app.created_at)}</span>
+                  </div>
                 </button>
 
                 {/* Expanded details */}
                 {isExpanded && (
-                  <div className="px-5 pb-5 border-t border-gray-100 pt-4">
+                  <div className="px-5 pb-5 border-t border-rose-50 pt-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-xs font-medium text-gray-500 mb-0.5">Contact</p>
@@ -373,18 +385,18 @@ export default function ApplicationsPage() {
 
                     <div className="mb-4">
                       <p className="text-xs font-medium text-gray-500 mb-1">Description</p>
-                      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 whitespace-pre-line">{app.description}</p>
+                      <p className="text-sm text-gray-700 bg-rose-50/40 border border-rose-50 rounded-xl p-3 whitespace-pre-line">{app.description}</p>
                     </div>
 
                     {app.review_notes && (
-                      <div className="mb-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
-                        <p className="text-xs font-medium text-blue-700 mb-0.5">Review Notes</p>
-                        <p className="text-sm text-blue-900">{app.review_notes}</p>
+                      <div className="mb-4 bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                        <p className="text-xs font-medium text-emerald-700 mb-0.5">Review Notes</p>
+                        <p className="text-sm text-emerald-900">{app.review_notes}</p>
                       </div>
                     )}
 
                     {app.rejection_reason && (
-                      <div className="mb-4 bg-red-50 border border-red-100 rounded-lg p-3">
+                      <div className="mb-4 bg-red-50 border border-red-100 rounded-xl p-3">
                         <p className="text-xs font-medium text-red-700 mb-0.5">Rejection Reason</p>
                         <p className="text-sm text-red-900">{app.rejection_reason}</p>
                       </div>
@@ -395,9 +407,10 @@ export default function ApplicationsPage() {
                         <Button
                           onClick={() => showApproveConfirm(app)}
                           disabled={isLoading}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+                          className="relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.6)] ring-1 ring-emerald-500/50 transition-all hover:-translate-y-0.5"
                           size="sm"
                         >
+                          <span className="absolute inset-x-2 top-0 h-px bg-white/40" aria-hidden="true" />
                           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
                           Approve
                         </Button>
@@ -405,7 +418,7 @@ export default function ApplicationsPage() {
                           onClick={() => showRejectConfirm(app)}
                           disabled={isLoading}
                           variant="outline"
-                          className="text-red-700 border-red-200 hover:bg-red-50 rounded-xl"
+                          className="bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 rounded-full"
                           size="sm"
                         >
                           <XCircle className="w-4 h-4 mr-1.5" />
@@ -416,7 +429,7 @@ export default function ApplicationsPage() {
 
                     {app.status === 'approved' && app.institution_id && (
                       <div className="flex items-center gap-2 pt-2">
-                        <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
+                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100 px-2.5 py-1 rounded-full flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
                           Workspace provisioned
                         </span>

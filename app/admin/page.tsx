@@ -1,10 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
-import { 
-  Users, 
-  BookOpen, 
-  Award, 
+import {
+  Users,
+  BookOpen,
+  Award,
   TrendingUp,
   UserCheck,
   RefreshCw
@@ -87,15 +87,19 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <UserCheck className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+              <UserCheck className="w-6 h-6 text-red-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Admin'}!
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
+                Platform admin
+              </p>
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Admin'} — your{' '}
+                <span className="font-serif italic text-red-600">overview</span>
               </h1>
               <p className="text-gray-600 mt-1">
                 Here's what's happening with your platform today.
@@ -105,7 +109,7 @@ export default function AdminDashboard() {
           <button
             onClick={fetchDashboardData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
@@ -115,7 +119,7 @@ export default function AdminDashboard() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-red-700">
           {error}
         </div>
       )}
@@ -124,14 +128,14 @@ export default function AdminDashboard() {
       {loading && !stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-lg shadow p-6 border border-gray-200 animate-pulse">
+            <div key={i} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 animate-pulse">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                <div className="w-16 h-6 bg-gray-200 rounded"></div>
+                <div className="w-12 h-12 bg-rose-50/60 rounded-xl"></div>
+                <div className="w-16 h-6 bg-rose-50/60 rounded-xl"></div>
               </div>
               <div className="space-y-2">
-                <div className="w-24 h-4 bg-gray-200 rounded"></div>
-                <div className="w-32 h-8 bg-gray-200 rounded"></div>
+                <div className="w-24 h-4 bg-rose-50/60 rounded-xl"></div>
+                <div className="w-32 h-8 bg-rose-50/60 rounded-xl"></div>
               </div>
             </div>
           ))}
@@ -144,8 +148,8 @@ export default function AdminDashboard() {
             change={stats.totalUsers.change}
             trend={stats.totalUsers.trend}
             icon={Users}
-            bgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            bgColor="bg-rose-50 border border-rose-100"
+            iconColor="text-red-500"
             subtitle={`${stats.mau.value} active (30 days)`}
           />
           <StatCard
@@ -154,8 +158,8 @@ export default function AdminDashboard() {
             change={stats.activeCourses.change}
             trend={stats.activeCourses.trend}
             icon={BookOpen}
-            bgColor="bg-green-50"
-            iconColor="text-green-600"
+            bgColor="bg-rose-50 border border-rose-100"
+            iconColor="text-red-500"
             subtitle={`${stats.activeCourses.total} total courses`}
           />
           <StatCard
@@ -164,8 +168,8 @@ export default function AdminDashboard() {
             change={stats.totalCertificates.change}
             trend={stats.totalCertificates.trend}
             icon={Award}
-            bgColor="bg-purple-50"
-            iconColor="text-purple-600"
+            bgColor="bg-rose-50 border border-rose-100"
+            iconColor="text-red-500"
           />
           <StatCard
             label="Total Enrollments"
@@ -173,59 +177,59 @@ export default function AdminDashboard() {
             change={stats.totalEnrollments.change}
             trend={stats.totalEnrollments.trend}
             icon={TrendingUp}
-            bgColor="bg-red-50"
-            iconColor="text-red-600"
+            bgColor="bg-rose-50 border border-rose-100"
+            iconColor="text-red-500"
           />
         </div>
       ) : null}
 
       {/* Quick Actions & Activity */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+          <h3 className="font-semibold tracking-tight text-gray-900 mb-4">Quick Actions</h3>
           <div className="space-y-3">
             <Link
               href="/admin/users"
-              className="block w-full text-left px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               View All Users
             </Link>
             <Link
               href="/admin/courses"
-              className="block w-full text-left px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               Manage Courses
             </Link>
             <Link
               href="/admin/certificates"
-              className="block w-full text-left px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               View Certificates
             </Link>
           </div>
         </div>
 
-        <div className="md:col-span-2 bg-white rounded-lg shadow p-6 border border-gray-200">
-          <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="md:col-span-2 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+          <h3 className="font-semibold tracking-tight text-gray-900 mb-4">Recent Activity</h3>
           <ActivityFeed activities={activity} loading={loading} />
         </div>
       </div>
 
       {/* System Status */}
-      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-        <h3 className="font-semibold text-gray-900 mb-4">System Status</h3>
+      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+        <h3 className="font-semibold tracking-tight text-gray-900 mb-4">System Status</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
             <span className="text-sm text-gray-600">Database</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Healthy</span>
+            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Healthy</span>
           </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
             <span className="text-sm text-gray-600">Authentication</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Active</span>
+            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Active</span>
           </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
             <span className="text-sm text-gray-600">API</span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Online</span>
+            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Online</span>
           </div>
         </div>
       </div>

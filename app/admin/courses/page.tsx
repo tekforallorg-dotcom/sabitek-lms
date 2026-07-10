@@ -92,7 +92,7 @@ export default function CoursesManagementPage() {
       }
 
       fetchCourses()
-      
+
       const actionMessages = {
         publish: 'Course published successfully',
         archive: 'Course archived successfully',
@@ -117,7 +117,7 @@ export default function CoursesManagementPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -129,11 +129,14 @@ export default function CoursesManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Courses Management</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">Admin Console</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+            Courses <span className="font-serif italic text-red-600">management</span>
+          </h1>
           <p className="text-gray-600 mt-1">Manage all platform courses and content</p>
         </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <BookOpen className="w-5 h-5" />
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 backdrop-blur border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] text-gray-600">
+          <BookOpen className="w-5 h-5 text-red-600" />
           <span className="font-semibold">{total} courses</span>
         </div>
       </div>
@@ -151,7 +154,7 @@ export default function CoursesManagementPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-red-600">
           {error}
         </div>
       )}
@@ -165,7 +168,7 @@ export default function CoursesManagementPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white rounded-lg shadow border border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] px-6 py-4">
           <div className="text-sm text-gray-600">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} courses
           </div>
@@ -173,7 +176,7 @@ export default function CoursesManagementPage() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-full hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -183,7 +186,7 @@ export default function CoursesManagementPage() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-full hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
