@@ -59,7 +59,8 @@ export async function isAdmin(userId: string): Promise<boolean> {
     }
 
     // Check both role and is_super_admin flag
-    return data.role === 'admin' || data.is_super_admin === true
+    // Legacy role==='admin' retired: is_super_admin is the single admin flag.
+    return data.is_super_admin === true
   } catch (error) {
     console.error('Exception in isAdmin:', error)
     return false

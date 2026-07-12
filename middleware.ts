@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 import {
   rateLimit,
   RATE_LIMIT_STRICT,
@@ -58,16 +59,28 @@ function getRateLimitConfig(pathname: string): RateLimitConfig | null {
   return null
 }
 
-export function middleware(request: NextRequest) {
+/** Page prefixes that require a signed-in user. */
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/instructor',
+  '/institution',
+  '/admin',
+  '/courses',
+  '/certificates',
+  '/account',
+  '/profile',
+]
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Only rate limit API routes
+  // ── API routes: rate limiting only (they auth via Bearer tokens) ──
   const rateLimitConfig = getRateLimitConfig(pathname)
 
   if (rateLimitConfig) {
     const identifier = getClientIdentifier(request)
     const key = `${identifier}:${pathname.split('/').slice(0, 4).join('/')}`
-    
+
     const result = rateLimit(key, rateLimitConfig)
 
     if (!result.success) {
@@ -88,18 +101,57 @@ export function middleware(request: NextRequest) {
       )
     }
 
-    // Add rate limit headers to successful responses
     const response = NextResponse.next()
     response.headers.set('X-RateLimit-Limit', result.limit.toString())
     response.headers.set('X-RateLimit-Remaining', result.remaining.toString())
     response.headers.set('X-RateLimit-Reset', result.resetAt.toString())
     response.headers.set('x-middleware-cache', 'no-cache')
-    
+
     return response
   }
 
-  // Non-API routes - just pass through
-  const response = NextResponse.next()
+  // ── Page routes: server-side auth guard (cookie-based sessions) ──
+  // Sessions moved from localStorage to cookies (@supabase/ssr), so the
+  // server can finally verify who is asking. Role-level checks remain in
+  // the route-group layouts + RLS; middleware enforces auth presence and
+  // keeps the session token fresh.
+  const needsAuth = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
+
+  let response = NextResponse.next({ request })
+
+  if (needsAuth) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            )
+            response = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    // getUser() validates against the auth server (do not trust getSession here).
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/auth/login'
+      loginUrl.search = ''
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
   response.headers.set('x-middleware-cache', 'no-cache')
   return response
 }
@@ -109,7 +161,12 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/instructor/:path*',
+    '/institution/:path*',
+    '/admin/:path*',
     '/courses/:path*',
+    '/certificates/:path*',
+    '/account/:path*',
+    '/profile/:path*',
     '/api/:path*',
   ],
 }

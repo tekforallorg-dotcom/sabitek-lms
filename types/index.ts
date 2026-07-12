@@ -10,7 +10,9 @@ export interface UserProfile {
   id: string
   email: string
   full_name: string
-  role: 'learner' | 'instructor' | 'admin'
+  // 'admin' as a users.role value is retired (zero rows in prod);
+  // platform admins are identified solely by is_super_admin.
+  role: 'learner' | 'instructor'
   is_super_admin?: boolean
   status?: 'active' | 'suspended' | 'deactivated' | 'soft_deleted'
   last_seen_at?: string | null

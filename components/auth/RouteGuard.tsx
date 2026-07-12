@@ -11,10 +11,9 @@ type Requirement = 'auth' | 'learner' | 'instructor' | 'institution'
  * Route-group guard, mounted from a layout so every subroute is covered
  * (previously only index pages redirected, leaving subroutes reachable).
  *
- * Sessions live in localStorage, so this runs on the client; Supabase RLS
- * remains the enforced data boundary underneath. Moving to cookie-based
- * @supabase/ssr sessions (true middleware guards) is tracked as a separate
- * migration since it invalidates existing logins.
+ * Middleware now enforces auth presence server-side (cookie sessions via
+ * @supabase/ssr); this layout guard adds the ROLE routing on top, with
+ * Supabase RLS as the data boundary underneath.
  */
 export default function RouteGuard({
   require,

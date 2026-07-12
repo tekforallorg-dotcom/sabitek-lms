@@ -4,7 +4,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Settings, LogOut, ChevronDown, Sparkles, Wallet } from 'lucide-react'
+// Wallet feature hidden (routes remain; nav entry removed)
+import { User, Settings, LogOut, ChevronDown, Sparkles } from 'lucide-react'
 
 /* Nav link with animated gradient underline */
 function NavLink({
@@ -169,14 +170,6 @@ export default function Header() {
                             <span>Dashboard</span>
                           </Link>
 
-                          <Link
-                            href="/account/wallet"
-                            onClick={() => setIsUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-700 hover:bg-rose-50/60 hover:text-red-600 transition-colors"
-                          >
-                            <Wallet className="w-4 h-4" />
-                            <span>Wallet</span>
-                          </Link>
                         </div>
 
                         <hr className="my-2 border-rose-50" />
@@ -291,14 +284,6 @@ export default function Header() {
                     My Profile
                   </Link>
 
-                  <Link
-                    href="/account/wallet"
-                    className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors flex items-center gap-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Wallet className="w-4 h-4" />
-                    <span>Wallet</span>
-                  </Link>
                 </>
               )}
 

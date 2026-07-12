@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -12,17 +13,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Singleton instance - prevents multiple GoTrueClient warnings
 let supabaseInstance: SupabaseClient | null = null
 
+/**
+ * Cookie-based browser client (@supabase/ssr).
+ *
+ * Sessions previously lived in localStorage ('sabitek-auth'), which the
+ * server could never see — middleware and layouts could not verify auth.
+ * Cookie storage makes the session visible to middleware.ts, enabling
+ * true server-side route guards.
+ *
+ * MIGRATION NOTE: existing localStorage sessions do not transfer;
+ * users sign in once after this deploys.
+ */
 const getSupabaseClient = (): SupabaseClient => {
-  // Only create instance once
   if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+    supabaseInstance = createBrowserClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
+        flowType: 'pkce',
         detectSessionInUrl: true,
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'sabitek-auth', // Unique key for your app
-        flowType: 'pkce', // PKCE for OAuth, token_hash for email-based auth
       },
       global: {
         headers: {

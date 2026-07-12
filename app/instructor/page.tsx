@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import SabiLoader from '@/components/ui/SabiLoader'
 import {
-  DollarSign,
   BookOpen,
   CheckCircle,
   Clock,
@@ -15,7 +14,6 @@ import {
   Eye,
   Settings,
   ArrowRight,
-  TrendingUp,
 } from 'lucide-react'
 
 interface Course {
@@ -126,15 +124,7 @@ export default function InstructorDashboard() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                onClick={() => router.push('/instructor/billing')}
-                variant="outline"
-                className={outlineBtnClass}
-                size="sm"
-              >
-                <DollarSign className="w-4 h-4 mr-1.5 text-emerald-500" />
-                View Earnings
-              </Button>
+              {/* Earnings feature hidden */}
               <Button
                 onClick={() => router.push('/instructor/courses/create')}
                 className={primaryBtnClass}
@@ -297,7 +287,6 @@ export default function InstructorDashboard() {
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { icon: Plus, title: 'Create Course', desc: 'Start a new course', href: '/instructor/courses/create' },
-              { icon: TrendingUp, title: 'View Analytics', desc: 'Track your earnings', href: '/instructor/billing' },
               { icon: BookOpen, title: 'Browse Courses', desc: 'See all courses', href: '/courses' },
             ].map((action, i) => (
               <button
