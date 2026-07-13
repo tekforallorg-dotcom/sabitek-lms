@@ -72,7 +72,7 @@ async function provisionWorkspace(application: {
   org_type: string
   country: string | null
   role_title: string | null
-}, reviewerId: string): Promise<{ success: boolean; error?: string; institution_id?: string }> {
+}, reviewerId: string): Promise<{ success: boolean; error?: string; institution_id?: string; email_sent?: boolean }> {
   const email = application.email.toLowerCase()
   let isNewUser = false
   let tempPassword: string | undefined
@@ -191,10 +191,12 @@ async function provisionWorkspace(application: {
     .update({ institution_id: institutionId })
     .eq('id', application.id)
 
-  // 7. Send welcome email
+  // 7. Send welcome email. Non-fatal, but surfaced to the admin UI so a
+  // silent Resend failure (bad API key / unverified domain) is visible.
   const loginUrl = `${APP_URL}/auth/login`
+  let emailSent = false
   try {
-    await sendWorkspaceWelcomeEmail({
+    const result = await sendWorkspaceWelcomeEmail({
       to: email,
       userName: application.full_name,
       organisationName: application.organisation_name,
@@ -202,12 +204,15 @@ async function provisionWorkspace(application: {
       isNewUser,
       tempPassword,
     })
+    emailSent = !result?.error
+    if (result?.error) {
+      console.error('Workspace welcome email failed:', result.error)
+    }
   } catch (emailErr) {
     console.error('Failed to send workspace welcome email:', emailErr)
-    // Non-fatal: workspace is provisioned, email can be resent
   }
 
-  return { success: true, institution_id: institutionId }
+  return { success: true, institution_id: institutionId, email_sent: emailSent }
 }
 
 /**
@@ -311,7 +316,7 @@ export async function PATCH(
     }
 
     // Auto-provision on approval
-    let provisionResult: { success: boolean; error?: string; institution_id?: string } | null = null
+    let provisionResult: { success: boolean; error?: string; institution_id?: string; email_sent?: boolean } | null = null
     if (action === 'approve') {
       provisionResult = await provisionWorkspace(app, user.id)
       if (!provisionResult.success) {
@@ -355,12 +360,16 @@ export async function PATCH(
     } catch {}
 
     if (action === 'approve') {
+      const emailSent = provisionResult?.email_sent === true
       return apiSuccess({
         status: 'approved',
         provisioned: provisionResult?.success || false,
+        email_sent: emailSent,
         institution_id: provisionResult?.institution_id || null,
         message: provisionResult?.success
-          ? 'Application approved. Workspace created and welcome email sent.'
+          ? emailSent
+            ? 'Application approved. Workspace created and welcome email sent.'
+            : 'Application approved and workspace created, but the welcome email FAILED to send. Check the Resend API key and sender domain, then contact the applicant manually.'
           : `Application approved, but workspace provisioning had an issue: ${provisionResult?.error || 'Unknown error'}. You may need to provision manually.`,
       })
     }

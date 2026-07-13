@@ -256,133 +256,128 @@ export default function ProfilePage() {
 
   if (loading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50/30">
+    <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
       <SabiLoader text="Loading profile..." />
     </div>
   )
 }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Header */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-900/20 via-transparent to-pink-900/20" />
-        
-        {/* Floating elements */}
-        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
+    <div className="min-h-screen bg-[#fffcfb]">
+      {/* Header */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">My account</p>
+        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+          Your <span className="font-serif italic text-red-600">profile</span>
+        </h1>
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* Avatar */}
-            <div className="relative">
-              {profileData.avatar_url ? (
-                <img
-                  src={profileData.avatar_url}
-                  alt="Profile"
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-white/20 shadow-xl"
-                />
-              ) : (
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center border-4 border-white/20 shadow-xl">
-                  <span className="text-4xl font-bold text-white">
-                    {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
+        <div className="relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="px-6 py-6 sm:px-8 sm:py-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {/* Avatar */}
+              <div className="relative">
+                {profileData.avatar_url ? (
+                  <img
+                    src={profileData.avatar_url}
+                    alt="Profile"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-white shadow"
+                  />
+                ) : (
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow">
+                    <span className="text-4xl font-semibold text-white">
+                      {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
+                {isEditing && (
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center ring-1 ring-rose-100 shadow-sm">
+                    <Camera className="w-4 h-4 text-red-500" />
+                  </div>
+                )}
+              </div>
+
+              {/* User Info */}
+              <div className="text-center sm:text-left flex-1">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">
+                  {profileData.full_name || 'Welcome!'}
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">{userProfile?.email}</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                    userProfile?.role === 'instructor'
+                      ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                      : 'bg-rose-50 text-red-600 border border-rose-100'
+                  }`}>
+                    {userProfile?.role === 'instructor' ? (
+                      <GraduationCap className="w-3 h-3" />
+                    ) : (
+                      <BookOpen className="w-3 h-3" />
+                    )}
+                    {userProfile?.role === 'instructor' ? 'Instructor' : 'Learner'}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    <Shield className="w-3 h-3" />
+                    Verified
                   </span>
                 </div>
-              )}
-              {isEditing && (
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <Camera className="w-4 h-4 text-gray-600" />
-                </div>
-              )}
-            </div>
+              </div>
 
-            {/* User Info */}
-            <div className="text-center sm:text-left flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                {profileData.full_name || 'Welcome!'}
-              </h1>
-              <p className="text-gray-400 text-sm mt-1">{userProfile?.email}</p>
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                  userProfile?.role === 'instructor' 
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                }`}>
-                  {userProfile?.role === 'instructor' ? (
-                    <GraduationCap className="w-3 h-3" />
-                  ) : (
-                    <BookOpen className="w-3 h-3" />
-                  )}
-                  {userProfile?.role === 'instructor' ? 'Instructor' : 'Learner'}
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
-                  <Shield className="w-3 h-3" />
-                  Verified
-                </span>
+              {/* Edit Button */}
+              <div className="flex gap-2">
+                {!isEditing ? (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                  >
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false)
+                        setError(null)
+                      }}
+                      className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                    >
+                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                      {isSaving ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Saving...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <Save className="w-4 h-4" />
+                          Save
+                        </span>
+                      )}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
-
-            {/* Edit Button */}
-            <div className="flex gap-2">
-              {!isEditing ? (
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20 rounded-xl"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false)
-                      setError(null)
-                    }}
-                    className="border-white/20 bg-white/5 text-white hover:bg-white/10 rounded-xl"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSaveProfile}
-                    disabled={isSaving}
-                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl shadow-lg shadow-red-500/20"
-                  >
-                    {isSaving ? (
-                      <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Saving...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Save className="w-4 h-4" />
-                        Save
-                      </span>
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
           </div>
-        </div>
-
-        {/* Curved transition */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 40" fill="none" preserveAspectRatio="none" className="w-full h-6">
-            <path d="M0 40V15C360 0 720 0 1080 15C1260 22 1380 30 1440 30V40H0Z" fill="#F9FAFB"/>
-          </svg>
         </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Success Message */}
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+          <div className="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-2xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
             </div>
             <span className="font-medium">Profile updated successfully!</span>
           </div>
@@ -390,9 +385,9 @@ export default function ProfilePage() {
 
         {/* Password Success Message */}
         {passwordSuccess && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+          <div className="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-2xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
             </div>
             <span className="font-medium">Password changed successfully!</span>
           </div>
@@ -400,8 +395,8 @@ export default function ProfilePage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+          <div className="mb-6 bg-rose-50 border border-rose-100 text-red-600 px-4 py-3 rounded-2xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-red-600" />
             </div>
             <span>{error}</span>
@@ -411,13 +406,14 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Avatar & Upload */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="rounded-2xl border-gray-100 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100/50 pb-4">
+            <Card className="relative bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
                     <Camera className="w-5 h-5 text-white" />
                   </div>
-                  <CardTitle className="text-base">Profile Photo</CardTitle>
+                  <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Profile Photo</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -426,11 +422,11 @@ export default function ProfilePage() {
                     <img
                       src={profileData.avatar_url}
                       alt="Profile"
-                      className="w-32 h-32 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                      className="w-32 h-32 rounded-2xl object-cover ring-2 ring-white shadow"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center border-4 border-gray-100">
-                      <span className="text-4xl font-bold text-red-500">
+                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow">
+                      <span className="text-4xl font-semibold text-white">
                         {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>
                     </div>
@@ -449,7 +445,7 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <div className="text-center pt-4 border-t border-gray-100">
+                <div className="text-center pt-4 border-t border-rose-100">
                   <p className="text-sm font-medium text-gray-900">{userProfile?.email}</p>
                   <p className="text-xs text-gray-500 mt-1 capitalize flex items-center justify-center gap-1">
                     {userProfile?.role === 'instructor' ? (
@@ -464,14 +460,15 @@ export default function ProfilePage() {
             </Card>
 
             {/* Security Card - Change Password */}
-            <Card className="rounded-2xl border-gray-100 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100/50 pb-4">
+            <Card className="relative bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
                     <KeyRound className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Security</CardTitle>
+                    <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Security</CardTitle>
                     <CardDescription className="text-xs">Manage your password</CardDescription>
                   </div>
                 </div>
@@ -481,7 +478,7 @@ export default function ProfilePage() {
                   <Button
                     onClick={() => setShowPasswordSection(true)}
                     variant="outline"
-                    className="w-full h-11 rounded-xl border-gray-200 hover:bg-gray-50"
+                    className="w-full h-11 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                   >
                     <Lock className="w-4 h-4 mr-2" />
                     Change Password
@@ -489,14 +486,14 @@ export default function ProfilePage() {
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     {passwordError && (
-                      <div className="bg-red-50 border border-red-100 text-red-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
+                      <div className="bg-rose-50 border border-rose-100 text-red-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
                         {passwordError}
                       </div>
                     )}
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Current Password</label>
+                      <label className="text-[13px] font-medium text-gray-700">Current Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -504,7 +501,7 @@ export default function ProfilePage() {
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           placeholder="Enter current password"
-                          className="h-11 pl-10 pr-10 rounded-xl border-gray-200"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                         />
                         <button
@@ -518,7 +515,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">New Password</label>
+                      <label className="text-[13px] font-medium text-gray-700">New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -526,7 +523,7 @@ export default function ProfilePage() {
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                           placeholder="Enter new password"
-                          className="h-11 pl-10 pr-10 rounded-xl border-gray-200"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                           minLength={6}
                         />
@@ -541,7 +538,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+                      <label className="text-[13px] font-medium text-gray-700">Confirm New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -549,7 +546,7 @@ export default function ProfilePage() {
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                           placeholder="Confirm new password"
-                          className="h-11 pl-10 pr-10 rounded-xl border-gray-200"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                           minLength={6}
                         />
@@ -576,15 +573,16 @@ export default function ProfilePage() {
                             confirmPassword: '',
                           })
                         }}
-                        className="flex-1 h-11 rounded-xl border-gray-200"
+                        className="flex-1 h-11 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                       >
                         Cancel
                       </Button>
                       <Button
                         type="submit"
                         disabled={passwordLoading}
-                        className="flex-1 h-11 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl"
+                        className="relative overflow-hidden flex-1 h-11 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
                       >
+                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                         {passwordLoading ? (
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -603,14 +601,15 @@ export default function ProfilePage() {
 
           {/* Right Column - Profile Info */}
           <div className="lg:col-span-2">
-            <Card className="rounded-2xl border-gray-100 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100/50 pb-4">
+            <Card className="relative bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Personal Information</CardTitle>
+                    <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Personal Information</CardTitle>
                     <CardDescription className="text-xs">Update your personal details</CardDescription>
                   </div>
                 </div>
@@ -618,7 +617,7 @@ export default function ProfilePage() {
               <CardContent className="p-6 space-y-5">
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-400" />
                     Full Name
                   </label>
@@ -626,27 +625,27 @@ export default function ProfilePage() {
                     value={profileData.full_name}
                     onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
                     disabled={!isEditing}
-                    className="h-12 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500 disabled:bg-gray-50"
+                    className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
                   />
                 </div>
 
                 {/* Email (Read-only) */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-gray-400" />
                     Email Address
                   </label>
                   <Input
                     value={userProfile?.email || ''}
                     disabled
-                    className="h-12 rounded-xl bg-gray-100 border-gray-200"
+                    className="h-12 rounded-xl bg-rose-50/40 border-rose-100 text-gray-500"
                   />
                   <p className="text-xs text-gray-500">Email cannot be changed</p>
                 </div>
 
                 {/* Bio */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-[13px] font-medium text-gray-700">
                     Bio
                   </label>
                   <textarea
@@ -654,7 +653,7 @@ export default function ProfilePage() {
                     onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                     disabled={!isEditing}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-red-500 focus:ring-red-500 disabled:bg-gray-50 text-sm"
+                    className="w-full px-4 py-3 bg-white/70 border border-rose-100 rounded-xl placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40 text-sm"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -662,7 +661,7 @@ export default function ProfilePage() {
                 {/* Phone & Location Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-400" />
                       Phone Number
                     </label>
@@ -671,12 +670,12 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                       disabled={!isEditing}
                       placeholder="+234 XXX XXX XXXX"
-                      className="h-12 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500 disabled:bg-gray-50"
+                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-400" />
                       Location
                     </label>
@@ -685,7 +684,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
                       disabled={!isEditing}
                       placeholder="Lagos, Nigeria"
-                      className="h-12 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500 disabled:bg-gray-50"
+                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
                     />
                   </div>
                 </div>
@@ -693,7 +692,7 @@ export default function ProfilePage() {
                 {/* Website (Instructors only) */}
                 {userProfile?.role === 'instructor' && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
                       <Globe className="w-4 h-4 text-gray-400" />
                       Website
                     </label>
@@ -702,7 +701,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
                       disabled={!isEditing}
                       placeholder="https://yourwebsite.com"
-                      className="h-12 rounded-xl border-gray-200 focus:border-red-500 focus:ring-red-500 disabled:bg-gray-50"
+                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
                     />
                   </div>
                 )}
@@ -713,20 +712,21 @@ export default function ProfilePage() {
 
         {/* Instructor Statistics */}
         {userProfile?.role === 'instructor' && (
-          <Card className="mt-6 rounded-2xl border-gray-100 shadow-sm overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100/50 pb-4">
+          <Card className="relative mt-6 bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-base">Instructor Statistics</CardTitle>
+                <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Instructor Statistics</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-red-50 to-pink-50 p-5 rounded-xl border border-red-100">
+                <div className="bg-rose-50/70 p-5 rounded-2xl border border-rose-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
                       <BookOpen className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -735,9 +735,9 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
+                <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
                       <Users className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -746,9 +746,9 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border border-green-100">
+                <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
                       <span className="text-white font-bold text-sm">₦</span>
                     </div>
                     <div>

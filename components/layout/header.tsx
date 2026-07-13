@@ -41,7 +41,7 @@ function NavLink({
 export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, userProfile, signOut, displayRole } = useAuth()
+  const { user, userProfile, signOut, displayRole, homeRoute } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
@@ -55,9 +55,13 @@ export default function Header() {
     }
   }
 
+  // Use the server-resolved home route so institution admins land on
+  // /institution/dashboard and super admins on /admin (users.role alone
+  // cannot distinguish them from learners).
   const getDashboardLink = () => {
-    if (!userProfile) return '/dashboard'
-    return userProfile.role === 'instructor' ? '/instructor' : '/dashboard'
+    if (!user) return '/dashboard'
+    if (homeRoute && homeRoute !== '/dashboard') return homeRoute
+    return userProfile?.role === 'instructor' ? '/instructor' : '/dashboard'
   }
 
   if (pathname?.startsWith('/auth/')) {

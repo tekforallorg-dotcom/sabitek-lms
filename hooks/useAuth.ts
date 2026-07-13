@@ -12,6 +12,7 @@ interface AuthReturn {
   routeResolving: boolean
   displayRole: string | null
   institutionName: string | null
+  homeRoute: string
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any; needsVerification?: boolean }>
   signOut: () => Promise<void>
@@ -27,6 +28,9 @@ export function useAuth(): AuthReturn {
   const [routeResolving, setRouteResolving] = useState(false)
   const [displayRole, setDisplayRole] = useState<string | null>(null)
   const [institutionName, setInstitutionName] = useState<string | null>(null)
+  // Resolved home route (from /api/auth/resolve-route): institution admins ->
+  // /institution/dashboard, instructors -> /instructor, super admins -> /admin.
+  const [homeRoute, setHomeRoute] = useState<string>('/dashboard')
   const router = useRouter()
 
   const fetchUserProfile = useCallback(async (userId: string) => {
@@ -80,6 +84,7 @@ export function useAuth(): AuthReturn {
       if (payload.institution_name) {
         setInstitutionName(payload.institution_name)
       }
+      setHomeRoute(payload.route || '/dashboard')
 
       return payload.route || '/dashboard'
     } catch (err) {
@@ -112,6 +117,9 @@ export function useAuth(): AuthReturn {
             }
             if (mounted && payload.institution_name) {
               setInstitutionName(payload.institution_name)
+            }
+            if (mounted && payload.route) {
+              setHomeRoute(payload.route)
             }
           }
         } else {
@@ -261,6 +269,7 @@ export function useAuth(): AuthReturn {
     routeResolving,
     displayRole,
     institutionName,
+    homeRoute,
     signIn,
     signUp,
     signOut,

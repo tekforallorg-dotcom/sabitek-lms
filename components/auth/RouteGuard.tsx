@@ -24,7 +24,7 @@ export default function RouteGuard({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, userProfile, loading } = useAuth()
+  const { user, userProfile, loading, homeRoute } = useAuth()
   // 'checking' only used for the institution membership lookup
   const [membershipState, setMembershipState] = useState<'idle' | 'checking' | 'member' | 'not_member'>('idle')
 
@@ -49,6 +49,10 @@ export default function RouteGuard({
         // Instructors have their own home; mirrors the existing page-level rule.
         if (userProfile.role === 'instructor') {
           router.replace('/instructor')
+        } else if (homeRoute === '/institution/dashboard' || homeRoute === '/admin') {
+          // Institution admins / program managers / super admins belong in
+          // their own workspace, not the learner dashboard.
+          router.replace(homeRoute)
         }
         break
       case 'institution': {
@@ -81,7 +85,7 @@ export default function RouteGuard({
       default:
         break
     }
-  }, [loading, user, userProfile, require, pathname, membershipState, router])
+  }, [loading, user, userProfile, require, pathname, membershipState, homeRoute, router])
 
   const resolvingRole = require !== 'auth' && !userProfile
   const resolvingMembership =
