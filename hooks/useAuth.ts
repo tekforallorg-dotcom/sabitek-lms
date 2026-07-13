@@ -12,7 +12,7 @@ interface AuthReturn {
   routeResolving: boolean
   displayRole: string | null
   institutionName: string | null
-  homeRoute: string
+  homeRoute: string | null
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any; needsVerification?: boolean }>
   signOut: () => Promise<void>
@@ -30,7 +30,7 @@ export function useAuth(): AuthReturn {
   const [institutionName, setInstitutionName] = useState<string | null>(null)
   // Resolved home route (from /api/auth/resolve-route): institution admins ->
   // /institution/dashboard, instructors -> /instructor, super admins -> /admin.
-  const [homeRoute, setHomeRoute] = useState<string>('/dashboard')
+  const [homeRoute, setHomeRoute] = useState<string | null>(null)
   const router = useRouter()
 
   const fetchUserProfile = useCallback(async (userId: string) => {
@@ -66,13 +66,19 @@ export function useAuth(): AuthReturn {
   const resolvePostLoginRoute = async (): Promise<string> => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) return '/dashboard'
+      if (!session?.access_token) {
+        setHomeRoute('/dashboard')
+        return '/dashboard'
+      }
 
       const res = await fetch('/api/auth/resolve-route', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
 
-      if (!res.ok) return '/dashboard'
+      if (!res.ok) {
+        setHomeRoute('/dashboard')
+        return '/dashboard'
+      }
 
       const json = await res.json()
       const payload = json.data || json
@@ -89,6 +95,7 @@ export function useAuth(): AuthReturn {
       return payload.route || '/dashboard'
     } catch (err) {
       console.error('Error resolving post-login route:', err)
+      setHomeRoute('/dashboard')
       return '/dashboard'
     }
   }
@@ -118,15 +125,18 @@ export function useAuth(): AuthReturn {
             if (mounted && payload.institution_name) {
               setInstitutionName(payload.institution_name)
             }
-            if (mounted && payload.route) {
-              setHomeRoute(payload.route)
+            if (mounted) {
+              setHomeRoute(payload.route || '/dashboard')
             }
+          } else if (mounted) {
+            setHomeRoute('/dashboard')
           }
         } else {
           setUser(null)
           setUserProfile(null)
           setDisplayRole(null)
           setInstitutionName(null)
+          setHomeRoute('/dashboard')
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {

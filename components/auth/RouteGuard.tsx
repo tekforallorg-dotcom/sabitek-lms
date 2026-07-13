@@ -8,12 +8,19 @@ import SabiLoader from '@/components/ui/SabiLoader'
 type Requirement = 'auth' | 'learner' | 'instructor' | 'institution'
 
 /**
- * Route-group guard, mounted from a layout so every subroute is covered
- * (previously only index pages redirected, leaving subroutes reachable).
+ * Route-group guard, mounted from a layout so every subroute is covered.
  *
- * Middleware now enforces auth presence server-side (cookie sessions via
- * @supabase/ssr); this layout guard adds the ROLE routing on top, with
- * Supabase RLS as the data boundary underneath.
+ * Middleware enforces auth presence server-side (cookie sessions via
+ * @supabase/ssr); this guard adds ROLE routing on top, with Supabase RLS
+ * as the data boundary underneath.
+ *
+ * Anti-flicker rules:
+ * - 'learner' waits for the server-resolved homeRoute before rendering,
+ *   so institution admins never see the learner dashboard flash.
+ * - 'institution' checks membership via the service-backed
+ *   /api/institutions/my-membership endpoint (client RLS reads of
+ *   institution_members are not reliable), preventing the
+ *   /dashboard <-> /institution/dashboard redirect ping-pong.
  */
 export default function RouteGuard({
   require,
@@ -25,7 +32,6 @@ export default function RouteGuard({
   const router = useRouter()
   const pathname = usePathname()
   const { user, userProfile, loading, homeRoute } = useAuth()
-  // 'checking' only used for the institution membership lookup
   const [membershipState, setMembershipState] = useState<'idle' | 'checking' | 'member' | 'not_member'>('idle')
 
   useEffect(() => {
@@ -46,7 +52,8 @@ export default function RouteGuard({
         }
         break
       case 'learner':
-        // Instructors have their own home; mirrors the existing page-level rule.
+        // Wait until the server has resolved the user's home before deciding.
+        if (homeRoute === null) return
         if (userProfile.role === 'instructor') {
           router.replace('/instructor')
         } else if (homeRoute === '/institution/dashboard' || homeRoute === '/admin') {
@@ -64,20 +71,33 @@ export default function RouteGuard({
         }
         if (membershipState === 'idle') {
           setMembershipState('checking')
-          supabase
-            .from('institution_members')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .limit(1)
-            .then(({ data, error }) => {
-              if (!error && data && data.length > 0) {
-                setMembershipState('member')
-              } else {
-                setMembershipState('not_member')
-                router.replace('/dashboard')
+          ;(async () => {
+            try {
+              const { data: { session } } = await supabase.auth.getSession()
+              if (!session) {
+                router.replace('/auth/login')
+                return
               }
-            })
+              const res = await fetch('/api/institutions/my-membership', {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+              })
+              if (res.ok) {
+                setMembershipState('member')
+              } else if (res.status === 404 || res.status === 403) {
+                // Confirmed non-member: send to their resolved home (never
+                // /institution/*, so no loop is possible).
+                setMembershipState('not_member')
+                router.replace(homeRoute && homeRoute !== '/institution/dashboard' ? homeRoute : '/dashboard')
+              } else {
+                // Transient failure: do NOT bounce; let the page's own
+                // error states handle it instead of redirect-looping.
+                setMembershipState('member')
+              }
+            } catch {
+              // Network hiccup: fail open to the page rather than loop.
+              setMembershipState('member')
+            }
+          })()
         }
         break
       }
@@ -88,12 +108,13 @@ export default function RouteGuard({
   }, [loading, user, userProfile, require, pathname, membershipState, homeRoute, router])
 
   const resolvingRole = require !== 'auth' && !userProfile
+  const resolvingHome = require === 'learner' && homeRoute === null
   const resolvingMembership =
     require === 'institution' &&
     pathname !== '/institution/apply' &&
     membershipState !== 'member'
 
-  if (loading || !user || resolvingRole || resolvingMembership) {
+  if (loading || !user || resolvingRole || resolvingHome || resolvingMembership) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
         <SabiLoader text="Loading..." size="lg" />
