@@ -143,7 +143,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     year: 'numeric'
   }).toUpperCase()
   const verifyUrl = certificate
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://sabitek.school'}/verify/${certificate.certificate_number}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://sabitek.app'}/verify/${certificate.certificate_number}`
     : ''
 
   // ============================================================

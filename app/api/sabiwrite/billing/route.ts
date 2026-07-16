@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         amount: amount, // Already in kobo
         currency: 'NGN',
         reference: txRef,
-        callback_url: callback_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'}/sabiwrite/billing?verify=true`,
+        callback_url: callback_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'}/sabiwrite/billing?verify=true`,
         metadata: {
           user_id: userId,
           transaction_type: 'sabiwrite_topup',

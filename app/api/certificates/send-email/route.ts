@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // Send email with PDF attachment
     const { data, error } = await resend.emails.send({
-      from: 'Sabitek <certificates@sabitek.school>',
+      from: 'Sabitek <certificates@sabitek.app>',
       to: email,
       subject: `🎓 Your Certificate: ${courseName}`,
       html: `
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
                 <p style="margin: 0 0 12px; color: #6b7280; font-size: 13px;">
                   Anyone can verify your certificate at:
                 </p>
-                <a href="https://sabitek.school/verify/${certificateNumber}" 
+                <a href="https://sabitek.app/verify/${certificateNumber}" 
                    style="display: inline-block; background: linear-gradient(135deg, #ef4444, #ec4899); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                   Verify Certificate
                 </a>

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = Buffer.from(pdfData, 'base64')
 
     const { data, error } = await resend.emails.send({
-      from: 'Sabitek Career Advisor <noreply@sabitek.school>',
+      from: 'Sabitek Career Advisor <noreply@sabitek.app>',
       to: [email],
       subject: 'Your Personalized Tech Career Path - SabiAdvisor',
       html: `
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
             </div>
 
             <div class="cta">
-              <a href="https://sabitek.school/courses" class="button">
+              <a href="https://sabitek.app/courses" class="button">
                 Browse Courses to Get Started
               </a>
             </div>
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
 
             <div class="footer">
               <p><strong>Sabitek</strong> - Empowering African Learners</p>
-              <p>Questions? Visit <a href="https://sabitek.school" style="color: #dc2626;">sabitek.school</a></p>
+              <p>Questions? Visit <a href="https://sabitek.app" style="color: #dc2626;">sabitek.app</a></p>
             </div>
           </body>
         </html>

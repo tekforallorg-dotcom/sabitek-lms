@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         amount: plan.price * 100,
         currency: plan.currency,
         reference: txRef,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'}/billing/verify`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'}/billing/verify`,
         metadata: {
           user_id: userId,
           plan_id: plan.id,

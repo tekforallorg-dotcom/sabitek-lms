@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM_EMAIL = 'Sabitek <noreply@sabitek.school>'
+const FROM_EMAIL = 'Sabitek <noreply@sabitek.app>'
 
 /**
  * HTML-escape user-supplied text for safe inclusion in email bodies.
@@ -91,10 +91,10 @@ export async function sendSubscriptionReceiptEmail({
           </ul>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sabitek.school/dashboard" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Go to Dashboard</a>
+            <a href="https://sabitek.app/dashboard" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Go to Dashboard</a>
           </div>
           
-          <p style="color: #666; font-size: 14px;">If you have any questions, please contact us at support@sabitek.school</p>
+          <p style="color: #666; font-size: 14px;">If you have any questions, please contact us at support@sabitek.app</p>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
@@ -185,10 +185,10 @@ export async function sendCourseReceiptEmail({
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sabitek.school/courses/${courseSlug}" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Start Learning</a>
+            <a href="https://sabitek.app/courses/${courseSlug}" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Start Learning</a>
           </div>
           
-          <p style="color: #666; font-size: 14px;">If you have any questions, please contact us at support@sabitek.school</p>
+          <p style="color: #666; font-size: 14px;">If you have any questions, please contact us at support@sabitek.app</p>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
@@ -262,10 +262,10 @@ export async function sendPaymentFailedEmail({
           <p>To keep your Pro access active, please update your payment method.</p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://sabitek.school/account/billing" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Update Payment Method</a>
+            <a href="https://sabitek.app/account/billing" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Update Payment Method</a>
           </div>
           
-          <p style="color: #666; font-size: 14px;">If you need help, please contact us at support@sabitek.school</p>
+          <p style="color: #666; font-size: 14px;">If you need help, please contact us at support@sabitek.app</p>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
@@ -364,7 +364,7 @@ export async function sendWorkspaceWelcomeEmail({
             <a href="${loginUrl}" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Sign In to Your Workspace</a>
           </div>
 
-          <p style="color: #666; font-size: 14px;">If you have any questions, email us at support@sabitek.school</p>
+          <p style="color: #666; font-size: 14px;">If you have any questions, email us at support@sabitek.app</p>
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
@@ -458,7 +458,7 @@ export async function sendApplicationRejectionEmail({
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="mailto:support@sabitek.school" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Contact Support</a>
+            <a href="mailto:support@sabitek.app" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Contact Support</a>
           </div>
 
           <p style="color: #6b7280; font-size: 14px;">We genuinely appreciate the time you put into your application.</p>

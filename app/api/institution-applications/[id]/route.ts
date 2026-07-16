@@ -12,7 +12,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'
 
 /**
  * Map application org_type to the institution_type enum.

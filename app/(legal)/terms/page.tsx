@@ -346,7 +346,7 @@ export default function TermsPage() {
                   If you believe content on Sabitek infringes your copyright, contact us at:
                 </p>
                 <div className="text-sm space-y-1">
-                  <p><strong>Email:</strong> legal@sabitek.school</p>
+                  <p><strong>Email:</strong> legal@sabitek.app</p>
                   <p><strong>Subject:</strong> Copyright Infringement Notice</p>
                 </div>
                 <p className="text-sm mt-3">
@@ -550,7 +550,7 @@ export default function TermsPage() {
                 <p><strong>Email:</strong> impact@tekforall.org</p>
                 <p><strong>Support:</strong> </p>
                 <p><strong>Address:</strong> Tek4All Initiative, Abuja, FCT, Nigeria</p>
-                <p><strong>Website:</strong> <Link href="/" className="text-red-600 hover:text-red-700">https://sabitek.school</Link></p>
+                <p><strong>Website:</strong> <Link href="/" className="text-red-600 hover:text-red-700">https://sabitek.app</Link></p>
               </div>
             </div>
           </div>

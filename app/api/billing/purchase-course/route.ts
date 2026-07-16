@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         amount: Math.round(course.price * 100), // Paystack uses kobo
         reference: txRef,
         currency: course.currency || 'NGN',
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'}/billing/verify?type=course`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'}/billing/verify?type=course`,
         metadata: {
           user_id: userId,
           course_id: courseId,

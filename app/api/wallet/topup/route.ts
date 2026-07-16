@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 )
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.school'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'
 
 // Preset amounts for quick selection (in kobo)
 const TOPUP_PRESETS = [

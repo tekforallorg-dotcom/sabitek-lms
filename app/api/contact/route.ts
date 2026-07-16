@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
-      from: 'noreply@sabitek.school',
+      from: 'noreply@sabitek.app',
       to: 'impact@tekforall.org',
       subject: `Sabitek Contact: ${subject}`,
       html: `

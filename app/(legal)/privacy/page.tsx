@@ -626,7 +626,7 @@ export default function PrivacyPage() {
 
             <p>
               If you believe we have inadvertently collected information from a child under 13 without 
-              proper consent, please contact us immediately at <strong>privacy@sabitek.school</strong> 
+              proper consent, please contact us immediately at <strong>privacy@sabitek.app</strong> 
               and we will delete the information promptly.
             </p>
           </div>
@@ -726,7 +726,7 @@ export default function PrivacyPage() {
                 <p><strong>General Support:</strong> </p>
                 <p><strong>Data Protection Officer:</strong> </p>
                 <p><strong>Address:</strong> Tek4All Initiative, Abuja, FCT, Nigeria</p>
-                <p><strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700">https://sabitek.school</Link></p>
+                <p><strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700">https://sabitek.app</Link></p>
               </div>
               <p className="text-sm mt-4 text-gray-600">
                 We aim to respond to all privacy inquiries within 48 hours.
