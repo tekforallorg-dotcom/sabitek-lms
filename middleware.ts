@@ -65,6 +65,7 @@ const PROTECTED_PREFIXES = [
   '/instructor',
   '/institution',
   '/admin',
+  '/courses',
   '/certificates',
   '/account',
   '/profile',
@@ -114,11 +115,7 @@ export async function middleware(request: NextRequest) {
   // server can finally verify who is asking. Role-level checks remain in
   // the route-group layouts + RLS; middleware enforces auth presence and
   // keeps the session token fresh.
-  // Course catalog and course detail pages are public (browse before you
-  // sign up); only the lesson viewer inside a course requires auth.
-  const needsAuth =
-    PROTECTED_PREFIXES.some((p) => pathname.startsWith(p)) ||
-    (pathname.startsWith('/courses') && pathname.includes('/lessons'))
+  const needsAuth = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))
 
   let response = NextResponse.next({ request })
 

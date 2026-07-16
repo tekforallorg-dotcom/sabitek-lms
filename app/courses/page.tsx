@@ -35,9 +35,12 @@ export default function CoursesPage() {
   const [coursesLoading, setCoursesLoading] = useState(true)
 
   useEffect(() => {
-    // Catalog is public: published courses are anon-readable under RLS.
-    fetchCourses()
-  }, [])
+    if (!loading && !user) {
+      router.push('/auth/login')
+    } else if (user) {
+      fetchCourses()
+    }
+  }, [user, loading, router])
 
   const fetchCourses = async () => {
     try {
@@ -94,7 +97,7 @@ export default function CoursesPage() {
     }
   }
 
-  if (coursesLoading) {
+  if (loading || coursesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
         <SabiLoader text="Loading courses..." size="lg" />
