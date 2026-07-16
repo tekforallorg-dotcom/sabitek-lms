@@ -47,18 +47,20 @@ export default function RouteGuard({
 
     switch (require) {
       case 'instructor':
-        if (userProfile.role !== 'instructor' && !userProfile.is_super_admin) {
-          router.replace('/dashboard')
+        // Access is allowed for anyone with an instructor persona (users.role
+        // or server-resolved home); others go to THEIR home, never a
+        // hardcoded route another guard might bounce them away from.
+        if (userProfile.role === 'instructor' || userProfile.is_super_admin) break
+        if (homeRoute === null) return // wait for the authority
+        if (homeRoute !== '/instructor') {
+          router.replace(homeRoute)
         }
         break
       case 'learner':
         // Wait until the server has resolved the user's home before deciding.
         if (homeRoute === null) return
-        if (userProfile.role === 'instructor') {
-          router.replace('/instructor')
-        } else if (homeRoute === '/institution/dashboard' || homeRoute === '/admin') {
-          // Institution admins / program managers / super admins belong in
-          // their own workspace, not the learner dashboard.
+        // Single authority: whatever resolve-route said is home, go there.
+        if (homeRoute !== '/dashboard') {
           router.replace(homeRoute)
         }
         break
@@ -108,7 +110,12 @@ export default function RouteGuard({
   }, [loading, user, userProfile, require, pathname, membershipState, homeRoute, router])
 
   const resolvingRole = require !== 'auth' && !userProfile
-  const resolvingHome = require === 'learner' && homeRoute === null
+  const resolvingHome =
+    (require === 'learner' && homeRoute === null) ||
+    (require === 'instructor' &&
+      homeRoute === null &&
+      userProfile?.role !== 'instructor' &&
+      !userProfile?.is_super_admin)
   const resolvingMembership =
     require === 'institution' &&
     pathname !== '/institution/apply' &&

@@ -50,13 +50,14 @@ export default function InstructorDashboard() {
     if (!loading) {
       if (!user) {
         router.push('/auth/login')
-      } else if (userProfile?.role !== 'instructor') {
-        router.push('/dashboard')
       } else {
+        // Role routing is the layout guard's job (single authority);
+        // duplicating it here caused redirect ping-pong for multi-persona
+        // accounts.
         fetchCourses()
       }
     }
-  }, [user, userProfile, loading, router])
+  }, [user, loading, router])
 
   const fetchCourses = async () => {
     try {
