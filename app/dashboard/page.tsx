@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import SabiLoader from '@/components/ui/SabiLoader'
 import GamificationStrip from '@/components/dashboard/GamificationStrip'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard'
 import {
   BookOpen,
@@ -385,8 +386,9 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── Gamification strip ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      {/* ── Onboarding checklist + gamification strip ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
+        <OnboardingChecklist persona="learner" />
         <GamificationStrip />
       </div>
 

@@ -9,6 +9,7 @@ import { useTerminology } from '@/hooks/useTerminology'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toast'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import {
   Building2,
   Users,
@@ -551,6 +552,11 @@ export default function InstitutionDashboardPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Persona onboarding checklist */}
+        <div className="mb-8 empty:mb-0">
+          <OnboardingChecklist persona="institution" />
+        </div>
+
         {/* Pending Approval Notice */}
         {institution.status === 'pending' && (
           <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">

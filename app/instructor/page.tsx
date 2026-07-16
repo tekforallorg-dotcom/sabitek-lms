@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import SabiLoader from '@/components/ui/SabiLoader'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import {
   BookOpen,
   CheckCircle,
@@ -167,6 +168,11 @@ export default function InstructorDashboard() {
 
       {/* ── Main content ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8">
+        {/* Onboarding checklist */}
+        <div className="mb-6 empty:mb-0">
+          <OnboardingChecklist persona="instructor" />
+        </div>
+
         {/* Courses */}
         <div className="relative bg-white/85 backdrop-blur-xl rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_20px_45px_-25px_rgba(225,29,72,0.35)] overflow-hidden">
           <span
