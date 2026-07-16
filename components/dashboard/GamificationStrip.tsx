@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { Target, Check, Flame, Medal, Lock, X } from 'lucide-react'
+import { Target, Check, Flame, Medal, Lock, X, Zap } from 'lucide-react'
 
 interface Streak {
   current: number
@@ -36,6 +36,7 @@ interface GamificationSummary {
   today: Today
   stats: Stats
   badges: Badge[]
+  weekly_xp: number
 }
 
 const MILESTONES = [3, 7, 14, 30, 60, 100]
@@ -119,7 +120,7 @@ export default function GamificationStrip() {
     )
   }
 
-  const { streak, today, badges } = data
+  const { streak, today, badges, weekly_xp: weeklyXp } = data
   const earnedBadges = badges.filter((b) => b.earned)
   const recentBadges = [...earnedBadges]
     .sort((a, b) => {
@@ -301,6 +302,27 @@ export default function GamificationStrip() {
                   View all
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <span className="hidden sm:block w-px self-stretch bg-rose-100/80" aria-hidden="true" />
+
+          {/* ── Zone 4 — Weekly XP ── */}
+          <div className="flex items-center gap-3 sm:flex-none sm:pr-1">
+            <div className="w-8 h-8 flex-shrink-0 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-red-500" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+                This week
+              </p>
+              <p className="mt-0.5 leading-none">
+                <span className="text-2xl font-bold tabular-nums text-gray-900">
+                  {weeklyXp}
+                </span>{' '}
+                <span className="text-xs text-rose-400 font-semibold">XP</span>
+              </p>
             </div>
           </div>
         </div>

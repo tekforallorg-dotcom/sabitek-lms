@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import SabiLoader from '@/components/ui/SabiLoader'
 import GamificationStrip from '@/components/dashboard/GamificationStrip'
+import LeaderboardCard from '@/components/dashboard/LeaderboardCard'
 import {
   BookOpen,
   Award,
@@ -387,6 +388,11 @@ export default function DashboardPage() {
       {/* ── Gamification strip ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <GamificationStrip />
+      </div>
+
+      {/* ── Weekly leaderboard ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <LeaderboardCard />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { syncXpForUser, weekStart } from '@/lib/gamification/xp'
 
 interface BadgeDef {
   key: string
@@ -44,6 +45,9 @@ export async function GET(request: NextRequest) {
 
     const dayStart = new Date()
     dayStart.setHours(0, 0, 0, 0)
+
+    // Derive any missing XP events from real rows before reporting
+    await syncXpForUser(userId)
 
     const [streakRes, lessonsRes, lessonsTodayRes, quizPassRes, perfectRes, certsRes, quizzesTodayRes, milestonesRes] =
       await Promise.all([
@@ -116,6 +120,18 @@ export async function GET(request: NextRequest) {
     const lessonsToday = lessonsTodayRes.count ?? 0
     const quizzesToday = quizzesTodayRes.count ?? 0
 
+    let weeklyXp = 0
+    try {
+      const { data: xpRows } = await supabaseAdmin
+        .from('xp_events')
+        .select('points')
+        .eq('user_id', userId)
+        .gte('created_at', weekStart().toISOString())
+      weeklyXp = (xpRows || []).reduce((sum, r: any) => sum + (r.points || 0), 0)
+    } catch {
+      // xp_events not provisioned yet
+    }
+
     return NextResponse.json({
       streak: {
         current: streak?.current_streak ?? 0,
@@ -133,6 +149,7 @@ export async function GET(request: NextRequest) {
         quizzes_passed: ctx.quizzes,
         certificates: ctx.certificates,
       },
+      weekly_xp: weeklyXp,
       badges,
     })
   } catch (error) {

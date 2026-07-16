@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { XP_VALUES } from '@/lib/gamification/xp'
 
 function parseQuestions(raw: unknown): any[] {
   let qs = raw
@@ -99,6 +100,23 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('quiz attempt insert failed:', insertError)
       return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
+    }
+
+    // Instant XP on pass; the unique (user, source, ref) key means
+    // retakes never double-award (best-effort, non-blocking)
+    if (passed) {
+      const xpRows = [
+        { user_id: userId, source: 'quiz_pass', points: XP_VALUES.quiz_pass, ref_id: lessonId },
+        ...(score === 100
+          ? [{ user_id: userId, source: 'quiz_perfect', points: XP_VALUES.quiz_perfect, ref_id: lessonId }]
+          : []),
+      ]
+      supabaseAdmin
+        .from('xp_events')
+        .upsert(xpRows, { onConflict: 'user_id,source,ref_id', ignoreDuplicates: true })
+        .then(({ error }) => {
+          if (error) console.log('xp award skipped:', error.message)
+        })
     }
 
     // A graded attempt is a study action: tick the streak (best-effort)
