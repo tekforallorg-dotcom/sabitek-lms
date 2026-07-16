@@ -11,6 +11,7 @@ import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
 import LessonReader from '@/components/viewer/LessonReader'
+import LessonQuestions from '@/components/lessons/LessonQuestions'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { toast } from '@/components/ui/toast'
 import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
@@ -25,6 +26,7 @@ import {
   ChevronDown,
   FileText,
   MessageSquare,
+  MessageCircleQuestion,
   Award,
   X,
   AlertCircle,
@@ -175,7 +177,7 @@ export default function LessonViewerPage() {
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   // Workspace tabs under the player: notes, AI summary, Q&A, practice quiz
-  const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'practice'>('notes')
+  const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'practice' | 'instructor'>('notes')
   // Sequential gating: which lessons are locked and why
   const [lockMap, setLockMap] = useState<Map<string, LockInfo>>(new Map())
   // Inputs for gating that survive re-renders, so locks release live
@@ -1064,10 +1066,11 @@ export default function LessonViewerPage() {
                 {/* Tab bar */}
                 <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
                   {(() => {
-                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'practice'; label: string; icon: React.ElementType }[] = [
+                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'practice' | 'instructor'; label: string; icon: React.ElementType }[] = [
                       { key: 'notes', label: 'My Notes', icon: FileText },
                       { key: 'summary', label: 'AI Summary', icon: BookOpen },
                       { key: 'qa', label: 'Ask AI', icon: MessageSquare },
+                      { key: 'instructor', label: 'Ask Instructor', icon: MessageCircleQuestion },
                     ]
                     if (!quiz) tabs.push({ key: 'practice', label: 'Practice Quiz', icon: Award })
                     return tabs.map((tab) => (
@@ -1137,6 +1140,11 @@ export default function LessonViewerPage() {
                   ) : (
                     <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
                   )
+                )}
+
+                {/* Ask Instructor tab */}
+                {activeTab === 'instructor' && lesson && (
+                  <LessonQuestions lessonId={lesson.id} courseId={lesson.course_id} />
                 )}
 
                 {/* Practice quiz tab (only when the lesson has no instructor quiz) */}

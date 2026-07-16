@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { List, X, Clock, Check, ArrowRight, GraduationCap } from 'lucide-react'
+import { List, X, Clock, Check, ArrowRight, GraduationCap, Printer } from 'lucide-react'
 import '@/styles/lesson-content.css'
 
 interface TocItem {
@@ -116,14 +116,14 @@ export default function LessonReader({
   }
 
   return (
-    <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+    <div className="lesson-print-root relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
       <span
         className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
         aria-hidden="true"
       />
 
       {/* Progress bar */}
-      <div className="sticky top-0 z-20 h-1 bg-rose-50">
+      <div className="lesson-print-hide sticky top-0 z-20 h-1 bg-rose-50">
         <div
           className="h-full bg-gradient-to-r from-red-500 to-pink-400 transition-[width] duration-150"
           style={{ width: `${progress}%` }}
@@ -136,6 +136,15 @@ export default function LessonReader({
           <Clock className="w-3.5 h-3.5 text-rose-400" />
           {readingMinutes} min read
         </span>
+        <div className="flex items-center gap-2 lesson-print-hide">
+          <button
+            onClick={() => window.print()}
+            title="Save this lesson as a PDF for offline reading"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50/70 border border-rose-100 text-xs font-semibold text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Save as PDF
+          </button>
         {toc.length > 1 && (
           <button
             onClick={() => setTocOpen(!tocOpen)}
@@ -145,11 +154,12 @@ export default function LessonReader({
             On this page
           </button>
         )}
+        </div>
       </div>
 
       {/* Collapsible TOC */}
       {tocOpen && toc.length > 1 && (
-        <nav className="mx-5 md:mx-8 mt-3 rounded-xl bg-rose-50/50 border border-rose-100 p-3">
+        <nav className="lesson-print-hide mx-5 md:mx-8 mt-3 rounded-xl bg-rose-50/50 border border-rose-100 p-3">
           <ul className="space-y-1">
             {toc.map((item) => (
               <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 12}px` }}>
@@ -178,7 +188,7 @@ export default function LessonReader({
 
       {/* ── End-of-lesson recap: lessons end with a moment, not a scroll-stop ── */}
       {toc.length >= 2 && (
-        <div className="mx-5 md:mx-8 mb-6 md:mb-8 max-w-3xl lg:mx-auto">
+        <div className="lesson-print-hide mx-5 md:mx-8 mb-6 md:mb-8 max-w-3xl lg:mx-auto">
           <div className="relative overflow-hidden bg-rose-50/50 border border-rose-100 rounded-2xl p-5 sm:p-6">
             <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
             <div className="flex items-center gap-3 mb-4">

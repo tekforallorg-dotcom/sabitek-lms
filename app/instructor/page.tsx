@@ -16,6 +16,7 @@ import {
   Settings,
   ArrowRight,
   BarChart3,
+  MessageCircleQuestion,
 } from 'lucide-react'
 
 interface Course {
@@ -128,6 +129,15 @@ export default function InstructorDashboard() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Earnings feature hidden */}
+              <Button
+                onClick={() => router.push('/instructor/questions')}
+                variant="outline"
+                className={outlineBtnClass}
+                size="sm"
+              >
+                <MessageCircleQuestion className="w-4 h-4 mr-1.5" />
+                Questions
+              </Button>
               <Button
                 onClick={() => router.push('/instructor/courses/create')}
                 className={primaryBtnClass}

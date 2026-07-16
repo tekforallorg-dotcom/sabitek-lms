@@ -308,3 +308,36 @@
 .lesson-content a.lesson-cta:hover {
   transform: translateY(-1px);
 }
+
+/* ── Print / Save-as-PDF: only the lesson article survives ── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .lesson-print-root,
+  .lesson-print-root * {
+    visibility: visible;
+  }
+  .lesson-print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+  }
+  .lesson-print-hide {
+    display: none !important;
+  }
+  .lesson-content {
+    font-size: 12pt;
+    color: #111;
+  }
+  .lesson-content img {
+    box-shadow: none;
+    max-height: 3.5in;
+    width: auto !important;
+  }
+  .lesson-content a.lesson-cta {
+    box-shadow: none;
+  }
+}
