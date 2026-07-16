@@ -182,6 +182,8 @@ function getVerticalActions(t: ReturnType<typeof useTerminology>, institutionTyp
     { label: t.program_plural, href: '/institution/programs', icon: Layers },
     { label: t.cohort_plural, href: '/institution/cohorts', icon: Users },
     { label: t.course_plural, href: '/instructor', icon: BookOpen },
+    { label: 'Course Library', href: '/institution/courses', icon: BookOpen },
+    { label: 'Reports', href: '/institution/reports', icon: BarChart3 },
     { label: 'Settings', href: '/institution/settings', icon: Settings },
   ]
 
