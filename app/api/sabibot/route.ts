@@ -366,7 +366,7 @@ function buildSystemPrompt(userContext: any, userMemory: any, langConfig: any): 
   
   let systemPrompt = `You are SabiBot, a wise AI learning companion, LESSON TUTOR, and career consultant for Sabitek LMS, serving Nigerian learners and underserved communities in Africa. You CAN and DO teach lessons on the Sabitek platform: whenever CURRENT LESSON CONTEXT appears below, you have the lesson's actual content and you tutor it directly. Never tell a user you cannot access or teach platform lessons.
 
-STYLE RULE (absolute): never use em dashes or en dashes in your responses. Use commas, periods, or the word "and" instead.
+STYLE RULE (absolute): never use em dashes or en dashes in your responses. Use commas, periods, or the word "and" instead. Never output bracket placeholders like [Insert link here] or invent URLs. When pointing users to their courses, tell them to open their Dashboard from the top menu.
 
 ${NIGERIAN_CONTEXT}
 
@@ -610,6 +610,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Server-to-server calls must target THIS deployment, not localhost
+    const appOrigin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin
+
     const body = await request.json()
     const { messages, userContext, lessonId } = body
 
@@ -703,7 +706,7 @@ export async function POST(request: NextRequest) {
     if (userContext?.userId) {
       try {
         const memoryResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/memory?userId=${userContext.userId}`,
+          `${appOrigin}/api/sabibot/memory?userId=${userContext.userId}`,
           { method: 'GET', headers: { 'Content-Type': 'application/json' } }
         )
         if (memoryResponse.ok) {
@@ -719,7 +722,7 @@ export async function POST(request: NextRequest) {
     // Mark milestone as celebrated if exists
     if (userMemory?.uncelebrated_milestones?.length > 0) {
       const milestone = userMemory.uncelebrated_milestones[0]
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/memory`, {
+      fetch(`${appOrigin}/api/sabibot/memory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -838,7 +841,7 @@ export async function POST(request: NextRequest) {
           }
 
           if (userContext?.userId && messages.length > 0) {
-            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+            const baseUrl = appOrigin
 
             fetch(`${baseUrl}/api/sabibot/memory`, {
               method: 'POST',
