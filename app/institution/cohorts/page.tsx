@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from '@/components/ui/toast'
 import {
   Users,
   Plus,
@@ -25,13 +26,20 @@ import {
   ClipboardCheck,
  AlertCircle,
   Loader2,
+  Share2,
+  Copy,
+  Check,
+  X,
+  ExternalLink,
 } from 'lucide-react'
 
 interface Cohort {
   id: string
   name: string
+  slug: string | null
   status: string
   enrollment_mode: string
+  access_code: string | null
   start_date: string | null
   end_date: string | null
   seat_limit: number | null
@@ -110,6 +118,133 @@ function SabiBotLoader({ message }: { message: string }) {
   )
 }
 
+function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => void }) {
+  const [copiedLink, setCopiedLink] = useState(false)
+  const [copiedCode, setCopiedCode] = useState(false)
+
+  const joinUrl = `https://www.sabitek.app/c/${cohort.slug}`
+
+  const copyText = async (
+    text: string,
+    message: string,
+    setCopied: (v: boolean) => void
+  ) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success(message)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Could not copy')
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative overflow-hidden bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+
+        <div className="flex items-start justify-between mb-5">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">
+              Share this cohort
+            </p>
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 truncate">
+              {cohort.name}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors cursor-pointer flex-shrink-0"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Join link */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Join link</label>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-rose-50/60 border border-rose-100 text-sm text-gray-700 truncate">
+              {joinUrl}
+            </div>
+            <button
+              type="button"
+              onClick={() => copyText(joinUrl, 'Link copied', setCopiedLink)}
+              className="relative overflow-hidden inline-flex items-center gap-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full px-4 py-2 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+            >
+              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+              {copiedLink ? (
+                <><Check className="w-3.5 h-3.5" />Copied</>
+              ) : (
+                <><Copy className="w-3.5 h-3.5" />Copy</>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mode-aware section */}
+        {cohort.enrollment_mode === 'access_code' ? (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Access code</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-rose-50/60 border border-rose-100 text-sm font-bold tracking-widest tabular-nums text-gray-900 truncate">
+                {cohort.access_code || '—'}
+              </div>
+              <button
+                type="button"
+                onClick={() => copyText(cohort.access_code || '', 'Code copied', setCopiedCode)}
+                className="relative overflow-hidden inline-flex items-center gap-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full px-4 py-2 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+              >
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                {copiedCode ? (
+                  <><Check className="w-3.5 h-3.5" />Copied</>
+                ) : (
+                  <><Copy className="w-3.5 h-3.5" />Copy</>
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1.5">
+              Share the link AND the code. Learners need both.
+            </p>
+          </div>
+        ) : cohort.enrollment_mode === 'invite_only' ? (
+          <div className="mb-4 flex items-start gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+            <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700">
+              This cohort is invite-only - the public page shows a notice instead of a join
+              button. Use member invitations from the cohort detail page.
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 mb-4">
+            Anyone with this link can join while enrollment is open.
+          </p>
+        )}
+
+        {/* Preview link */}
+        <a
+          href={joinUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer"
+        >
+          Preview what learners see
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </div>
+    </div>
+  )
+}
+
 export default function CohortsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -122,6 +257,7 @@ export default function CohortsPage() {
   const [error, setError] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
   const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null)
+  const [shareTarget, setShareTarget] = useState<Cohort | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -373,10 +509,24 @@ export default function CohortsPage() {
                           {cohort.program?.name || 'No Program'}
                         </Link>
                       </div>
-                      <div className="relative">
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {cohort.slug && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenu(null)
+                              setShareTarget(cohort)
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/70 border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full text-xs font-semibold text-gray-700 shadow-sm transition-colors cursor-pointer"
+                          >
+                            <Share2 className="w-3.5 h-3.5 text-red-500" />
+                            Share
+                          </button>
+                        )}
+                        <div className="relative">
                         <button
                           onClick={() => setOpenMenu(openMenu === cohort.id ? null : cohort.id)}
-                          className="p-1.5 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                         >
                           <MoreVertical className="w-4 h-4 text-gray-400" />
                         </button>
@@ -390,13 +540,14 @@ export default function CohortsPage() {
                             </Link>
                             <button
                               onClick={() => openArchiveModal(cohort.id, cohort.name)}
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-rose-50 w-full text-left"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-rose-50 w-full text-left cursor-pointer"
                             >
                               <Archive className="w-4 h-4" />
                               Archive
                             </button>
                           </div>
                         )}
+                        </div>
                       </div>
                     </div>
 
@@ -433,6 +584,11 @@ export default function CohortsPage() {
           </div>
         )}
       </div>
+
+      {/* Share Cohort Modal */}
+      {shareTarget && (
+        <ShareCohortModal cohort={shareTarget} onClose={() => setShareTarget(null)} />
+      )}
 
       {/* Archive Confirmation Modal */}
       {archiveTarget && (

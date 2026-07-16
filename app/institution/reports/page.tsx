@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import SabiLoader from '@/components/ui/SabiLoader'
+import { toast } from '@/components/ui/toast'
 import {
   Building2,
   Users,
@@ -15,6 +16,7 @@ import {
   BarChart3,
   AlertCircle,
   RefreshCw,
+  Download,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -49,6 +51,15 @@ const statusChip: Record<string, string> = {
   upcoming: 'bg-amber-50 text-amber-700 border-amber-100',
   draft: 'bg-gray-50 text-gray-500 border-gray-200',
   archived: 'bg-gray-50 text-gray-500 border-gray-200',
+}
+
+/** Escape a single CSV field: quote when it contains a comma, quote, or newline. */
+function csvCell(value: string | number | null | undefined): string {
+  const s = value === null || value === undefined ? '' : String(value)
+  if (/[",\n]/.test(s)) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
 }
 
 export default function InstitutionReportsPage() {
@@ -99,6 +110,58 @@ export default function InstitutionReportsPage() {
     [cohorts]
   )
 
+  const canExport = !loading && !error && !!totals && cohorts.length > 0
+
+  const handleExport = () => {
+    if (!canExport || !totals) return
+
+    const totalsRows: [string, string | number][] = [
+      ['Active learners', totals.active_learners],
+      ['Average progress (%)', totals.avg_progress],
+      ['Completions', totals.completions],
+      ['Published courses', totals.published_courses],
+      ['Programs', totals.programs],
+      ['Cohorts', totals.cohorts],
+      ['Team members', totals.team_members],
+    ]
+
+    const lines: string[] = []
+    lines.push('Metric,Value')
+    for (const [label, value] of totalsRows) {
+      lines.push(`${csvCell(label)},${csvCell(value)}`)
+    }
+    lines.push('')
+    lines.push(
+      'Cohort,Program,Status,Start date,End date,Active learners,Avg progress (%),Completed,At risk'
+    )
+    for (const c of sortedCohorts) {
+      lines.push(
+        [
+          csvCell(c.name),
+          csvCell(c.program_name),
+          csvCell(c.status),
+          csvCell(c.start_date ? c.start_date.slice(0, 10) : ''),
+          csvCell(c.end_date ? c.end_date.slice(0, 10) : ''),
+          csvCell(c.active_members),
+          csvCell(c.avg_progress),
+          csvCell(c.completed),
+          csvCell(c.at_risk),
+        ].join(',')
+      )
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `sabitek-reports-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    toast.success('Report exported')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
@@ -148,18 +211,36 @@ export default function InstitutionReportsPage() {
         <div className="absolute -top-24 -left-16 w-72 h-72 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
         <div className="absolute -bottom-32 right-0 w-96 h-96 bg-rose-100/60 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
-            Reports
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
-            Impact you can{' '}
-            <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
-              prove
-            </span>
-          </h1>
-          <p className="text-gray-600 max-w-2xl">
-            Live numbers from real learner activity. Nothing self-reported.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+                Reports
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
+                Impact you can{' '}
+                <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
+                  prove
+                </span>
+              </h1>
+              <p className="text-gray-600 max-w-2xl">
+                Live numbers from real learner activity. Nothing self-reported.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={!canExport}
+              title={canExport ? undefined : 'No cohort data yet'}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 rounded-full text-xs font-semibold text-gray-700 shadow-sm transition-colors flex-shrink-0 ${
+                canExport
+                  ? 'hover:border-rose-200 hover:bg-white cursor-pointer'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+            >
+              <Download className="w-3.5 h-3.5 text-red-500" />
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
