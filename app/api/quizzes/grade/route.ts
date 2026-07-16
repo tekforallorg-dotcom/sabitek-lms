@@ -101,6 +101,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
     }
 
+    // A graded attempt is a study action: tick the streak (best-effort)
+    supabaseAdmin
+      .rpc('update_study_streak', { p_user_id: userId })
+      .then(({ error }) => {
+        if (error) console.log('streak update skipped:', error.message)
+      })
+
     return NextResponse.json({
       score,
       passed,

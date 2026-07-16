@@ -511,6 +511,13 @@ export default function LessonViewerPage() {
         return next
       })
 
+      // Completing a lesson counts toward the daily goal + streak
+      fetch('/api/sabibot/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, action: 'update_streak' }),
+      }).catch(() => {})
+
       const { data: completedLessons } = await supabase
         .from('user_progress')
         .select('id')

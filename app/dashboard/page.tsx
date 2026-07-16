@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import SabiLoader from '@/components/ui/SabiLoader'
+import GamificationStrip from '@/components/dashboard/GamificationStrip'
 import {
   BookOpen,
   Award,
@@ -382,6 +383,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Gamification strip ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <GamificationStrip />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
         {/* ── Stats ── */}
