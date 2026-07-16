@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { sendCohortWelcomeEmail } from '@/lib/email'
 
 /**
  * Join a cohort from its vanity landing page.
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const { data: cohort } = await supabaseAdmin
       .from('cohorts')
       .select(
-        'id, name, status, enrollment_mode, access_code, access_code_expires_at, seat_limit, enrollment_start_date, enrollment_end_date, allow_late_enrollment, start_date, default_sponsorship'
+        'id, name, status, enrollment_mode, access_code, access_code_expires_at, seat_limit, enrollment_start_date, enrollment_end_date, allow_late_enrollment, start_date, default_sponsorship, send_welcome_email, program_id, programs(name, institutions(name))'
       )
       .eq('slug', slug)
       .maybeSingle()
@@ -103,6 +104,31 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('cohort join insert failed:', insertError)
       return NextResponse.json({ error: 'Could not join. Please try again.' }, { status: 500 })
+    }
+
+    // Honor the cohort's welcome-email setting (a dormant column, now live)
+    if (cohort.send_welcome_email) {
+      try {
+        const { data: joiner } = await supabaseAdmin
+          .from('users')
+          .select('email, full_name')
+          .eq('id', userId)
+          .single()
+        if (joiner?.email) {
+          const program = (cohort as any).programs
+          sendCohortWelcomeEmail({
+            to: joiner.email,
+            firstName: (joiner.full_name || 'there').split(' ')[0],
+            cohortName: cohort.name,
+            institutionName: program?.institutions?.name || null,
+            programName: program?.name || null,
+          }).then((r) => {
+            if (!r.success) console.log('welcome email failed:', r.error)
+          })
+        }
+      } catch {
+        // Email is a courtesy, never a blocker
+      }
     }
 
     return NextResponse.json({ joined: true, cohort_name: cohort.name })

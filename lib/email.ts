@@ -622,3 +622,52 @@ export async function sendStreakReminderEmail({
     return { success: false, error }
   }
 }
+
+
+export async function sendCohortWelcomeEmail({
+  to,
+  firstName,
+  cohortName,
+  institutionName,
+  programName,
+}: {
+  to: string
+  firstName: string
+  cohortName: string
+  institutionName: string | null
+  programName: string | null
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Welcome to ${cohortName}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="background: linear-gradient(135deg, #ef4444, #e11d48); border-radius: 12px 12px 0 0; padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">You are in, ${escapeHtml(firstName)}!</h1>
+          </div>
+          <div style="background: #fff; border: 1px solid #fecdd3; border-top: none; border-radius: 0 0 12px 12px; padding: 32px;">
+            <p style="color: #374151; font-size: 15px; line-height: 1.7;">
+              Welcome to <strong>${escapeHtml(cohortName)}</strong>${institutionName ? ` by <strong>${escapeHtml(institutionName)}</strong>` : ''}.
+              ${programName ? `You will be working through the <strong>${escapeHtml(programName)}</strong> program.` : ''}
+            </p>
+            <p style="color: #374151; font-size: 15px; line-height: 1.7;">
+              Your courses are waiting on your dashboard. Small daily steps beat big rare pushes, so start with one lesson today.
+            </p>
+            <div style="text-align: center; margin: 28px 0 8px;">
+              <a href="https://sabitek.app/dashboard" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Start learning</a>
+            </div>
+            <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 24px;">
+              If you have any questions, please contact us at support@sabitek.app
+            </p>
+          </div>
+        </div>
+      `,
+    })
+    if (error) return { success: false as const, error }
+    return { success: true as const, data }
+  } catch (error) {
+    return { success: false as const, error }
+  }
+}

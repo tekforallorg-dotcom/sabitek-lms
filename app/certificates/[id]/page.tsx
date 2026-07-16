@@ -18,7 +18,11 @@ import {
   ExternalLink,
   Copy,
   ChevronRight,
-  ZoomIn
+  ZoomIn,
+  Linkedin,
+  MessageCircle,
+  Link2,
+  Check
 } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
 
@@ -85,6 +89,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const shouldAutoDownload = searchParams.get('download') === 'true'
 
   useEffect(() => {
@@ -441,6 +446,13 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleShareCopy = () => {
+    navigator.clipboard.writeText(verifyUrl)
+    toast.success('Verification link copied')
+    setShareCopied(true)
+    setTimeout(() => setShareCopied(false), 2000)
+  }
+
   if (loading || authLoading) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
@@ -659,6 +671,49 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Share block */}
+          <div className="no-print relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_8px_16px_-6px_rgba(225,29,72,0.5)]">
+                <Share2 className="w-4 h-4 text-white" />
+              </div>
+              Share your <span className="font-serif italic text-red-600">achievement</span>
+            </h3>
+
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verifyUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+              >
+                <Linkedin className="w-3.5 h-3.5" />
+                LinkedIn
+              </a>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent('I earned a certificate on Sabitek! Verify it here: ' + verifyUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </a>
+              <button
+                onClick={handleShareCopy}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+              >
+                {shareCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Link2 className="w-3.5 h-3.5" />}
+                {shareCopied ? 'Copied' : 'Copy link'}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-gray-400 mt-3">
+              Anyone with this link can verify your certificate is genuine.
+            </p>
           </div>
 
           {/* Mobile buttons */}

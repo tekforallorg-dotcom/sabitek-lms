@@ -908,13 +908,13 @@ export default function CourseManagementPage() {
                 Edit
               </Button>
               <Button
-                onClick={() => router.push(`/courses/${course?.slug}`)}
+                onClick={() => window.open(`/courses/${course?.slug}`, '_blank', 'noopener,noreferrer')}
                 variant="outline"
                 className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                 size="sm"
               >
-                <Eye className="w-4 h-4 mr-1.5" />
-                Preview
+                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                Preview as learner
               </Button>
               {course?.status === 'published' ? (
                 <Button
