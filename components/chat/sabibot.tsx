@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase, Globe, BarChart3 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '@/hooks/useAuth'
@@ -30,6 +31,43 @@ export default function SabiBot() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // Lesson grounding: when the widget is opened on a lesson page, resolve
+  // that lesson so SabiBot tutors it directly.
+  const pathname = usePathname()
+  const [lessonCtx, setLessonCtx] = useState<{ id: string; title: string } | null>(null)
+
+  useEffect(() => {
+    const match = pathname?.match(/^\/courses\/([^/]+)\/lessons\/([^/]+)/)
+    if (!match) {
+      setLessonCtx(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data: course } = await supabase
+          .from('courses')
+          .select('id')
+          .eq('slug', match[1])
+          .single()
+        if (!course) return
+        const { data: lessonRow } = await supabase
+          .from('lessons')
+          .select('id, title')
+          .eq('course_id', course.id)
+          .eq('slug', match[2])
+          .single()
+        if (!cancelled && lessonRow) {
+          setLessonCtx({ id: lessonRow.id, title: lessonRow.title })
+        }
+      } catch {
+        // Grounding is best-effort
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [pathname])
   const [isTyping, setIsTyping] = useState(false)
   const [userProfile, setUserProfile] = useState<any>(null)
   const [preferredLanguage, setPreferredLanguage] = useState<Language>('english')
@@ -332,6 +370,7 @@ What would you like to learn today?`
             role: m.role,
             content: m.content
           })),
+          lessonId: lessonCtx?.id,
           userContext: {
             userId: user?.id,
             userName: userProfile?.full_name,
@@ -613,8 +652,10 @@ What would you like to learn today?`
             </div>
             <div className="text-white">
               <h3 className="font-semibold text-sm leading-tight">SabiBot</h3>
-              <p className="text-[11px] text-white/80">
-                {LANGUAGES.find(l => l.value === preferredLanguage)?.flag} {LANGUAGES.find(l => l.value === preferredLanguage)?.label}
+              <p className="text-[11px] text-white/80 truncate max-w-[180px]">
+                {lessonCtx
+                  ? `Tutoring: ${lessonCtx.title}`
+                  : `${LANGUAGES.find(l => l.value === preferredLanguage)?.flag} ${LANGUAGES.find(l => l.value === preferredLanguage)?.label}`}
               </p>
             </div>
           </div>
