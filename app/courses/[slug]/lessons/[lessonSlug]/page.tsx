@@ -74,7 +74,8 @@ interface Quiz {
     id: string
     question: string
     options: string[]
-    correct_answer: number
+    // correct_answer/explanation stay server-side; grading returns them
+    correct_answer?: number
     explanation?: string
   }>
   pass_percentage: number
@@ -220,6 +221,13 @@ export default function LessonViewerPage() {
     passed: boolean
     correctAnswers: number
     totalQuestions: number
+    results?: Array<{
+      question_id: string
+      selected_answer: number
+      correct_answer: number
+      is_correct: boolean
+      explanation: string | null
+    }>
   } | null>(null)
 
   const [modal, setModal] = useState<{
@@ -368,7 +376,7 @@ export default function LessonViewerPage() {
       // Batch 3: notes for the current lesson, plus quizzes and quiz
       // attempts for the WHOLE course (needed for sequential gating).
       const allLessonIds = mappedLessons.map((l) => l.id)
-      const [notesRes, quizRes, attemptsRes] = await Promise.all([
+      const [notesRes, attemptsRes, sessionRes] = await Promise.all([
         supabase
           .from('lesson_notes')
           .select('*')
@@ -376,15 +384,33 @@ export default function LessonViewerPage() {
           .eq('user_id', user.id)
           .maybeSingle(),
         supabase
-          .from('quizzes')
-          .select('*')
-          .in('lesson_id', allLessonIds),
-        supabase
           .from('quiz_attempts')
           .select('lesson_id, passed')
           .eq('user_id', user.id)
           .in('lesson_id', allLessonIds),
+        supabase.auth.getSession(),
       ])
+
+      // Quiz data comes from the sanitized server API - correct answers
+      // never reach the browser (grading happens in /api/quizzes/grade).
+      let serverQuiz: Quiz | null = null
+      let serverQuizLessonIds: string[] = []
+      try {
+        const accessToken = sessionRes.data.session?.access_token
+        if (accessToken) {
+          const quizApiRes = await fetch(
+            `/api/quizzes/for-lesson?lessonId=${currentLesson.id}&courseId=${courseData.id}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          )
+          if (quizApiRes.ok) {
+            const payload = await quizApiRes.json()
+            serverQuiz = payload.quiz || null
+            serverQuizLessonIds = payload.quizLessonIds || []
+          }
+        }
+      } catch (e) {
+        console.error('Quiz fetch failed:', e)
+      }
 
       const notesData = notesRes.data
       if (notesData) {
@@ -398,19 +424,8 @@ export default function LessonViewerPage() {
 
       // Sequential gating: lesson N+1 unlocks once lesson N is complete
       // and its quiz (if any) is passed. Instructors bypass.
-      const quizRows = quizRes.data || []
       const attemptRows = attemptsRes.data || []
-      const quizLessonIds = new Set(
-        quizRows
-          .filter((q) => {
-            let qs = q.questions
-            if (typeof qs === 'string') {
-              try { qs = JSON.parse(qs) } catch { qs = [] }
-            }
-            return Array.isArray(qs) && qs.length > 0
-          })
-          .map((q) => q.lesson_id)
-      )
+      const quizLessonIds = new Set(serverQuizLessonIds)
       const passedQuizIds = new Set(
         attemptRows.filter((a) => a.passed).map((a) => a.lesson_id)
       )
@@ -432,28 +447,9 @@ export default function LessonViewerPage() {
         return
       }
 
-      const quizData = quizRows.find((q) => q.lesson_id === currentLesson.id) || null
-      if (quizData) {
-        let parsedQuestions = quizData.questions
-        if (typeof quizData.questions === 'string') {
-          try {
-            parsedQuestions = JSON.parse(quizData.questions)
-          } catch (e) {
-            console.error('Failed to parse questions:', e)
-            parsedQuestions = []
-          }
-        }
-
-        if (!Array.isArray(parsedQuestions)) {
-          parsedQuestions = []
-        }
-
-        if (parsedQuestions.length > 0) {
-          setQuiz({ ...quizData, questions: parsedQuestions })
-          setQuizAttempts(attemptRows.filter((a) => a.lesson_id === currentLesson.id).length)
-        } else {
-          setQuiz(null)
-        }
+      if (serverQuiz) {
+        setQuiz(serverQuiz)
+        setQuizAttempts(attemptRows.filter((a) => a.lesson_id === currentLesson.id).length)
       } else {
         setQuiz(null)
       }
@@ -638,51 +634,31 @@ export default function LessonViewerPage() {
     }
 
     try {
-      let correctCount = 0
-      const answers = quiz.questions.map((question, index) => {
-        const questionId = question.id || `q-${index}`
-        const selectedAnswer = selectedAnswers[questionId]
-        const isCorrect = selectedAnswer === question.correct_answer
-
-        if (isCorrect) correctCount++
-
-        return {
-          question_id: questionId,
-          selected_answer: selectedAnswer,
-          correct_answer: question.correct_answer,
-          is_correct: isCorrect,
-        }
-      })
-
-      const score = Math.round((correctCount / quiz.questions.length) * 100)
-      const passed = score >= quiz.pass_percentage
-
-      const { error: attemptError } = await supabase
-        .from('quiz_attempts')
-        .insert([
-          {
-            user_id: user.id,
-            lesson_id: lesson.id,
-            course_id: course.id,
-            score_percentage: score,
-            passed,
-            answers,
-          },
-        ])
-        .select()
-        .single()
-
-      if (attemptError) {
-        showModal('Error', `Failed to save quiz attempt: ${attemptError.message}`, 'error')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        showModal('Error', 'Your session expired. Please refresh and try again.', 'error')
         return
       }
 
-      setQuizResults({
-        score,
-        passed,
-        correctAnswers: correctCount,
-        totalQuestions: quiz.questions.length,
+      const gradeRes = await fetch('/api/quizzes/grade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ lessonId: lesson.id, answers: selectedAnswers }),
       })
+
+      if (!gradeRes.ok) {
+        const err = await gradeRes.json().catch(() => ({}))
+        showModal('Error', err.error || 'Failed to grade quiz. Please try again.', 'error')
+        return
+      }
+
+      const graded = await gradeRes.json()
+      const { score, passed, correctAnswers, totalQuestions, results } = graded
+
+      setQuizResults({ score, passed, correctAnswers, totalQuestions, results })
       setQuizSubmitted(true)
       setQuizAttempts((prev) => prev + 1)
 
@@ -1286,8 +1262,11 @@ export default function LessonViewerPage() {
                             <h4 className="font-semibold text-sm sticky top-0 bg-white/90 backdrop-blur py-2">Review Answers:</h4>
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
-                              const selectedAnswer = selectedAnswers[questionId]
-                              const isCorrect = selectedAnswer === question.correct_answer
+                              const graded = quizResults?.results?.find((r) => r.question_id === questionId)
+                              const selectedAnswer = graded?.selected_answer ?? selectedAnswers[questionId]
+                              const isCorrect = graded?.is_correct ?? false
+                              const correctIdx = graded?.correct_answer
+                              const explanation = graded?.explanation
 
                               return (
                                 <div
@@ -1304,13 +1283,13 @@ export default function LessonViewerPage() {
                                       Your: {question.options[selectedAnswer]}
                                       {isCorrect ? ' ✓' : ' ✗'}
                                     </p>
-                                    {!isCorrect && (
+                                    {!isCorrect && typeof correctIdx === 'number' && (
                                       <p className="text-emerald-700">
-                                        Correct: {question.options[question.correct_answer]}
+                                        Correct: {question.options[correctIdx]}
                                       </p>
                                     )}
-                                    {question.explanation && (
-                                      <p className="text-gray-600 italic mt-1">{question.explanation}</p>
+                                    {explanation && (
+                                      <p className="text-gray-600 italic mt-1">{explanation}</p>
                                     )}
                                   </div>
                                 </div>

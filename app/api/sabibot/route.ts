@@ -6,8 +6,13 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 // Cost engine: Haiku default (tutor Q&A), prompt caching on the system
 // block, capped answers, sliding history window, per-user daily quota,
 // and a Q&A reuse cache so repeated cohort questions cost zero tokens.
+// Model tiering: Haiku for learner tutoring; Sonnet for instructors,
+// whose requests skew toward content drafting (lesson text, quiz ideas,
+// course outlines) where the quality difference pays for itself.
 const SABIBOT_MODEL = 'claude-haiku-4-5'
+const INSTRUCTOR_MODEL = 'claude-sonnet-4-6'
 const MAX_ANSWER_TOKENS = 700
+const INSTRUCTOR_MAX_TOKENS = 1400
 const HISTORY_WINDOW = 8
 const LESSON_CONTEXT_CHARS = 6000
 const DAILY_LIMITS: Record<string, number> = { learner: 30, instructor: 100 }
@@ -389,6 +394,7 @@ LANGUAGE AND PERSONALITY:
   
   if (userContext?.userRole === 'instructor') {
     systemPrompt += `ROLE: This user is an instructor. Help with course creation, student engagement, teaching strategies, content management, and earning opportunities. `
+    systemPrompt += `INSTRUCTOR COPILOT MODE: You can also DRAFT teaching materials on request - lesson outlines, full lesson text (clear structure, headings, one concept per section, real-life Nigerian examples), quiz questions (4 options, one correct, with a short explanation each), and module structures. When drafting, produce complete ready-to-paste content, not advice about how to write it. `
   } else {
     systemPrompt += `ROLE: This user is a learner seeking educational guidance and career direction. `
   }
@@ -738,9 +744,11 @@ export async function POST(request: NextRequest) {
       content: String(m.content || ''),
     }))
 
+    const isInstructor = userContext?.userRole === 'instructor'
+    const model = isInstructor ? INSTRUCTOR_MODEL : SABIBOT_MODEL
     const claudeStream = anthropic.messages.stream({
-      model: SABIBOT_MODEL,
-      max_tokens: MAX_ANSWER_TOKENS,
+      model,
+      max_tokens: isInstructor ? INSTRUCTOR_MAX_TOKENS : MAX_ANSWER_TOKENS,
       system: [
         {
           type: 'text',
@@ -768,7 +776,7 @@ export async function POST(request: NextRequest) {
 
           // ── Post-stream background work ──
           const finalMessage = await claudeStream.finalMessage()
-          logUsage(userContext?.userId ?? null, SABIBOT_MODEL, finalMessage.usage as any)
+          logUsage(userContext?.userId ?? null, model, finalMessage.usage as any)
 
           // Seed the Q&A cache for future learners on this lesson
           if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
