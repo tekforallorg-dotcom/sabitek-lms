@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
   program_manager: 'Program Manager',
   facilitator: 'Facilitator',
   instructor: 'Instructor',
-  viewer: 'Viewer',
+  viewer: 'Viewer (read-only)',
 }
 
 /** Require the caller to be an active institution_admin of this institution. */

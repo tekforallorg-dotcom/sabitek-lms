@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       .select('role, institution:institutions!inner(name)')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .in('role', ['institution_admin', 'program_manager', 'facilitator', 'instructor'])
+      .in('role', ['institution_admin', 'program_manager', 'facilitator', 'instructor', 'viewer'])
       .limit(1)
       .maybeSingle()
 
@@ -57,11 +57,14 @@ export async function GET(request: NextRequest) {
         program_manager: 'Program Manager',
         facilitator: 'Facilitator',
         instructor: 'Instructor',
+        viewer: 'Viewer',
       }
       const route = ['institution_admin', 'program_manager'].includes(row.role)
         ? '/institution/dashboard'
         : row.role === 'instructor'
         ? '/instructor'
+        : row.role === 'viewer'
+        ? '/institution/reports'
         : '/dashboard'
       return apiSuccess({
         route,

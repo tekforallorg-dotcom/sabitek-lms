@@ -123,7 +123,12 @@ export async function POST(
       joined: true,
       role: invite.role,
       institution_name: institution?.name || 'Institution',
-      next_route: invite.role === 'instructor' ? '/instructor' : '/institution/dashboard',
+      next_route:
+        invite.role === 'instructor'
+          ? '/instructor'
+          : invite.role === 'viewer'
+          ? '/institution/reports'
+          : '/institution/dashboard',
     })
   } catch (error) {
     console.error('Team invite accept error:', error)

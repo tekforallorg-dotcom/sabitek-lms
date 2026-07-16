@@ -553,3 +553,72 @@ export async function sendInstitutionInviteEmail({
     return { data: null, error: err }
   }
 }
+
+/**
+ * Sends the evening streak-save nudge to a learner whose active study streak
+ * is about to break. Sent only by the daily nudges cron for streaks >= 3 whose
+ * last study day was yesterday, so it lands at most once per user per day.
+ */
+export async function sendStreakReminderEmail({
+  to,
+  firstName,
+  streakDays,
+}: {
+  to: string
+  firstName: string
+  streakDays: number
+}) {
+  try {
+    const safeFirstName = escapeHtml(firstName)
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Your ${streakDays}-day streak ends tonight`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 24px;">${streakDays}-day streak</h2>
+            <p style="margin: 0; opacity: 0.9;">Keep it alive before midnight</p>
+          </div>
+
+          <p>Hi ${safeFirstName},</p>
+
+          <p>You have studied ${streakDays} days in a row. One lesson tonight keeps it alive.</p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://sabitek.app/dashboard" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Keep my streak</a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            You get this only when a streak is about to end. Manage preferences from your profile.
+          </p>
+        </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Failed to send streak reminder email:', error)
+      return { success: false, error }
+    }
+
+    console.log('Streak reminder email sent:', data?.id)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending streak reminder email:', error)
+    return { success: false, error }
+  }
+}

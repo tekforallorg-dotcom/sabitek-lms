@@ -10,11 +10,14 @@ function extractBearer(header: string | null): string | null {
 
 /**
  * Shared guard for institution management APIs: caller must be an ACTIVE
- * institution_admin or program_manager of the given institution.
+ * member of the given institution holding one of `allowedRoles`.
+ * Defaults to institution_admin or program_manager so existing callers
+ * behave identically.
  */
 export async function requireInstitutionAdmin(
   request: NextRequest,
-  institutionId: string
+  institutionId: string,
+  allowedRoles: string[] = ['institution_admin', 'program_manager']
 ): Promise<{ error: ReturnType<typeof ApiErrors.unauthorized> } | { userId: string }> {
   const token = extractBearer(request.headers.get('authorization'))
   if (!token) return { error: ApiErrors.unauthorized() }
@@ -32,7 +35,7 @@ export async function requireInstitutionAdmin(
     .eq('status', 'active')
     .maybeSingle()
 
-  if (membership?.role !== 'institution_admin' && membership?.role !== 'program_manager') {
+  if (!membership || !allowedRoles.includes(membership.role)) {
     return { error: ApiErrors.forbidden('Only institution admins can do this') }
   }
 

@@ -269,6 +269,14 @@ export default function InstitutionDashboardPage() {
 
       const result = await response.json()
       const membership = result.data || result
+
+      // Viewers are read-only stakeholders (board, funders): send them
+      // straight to Reports, they never see the management dashboard.
+      if (membership.role === 'viewer') {
+        router.replace('/institution/reports')
+        return
+      }
+
       setInstitution(membership.institution as Institution)
       setUserRole(membership.role)
 

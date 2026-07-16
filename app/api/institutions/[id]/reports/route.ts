@@ -14,7 +14,11 @@ export async function GET(
 ) {
   try {
     const { id: institutionId } = await params
-    const auth = await requireInstitutionAdmin(request, institutionId)
+    const auth = await requireInstitutionAdmin(request, institutionId, [
+      'institution_admin',
+      'program_manager',
+      'viewer',
+    ])
     if ('error' in auth) return auth.error
 
     const { data: programs } = await supabaseAdmin
