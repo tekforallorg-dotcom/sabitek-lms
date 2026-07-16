@@ -1,29 +1,20 @@
 import { NextRequest } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { createHash } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// Cost engine: Haiku default (tutor Q&A), prompt caching on the system
-// block, capped answers, sliding history window, per-user daily quota,
-// and a Q&A reuse cache so repeated cohort questions cost zero tokens.
-// Model tiering: Haiku for learner tutoring; Sonnet for instructors,
-// whose requests skew toward content drafting (lesson text, quiz ideas,
-// course outlines) where the quality difference pays for itself.
-const SABIBOT_MODEL = 'claude-haiku-4-5'
-const INSTRUCTOR_MODEL = 'claude-sonnet-4-6'
+// Cost engine on DeepSeek (the high-volume surface): capped answers,
+// sliding history window, per-user daily quota, usage metering, and a
+// Q&A reuse cache so repeated cohort questions cost zero tokens.
+// DeepSeek auto-caches repeated prompt prefixes server-side, so the
+// stable system-prompt-first structure still pays off.
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
+const SABIBOT_MODEL = 'deepseek-chat'
 const MAX_ANSWER_TOKENS = 700
 const INSTRUCTOR_MAX_TOKENS = 1400
 const HISTORY_WINDOW = 8
 const LESSON_CONTEXT_CHARS = 6000
 const DAILY_LIMITS: Record<string, number> = { learner: 30, instructor: 100 }
-
-let anthropicClient: Anthropic | null = null
-function getAnthropic(): Anthropic {
-  if (!anthropicClient) {
-    anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  }
-  return anthropicClient
-}
 
 function normalizeQuestion(q: string): string {
   return q.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim()
