@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { Target, Check, Flame, Medal, Lock, X, Zap } from 'lucide-react'
+import { Target, Check, Flame, Medal, Lock, X, Zap, Snowflake } from 'lucide-react'
 
 interface Streak {
   current: number
   longest: number
   total_days: number
+  freezes?: number
+  freeze_used_on?: string | null
 }
 
 interface Today {
@@ -228,11 +230,20 @@ export default function GamificationStrip() {
               <Flame className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-3xl font-bold tabular-nums text-gray-900 leading-none">
                   {streak.current}
                 </span>
                 <span className="text-xs text-gray-500 font-medium">day streak</span>
+                {(streak.freezes ?? 0) > 0 && (
+                  <span
+                    title="If you miss one day, a freeze saves your streak automatically"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 border border-sky-100 text-sky-600 text-[10px] font-semibold"
+                  >
+                    <Snowflake className="w-3 h-3" />
+                    {streak.freezes} freeze
+                  </span>
+                )}
               </div>
               {hasStreak ? (
                 <>

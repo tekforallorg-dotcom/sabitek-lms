@@ -129,11 +129,44 @@ export async function GET(request: NextRequest) {
           const entries = [...states.values()]
           if (!entries.every((s) => s.completed)) continue
 
+          // Issue the program certificate (honors programs.issue_certificate;
+          // defaults to issuing when the flag is null/absent)
+          let certificateId: string | null = null
+          try {
+            const programId2 = (c as any).cohorts?.program_id
+            const { data: prog } = await supabaseAdmin
+              .from('programs')
+              .select('issue_certificate')
+              .eq('id', programId2)
+              .single()
+            if (prog?.issue_certificate !== false) {
+              const certNumber = `CERT-${new Date().getFullYear()}-P${Math.random()
+                .toString(16)
+                .slice(2, 10)
+                .toUpperCase()}`
+              const { data: cert } = await supabaseAdmin
+                .from('certificates')
+                .insert({
+                  user_id: c.user_id,
+                  kind: 'program',
+                  program_id: programId2,
+                  certificate_number: certNumber,
+                  completion_date: new Date().toISOString(),
+                })
+                .select('id')
+                .single()
+              certificateId = cert?.id ?? null
+            }
+          } catch (e) {
+            console.log('program cert issuance skipped (schema pending?):', e)
+          }
+
           await supabaseAdmin
             .from('cohort_members')
             .update({
               completed_at: new Date().toISOString(),
               courses_completed: entries.filter((s) => s.completed).length,
+              ...(certificateId ? { completion_certificate_id: certificateId } : {}),
             })
             .eq('id', c.id)
           completions++

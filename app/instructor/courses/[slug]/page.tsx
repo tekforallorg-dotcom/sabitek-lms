@@ -610,6 +610,21 @@ export default function CourseManagementPage() {
       if (editingLesson) {
         const { error } = await supabase.from('lessons').update(lessonData).eq('id', editingLesson.id)
 
+        // Edited content invalidates AI caches built from the old version
+        if (!error) {
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) return
+            fetch('/api/ai/invalidate-lesson', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ lessonId: editingLesson.id }),
+            }).catch(() => {})
+          })
+        }
+
         if (!error) {
           toast.success('Lesson updated successfully!')
           setEditingLesson(null)
@@ -1456,6 +1471,14 @@ export default function CourseManagementPage() {
                 </h3>
                 <div className="space-y-4">
                   <div>
+                    {course?.status === 'published' && (
+                      <div className="mb-3 flex items-start gap-2 bg-amber-50/80 border border-amber-100 rounded-xl px-3 py-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-700">
+                          This course is <strong>live</strong>. Saved changes appear to enrolled learners immediately.
+                        </p>
+                      </div>
+                    )}
                     <label className="block text-[13px] font-medium text-gray-700 mb-1">Lesson Title</label>
                     <Input
                       value={lessonForm.title}

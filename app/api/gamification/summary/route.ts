@@ -144,6 +144,8 @@ export async function GET(request: NextRequest) {
         current: streak?.current_streak ?? 0,
         longest: streak?.longest_streak ?? 0,
         total_days: streak?.total_study_days ?? 0,
+        freezes: streak?.freezes_available ?? 0,
+        freeze_used_on: streak?.last_freeze_used_on ?? null,
       },
       today: {
         lessons: lessonsToday,
