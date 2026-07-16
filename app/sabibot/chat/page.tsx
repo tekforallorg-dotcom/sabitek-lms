@@ -75,6 +75,15 @@ function formatMarkdown(text: string): string {
   if (!text) return ''
 
   let formatted = text
+    // Sabitek course links become tappable pills; other links stay simple
+    .replace(
+      /\[([^\]]+)\]\((\/courses\/[^)\s]+)\)/g,
+      '<a href="$2" class="inline-flex items-center gap-1.5 px-3 py-1 my-0.5 bg-rose-50 border border-rose-200 text-red-600 rounded-full text-xs font-semibold hover:bg-rose-100 no-underline cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>$1</a>'
+    )
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-red-600 underline underline-offset-2">$1</a>'
+    )
     .replace(/^### \*\*(.*?)\*\*$/gm, '<h3 class="text-sm font-bold text-gray-900 mt-3 mb-1">$1</h3>')
     .replace(/^### (.*?)$/gm, '<h3 class="text-sm font-bold text-gray-900 mt-3 mb-1">$1</h3>')
     .replace(/^## (.*?)$/gm, '<h2 class="text-base font-bold text-gray-900 mt-3 mb-1">$1</h2>')

@@ -640,6 +640,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── Course catalog: Sabitek courses get recommended FIRST ──
+    let courseCatalog = ''
+    try {
+      const { data: catalogRows } = await supabaseAdmin
+        .from('courses')
+        .select('title, slug, difficulty_level, description')
+        .eq('status', 'published')
+        .limit(30)
+      if (catalogRows && catalogRows.length > 0) {
+        courseCatalog =
+          `\n\nAVAILABLE SABITEK COURSES (when the learner's goal, question, or interest matches any of these, recommend the Sabitek course FIRST, before suggesting any external tool, platform, or resource. Present it as a markdown link in EXACTLY this form: [Course Title](/courses/slug). Recommend at most 2 courses per reply and never invent a course that is not on this list):\n` +
+          catalogRows
+            .map(
+              (c: any) =>
+                `- [${c.title}](/courses/${c.slug}) (${c.difficulty_level || 'all levels'}): ${(c.description || '').replace(/\s+/g, ' ').slice(0, 100)}`
+            )
+            .join('\n')
+      }
+    } catch {
+      // Catalog is an enhancement, never a blocker
+    }
+
     // ── Lesson grounding: fetch the lesson the learner is actually on ──
     let lessonContext = ''
     let lessonRow: { id: string; title: string } | null = null
@@ -717,7 +739,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const systemPrompt = buildSystemPrompt(userContext, userMemory, langConfig) + lessonContext
+    const systemPrompt = buildSystemPrompt(userContext, userMemory, langConfig) + courseCatalog + lessonContext
 
     // Mark milestone as celebrated if exists
     if (userMemory?.uncelebrated_milestones?.length > 0) {

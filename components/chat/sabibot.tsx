@@ -751,6 +751,20 @@ What would you like to learn today?`
                           <div className="text-[13px] sm:text-sm leading-relaxed">
                             <ReactMarkdown
                               components={{
+                                a: ({ href, children }) =>
+                                  href?.startsWith('/courses/') ? (
+                                    <a
+                                      href={href}
+                                      className="not-prose inline-flex items-center gap-1.5 px-3 py-1 my-0.5 bg-rose-50 border border-rose-200 text-red-600 rounded-full text-xs font-semibold hover:bg-rose-100 hover:border-rose-300 transition-colors no-underline cursor-pointer"
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" aria-hidden="true" />
+                                      {children}
+                                    </a>
+                                  ) : (
+                                    <a href={href} className="text-red-600 underline underline-offset-2 cursor-pointer" target="_blank" rel="noopener noreferrer">
+                                      {children}
+                                    </a>
+                                  ),
                                 p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                                 ul: ({ children }) => <ul className="ml-4 mb-2 last:mb-0">{children}</ul>,
                                 li: ({ children }) => <li className="list-disc mb-1">{children}</li>,

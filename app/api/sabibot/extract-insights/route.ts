@@ -159,10 +159,10 @@ Rules:
   }
 }
 
-// ✅ NEW FUNCTION: Sync goal_mentioned insights to user_memory
+// Sync goal_mentioned insights into user_learning_context - the table the
+// Goals tab and SabiBot's memory actually read from.
 async function syncGoalsToMemory(userId: string) {
   try {
-    // Get all active goal_mentioned insights
     const { data: goalInsights } = await supabase
       .from('conversation_insights')
       .select('insight_content')
@@ -175,50 +175,28 @@ async function syncGoalsToMemory(userId: string) {
       return
     }
 
-    // Extract unique goals
-    const goals = [...new Set(goalInsights.map(g => g.insight_content))]
+    const goals = [...new Set(goalInsights.map(g => g.insight_content))].slice(0, 10)
 
-    // Get or create user_memory record
-    const { data: existingMemory } = await supabase
-      .from('user_memory')
-      .select('*')
+    const { data: existing } = await supabase
+      .from('user_learning_context')
+      .select('id')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
 
-    if (existingMemory) {
-      // Update existing memory with new goals
-      const currentContext = existingMemory.context || {}
-      const updatedContext = {
-        ...currentContext,
-        learning_goals: goals
-      }
-
+    if (existing) {
       await supabase
-        .from('user_memory')
-        .update({ 
-          context: updatedContext,
-          updated_at: new Date().toISOString()
-        })
+        .from('user_learning_context')
+        .update({ learning_goals: goals, updated_at: new Date().toISOString() })
         .eq('user_id', userId)
     } else {
-      // Create new memory record
       await supabase
-        .from('user_memory')
-        .insert({
-          user_id: userId,
-          context: {
-            learning_goals: goals,
-            career_goals: [],
-            current_occupation: '',
-            weak_topics: [],
-            strong_topics: []
-          }
-        })
+        .from('user_learning_context')
+        .insert({ user_id: userId, learning_goals: goals })
     }
 
-    console.log(`✅ Synced ${goals.length} goals to user_memory for user ${userId}`)
+    console.log(`Synced ${goals.length} goals to user_learning_context for ${userId}`)
   } catch (error) {
-    console.error('Failed to sync goals to memory:', error)
-    // Don't throw - this is a background operation
+    console.error('Failed to sync goals:', error)
+    // Background operation - never throw
   }
 }
