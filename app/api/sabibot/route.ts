@@ -409,6 +409,11 @@ LANGUAGE AND PERSONALITY:
   
   if (userMemory?.streak?.current_streak >= 7) {
     systemPrompt += `STUDY STREAK: Current streak is ${userMemory.streak.current_streak} days. Acknowledge their dedication naturally. `
+
+  if (userMemory?.learning_stats) {
+    const st = userMemory.learning_stats
+    systemPrompt += `VERIFIED LEARNING STATS (from the platform database - use these exact numbers whenever the learner asks about their progress; never invent stats): ${st.lessons_completed} lessons completed, ${st.quizzes_passed} quizzes passed, ${st.courses_enrolled} courses enrolled, ${st.certificates_earned} certificates earned, ${st.achievements} achievements unlocked. `
+  }
   }
   
   if (userMemory?.insights?.length > 0) {

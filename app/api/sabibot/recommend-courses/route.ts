@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     // Get all published courses
     const { data: courses, error: coursesError } = await supabase
       .from('courses')
-      .select('id, title, description, thumbnail_url, instructor_id, created_at')
+      .select('id, slug, title, description, thumbnail_url, instructor_id, created_at')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(100)

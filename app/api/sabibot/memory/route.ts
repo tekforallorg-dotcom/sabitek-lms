@@ -449,12 +449,50 @@ async function getUserContext(userId: string) {
       .order('extracted_at', { ascending: false })
       .limit(20)
 
+    // Real learning stats from the platform database (service role),
+    // so the stats screen and SabiBot are grounded in truth - not just
+    // chat streaks.
+    const [lessonsRes, quizzesRes, certsRes, enrollRes, milestonesTotalRes] = await Promise.all([
+      supabase
+        .from('user_progress')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null),
+      supabase
+        .from('quiz_attempts')
+        .select('lesson_id')
+        .eq('user_id', userId)
+        .eq('passed', true),
+      supabase
+        .from('certificates')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+      supabase
+        .from('course_enrollments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+      supabase
+        .from('learning_milestones')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+    ])
+
+    const learning_stats = {
+      lessons_completed: lessonsRes.count ?? 0,
+      // Distinct lessons passed, so retakes don't inflate the number
+      quizzes_passed: new Set((quizzesRes.data || []).map((q: any) => q.lesson_id)).size,
+      certificates_earned: certsRes.count ?? 0,
+      courses_enrolled: enrollRes.count ?? 0,
+      achievements: milestonesTotalRes.count ?? 0,
+    }
+
     return NextResponse.json({
       success: true,
       context: context || null,
       streak: streak || null,
       uncelebrated_milestones: milestones || [],
-      insights: insights || []
+      insights: insights || [],
+      learning_stats
     })
   } catch (error) {
     console.error('Get context error:', error)
