@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { sendCohortWelcomeEmail } from '@/lib/email'
+import { notify } from '@/lib/notifications'
 import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
@@ -147,6 +149,40 @@ export async function POST(request: NextRequest) {
     if (createError) {
       console.error('Join error:', createError)
       return ApiErrors.internal('Failed to join cohort')
+    }
+
+    // Same welcome treatment as the vanity-link join path
+    notify(user.id, {
+      type: 'cohort',
+      title: `Welcome to ${cohort.name}`,
+      body: 'Your cohort courses are on your dashboard.',
+      href: '/dashboard',
+    })
+    try {
+      const { data: cohortMeta } = await supabaseAdmin
+        .from('cohorts')
+        .select('send_welcome_email, programs(name, institutions(name))')
+        .eq('id', cohort.id)
+        .single()
+      if (cohortMeta?.send_welcome_email) {
+        const { data: joiner } = await supabaseAdmin
+          .from('users')
+          .select('email, full_name')
+          .eq('id', user.id)
+          .single()
+        if (joiner?.email) {
+          const program = (cohortMeta as any).programs
+          sendCohortWelcomeEmail({
+            to: joiner.email,
+            firstName: (joiner.full_name || 'there').split(' ')[0],
+            cohortName: cohort.name,
+            institutionName: program?.institutions?.name || null,
+            programName: program?.name || null,
+          }).then(() => {})
+        }
+      }
+    } catch {
+      // Courtesy only
     }
 
     // Get program info for redirect
