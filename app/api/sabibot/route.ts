@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createHash } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 
 // Cost engine on DeepSeek (the high-volume surface): capped answers,
 // sliding history window, per-user daily quota, usage metering, and a
@@ -672,7 +673,11 @@ export async function POST(request: NextRequest) {
           .select('id, title, content, content_type, course_id, courses(title)')
           .eq('id', lessonId)
           .single()
-        if (lesson) {
+        const allowed =
+          lesson && userContext?.userId
+            ? await canAccessCourseContent(userContext.userId, lesson.course_id)
+            : false
+        if (lesson && allowed) {
           lessonRow = { id: lesson.id, title: lesson.title }
           const courseTitle = (lesson as any).courses?.title || ''
           const lessonText = lesson.content ? stripHtml(lesson.content).slice(0, LESSON_CONTEXT_CHARS) : ''

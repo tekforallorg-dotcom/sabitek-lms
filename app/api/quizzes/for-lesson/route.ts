@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 
 function parseQuestions(raw: unknown): any[] {
   let qs = raw
@@ -37,6 +38,10 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId')
     if (!lessonId || !courseId) {
       return NextResponse.json({ error: 'lessonId and courseId required' }, { status: 400 })
+    }
+
+    if (!(await canAccessCourseContent(userData.user.id, courseId))) {
+      return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
     }
 
     const { data: lessonRows } = await supabaseAdmin

@@ -157,10 +157,30 @@ export default function CreateCoursePage() {
         return
       }
 
+      // Institution instructors author PROPRIETARY courses: stamp the
+      // owning institution so tenancy rules scope visibility to its
+      // members and cohorts. Independent instructors stay public (null).
+      let institutionId: string | null = null
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          const memberRes = await fetch('/api/institutions/my-membership', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          if (memberRes.ok) {
+            const membership = await memberRes.json()
+            institutionId = membership?.institution_id || null
+          }
+        }
+      } catch {
+        // No membership -> public course
+      }
+
       // Create the course
       const { data: newCourse, error: insertError } = await supabase
         .from('courses')
         .insert({
+          institution_id: institutionId,
           title: data.title,
           slug: slug,
           description: data.description,

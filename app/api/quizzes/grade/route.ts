@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { XP_VALUES } from '@/lib/gamification/xp'
+import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 
 function parseQuestions(raw: unknown): any[] {
   let qs = raw
@@ -46,6 +47,9 @@ export async function POST(request: NextRequest) {
       .single()
     if (!lesson) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+    }
+    if (!(await canAccessCourseContent(userId, lesson.course_id))) {
+      return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
     }
 
     const { data: quizRow } = await supabaseAdmin
