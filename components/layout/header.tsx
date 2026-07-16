@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import NotificationBell from '@/components/layout/NotificationBell'
 // Wallet feature hidden (routes remain; nav entry removed)
 import { User, Settings, LogOut, ChevronDown, Sparkles } from 'lucide-react'
 
@@ -103,6 +104,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-3">
+                <NotificationBell />
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}

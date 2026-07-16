@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendCourseAnnouncementEmail } from '@/lib/email'
+import { notify } from '@/lib/notifications'
 
 /**
  * Instructor announcement: one message to every enrolled learner of a
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       supabaseAdmin.from('users').select('full_name, email').eq('id', userId).single(),
       supabaseAdmin
         .from('course_enrollments')
-        .select('users(email, full_name)')
+        .select('users(id, email, full_name)')
         .eq('course_id', courseId)
         .limit(500),
     ])
@@ -48,6 +49,19 @@ export async function POST(request: NextRequest) {
     const recipients = (enrollments || [])
       .map((e: any) => e.users)
       .filter((u: any) => u?.email)
+
+    // In-app copies alongside the emails
+    for (const e of enrollments || []) {
+      const uid = (e as any).users?.id
+      if (uid) {
+        notify(uid, {
+          type: 'announcement',
+          title: `Announcement: ${course.title}`,
+          body: message.trim().slice(0, 140),
+          href: '/dashboard',
+        })
+      }
+    }
     if (recipients.length === 0) {
       return NextResponse.json({ error: 'No enrolled learners to notify yet' }, { status: 400 })
     }

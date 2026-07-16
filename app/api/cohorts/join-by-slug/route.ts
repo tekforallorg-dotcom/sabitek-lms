@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendCohortWelcomeEmail } from '@/lib/email'
+import { notify } from '@/lib/notifications'
 
 /**
  * Join a cohort from its vanity landing page.
@@ -105,6 +106,13 @@ export async function POST(request: NextRequest) {
       console.error('cohort join insert failed:', insertError)
       return NextResponse.json({ error: 'Could not join. Please try again.' }, { status: 500 })
     }
+
+    notify(userId, {
+      type: 'cohort',
+      title: `Welcome to ${cohort.name}`,
+      body: 'Your cohort courses are on your dashboard.',
+      href: '/dashboard',
+    })
 
     // Honor the cohort's welcome-email setting (a dormant column, now live)
     if (cohort.send_welcome_email) {

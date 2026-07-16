@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { syncXpForUser, weekStart } from '@/lib/gamification/xp'
+import { notify } from '@/lib/notifications'
 
 interface BadgeDef {
   key: string
@@ -96,6 +97,12 @@ export async function GET(request: NextRequest) {
       const stored = existing.get(b.name)
       // Lazy award: persist newly-earned badges so SabiBot can celebrate them
       if (isEarned && !stored) {
+        notify(userId, {
+          type: 'badge',
+          title: `Badge earned: ${b.name}`,
+          body: b.description,
+          href: '/dashboard',
+        })
         supabaseAdmin
           .rpc('add_milestone', {
             p_user_id: userId,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendStreakReminderEmail, sendCohortReminderEmail, sendProgramCompletionEmail } from '@/lib/email'
 import { computeProgramCourseStates } from '@/lib/access/program-sequence'
+import { notify } from '@/lib/notifications'
 
 // Streaks are tracked in Africa/Lagos time (WAT, UTC+1) so "today" and
 // "yesterday" must be derived in that zone, never from the server clock.
@@ -136,6 +137,12 @@ export async function GET(request: NextRequest) {
             })
             .eq('id', c.id)
           completions++
+          notify(c.user_id, {
+            type: 'completion',
+            title: 'Program complete!',
+            body: `You finished ${(c as any).cohorts?.programs?.name || 'your program'}. Your certificates are waiting.`,
+            href: '/certificates',
+          })
 
           const { data: u } = await supabaseAdmin
             .from('users')
