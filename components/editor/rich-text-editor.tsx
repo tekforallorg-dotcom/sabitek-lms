@@ -51,6 +51,8 @@ import {
 import { useState, useRef, useEffect, useCallback } from 'react'
 import DOMPurify from 'dompurify'
 import { toast } from '@/components/ui/toast'
+import { uploadLessonImage } from '@/lib/lesson-images'
+import '@/styles/lesson-content.css'
 
 // Custom FontSize extension
 const FontSize = Extension.create({
@@ -96,6 +98,46 @@ const FontSize = Extension.create({
           .setMark('textStyle', { fontSize: null })
           .removeEmptyTextStyle()
           .run()
+      },
+    }
+  },
+})
+
+
+/**
+ * Image with PERSISTENT alignment/width. The previous controls mutated the
+ * live DOM only, so styling silently vanished on save; these are real
+ * document attributes serialized into the lesson HTML and rendered by the
+ * shared lesson-content stylesheet on the learner side.
+ */
+const LessonImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      align: {
+        default: 'center',
+        parseHTML: (element: HTMLElement) => {
+          const cls = element.getAttribute('class') || ''
+          const m = cls.match(/img-(left|center|right|full)/)
+          if (m) return m[1]
+          const style = element.getAttribute('style') || ''
+          if (style.includes('float: left')) return 'left'
+          if (style.includes('float: right')) return 'right'
+          return 'center'
+        },
+        renderHTML: (attributes: { align?: string }) => ({
+          class: `img-${attributes.align || 'center'}`,
+        }),
+      },
+      width: {
+        default: null,
+        parseHTML: (element: HTMLElement) => {
+          const style = element.getAttribute('style') || ''
+          const m = style.match(/width:\s*([\d.]+%)/)
+          return m ? m[1] : null
+        },
+        renderHTML: (attributes: { width?: string | null }) =>
+          attributes.width ? { style: `width: ${attributes.width}` } : {},
       },
     }
   },
@@ -182,9 +224,13 @@ export default function RichTextEditor({
   const [linkUrl, setLinkUrl] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [selectedImage, setSelectedImage] = useState(false)
+  const [imageCaption, setImageCaption] = useState('')
+  const [imageAlt, setImageAlt] = useState('')
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Bridge so editorProps (created before insertImageFile) can call it.
+  const insertImageFileRef = useRef<((file: File) => Promise<void>) | null>(null)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -213,7 +259,7 @@ export default function RichTextEditor({
       CharacterCount.configure({
         limit: null,
       }),
-      Image.configure({
+      LessonImage.configure({
         inline: false,
         allowBase64: false,
       }),
@@ -235,6 +281,30 @@ export default function RichTextEditor({
         placeholder,
       }),
     ],
+    editorProps: {
+      attributes: {
+        // Same stylesheet as the learner reader = true WYSIWYG.
+        class: 'lesson-content',
+      },
+      handleDrop: (_view, event) => {
+        const files = Array.from(event.dataTransfer?.files || []).filter((f) =>
+          f.type.startsWith('image/')
+        )
+        if (files.length === 0) return false
+        event.preventDefault()
+        files.forEach((f) => void insertImageFileRef.current?.(f))
+        return true
+      },
+      handlePaste: (_view, event) => {
+        const files = Array.from(event.clipboardData?.files || []).filter((f) =>
+          f.type.startsWith('image/')
+        )
+        if (files.length === 0) return false // let the HTML paste handler run
+        event.preventDefault()
+        files.forEach((f) => void insertImageFileRef.current?.(f))
+        return true
+      },
+    },
     content,
     editable,
     onUpdate: ({ editor }) => {
@@ -257,6 +327,9 @@ export default function RichTextEditor({
     // Check if we're directly on an image
     if (node && node.type.name === 'image') {
       setSelectedImage(true)
+      const attrs = editor?.getAttributes('image') || {}
+      setImageCaption(attrs.title || '')
+      setImageAlt(attrs.alt || '')
       return
     }
     
@@ -306,52 +379,29 @@ export default function RichTextEditor({
     }
   }, [editor])
 
-  const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Insert an image file: compress -> upload to storage -> insert node.
+  // Shared by the toolbar button, drag-drop, and clipboard paste.
+  const insertImageFile = async (file: File) => {
     try {
       setUploadingImage(true)
-
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.')
-      }
-
-      const file = event.target.files[0]
-
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Please select an image file.')
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('Image size must be less than 5MB.')
-      }
-
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `lesson-images/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('course-materials')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('course-materials')
-        .getPublicUrl(filePath)
-
+      const publicUrl = await uploadLessonImage(file)
       if (editor) {
         editor.chain().focus().setImage({ src: publicUrl }).run()
       }
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      toast.success('Image added')
     } catch (error: any) {
-      toast.error(`Error uploading image: ${error.message}`)
+      toast.error(error.message || 'Image upload failed')
     } finally {
       setUploadingImage(false)
     }
+  }
+
+  insertImageFileRef.current = insertImageFile
+
+  const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) await insertImageFile(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const setLink = () => {
@@ -383,93 +433,30 @@ export default function RichTextEditor({
   }
 
   // ULTIMATE FIX: Direct DOM manipulation + force update
+  // Persistent image controls: write real node attributes (serialized into
+  // the saved HTML) instead of mutating the rendered DOM.
   const setImageSize = (size: 'small' | 'medium' | 'large' | 'full') => {
     if (!editor) return
-    
-    const sizeMap = {
-      small: '25%',
-      medium: '50%',
-      large: '75%',
-      full: '100%'
-    }
-    
-    // Find the selected image in the DOM
-    const selectedNode = editor.view.dom.querySelector('img.ProseMirror-selectednode')
-    
-    if (selectedNode) {
-      const imgElement = selectedNode as HTMLImageElement
-      
-      // Preserve current alignment
-      const currentStyle = imgElement.style.cssText
-      const hasFloatLeft = currentStyle.includes('float: left')
-      const hasFloatRight = currentStyle.includes('float: right')
-      
-      // Apply new width while preserving alignment
-      imgElement.style.width = sizeMap[size]
-      imgElement.style.height = 'auto'
-      imgElement.style.borderRadius = '0.5rem'
-      imgElement.style.cursor = 'pointer'
-      
-      if (hasFloatLeft) {
-        imgElement.style.cssFloat = 'left'
-        imgElement.style.marginRight = '1rem'
-        imgElement.style.marginBottom = '0.5rem'
-      } else if (hasFloatRight) {
-        imgElement.style.cssFloat = 'right'
-        imgElement.style.marginLeft = '1rem'
-        imgElement.style.marginBottom = '0.5rem'
-      } else {
-        imgElement.style.display = 'block'
-        imgElement.style.marginLeft = 'auto'
-        imgElement.style.marginRight = 'auto'
-        imgElement.style.marginBottom = '0.5rem'
-      }
-      
-      // Force editor to acknowledge the change
-      editor.commands.focus()
-    }
+    const sizeMap = { small: '25%', medium: '50%', large: '75%', full: '100%' }
+    editor.chain().focus().updateAttributes('image', { width: sizeMap[size] }).run()
   }
 
-  const setImageAlignment = (align: 'left' | 'center' | 'right') => {
+  const setImageAlignment = (align: 'left' | 'center' | 'right' | 'full') => {
     if (!editor) return
-    
-    // Find the selected image in the DOM
-    const selectedNode = editor.view.dom.querySelector('img.ProseMirror-selectednode')
-    
-    if (selectedNode) {
-      const imgElement = selectedNode as HTMLImageElement
-      
-      // Preserve current width
-      const currentWidth = imgElement.style.width || '50%'
-      
-      // Clear all float/margin styles
-      imgElement.style.cssFloat = 'none'
-      imgElement.style.marginLeft = '0'
-      imgElement.style.marginRight = '0'
-      imgElement.style.display = ''
-      
-      // Apply new alignment
-      imgElement.style.width = currentWidth
-      imgElement.style.height = 'auto'
-      imgElement.style.borderRadius = '0.5rem'
-      imgElement.style.cursor = 'pointer'
-      imgElement.style.marginBottom = '0.5rem'
-      
-      if (align === 'left') {
-        imgElement.style.cssFloat = 'left'
-        imgElement.style.marginRight = '1rem'
-      } else if (align === 'center') {
-        imgElement.style.display = 'block'
-        imgElement.style.marginLeft = 'auto'
-        imgElement.style.marginRight = 'auto'
-      } else if (align === 'right') {
-        imgElement.style.cssFloat = 'right'
-        imgElement.style.marginLeft = '1rem'
-      }
-      
-      // Force editor to acknowledge the change
-      editor.commands.focus()
-    }
+    editor
+      .chain()
+      .focus()
+      .updateAttributes('image', { align, ...(align === 'full' ? { width: '100%' } : {}) })
+      .run()
+  }
+
+  const setImageMeta = (caption: string, alt: string) => {
+    if (!editor) return
+    editor
+      .chain()
+      .focus()
+      .updateAttributes('image', { title: caption.trim() || null, alt: alt.trim() || null })
+      .run()
   }
 
   const colors = [
@@ -945,77 +932,62 @@ export default function RichTextEditor({
             </Button>
           </div>
 
-          {/* Third Row - Image Controls (Only when image selected) */}
+          {/* Image controls (persistent attributes; only when image selected) */}
           {selectedImage && (
-            <div className="flex items-center gap-2 pt-2 border-t bg-blue-50 px-2 py-2">
-              <span className="text-xs font-bold text-blue-700">📸 IMAGE SELECTED</span>
-              <div className="w-px h-4 bg-blue-300 mx-1" />
-              <span className="text-xs text-gray-600">Size:</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageSize('small')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                25%
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageSize('medium')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                50%
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageSize('large')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                75%
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageSize('full')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                100%
-              </Button>
-              <div className="w-px h-4 bg-blue-300 mx-2" />
-              <span className="text-xs text-gray-600">Align:</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageAlignment('left')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                ← Left
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageAlignment('center')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                Center
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setImageAlignment('right')}
-                className="text-xs px-3 py-1 h-7 hover:bg-blue-100 border-blue-300"
-              >
-                Right →
-              </Button>
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-rose-100 bg-rose-50/60 px-2 py-2 rounded-b-lg">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Image</span>
+              <div className="w-px h-4 bg-rose-200 mx-1" />
+              <span className="text-xs text-gray-500">Size:</span>
+              {([['small', '25%'], ['medium', '50%'], ['large', '75%'], ['full', '100%']] as const).map(([key, label]) => (
+                <Button
+                  key={key}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setImageSize(key)}
+                  className="text-xs px-2.5 py-1 h-7 bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white hover:text-red-600 rounded-full"
+                >
+                  {label}
+                </Button>
+              ))}
+              <div className="w-px h-4 bg-rose-200 mx-1" />
+              <span className="text-xs text-gray-500">Align:</span>
+              {([['left', 'Left'], ['center', 'Center'], ['right', 'Right'], ['full', 'Full-bleed']] as const).map(([key, label]) => (
+                <Button
+                  key={key}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setImageAlignment(key)}
+                  className="text-xs px-2.5 py-1 h-7 bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white hover:text-red-600 rounded-full"
+                >
+                  {label}
+                </Button>
+              ))}
+              <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 sm:ml-1">
+                <input
+                  type="text"
+                  value={imageCaption}
+                  onChange={(e) => setImageCaption(e.target.value)}
+                  placeholder="Caption (shown under image)"
+                  className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
+                />
+                <input
+                  type="text"
+                  value={imageAlt}
+                  onChange={(e) => setImageAlt(e.target.value)}
+                  placeholder="Alt text (accessibility)"
+                  className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-44"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setImageMeta(imageCaption, imageAlt)}
+                  className="text-xs px-3 py-1 h-7 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full"
+                >
+                  Apply
+                </Button>
+              </div>
             </div>
           )}
 
@@ -1035,23 +1007,15 @@ export default function RichTextEditor({
 
       {/* Editor/Preview Area */}
       <div className={showPreview ? 'grid grid-cols-2 divide-x' : ''}>
-        <EditorContent 
-          editor={editor} 
-          className="prose prose-sm max-w-none p-4 min-h-[400px] focus:outline-none 
-            [&_.ProseMirror]:min-h-[380px] 
-            [&_.ProseMirror]:outline-none
-            [&_.ProseMirror_img]:cursor-pointer
-            [&_.ProseMirror_img]:transition-all
-            [&_.ProseMirror_img]:duration-200
-            [&_.ProseMirror_img.ProseMirror-selectednode]:ring-2
-            [&_.ProseMirror_img.ProseMirror-selectednode]:ring-blue-500
-            [&_.ProseMirror_img.ProseMirror-selectednode]:ring-offset-2"
+        <EditorContent
+          editor={editor}
+          className="p-4 sm:p-6 min-h-[400px] focus:outline-none"
         />
         
         {showPreview && (
           <div className="p-4 bg-gray-50 min-h-[400px] overflow-auto">
             <h3 className="text-sm font-bold text-gray-700 mb-2">Live Preview:</h3>
-            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+            <div className="lesson-content" dangerouslySetInnerHTML={{ __html: content }} />
           </div>
         )}
       </div>

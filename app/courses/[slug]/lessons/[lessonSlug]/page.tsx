@@ -10,6 +10,7 @@ import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
 import QuizTaker from '@/components/quiz/quiz-taker'
+import LessonReader from '@/components/viewer/LessonReader'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { toast } from '@/components/ui/toast'
 import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
@@ -860,15 +861,7 @@ export default function LessonViewerPage() {
 
       case 'text':
       default:
-        return (
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5 md:p-8">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-            <div
-              className="prose prose-sm md:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-red-500 prose-strong:text-gray-900"
-              dangerouslySetInnerHTML={{ __html: lesson.content || '' }}
-            />
-          </div>
-        )
+        return <LessonReader content={lesson.content || ''} />
     }
   }
 
