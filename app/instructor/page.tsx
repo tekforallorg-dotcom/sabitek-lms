@@ -15,6 +15,7 @@ import {
   Eye,
   Settings,
   ArrowRight,
+  BarChart3,
 } from 'lucide-react'
 
 interface Course {
@@ -280,6 +281,16 @@ export default function InstructorDashboard() {
                       >
                         <Eye className="w-3.5 h-3.5 mr-1.5" />
                         Preview
+                      </Button>
+                      <Button
+                        onClick={() => router.push(`/instructor/courses/${course.slug}/analytics`)}
+                        variant="outline"
+                        size="sm"
+                        title="Analytics"
+                        aria-label="Analytics"
+                        className="bg-white border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 hover:text-red-600 rounded-full px-2.5 transition-all"
+                      >
+                        <BarChart3 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>

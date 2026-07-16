@@ -26,6 +26,7 @@ import {
   FolderOpen,
   FolderPlus,
   Check,
+  BarChart3,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/toast'
@@ -915,6 +916,15 @@ export default function CourseManagementPage() {
               >
                 <Eye className="w-3.5 h-3.5 mr-1.5" />
                 Preview as learner
+              </Button>
+              <Button
+                onClick={() => router.push(`/instructor/courses/${course?.slug}/analytics`)}
+                variant="outline"
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                size="sm"
+              >
+                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                Analytics
               </Button>
               {course?.status === 'published' ? (
                 <Button

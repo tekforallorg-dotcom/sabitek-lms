@@ -754,3 +754,46 @@ export async function sendProgramCompletionEmail({
     return { success: false as const, error }
   }
 }
+
+
+export async function sendCourseAnnouncementEmail({
+  to,
+  firstName,
+  courseTitle,
+  instructorName,
+  message,
+  replyTo,
+}: {
+  to: string
+  firstName: string
+  courseTitle: string
+  instructorName: string
+  message: string
+  replyTo?: string
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      ...(replyTo ? { replyTo } : {}),
+      subject: `Update from your instructor: ${courseTitle}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="background: #fff; border: 1px solid #fecdd3; border-radius: 12px; padding: 32px;">
+            <p style="color: #9ca3af; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px;">Course announcement</p>
+            <h2 style="color: #111827; margin: 0 0 4px; font-size: 20px;">${escapeHtml(courseTitle)}</h2>
+            <p style="color: #6b7280; font-size: 13px; margin: 0 0 20px;">from ${escapeHtml(instructorName)}</p>
+            <p style="color: #374151; font-size: 15px; line-height: 1.7; white-space: pre-line;">Hi ${escapeHtml(firstName)},\n\n${escapeHtml(message)}</p>
+            <div style="text-align: center; margin: 24px 0 8px;">
+              <a href="https://sabitek.app/dashboard" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Open the course</a>
+            </div>
+          </div>
+        </div>
+      `,
+    })
+    if (error) return { success: false as const, error }
+    return { success: true as const, data }
+  } catch (error) {
+    return { success: false as const, error }
+  }
+}
