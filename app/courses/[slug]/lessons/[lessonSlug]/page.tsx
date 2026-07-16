@@ -464,8 +464,22 @@ export default function LessonViewerPage() {
     }
   }
 
+  // A lesson with an instructor quiz can only be completed after passing it.
+  const currentQuizPending = !!(
+    quiz &&
+    quiz.questions?.length > 0 &&
+    lesson &&
+    gatingBase &&
+    !gatingBase.instructor &&
+    !gatingBase.passedIds.includes(lesson.id)
+  )
+
   const markAsComplete = async () => {
     if (!lesson || !user) return
+    if (currentQuizPending) {
+      toast.warning('Pass this lesson\'s quiz to mark it complete.')
+      return
+    }
 
     try {
       const { error } = await supabase
@@ -973,11 +987,22 @@ export default function LessonViewerPage() {
                 <Button
                   onClick={markAsComplete}
                   size="sm"
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  disabled={currentQuizPending}
+                  title={currentQuizPending ? 'Pass the quiz below to complete this lesson' : undefined}
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:shadow-none disabled:translate-y-0"
                 >
                   <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Complete
+                  {currentQuizPending ? (
+                    <>
+                      <Lock className="w-3 h-3 mr-1" />
+                      Pass quiz to complete
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Complete
+                    </>
+                  )}
                 </Button>
               )}
             </div>

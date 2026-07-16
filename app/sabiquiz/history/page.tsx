@@ -1,4 +1,5 @@
 'use client'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -174,11 +175,7 @@ export default function QuizHistoryPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="mt-6 text-gray-400 font-medium">Loading history...</p>
+          <SabiLoader text="Loading history..." size="lg" />
         </div>
       </div>
     )

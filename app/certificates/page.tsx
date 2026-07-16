@@ -79,7 +79,7 @@ function CertificatesContent() {
   if (loading || certificatesLoading) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-      <SabiLoader text="Loading certificates..." />
+      <SabiLoader text="Loading certificates..." size="lg" />
     </div>
   )
 }
@@ -290,7 +290,7 @@ export default function CertificatesPage() {
   return (
     <Suspense fallback={
   <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-    <SabiLoader text="Loading certificates..." />
+    <SabiLoader text="Loading certificates..." size="lg" />
   </div>
 }>
       <CertificatesContent />

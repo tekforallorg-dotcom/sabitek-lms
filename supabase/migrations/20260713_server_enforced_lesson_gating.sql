@@ -119,3 +119,51 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
 REVOKE TRUNCATE, REFERENCES, TRIGGER
   ON public.user_progress, public.lesson_notes, public.course_enrollments
   FROM authenticated;
+
+-- ============================================================
+-- Amendment (same feature, applied later): completing a lesson
+-- also requires passing ITS OWN quiz (when it has a real one).
+-- can_complete_lesson = is_lesson_unlocked + own-quiz-passed,
+-- with instructor/super-admin bypass. Write policies now use it.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.can_complete_lesson(p_lesson_id uuid, p_user uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+SELECT public.is_lesson_unlocked(p_lesson_id, p_user)
+  AND (
+    EXISTS (
+      SELECT 1 FROM lessons l JOIN courses c ON c.id = l.course_id
+      WHERE l.id = p_lesson_id AND c.instructor_id = p_user
+    )
+    OR EXISTS (SELECT 1 FROM users u WHERE u.id = p_user AND u.is_super_admin = true)
+    OR NOT EXISTS (
+      SELECT 1 FROM quizzes q
+      WHERE q.lesson_id = p_lesson_id
+        AND jsonb_typeof(q.questions) = 'array'
+        AND jsonb_array_length(q.questions) > 0
+    )
+    OR EXISTS (
+      SELECT 1 FROM quiz_attempts qa
+      WHERE qa.user_id = p_user AND qa.lesson_id = p_lesson_id AND qa.passed = true
+    )
+  );
+$$;
+
+DROP POLICY IF EXISTS "user_progress_insert_own_unlocked" ON public.user_progress;
+DROP POLICY IF EXISTS "user_progress_update_own_unlocked" ON public.user_progress;
+
+CREATE POLICY "user_progress_insert_own_unlocked" ON public.user_progress
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id
+    AND public.can_complete_lesson(lesson_id, auth.uid())
+  );
+
+CREATE POLICY "user_progress_update_own_unlocked" ON public.user_progress
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (
+    auth.uid() = user_id
+    AND public.can_complete_lesson(lesson_id, auth.uid())
+  );

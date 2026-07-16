@@ -100,7 +100,7 @@ export default function CoursesPage() {
   if (loading || coursesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-        <SabiLoader text="Loading courses..." />
+        <SabiLoader text="Loading courses..." size="lg" />
       </div>
     )
   }

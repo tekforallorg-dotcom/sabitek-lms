@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Sparkles, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 export default function EmailConfirmedPage() {
   const router = useRouter()
@@ -24,8 +25,8 @@ export default function EmailConfirmedPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+        <SabiLoader text="Loading..." size="lg" />
       </div>
     )
   }

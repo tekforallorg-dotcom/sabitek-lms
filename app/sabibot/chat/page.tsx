@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import { 
-  Bot, 
+import SabiLoader from '@/components/ui/SabiLoader'
+import {
+  Bot,
   Send, 
   ArrowLeft,
   Loader2,
@@ -290,11 +291,7 @@ function SabiBotChatContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mx-auto mb-4">
-            <div className="w-12 h-12 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="text-sm text-gray-600">Loading chat...</p>
+          <SabiLoader text="Loading chat..." size="lg" />
         </div>
       </div>
     )
@@ -754,11 +751,7 @@ function ChatLoading() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 flex items-center justify-center">
       <div className="text-center">
-        <div className="relative mx-auto mb-4">
-          <div className="w-12 h-12 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-        </div>
-        <p className="text-sm text-gray-600">Loading chat...</p>
+        <SabiLoader text="Loading chat..." size="lg" />
       </div>
     </div>
   )

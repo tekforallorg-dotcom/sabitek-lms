@@ -526,7 +526,7 @@ const [profileLoading, setProfileLoading] = useState(true)
   if (authLoading) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <SabiLoader text="Loading CV Builder..." />
+      <SabiLoader text="Loading CV Builder..." size="lg" />
     </div>
   )
 }

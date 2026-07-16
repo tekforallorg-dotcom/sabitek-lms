@@ -36,6 +36,7 @@ import { supabase } from '@/lib/supabase'
 import { generateSlug } from '@/lib/utils'
 import FileUploader from '@/components/upload/file-uploader'
 import dynamic from 'next/dynamic'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 // Tiptap pulls ~18 extensions; load it only when the editor is actually
 // rendered instead of shipping it in the builder's initial bundle.
@@ -802,13 +803,7 @@ export default function CourseManagementPage() {
   if (loading || courseLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-14 h-14 border-4 border-red-100 rounded-full"></div>
-            <div className="w-14 h-14 border-4 border-red-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
-          </div>
-          <p className="mt-4 text-gray-600 font-medium">Loading course...</p>
-        </div>
+        <SabiLoader text="Loading course..." size="lg" />
       </div>
     )
   }

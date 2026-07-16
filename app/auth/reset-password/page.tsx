@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Sparkles, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Shield, KeyRound, ArrowRight } from 'lucide-react'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -175,11 +176,7 @@ function ResetPasswordForm() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500 mx-auto" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500 mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="mt-6 text-gray-300 font-medium">Verifying session...</p>
+          <SabiLoader text="Verifying session..." size="lg" />
         </div>
       </div>
     )
@@ -292,7 +289,7 @@ function ResetPasswordForm() {
               </CardHeader>
               <CardContent className="px-6 pb-8">
                 <div className="flex justify-center">
-                  <div className="w-8 h-8 border-4 border-green-200 border-t-green-500 rounded-full animate-spin" />
+                  <SabiLoader text="Redirecting..." size="md" />
                 </div>
               </CardContent>
             </Card>

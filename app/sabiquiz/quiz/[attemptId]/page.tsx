@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { updateStreakAndMastery, awardXP, checkAndAwardBadges } from '@/lib/sabiquiz/quiz-utils'
 import type { Question } from '@/lib/sabiquiz/types'
 import { toast } from '@/components/ui/toast'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 // ============================================================================
 // PROGRESS BAR CHARACTERS & ANIMATIONS (PRESERVED)
@@ -1239,11 +1240,7 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mx-auto mb-4">
-            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="text-gray-300">Loading your quiz...</p>
+          <SabiLoader text="Loading your quiz..." size="lg" />
         </div>
       </div>
     )

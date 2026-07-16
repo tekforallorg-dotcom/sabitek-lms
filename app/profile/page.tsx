@@ -257,7 +257,7 @@ export default function ProfilePage() {
   if (loading) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-      <SabiLoader text="Loading profile..." />
+      <SabiLoader text="Loading profile..." size="lg" />
     </div>
   )
 }

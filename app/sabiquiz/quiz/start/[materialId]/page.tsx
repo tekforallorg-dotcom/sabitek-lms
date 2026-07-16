@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { getQuizQuestions, getQuestionCounts } from '@/lib/sabiquiz/quiz-utils'
 import type { Material, QuestionCounts, DifficultyLevel } from '@/lib/sabiquiz/types'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 // Question count options
 const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
@@ -267,11 +268,7 @@ export default function QuizStartPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="mt-6 text-gray-400 font-medium">Loading quiz...</p>
+          <SabiLoader text="Loading quiz..." size="lg" />
         </div>
       </div>
     )

@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import type { Material } from '@/lib/sabiquiz/types'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 interface Question {
   id: string
@@ -199,10 +200,7 @@ export default function GeneratePage() {
   if (!material) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-        </div>
+        <SabiLoader text="Loading..." size="lg" />
       </div>
     )
   }

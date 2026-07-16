@@ -30,6 +30,7 @@ import { getWrongQuestionIds, getWeakTopics, createQuizAttempt } from '@/lib/sab
 import type { Question } from '@/lib/sabiquiz/types'
 import Link from 'next/link'
 import { toast } from '@/components/ui/toast'
+import SabiLoader from '@/components/ui/SabiLoader'
 
 interface QuizAttempt {
   id: string
@@ -337,11 +338,7 @@ export default function ResultsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mx-auto mb-4">
-            <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-          </div>
-          <p className="text-gray-300">Loading your results...</p>
+          <SabiLoader text="Loading your results..." size="lg" />
         </div>
       </div>
     )

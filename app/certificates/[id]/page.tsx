@@ -444,7 +444,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
   if (loading || authLoading) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-      <SabiLoader text="Loading certificate..." />
+      <SabiLoader text="Loading certificate..." size="lg" />
     </div>
   )
 }
@@ -695,7 +695,7 @@ export default function CertificateViewPage({ params }: { params: Promise<{ id: 
   return (
     <Suspense fallback={
   <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
-    <SabiLoader text="Loading certificate..." />
+    <SabiLoader text="Loading certificate..." size="lg" />
   </div>
 }>
       <CertificateViewContent params={params} />
