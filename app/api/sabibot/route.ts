@@ -1,7 +1,79 @@
 import { NextRequest } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
+import { createHash } from 'crypto'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
+// Cost engine: Haiku default (tutor Q&A), prompt caching on the system
+// block, capped answers, sliding history window, per-user daily quota,
+// and a Q&A reuse cache so repeated cohort questions cost zero tokens.
+const SABIBOT_MODEL = 'claude-haiku-4-5'
+const MAX_ANSWER_TOKENS = 700
+const HISTORY_WINDOW = 8
+const LESSON_CONTEXT_CHARS = 6000
+const DAILY_LIMITS: Record<string, number> = { learner: 30, instructor: 100 }
+
+let anthropicClient: Anthropic | null = null
+function getAnthropic(): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  }
+  return anthropicClient
+}
+
+function normalizeQuestion(q: string): string {
+  return q.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function questionHash(q: string): string {
+  return createHash('sha256').update(normalizeQuestion(q)).digest('hex').slice(0, 32)
+}
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// Every metering call is best-effort: SabiBot must keep answering even
+// if the ai_usage / qa_cache tables have not been provisioned yet.
+async function checkQuota(userId: string, role: string): Promise<{ ok: boolean; used: number; limit: number }> {
+  const limit = DAILY_LIMITS[role] ?? DAILY_LIMITS.learner
+  try {
+    const dayStart = new Date()
+    dayStart.setUTCHours(0, 0, 0, 0)
+    const { count, error } = await supabaseAdmin
+      .from('ai_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('feature', 'sabibot')
+      .gte('created_at', dayStart.toISOString())
+    if (error) return { ok: true, used: 0, limit }
+    return { ok: (count ?? 0) < limit, used: count ?? 0, limit }
+  } catch {
+    return { ok: true, used: 0, limit }
+  }
+}
+
+function logUsage(userId: string | null, model: string, usage: { input_tokens?: number; cache_read_input_tokens?: number; output_tokens?: number }) {
+  supabaseAdmin
+    .from('ai_usage')
+    .insert({
+      user_id: userId,
+      feature: 'sabibot',
+      model,
+      input_tokens: usage.input_tokens ?? 0,
+      cache_read_tokens: usage.cache_read_input_tokens ?? 0,
+      output_tokens: usage.output_tokens ?? 0,
+    })
+    .then(({ error }) => {
+      if (error) console.log('ai_usage logging skipped:', error.message)
+    })
+}
 
 // Enhanced language configurations with contextual greetings and conversation flow
 const LANGUAGE_CONFIGS = {
@@ -527,7 +599,7 @@ Remember: You are a calm maestro consultant, patient, strategic, knowledgeable. 
 
 export async function POST(request: NextRequest) {
   try {
-    if (!DEEPSEEK_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return new Response(
         JSON.stringify({ content: 'AI service is not configured. Please check your API key.' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -535,7 +607,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { messages, userContext } = body
+    const { messages, userContext, lessonId } = body
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(
@@ -544,15 +616,92 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch user's learning context and memory
+    const language = userContext?.preferredLanguage || 'english'
+    const langConfig = LANGUAGE_CONFIGS[language as keyof typeof LANGUAGE_CONFIGS] || LANGUAGE_CONFIGS.english
+
+    // ── Daily quota (metered per user; fails open if metering is down) ──
+    if (userContext?.userId) {
+      const quota = await checkQuota(userContext.userId, userContext.userRole || 'learner')
+      if (!quota.ok) {
+        const quotaMsg = language === 'pidgin'
+          ? `You don use all your ${quota.limit} SabiBot messages for today. E go reset tomorrow — see you then!`
+          : `You have used all ${quota.limit} SabiBot messages for today. Your allowance resets tomorrow — see you then!`
+        return new Response(
+          JSON.stringify({ content: quotaMsg, quota_exceeded: true }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // ── Lesson grounding: fetch the lesson the learner is actually on ──
+    let lessonContext = ''
+    let lessonRow: { id: string; title: string } | null = null
+    if (lessonId) {
+      try {
+        const { data: lesson } = await supabaseAdmin
+          .from('lessons')
+          .select('id, title, content, content_type, course_id, courses(title)')
+          .eq('id', lessonId)
+          .single()
+        if (lesson) {
+          lessonRow = { id: lesson.id, title: lesson.title }
+          const courseTitle = (lesson as any).courses?.title || ''
+          const lessonText = lesson.content ? stripHtml(lesson.content).slice(0, LESSON_CONTEXT_CHARS) : ''
+          lessonContext = `\n\nCURRENT LESSON CONTEXT (the learner is studying this right now - ground your answers in it, reference its concepts, and when they ask something the lesson covers, teach from THIS material first):\nCourse: ${courseTitle}\nLesson: ${lesson.title}\n${lessonText ? `Lesson content:\n${lessonText}` : '(This lesson is video/file based - help with its topic based on the title.)'}`
+        }
+      } catch {
+        // Grounding is an enhancement, never a blocker
+      }
+    }
+
+    // ── Q&A reuse cache: repeated cohort questions cost zero tokens ──
+    const lastUserMsg = messages[messages.length - 1]
+    const isFirstTurn = messages.filter((m: any) => m.role === 'user').length === 1
+    if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content) {
+      try {
+        const hash = questionHash(lastUserMsg.content)
+        const { data: cached } = await supabaseAdmin
+          .from('qa_cache')
+          .select('id, answer, hits')
+          .eq('lesson_id', lessonRow.id)
+          .eq('lang', language)
+          .eq('question_hash', hash)
+          .maybeSingle()
+        if (cached?.answer) {
+          supabaseAdmin
+            .from('qa_cache')
+            .update({ hits: (cached.hits ?? 1) + 1 })
+            .eq('id', cached.id)
+            .then(() => {})
+          const encoder = new TextEncoder()
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: cached.answer })}\n\n`))
+              controller.enqueue(encoder.encode(`data: [DONE]\n\n`))
+              controller.close()
+            },
+          })
+          return new Response(stream, {
+            headers: {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+            },
+          })
+        }
+      } catch {
+        // Cache miss path is the normal path
+      }
+    }
+
+    // ── User memory (streaks, insights, milestones) ──
     let userMemory = null
     if (userContext?.userId) {
       try {
-        const memoryResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/memory?userId=${userContext.userId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        
+        const memoryResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/sabibot/memory?userId=${userContext.userId}`,
+          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+        )
         if (memoryResponse.ok) {
           userMemory = await memoryResponse.json()
         }
@@ -561,12 +710,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get language preference
-    const language = userContext?.preferredLanguage || 'english'
-    const langConfig = LANGUAGE_CONFIGS[language as keyof typeof LANGUAGE_CONFIGS] || LANGUAGE_CONFIGS.english
-
-    // Build system prompt
-    const systemPrompt = buildSystemPrompt(userContext, userMemory, langConfig)
+    const systemPrompt = buildSystemPrompt(userContext, userMemory, langConfig) + lessonContext
 
     // Mark milestone as celebrated if exists
     if (userMemory?.uncelebrated_milestones?.length > 0) {
@@ -577,122 +721,95 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           userId: userContext.userId,
           action: 'mark_celebrated',
-          milestoneId: milestone.id
-        })
-      }).catch(err => console.log('Failed to mark milestone celebrated'))
+          milestoneId: milestone.id,
+        }),
+      }).catch(() => console.log('Failed to mark milestone celebrated'))
     }
 
-    // Call DeepSeek with streaming enabled
-    const response = await fetch(DEEPSEEK_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        temperature: 0.7,
-        max_tokens: 800,
-        top_p: 0.9,
-        stream: true
-      })
+    // ── Claude call: cached system prefix + sliding history window ──
+    const anthropic = getAnthropic()
+    const windowed = messages.slice(-HISTORY_WINDOW).map((m: any) => ({
+      role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const),
+      content: String(m.content || ''),
+    }))
+
+    const claudeStream = anthropic.messages.stream({
+      model: SABIBOT_MODEL,
+      max_tokens: MAX_ANSWER_TOKENS,
+      system: [
+        {
+          type: 'text',
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      messages: windowed,
     })
 
-    if (!response.ok) {
-      console.error('DeepSeek API error:', response.status, response.statusText)
-      const errorContent = language === 'pidgin' 
-        ? 'Abeg, I no fit connect to AI service now. Try again later.'
-        : 'I apologize, but I cannot connect to the AI service right now. Please try again later.'
-      
-      return new Response(
-        JSON.stringify({ content: errorContent }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Create streaming response
     const encoder = new TextEncoder()
-    const decoder = new TextDecoder()
-    
     const stream = new ReadableStream({
       async start(controller) {
-        const reader = response.body?.getReader()
-        if (!reader) {
-          controller.close()
-          return
-        }
-
         let fullContent = ''
-        let buffer = ''
-
         try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n')
-            buffer = lines.pop() || ''
-
-            for (const line of lines) {
-              const trimmedLine = line.trim()
-              if (!trimmedLine || trimmedLine === 'data: [DONE]') continue
-              if (!trimmedLine.startsWith('data: ')) continue
-
-              try {
-                const json = JSON.parse(trimmedLine.slice(6))
-                const content = json.choices?.[0]?.delta?.content
-                if (content) {
-                  fullContent += content
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`))
-                }
-              } catch (e) {
-                // Skip malformed JSON
-              }
+          for await (const event of claudeStream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              fullContent += event.delta.text
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: event.delta.text })}\n\n`))
             }
           }
 
-          // Send done signal
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`))
           controller.close()
 
-          // Background tasks after stream completes
+          // ── Post-stream background work ──
+          const finalMessage = await claudeStream.finalMessage()
+          logUsage(userContext?.userId ?? null, SABIBOT_MODEL, finalMessage.usage as any)
+
+          // Seed the Q&A cache for future learners on this lesson
+          if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
+            supabaseAdmin
+              .from('qa_cache')
+              .upsert(
+                {
+                  lesson_id: lessonRow.id,
+                  lang: language,
+                  question_hash: questionHash(lastUserMsg.content),
+                  question: String(lastUserMsg.content).slice(0, 500),
+                  answer: fullContent,
+                },
+                { onConflict: 'lesson_id,lang,question_hash' }
+              )
+              .then(({ error }) => {
+                if (error) console.log('qa_cache write skipped:', error.message)
+              })
+          }
+
           if (userContext?.userId && messages.length > 0) {
-            const lastUserMessage = messages[messages.length - 1]
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-            
-            // Update study streak
+
             fetch(`${baseUrl}/api/sabibot/memory`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: userContext.userId,
-                action: 'update_streak'
-              })
-            }).catch(err => console.error('Streak update failed:', err))
-            
-            // Extract insights
-            if (lastUserMessage.role === 'user' && lastUserMessage.content && fullContent) {
+              body: JSON.stringify({ userId: userContext.userId, action: 'update_streak' }),
+            }).catch((err) => console.error('Streak update failed:', err))
+
+            if (lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
               fetch(`${baseUrl}/api/sabibot/extract-insights`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   userId: userContext.userId,
-                  messageContent: lastUserMessage.content,
-                  aiResponse: fullContent
-                })
-              }).catch(err => console.error('Insight extraction failed:', err))
+                  messageContent: lastUserMsg.content,
+                  aiResponse: fullContent,
+                }),
+              }).catch((err) => console.error('Insight extraction failed:', err))
             }
           }
         } catch (error) {
           console.error('Stream processing error:', error)
           controller.error(error)
         }
-      }
+      },
     })
 
     return new Response(stream, {
@@ -700,9 +817,8 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-      }
+      },
     })
-
   } catch (error) {
     console.error('SabiBot API error:', error)
     return new Response(

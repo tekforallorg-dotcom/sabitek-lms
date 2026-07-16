@@ -1333,6 +1333,22 @@ export default function LessonViewerPage() {
                                 Try Again
                               </Button>
                             )}
+                            {!quizResults?.passed && lesson && (
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  router.push(
+                                    `/sabibot/chat?lessonId=${lesson.id}&lessonTitle=${encodeURIComponent(lesson.title)}&prompt=${encodeURIComponent(
+                                      `I scored ${quizResults?.score}% on the quiz for "${lesson.title}". Explain the parts of this lesson I most likely misunderstood, then help me get ready to retake it.`
+                                    )}`
+                                  )
+                                }
+                                className="w-full text-sm bg-rose-50/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50 text-red-600 font-semibold rounded-full shadow-sm"
+                                size="sm"
+                              >
+                                Ask SabiBot to explain what I missed
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               onClick={resetQuiz}
