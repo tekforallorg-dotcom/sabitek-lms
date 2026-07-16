@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { computeProgramCourseStates } from '@/lib/access/program-sequence'
 import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
@@ -115,7 +116,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Step 7: Assemble response
+    // Step 7: Assemble response (with program sequence states)
+    const uniqueProgramIds = [...new Set(cohorts.map((c) => c.program_id).filter(Boolean))]
+    const stateByProgram = new Map<string, Awaited<ReturnType<typeof computeProgramCourseStates>>>()
+    for (const pid of uniqueProgramIds) {
+      stateByProgram.set(pid, await computeProgramCourseStates(user.id, pid))
+    }
+
     const result = cohorts.map((cohort) => {
       const membership = memberships.find((m) => m.cohort_id === cohort.id)
       const program = programsMap.get(cohort.program_id)
@@ -123,6 +130,7 @@ export async function GET(request: NextRequest) {
         .filter((pc) => pc.program_id === cohort.program_id)
         .map((pc) => {
           const course = coursesMap.get(pc.course_id)
+          const seq = stateByProgram.get(cohort.program_id)?.get(pc.course_id)
           return course
             ? {
                 id: course.id,
@@ -131,6 +139,8 @@ export async function GET(request: NextRequest) {
                 cover_image_url: course.cover_image_url,
                 required: pc.is_required,
                 progress: enrollmentsMap.get(course.id) || 0,
+                completed: seq?.completed ?? false,
+                locked: seq?.locked ?? false,
               }
             : null
         })

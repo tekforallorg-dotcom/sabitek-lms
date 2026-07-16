@@ -671,3 +671,86 @@ export async function sendCohortWelcomeEmail({
     return { success: false as const, error }
   }
 }
+
+
+export async function sendCohortReminderEmail({
+  to,
+  firstName,
+  cohortName,
+}: {
+  to: string
+  firstName: string
+  cohortName: string
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Your cohort is moving. Jump back in, ${escapeHtml(firstName)}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="background: #fff; border: 1px solid #fecdd3; border-radius: 12px; padding: 32px;">
+            <h2 style="color: #111827; margin: 0 0 12px; font-size: 20px;">We saved your seat, ${escapeHtml(firstName)}</h2>
+            <p style="color: #374151; font-size: 15px; line-height: 1.7;">
+              Your cohort <strong>${escapeHtml(cohortName)}</strong> has kept learning while you were away.
+              One lesson today puts you right back in the flow.
+            </p>
+            <div style="text-align: center; margin: 24px 0 8px;">
+              <a href="https://sabitek.app/dashboard" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Pick up where I left off</a>
+            </div>
+            <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 20px;">
+              Your organization enabled these occasional reminders for this cohort.
+            </p>
+          </div>
+        </div>
+      `,
+    })
+    if (error) return { success: false as const, error }
+    return { success: true as const, data }
+  } catch (error) {
+    return { success: false as const, error }
+  }
+}
+
+export async function sendProgramCompletionEmail({
+  to,
+  firstName,
+  programName,
+  institutionName,
+}: {
+  to: string
+  firstName: string
+  programName: string
+  institutionName: string | null
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `You completed ${programName}!`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <div style="background: linear-gradient(135deg, #ef4444, #e11d48); border-radius: 12px 12px 0 0; padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Congratulations, ${escapeHtml(firstName)}!</h1>
+          </div>
+          <div style="background: #fff; border: 1px solid #fecdd3; border-top: none; border-radius: 0 0 12px 12px; padding: 32px;">
+            <p style="color: #374151; font-size: 15px; line-height: 1.7;">
+              You have completed every required course in <strong>${escapeHtml(programName)}</strong>${institutionName ? `, offered by <strong>${escapeHtml(institutionName)}</strong>` : ''}.
+              That took real consistency, and it shows.
+            </p>
+            <p style="color: #374151; font-size: 15px; line-height: 1.7;">
+              Your course certificates are on your dashboard. Share them, they are verifiable.
+            </p>
+            <div style="text-align: center; margin: 24px 0 8px;">
+              <a href="https://sabitek.app/certificates" style="background: #ef4444; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">View my certificates</a>
+            </div>
+          </div>
+        </div>
+      `,
+    })
+    if (error) return { success: false as const, error }
+    return { success: true as const, data }
+  } catch (error) {
+    return { success: false as const, error }
+  }
+}

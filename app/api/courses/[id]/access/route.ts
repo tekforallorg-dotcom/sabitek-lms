@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
+import { getProgramLockForCourse } from '@/lib/access/program-sequence'
 import { checkCourseAccess } from '@/lib/course-access'
 
 const supabaseAdmin = createClient(
@@ -77,6 +78,27 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Full access check for authenticated user
     const result = await checkCourseAccess(supabaseAdmin, user.id, courseId)
+
+    // Program sequencing: a cohort-sponsored course stays locked until the
+    // previous required course in the program is complete.
+    if ((result as any)?.accessType === 'cohort_sponsored' && token) {
+      try {
+        const { data: userData } = await supabaseAdmin.auth.getUser(token)
+        if (userData?.user) {
+          const lock = await getProgramLockForCourse(userData.user.id, courseId)
+          if (lock.locked) {
+            return apiSuccess({
+              ...result,
+              hasAccess: false,
+              accessType: 'sequence_locked',
+              blocking: lock.blocking,
+            })
+          }
+        }
+      } catch {
+        // Fail open: never lock learners out on transient errors
+      }
+    }
 
     return apiSuccess(result)
   } catch (error: unknown) {

@@ -10,7 +10,7 @@ import GamificationStrip from '@/components/dashboard/GamificationStrip'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard'
 import ResumeCard from '@/components/dashboard/ResumeCard'
-import {
+import { Lock,
   BookOpen,
   Award,
   TrendingUp,
@@ -162,26 +162,37 @@ function MyCohorts({ cohorts }: { cohorts: any[] }) {
               {/* Course chips */}
               {item.courses.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {item.courses.slice(0, 4).map((course: any) => (
-                    <Link
-                      key={course.id}
-                      href={`/courses/${course.slug}`}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
-                        course.progress === 100
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
-                          : course.progress > 0
-                          ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'
-                          : 'bg-white text-gray-600 border-rose-100 hover:bg-rose-50/60'
-                      }`}
-                    >
-                      {course.progress === 100 ? (
-                        <CheckCircle className="w-3 h-3" />
-                      ) : (
-                        <BookOpen className="w-3 h-3" />
-                      )}
-                      <span className="truncate max-w-[120px]">{course.title}</span>
-                    </Link>
-                  ))}
+                  {item.courses.slice(0, 4).map((course: any) =>
+                    course.locked ? (
+                      <span
+                        key={course.id}
+                        title="Unlocks after the previous course in your program"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
+                      >
+                        <Lock className="w-3 h-3" />
+                        <span className="truncate max-w-[120px]">{course.title}</span>
+                      </span>
+                    ) : (
+                      <Link
+                        key={course.id}
+                        href={`/courses/${course.slug}`}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                          course.completed || course.progress === 100
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
+                            : course.progress > 0
+                            ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'
+                            : 'bg-white text-gray-600 border-rose-100 hover:bg-rose-50/60'
+                        }`}
+                      >
+                        {course.completed || course.progress === 100 ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <BookOpen className="w-3 h-3" />
+                        )}
+                        <span className="truncate max-w-[120px]">{course.title}</span>
+                      </Link>
+                    )
+                  )}
                   {item.courses.length > 4 && (
                     <span className="px-2.5 py-1 bg-white border border-rose-100 text-gray-500 rounded-lg text-xs font-medium">
                       +{item.courses.length - 4} more

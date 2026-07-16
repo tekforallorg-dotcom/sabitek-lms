@@ -123,6 +123,14 @@ export async function POST(request: NextRequest) {
         })
     }
 
+    // Keep cohort activity fresh (reports' at-risk flag reads this)
+    supabaseAdmin
+      .from('cohort_members')
+      .update({ last_activity_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .then(() => {})
+
     // A graded attempt is a study action: tick the streak (best-effort)
     supabaseAdmin
       .rpc('update_study_streak', { p_user_id: userId })

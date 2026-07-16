@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { sendStreakReminderEmail } from '@/lib/email'
+import { sendStreakReminderEmail, sendCohortReminderEmail, sendProgramCompletionEmail } from '@/lib/email'
+import { computeProgramCourseStates } from '@/lib/access/program-sequence'
 
 // Streaks are tracked in Africa/Lagos time (WAT, UTC+1) so "today" and
 // "yesterday" must be derived in that zone, never from the server clock.
@@ -45,7 +46,119 @@ export async function GET(request: NextRequest) {
 
     if (streaksError) {
       console.error('nudges: failed to load streaks:', streaksError)
-      return NextResponse.json({ checked: 0, sent: 0, failed: 0 })
+    // ── Section B: cohort re-engagement reminders (opt-in per cohort) ──
+    let cohortReminded = 0
+    try {
+      const lagosDate = (offsetDays: number) => {
+        const d = new Date(Date.now() - offsetDays * 24 * 60 * 60 * 1000)
+        return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos' }).format(d)
+      }
+      const reminderDays = [lagosDate(3), lagosDate(7), lagosDate(14)]
+
+      const { data: reminderCohorts } = await supabaseAdmin
+        .from('cohorts')
+        .select('id, name')
+        .eq('send_reminder_emails', true)
+        .neq('status', 'archived')
+      const rcIds = (reminderCohorts || []).map((c) => c.id)
+      if (rcIds.length > 0) {
+        const { data: members } = await supabaseAdmin
+          .from('cohort_members')
+          .select('user_id, cohort_id')
+          .in('cohort_id', rcIds)
+          .eq('status', 'active')
+          .is('completed_at', null)
+        const cohortName = new Map((reminderCohorts || []).map((c) => [c.id, c.name]))
+        const seen = new Set<string>()
+        for (const m of (members || []).slice(0, 300)) {
+          if (seen.has(m.user_id)) continue
+          seen.add(m.user_id)
+          try {
+            const { data: streak } = await supabaseAdmin
+              .from('study_streaks')
+              .select('last_study_date')
+              .eq('user_id', m.user_id)
+              .maybeSingle()
+            if (!streak?.last_study_date || !reminderDays.includes(streak.last_study_date)) continue
+            const { data: u } = await supabaseAdmin
+              .from('users')
+              .select('email, full_name')
+              .eq('id', m.user_id)
+              .single()
+            if (!u?.email) continue
+            const r = await sendCohortReminderEmail({
+              to: u.email,
+              firstName: (u.full_name || 'there').split(' ')[0],
+              cohortName: cohortName.get(m.cohort_id) || 'your cohort',
+            })
+            if (r.success) cohortReminded++
+          } catch {
+            // per-member failures never stop the batch
+          }
+        }
+      }
+    } catch (e) {
+      console.error('cohort reminders failed:', e)
+    }
+
+    // ── Section C: program completion detection (recent finishers) ──
+    let completions = 0
+    try {
+      const { data: candidates } = await supabaseAdmin
+        .from('cohort_members')
+        .select('id, user_id, cohort_id, cohorts(program_id, programs(name, institutions(name)))')
+        .eq('status', 'active')
+        .is('completed_at', null)
+        .limit(500)
+      for (const c of candidates || []) {
+        try {
+          // Only check members who studied yesterday (fresh finishers)
+          const { data: streak } = await supabaseAdmin
+            .from('study_streaks')
+            .select('last_study_date')
+            .eq('user_id', c.user_id)
+            .maybeSingle()
+          if (streak?.last_study_date !== yesterday) continue
+
+          const programId = (c as any).cohorts?.program_id
+          if (!programId) continue
+          const states = await computeProgramCourseStates(c.user_id, programId)
+          if (states.size === 0) continue
+          // Strict rule: every course in the program complete
+          const entries = [...states.values()]
+          if (!entries.every((s) => s.completed)) continue
+
+          await supabaseAdmin
+            .from('cohort_members')
+            .update({
+              completed_at: new Date().toISOString(),
+              courses_completed: entries.filter((s) => s.completed).length,
+            })
+            .eq('id', c.id)
+          completions++
+
+          const { data: u } = await supabaseAdmin
+            .from('users')
+            .select('email, full_name')
+            .eq('id', c.user_id)
+            .single()
+          if (u?.email) {
+            sendProgramCompletionEmail({
+              to: u.email,
+              firstName: (u.full_name || 'there').split(' ')[0],
+              programName: (c as any).cohorts?.programs?.name || 'your program',
+              institutionName: (c as any).cohorts?.programs?.institutions?.name || null,
+            }).then(() => {})
+          }
+        } catch {
+          // continue with next candidate
+        }
+      }
+    } catch (e) {
+      console.error('completion detection failed:', e)
+    }
+
+      return NextResponse.json({ checked: 0, sent: 0, failed: 0 , cohort_reminded: cohortReminded, program_completions: completions })
     }
 
     const rows = streaks || []

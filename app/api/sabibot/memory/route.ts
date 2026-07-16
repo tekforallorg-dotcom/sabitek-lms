@@ -65,6 +65,14 @@ async function updateStreak(userId: string) {
 
     if (error) throw error
 
+    // Keep cohort activity fresh (reports' at-risk flag reads this)
+    supabase
+      .from('cohort_members')
+      .update({ last_activity_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .then(() => {})
+
     // Get updated streak data
     const { data: streakData, error: streakError } = await supabase
       .from('study_streaks')

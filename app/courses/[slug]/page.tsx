@@ -65,7 +65,8 @@ interface Module {
 
 interface CourseAccessResult {
   hasAccess: boolean
-  accessType: 'free' | 'purchased' | 'cohort_sponsored' | 'none'
+  accessType: 'free' | 'purchased' | 'cohort_sponsored' | 'sequence_locked' | 'none'
+  blocking?: { id: string; title: string; slug: string } | null
   cohort?: {
     id: string
     name: string
@@ -584,6 +585,7 @@ export default function CourseDetailPage() {
 
   const isFree = course?.is_free || course?.price === 0 || !course?.price
   const isCohortSponsored = accessResult?.accessType === 'cohort_sponsored'
+  const isSequenceLocked = accessResult?.accessType === 'sequence_locked'
 
   // Group lessons by module — preserve global lesson numbering
   const lessonIndexMap = new Map<string, number>()
@@ -859,7 +861,35 @@ export default function CourseDetailPage() {
             </div>
           )}
 
-          {!isEnrolled && (
+          {isSequenceLocked && (
+            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5 flex flex-wrap items-center gap-4">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <div className="w-11 h-11 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Lock className="w-5 h-5 text-rose-400" />
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <p className="font-semibold text-gray-900 text-sm">This course unlocks later in your program</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {accessResult?.blocking
+                    ? `Finish "${accessResult.blocking.title}" first, then this one opens automatically.`
+                    : 'Finish the previous course in your program first.'}
+                </p>
+              </div>
+              {accessResult?.blocking && (
+                <Button
+                  onClick={() => router.push(`/courses/${accessResult.blocking!.slug}`)}
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  size="sm"
+                >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                  Continue that course
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              )}
+            </div>
+          )}
+
+          {!isEnrolled && !isSequenceLocked && (
             <div className="flex flex-wrap gap-3">
               {hasPurchased ? (
                 <Button
