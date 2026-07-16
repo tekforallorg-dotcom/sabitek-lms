@@ -6,11 +6,12 @@ import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { Input } from '@/components/ui/input'
-import {
+import { BellRing,
   Users,
   ChevronRight,
   Calendar,
@@ -71,6 +72,7 @@ interface CohortMember {
   status: string
   sponsorship: string
   progress_pct: number
+  last_activity_at?: string | null
   joined_at: string | null
   invited_at: string | null
   applied_at: string | null
@@ -649,6 +651,30 @@ function CohortDetailPageContent() {
   const getStatusStyle = (status: string) => statusColors[status] || statusColors.draft
   const getMemberStatusStyle = (status: string) => memberStatusColors[status] || memberStatusColors.active
 
+  const isAtRisk = (m: CohortMember) =>
+    m.status === 'active' &&
+    (m.progress_pct || 0) < 100 &&
+    (!m.last_activity_at || Date.now() - new Date(m.last_activity_at).getTime() > 14 * 24 * 60 * 60 * 1000)
+
+  const [nudging, setNudging] = useState<string | null>(null)
+  const handleNudge = async (memberId: string) => {
+    try {
+      setNudging(memberId)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`/api/cohorts/${cohortId}/members/${memberId}/nudge`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (res.ok) toast.success('Nudge sent')
+      else toast.error('Could not send nudge')
+    } catch {
+      toast.error('Could not send nudge')
+    } finally {
+      setNudging(null)
+    }
+  }
+
   const filteredMembers = statusFilter === 'all'
     ? members
     : members.filter((m) => m.status === statusFilter)
@@ -979,10 +1005,20 @@ function CohortDetailPageContent() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${mStyle.bg} ${mStyle.text}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${mStyle.dot}`} />
-                                <span className="capitalize">{member.status.replace('_', ' ')}</span>
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${mStyle.bg} ${mStyle.text}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${mStyle.dot}`} />
+                                  <span className="capitalize">{member.status.replace('_', ' ')}</span>
+                                </span>
+                                {isAtRisk(member) && (
+                                  <span
+                                    title="No learning activity in 14+ days"
+                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 border border-amber-100 text-amber-700"
+                                  >
+                                    at risk
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               {member.status === 'active' || member.status === 'completed' ? (
@@ -1006,6 +1042,19 @@ function CohortDetailPageContent() {
                                   </Button>
                                 </div>
                               ) : ['active', 'invited'].includes(member.status) && (
+                                <div className="inline-flex items-center gap-1.5">
+                                  {isAtRisk(member) && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleNudge(member.id)}
+                                      disabled={nudging === member.id}
+                                      className="h-8 gap-1 text-xs font-semibold rounded-full text-amber-700 border-amber-200 bg-white/70 hover:bg-amber-50 shadow-sm cursor-pointer"
+                                    >
+                                      {nudging === member.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
+                                      Nudge
+                                    </Button>
+                                  )}
                                 <div className="relative inline-block">
                                   <Button variant="ghost" size="sm" onClick={() => setOpenMemberMenu(openMemberMenu === member.id ? null : member.id)} disabled={isLoading} className="rounded-full hover:bg-rose-50">
                                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreVertical className="w-4 h-4" />}
@@ -1017,6 +1066,7 @@ function CohortDetailPageContent() {
                                       </button>
                                     </div>
                                   )}
+                                </div>
                                 </div>
                               )}
                             </td>

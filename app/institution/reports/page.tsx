@@ -337,9 +337,10 @@ export default function InstitutionReportsPage() {
                   {sortedCohorts.map((cohort) => {
                     const chip = statusChip[cohort.status] || 'bg-gray-50 text-gray-500 border-gray-200'
                     return (
-                      <div
+                      <Link
                         key={cohort.id}
-                        className="flex flex-col lg:flex-row lg:items-center gap-4 py-4"
+                        href={`/institution/cohorts/${cohort.id}`}
+                        className="flex flex-col lg:flex-row lg:items-center gap-4 py-4 rounded-xl -mx-2 px-2 hover:bg-rose-50/50 transition-colors cursor-pointer"
                       >
                         {/* Left: identity */}
                         <div className="lg:w-1/3 min-w-0">
@@ -392,7 +393,7 @@ export default function InstitutionReportsPage() {
                             )}
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
                 </div>
