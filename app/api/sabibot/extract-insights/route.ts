@@ -5,9 +5,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,14 +41,30 @@ Rules:
 - If nothing found for a category, use empty array []
 - NO explanations, ONLY the JSON`
 
-    const completion = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 500,
-      system: 'You are a learning insight extraction AI. Respond ONLY with valid JSON.',
-      messages: [{ role: 'user', content: extractionPrompt }],
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: 'You are a learning insight extraction AI. Respond ONLY with valid JSON.' },
+          { role: 'user', content: extractionPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 500,
+      }),
     })
-    const firstBlock = completion.content[0]
-    const extractedText = firstBlock?.type === 'text' ? firstBlock.text : ''
+
+    if (!response.ok) {
+      console.error('DeepSeek extraction failed:', response.status)
+      return NextResponse.json({ error: 'Extraction failed' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const extractedText = data.choices?.[0]?.message?.content || ''
 
     // Parse JSON response
     let insights

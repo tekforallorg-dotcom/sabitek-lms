@@ -612,7 +612,7 @@ Remember: You are a calm maestro consultant, patient, strategic, knowledgeable. 
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!DEEPSEEK_API_KEY) {
       return new Response(
         JSON.stringify({ content: 'AI service is not configured. Please check your API key.' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -739,37 +739,81 @@ export async function POST(request: NextRequest) {
       }).catch(() => console.log('Failed to mark milestone celebrated'))
     }
 
-    // ── Claude call: cached system prefix + sliding history window ──
-    const anthropic = getAnthropic()
+    // ── DeepSeek call: stable system prefix + sliding history window ──
+    const isInstructor = userContext?.userRole === 'instructor'
+    const model = SABIBOT_MODEL
     const windowed = messages.slice(-HISTORY_WINDOW).map((m: any) => ({
-      role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const),
+      role: m.role === 'assistant' ? 'assistant' : 'user',
       content: String(m.content || ''),
     }))
 
-    const isInstructor = userContext?.userRole === 'instructor'
-    const model = isInstructor ? INSTRUCTOR_MODEL : SABIBOT_MODEL
-    const claudeStream = anthropic.messages.stream({
-      model,
-      max_tokens: isInstructor ? INSTRUCTOR_MAX_TOKENS : MAX_ANSWER_TOKENS,
-      system: [
-        {
-          type: 'text',
-          text: systemPrompt,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: windowed,
+    const upstream = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'system', content: systemPrompt }, ...windowed],
+        temperature: 0.7,
+        max_tokens: isInstructor ? INSTRUCTOR_MAX_TOKENS : MAX_ANSWER_TOKENS,
+        stream: true,
+        stream_options: { include_usage: true },
+      }),
     })
 
+    if (!upstream.ok) {
+      console.error('DeepSeek API error:', upstream.status, upstream.statusText)
+      const errorContent =
+        language === 'pidgin'
+          ? 'Abeg, I no fit connect to AI service now. Try again later.'
+          : 'I apologize, but I cannot connect to the AI service right now. Please try again later.'
+      return new Response(JSON.stringify({ content: errorContent }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const encoder = new TextEncoder()
+    const decoder = new TextDecoder()
     const stream = new ReadableStream({
       async start(controller) {
+        const reader = upstream.body?.getReader()
+        if (!reader) {
+          controller.close()
+          return
+        }
+
         let fullContent = ''
+        let buffer = ''
+        let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number } | null =
+          null
+
         try {
-          for await (const event of claudeStream) {
-            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-              fullContent += event.delta.text
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: event.delta.text })}\n\n`))
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() || ''
+
+            for (const line of lines) {
+              const trimmed = line.trim()
+              if (!trimmed || trimmed === 'data: [DONE]') continue
+              if (!trimmed.startsWith('data: ')) continue
+              try {
+                const json = JSON.parse(trimmed.slice(6))
+                if (json.usage) usage = json.usage
+                const content = json.choices?.[0]?.delta?.content
+                if (content) {
+                  fullContent += content
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`))
+                }
+              } catch {
+                // Skip malformed chunks
+              }
             }
           }
 
@@ -777,8 +821,11 @@ export async function POST(request: NextRequest) {
           controller.close()
 
           // ── Post-stream background work ──
-          const finalMessage = await claudeStream.finalMessage()
-          logUsage(userContext?.userId ?? null, model, finalMessage.usage as any)
+          logUsage(userContext?.userId ?? null, model, {
+            input_tokens: usage?.prompt_tokens ?? 0,
+            cache_read_input_tokens: usage?.prompt_cache_hit_tokens ?? 0,
+            output_tokens: usage?.completion_tokens ?? 0,
+          })
 
           // Seed the Q&A cache for future learners on this lesson
           if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
