@@ -9,7 +9,6 @@ import { useAuthContext } from '@/components/providers/auth-provider'
 import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
 import { Lock } from 'lucide-react'
-import QuizTaker from '@/components/quiz/quiz-taker'
 import LessonReader from '@/components/viewer/LessonReader'
 import LessonQuestions from '@/components/lessons/LessonQuestions'
 import SabiLoader from '@/components/ui/SabiLoader'
@@ -177,7 +176,7 @@ export default function LessonViewerPage() {
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   // Workspace tabs under the player: notes, AI summary, Q&A, practice quiz
-  const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'practice' | 'instructor'>('notes')
+  const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'instructor'>('notes')
   // Sequential gating: which lessons are locked and why
   const [lockMap, setLockMap] = useState<Map<string, LockInfo>>(new Map())
   // Inputs for gating that survive re-renders, so locks release live
@@ -1066,14 +1065,13 @@ export default function LessonViewerPage() {
                 {/* Tab bar */}
                 <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
                   {(() => {
-                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'practice' | 'instructor'; label: string; icon: React.ElementType }[] = [
+                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'instructor'; label: string; icon: React.ElementType }[] = [
                       { key: 'notes', label: 'My Notes', icon: FileText },
                       { key: 'summary', label: 'AI Summary', icon: BookOpen },
                       { key: 'qa', label: 'Ask AI', icon: MessageSquare },
                       { key: 'instructor', label: 'Ask Instructor', icon: MessageCircleQuestion },
                     ]
-                    if (!quiz) tabs.push({ key: 'practice', label: 'Practice Quiz', icon: Award })
-                    return tabs.map((tab) => (
+                                        return tabs.map((tab) => (
                       <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
@@ -1148,13 +1146,6 @@ export default function LessonViewerPage() {
                 )}
 
                 {/* Practice quiz tab (only when the lesson has no instructor quiz) */}
-                {activeTab === 'practice' && !quiz && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-1">Practice quiz</p>
-                    <p className="text-xs text-gray-500 mb-3">Test your understanding with AI-generated questions</p>
-                    <QuizTaker lessonId={lesson?.id || ''} onComplete={() => {}} />
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
