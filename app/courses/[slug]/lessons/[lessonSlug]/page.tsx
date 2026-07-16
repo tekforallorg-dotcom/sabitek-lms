@@ -858,7 +858,16 @@ export default function LessonViewerPage() {
 
       case 'text':
       default:
-        return <LessonReader content={lesson.content || ''} />
+        return (
+          <LessonReader
+            content={lesson.content || ''}
+            continueHref={
+              nextLesson && !lockMap.get(nextLesson.id)?.locked
+                ? `/courses/${params.slug}/lessons/${nextLesson.slug}`
+                : null
+            }
+          />
+        )
     }
   }
 

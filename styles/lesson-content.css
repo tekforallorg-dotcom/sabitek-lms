@@ -274,3 +274,37 @@
   pointer-events: none;
   height: 0;
 }
+
+/* ── Two-column layout (Phase 3) ── */
+.lesson-content .lesson-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+@media (max-width: 639px) {
+  .lesson-content .lesson-columns {
+    grid-template-columns: 1fr;
+  }
+}
+.lesson-content .lesson-column {
+  min-width: 0;
+}
+
+/* ── CTA button block (Phase 3) ── */
+.lesson-content a.lesson-cta {
+  display: inline-block;
+  background: linear-gradient(to bottom, #ef4444, #e11d48);
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  box-shadow: 0 14px 30px -10px rgba(225, 29, 72, 0.55);
+  margin: 0.5rem 0 1rem;
+  transition: transform 0.15s ease;
+}
+.lesson-content a.lesson-cta:hover {
+  transform: translateY(-1px);
+}

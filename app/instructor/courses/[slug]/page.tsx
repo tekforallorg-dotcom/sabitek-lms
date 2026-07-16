@@ -1495,6 +1495,7 @@ export default function CourseManagementPage() {
                         content={lessonForm.content}
                         onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
                         placeholder="Enter lesson content. Use the toolbar to format text, add images, and embed videos..."
+                        autosaveKey={`sabitek-lesson-draft-${params.slug}-${editingLesson?.id ?? 'new'}`}
                       />
                     </div>
                   )}

@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { List, X, Clock } from 'lucide-react'
+import { List, X, Clock, Check, ArrowRight, GraduationCap } from 'lucide-react'
 import '@/styles/lesson-content.css'
 
 interface TocItem {
@@ -20,7 +20,13 @@ interface TocItem {
  *    desktop, collapsible pill on mobile)
  *  - figure/caption upgrading (img title -> figcaption) + tap-to-lightbox
  */
-export default function LessonReader({ content }: { content: string }) {
+export default function LessonReader({
+  content,
+  continueHref,
+}: {
+  content: string
+  continueHref?: string | null
+}) {
   const articleRef = useRef<HTMLDivElement>(null)
   const [toc, setToc] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
@@ -169,6 +175,44 @@ export default function LessonReader({ content }: { content: string }) {
         className="lesson-content px-5 md:px-8 py-6 md:py-8 max-w-3xl mx-auto"
         dangerouslySetInnerHTML={{ __html: content }}
       />
+
+      {/* ── End-of-lesson recap: lessons end with a moment, not a scroll-stop ── */}
+      {toc.length >= 2 && (
+        <div className="mx-5 md:mx-8 mb-6 md:mb-8 max-w-3xl lg:mx-auto">
+          <div className="relative overflow-hidden bg-rose-50/50 border border-rose-100 rounded-2xl p-5 sm:p-6">
+            <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)]">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">Recap</p>
+                <h3 className="font-semibold tracking-tight text-gray-900">What you covered</h3>
+              </div>
+            </div>
+            <ul className="space-y-2 mb-1">
+              {toc.map((item) => (
+                <li key={item.id} className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-3 h-3 text-white" />
+                  </span>
+                  <span className="text-sm text-gray-700">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+            {continueHref && (
+              <a
+                href={continueHref}
+                className="relative overflow-hidden mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer"
+              >
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                Continue to next lesson
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Lightbox */}
       {lightboxSrc && (

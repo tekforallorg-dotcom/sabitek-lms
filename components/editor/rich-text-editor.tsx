@@ -16,8 +16,9 @@ import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Plugin, PluginKey, NodeSelection } from '@tiptap/pm/state'
 import { DOMParser as ProseMirrorDOMParser, Slice } from '@tiptap/pm/model'
+import { Callout, Columns, Column, CtaButton } from './lesson-blocks'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { 
@@ -46,7 +47,18 @@ import {
   EyeOff,
   Undo,
   Redo,
-  ClipboardPaste
+  ClipboardPaste,
+  Heading1,
+  Heading2,
+  Heading3,
+  Lightbulb,
+  AlertTriangle,
+  FlaskConical,
+  Info,
+  Key,
+  Columns2,
+  MousePointerClick,
+  History
 } from 'lucide-react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import DOMPurify from 'dompurify'
@@ -207,13 +219,37 @@ interface RichTextEditorProps {
   onChange: (content: string) => void
   placeholder?: string
   editable?: boolean
+  /** When set, drafts are debounced to localStorage under this key and can be restored on reload. */
+  autosaveKey?: string
 }
 
-export default function RichTextEditor({ 
-  content, 
-  onChange, 
+// Human-friendly "x minutes ago" for the draft-restore bar.
+function relativeTime(ts: number): string {
+  const diff = Date.now() - ts
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins} minute${mins > 1 ? 's' : ''} ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs} hour${hrs > 1 ? 's' : ''} ago`
+  const days = Math.floor(hrs / 24)
+  return `${days} day${days > 1 ? 's' : ''} ago`
+}
+
+interface SlashMenuState {
+  open: boolean
+  query: string
+  from: number
+  index: number
+  left: number
+  top: number
+}
+
+export default function RichTextEditor({
+  content,
+  onChange,
   placeholder = 'Start writing your lesson content... (Paste formatted text from Word, Google Docs, or any webpage)',
-  editable = true 
+  editable = true,
+  autosaveKey
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [showBgColorPicker, setShowBgColorPicker] = useState(false)
@@ -228,9 +264,30 @@ export default function RichTextEditor({
   const [imageAlt, setImageAlt] = useState('')
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
+  // CTA button selection (mirrors the image control-strip pattern).
+  const [selectedCta, setSelectedCta] = useState(false)
+  const [ctaText, setCtaText] = useState('')
+  const [ctaHref, setCtaHref] = useState('')
+  // Hand-rolled slash menu (no @tiptap/suggestion / tippy dependency).
+  const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
+    open: false, query: '', from: 0, index: 0, left: 0, top: 0,
+  })
+  // localStorage draft-restore bar (Phase 4a).
+  const [draftBar, setDraftBar] = useState<{ html: string; ts: number } | null>(null)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Bridge so editorProps (created before insertImageFile) can call it.
   const insertImageFileRef = useRef<((file: File) => Promise<void>) | null>(null)
+  // Bridges so the editorProps.handleKeyDown closure (created once) can read
+  // live slash-menu state and invoke handlers defined later in the component.
+  const slashRef = useRef<{ open: boolean; index: number; count: number }>({ open: false, index: 0, count: 0 })
+  const slashNavRef = useRef<((dir: 1 | -1) => void) | null>(null)
+  const slashExecRef = useRef<(() => void) | null>(null)
+  const slashCloseRef = useRef<(() => void) | null>(null)
+  // Autosave debounce + a ref so the once-created onUpdate reads the live key.
+  const autosaveKeyRef = useRef<string | undefined>(autosaveKey)
+  autosaveKeyRef.current = autosaveKey
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -277,6 +334,11 @@ export default function RichTextEditor({
       TableRow,
       TableHeader,
       TableCell,
+      // Phase 3 — Notion-style blocks.
+      Callout,
+      Columns,
+      Column,
+      CtaButton,
       Placeholder.configure({
         placeholder,
       }),
@@ -304,6 +366,39 @@ export default function RichTextEditor({
         files.forEach((f) => void insertImageFileRef.current?.(f))
         return true
       },
+      // Slash-menu keyboard driving. When the menu is open we swallow the
+      // navigation keys so ProseMirror never sees them.
+      handleKeyDown: (_view, event) => {
+        if (!slashRef.current.open) return false
+        if (event.key === 'ArrowDown') {
+          slashNavRef.current?.(1)
+          return true
+        }
+        if (event.key === 'ArrowUp') {
+          slashNavRef.current?.(-1)
+          return true
+        }
+        if (event.key === 'Enter') {
+          slashExecRef.current?.()
+          return true
+        }
+        if (event.key === 'Escape') {
+          slashCloseRef.current?.()
+          return true
+        }
+        return false
+      },
+      // The CTA atom renders an <a>; select it instead of following the link.
+      handleClickOn: (view, _pos, node, nodePos) => {
+        if (node.type.name === 'ctaButton') {
+          const tr = view.state.tr.setSelection(
+            NodeSelection.create(view.state.doc, nodePos)
+          )
+          view.dispatch(tr)
+          return true
+        }
+        return false
+      },
     },
     content,
     editable,
@@ -313,6 +408,22 @@ export default function RichTextEditor({
       const words = editor.storage.characterCount.words()
       setCharCount(chars)
       setWordCount(words)
+
+      // Phase 4a autosave: debounce a draft snapshot to localStorage.
+      const key = autosaveKeyRef.current
+      if (key && typeof window !== 'undefined') {
+        if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+        autosaveTimer.current = setTimeout(() => {
+          try {
+            localStorage.setItem(
+              key,
+              JSON.stringify({ html: editor.getHTML(), ts: Date.now() })
+            )
+          } catch {
+            /* storage full / disabled — non-fatal */
+          }
+        }, 1000)
+      }
     },
   })
 
@@ -345,12 +456,74 @@ export default function RichTextEditor({
     setSelectedImage(foundImage)
   }, [editor])
 
+  // CTA button selection detection (mirrors the image control strip): a
+  // NodeSelection on a ctaButton opens the edit strip under the toolbar.
+  const checkCtaSelection = useCallback(() => {
+    if (!editor) return
+    const node = (editor.state.selection as any).node
+    if (node && node.type?.name === 'ctaButton') {
+      setSelectedCta(true)
+      setCtaText(node.attrs.text || '')
+      setCtaHref(node.attrs.href || '')
+    } else {
+      setSelectedCta(false)
+    }
+  }, [editor])
+
+  // Slash-menu open/close/filter detection. Runs on every selection/content
+  // change: opens when the caret sits after "/word" in an otherwise-empty
+  // paragraph, and remembers the "/" position so the query can be deleted.
+  const updateSlashMenu = useCallback(() => {
+    if (!editor) return
+    const { selection } = editor.state
+    if (!selection.empty || (selection as any).node) {
+      setSlashMenu((p) => (p.open ? { ...p, open: false } : p))
+      return
+    }
+    const { $from } = selection
+    if ($from.parent.type.name !== 'paragraph') {
+      setSlashMenu((p) => (p.open ? { ...p, open: false } : p))
+      return
+    }
+    const textBefore = $from.parent.textBetween(0, $from.parentOffset, '\n', '￼')
+    const textAfter = $from.parent.textBetween(
+      $from.parentOffset,
+      $from.parent.content.size,
+      '\n',
+      '￼'
+    )
+    const match = /^\s*\/(\w*)$/.exec(textBefore)
+    if (match && textAfter.trim() === '') {
+      const query = match[1]
+      const from = $from.pos - query.length - 1
+      const coords = editor.view.coordsAtPos($from.pos)
+      setSlashMenu({
+        open: true,
+        query,
+        from,
+        index: 0,
+        left: coords.left,
+        top: coords.bottom + 6,
+      })
+    } else {
+      setSlashMenu((p) => (p.open ? { ...p, open: false } : p))
+    }
+  }, [editor])
+
   useEffect(() => {
     if (!editor) return
 
-    editor.on('selectionUpdate', checkImageSelection)
-    editor.on('transaction', checkImageSelection)
-    
+    const onSelect = () => {
+      checkImageSelection()
+      checkCtaSelection()
+      updateSlashMenu()
+    }
+    editor.on('selectionUpdate', onSelect)
+    editor.on('transaction', onSelect)
+    // Close the slash menu when focus leaves the editor.
+    const onBlur = () => setSlashMenu((p) => (p.open ? { ...p, open: false } : p))
+    editor.on('blur', onBlur)
+
     // Add click handler to images
     const handleEditorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
@@ -359,16 +532,42 @@ export default function RichTextEditor({
         setTimeout(checkImageSelection, 10)
       }
     }
-    
+
     const editorElement = editor.view.dom
     editorElement.addEventListener('click', handleEditorClick)
-    
+
     return () => {
-      editor.off('selectionUpdate', checkImageSelection)
-      editor.off('transaction', checkImageSelection)
+      editor.off('selectionUpdate', onSelect)
+      editor.off('transaction', onSelect)
+      editor.off('blur', onBlur)
       editorElement.removeEventListener('click', handleEditorClick)
     }
-  }, [editor, checkImageSelection])
+  }, [editor, checkImageSelection, checkCtaSelection, updateSlashMenu])
+
+  // Draft-restore bar: once the editor is ready, surface a recent (<7d) draft
+  // that differs from the loaded content.
+  useEffect(() => {
+    if (!editor || !autosaveKey || typeof window === 'undefined') return
+    try {
+      const raw = localStorage.getItem(autosaveKey)
+      if (!raw) return
+      const saved = JSON.parse(raw)
+      const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000
+      if (
+        saved &&
+        typeof saved.html === 'string' &&
+        typeof saved.ts === 'number' &&
+        Date.now() - saved.ts < SEVEN_DAYS &&
+        saved.html !== editor.getHTML()
+      ) {
+        setDraftBar({ html: saved.html, ts: saved.ts })
+      }
+    } catch {
+      /* corrupt draft — ignore */
+    }
+    // Intentionally run once when the editor becomes available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor])
 
   // Cleanup editor on unmount
   useEffect(() => {
@@ -430,6 +629,104 @@ export default function RichTextEditor({
     if (editor) {
       editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
     }
+  }
+
+  // Apply the CTA control-strip inputs back onto the selected ctaButton node.
+  const applyCta = () => {
+    if (!editor) return
+    editor
+      .chain()
+      .focus()
+      .updateAttributes('ctaButton', {
+        text: ctaText.trim() || 'Open link',
+        href: ctaHref.trim() || '#',
+      })
+      .run()
+  }
+
+  // ── Slash menu (Phase 3) ──────────────────────────────────────────────
+  type SlashItem = {
+    label: string
+    description: string
+    Icon: typeof Bold
+    run: () => void
+  }
+
+  const chain = () => (editor!.chain().focus() as any)
+
+  const slashItems: SlashItem[] = editor
+    ? [
+        { label: 'Heading 1', description: 'Section title', Icon: Heading1, run: () => editor.chain().focus().toggleHeading({ level: 1 }).run() },
+        { label: 'Heading 2', description: 'Sub-section title', Icon: Heading2, run: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
+        { label: 'Heading 3', description: 'Minor heading', Icon: Heading3, run: () => editor.chain().focus().toggleHeading({ level: 3 }).run() },
+        { label: 'Key point', description: 'Green callout card', Icon: Key, run: () => chain().insertCallout('key').run() },
+        { label: 'Tip', description: 'Helpful aside callout', Icon: Lightbulb, run: () => chain().insertCallout('tip').run() },
+        { label: 'Warning', description: 'Caution callout', Icon: AlertTriangle, run: () => chain().insertCallout('warning').run() },
+        { label: 'Example', description: 'Worked example callout', Icon: FlaskConical, run: () => chain().insertCallout('example').run() },
+        { label: 'Info', description: 'Informational callout', Icon: Info, run: () => chain().insertCallout('info').run() },
+        { label: 'Two columns', description: 'Side-by-side layout', Icon: Columns2, run: () => chain().insertColumns().run() },
+        { label: 'Button', description: 'Call-to-action link', Icon: MousePointerClick, run: () => chain().insertCtaButton().run() },
+        { label: 'Image', description: 'Upload an illustration', Icon: ImageIcon, run: () => fileInputRef.current?.click() },
+        { label: 'Divider', description: 'Horizontal rule', Icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
+        { label: 'Quote', description: 'Blockquote', Icon: Quote, run: () => editor.chain().focus().toggleBlockquote().run() },
+        { label: 'Table', description: 'Insert a 3×3 table', Icon: TableIcon, run: () => insertTable() },
+      ]
+    : []
+
+  const filteredSlashItems = slashMenu.query
+    ? slashItems.filter((i) =>
+        i.label.toLowerCase().includes(slashMenu.query.toLowerCase())
+      )
+    : slashItems
+
+  // Mirror live slash state into refs so the once-created editorProps
+  // handleKeyDown closure can read them without stale captures.
+  const filteredItemsRef = useRef<SlashItem[]>([])
+  filteredItemsRef.current = filteredSlashItems
+  slashRef.current.open = slashMenu.open
+  slashRef.current.index = slashMenu.index
+  slashRef.current.count = filteredSlashItems.length
+
+  const closeSlash = () =>
+    setSlashMenu((p) => (p.open ? { ...p, open: false } : p))
+
+  const executeSlashItem = (item: SlashItem) => {
+    if (!editor) return
+    const to = editor.state.selection.from
+    editor.chain().focus().deleteRange({ from: slashMenu.from, to }).run()
+    item.run()
+    closeSlash()
+  }
+
+  slashCloseRef.current = closeSlash
+  slashNavRef.current = (dir) => {
+    const n = filteredItemsRef.current.length
+    if (n === 0) return
+    setSlashMenu((p) => ({ ...p, index: (p.index + dir + n) % n }))
+  }
+  slashExecRef.current = () => {
+    const item = filteredItemsRef.current[slashRef.current.index]
+    if (item) executeSlashItem(item)
+  }
+
+  // ── Draft restore (Phase 4a) ──────────────────────────────────────────
+  const restoreDraft = () => {
+    if (!editor || !draftBar) return
+    // emitUpdate=true so the parent form's onChange picks up the restored HTML.
+    editor.commands.setContent(draftBar.html, { emitUpdate: true })
+    toast.success('Draft restored')
+    setDraftBar(null)
+  }
+
+  const discardDraft = () => {
+    if (autosaveKey && typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(autosaveKey)
+      } catch {
+        /* ignore */
+      }
+    }
+    setDraftBar(null)
   }
 
   // ULTIMATE FIX: Direct DOM manipulation + force update
@@ -502,6 +799,29 @@ export default function RichTextEditor({
 
   return (
     <div className="border rounded-lg overflow-hidden bg-white">
+      {/* Draft-restore bar (Phase 4a) */}
+      {editable && draftBar && (
+        <div className="bg-amber-50/80 border border-amber-100 rounded-xl px-3 py-2 text-xs flex items-center gap-2 m-2">
+          <History className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+          <span className="text-gray-600">
+            Unsaved draft from {relativeTime(draftBar.ts)} found
+          </span>
+          <button
+            type="button"
+            onClick={restoreDraft}
+            className="font-semibold text-red-600 cursor-pointer hover:text-red-700 ml-auto"
+          >
+            Restore
+          </button>
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="text-gray-500 cursor-pointer hover:text-gray-700"
+          >
+            Discard
+          </button>
+        </div>
+      )}
       {editable && (
         <div className="border-b bg-gray-50 p-2">
           {/* First Row - Text Formatting */}
@@ -991,6 +1311,36 @@ export default function RichTextEditor({
             </div>
           )}
 
+          {/* CTA button controls (mirrors the image strip; only when a CTA node is selected) */}
+          {selectedCta && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-rose-100 bg-rose-50/60 px-2 py-2 rounded-b-lg">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Button</span>
+              <div className="w-px h-4 bg-rose-200 mx-1" />
+              <input
+                type="text"
+                value={ctaText}
+                onChange={(e) => setCtaText(e.target.value)}
+                placeholder="Button text"
+                className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-40"
+              />
+              <input
+                type="text"
+                value={ctaHref}
+                onChange={(e) => setCtaHref(e.target.value)}
+                placeholder="Link URL (https://…)"
+                className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={applyCta}
+                className="text-xs px-3 py-1 h-7 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full"
+              >
+                Apply
+              </Button>
+            </div>
+          )}
+
           {/* Status Bar */}
           <div className="flex justify-between items-center pt-2 mt-2 border-t text-xs text-gray-600">
             <div className="flex items-center gap-4">
@@ -1019,6 +1369,43 @@ export default function RichTextEditor({
           </div>
         )}
       </div>
+
+      {/* Slash command menu (hand-rolled, no @tiptap/suggestion / tippy) */}
+      {editable && slashMenu.open && filteredSlashItems.length > 0 && (
+        <div
+          className="fixed bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] py-1.5 w-64 z-50 max-h-72 overflow-y-auto"
+          style={{ left: slashMenu.left, top: slashMenu.top }}
+        >
+          {filteredSlashItems.map((item, i) => {
+            const Icon = item.Icon
+            return (
+              <button
+                key={item.label}
+                type="button"
+                // Keep the editor focused so the caret/range stays intact.
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => executeSlashItem(item)}
+                onMouseEnter={() => setSlashMenu((p) => ({ ...p, index: i }))}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 text-left transition-colors ${
+                  i === slashMenu.index ? 'bg-rose-50/70' : 'hover:bg-rose-50/40'
+                }`}
+              >
+                <span className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-red-500" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-gray-800 truncate">
+                    {item.label}
+                  </span>
+                  <span className="block text-[11px] text-gray-400 truncate">
+                    {item.description}
+                  </span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
