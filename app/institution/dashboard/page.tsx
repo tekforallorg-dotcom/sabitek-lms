@@ -20,7 +20,6 @@ import {
   Globe,
   MapPin,
   CheckCircle,
-  Check,
   Clock,
   AlertCircle,
   Layers,
@@ -34,7 +33,6 @@ import {
   Shield,
   Activity,
   FileText,
-  ArrowRight,
   Copy,
   Trash2,
   Link2,
@@ -203,15 +201,6 @@ export default function InstitutionDashboardPage() {
   // Terminology hook — labels adapt based on institution type
   const t = useTerminology(institution)
 
-  // Onboarding checklist state
-  const [checklistData, setChecklistData] = useState<{
-    hasProgram: boolean
-    hasCohort: boolean
-    hasCourse: boolean
-    hasLearner: boolean
-    hasSettings: boolean
-  } | null>(null)
-
   // Invite state (token invite API)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
@@ -280,34 +269,6 @@ export default function InstitutionDashboardPage() {
       setInstitution(membership.institution as Institution)
       setUserRole(membership.role)
 
-      // Fetch onboarding checklist data
-      try {
-        const instId = membership.institution_id
-        const token = session.access_token
-
-        const [programsRes, cohortsRes] = await Promise.all([
-          fetch(`/api/programs?institution_id=${instId}&limit=1`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/api/cohorts?institution_id=${instId}&limit=1`, { headers: { Authorization: `Bearer ${token}` } }),
-        ])
-
-        const programsJson = programsRes.ok ? await programsRes.json() : {}
-        const cohortsJson = cohortsRes.ok ? await cohortsRes.json() : {}
-
-        const programsList = programsJson.data?.programs || programsJson.programs || []
-        const cohortsList = cohortsJson.data?.cohorts || cohortsJson.cohorts || []
-
-        const inst = membership.institution as Institution
-        setChecklistData({
-          hasProgram: programsList.length > 0,
-          hasCohort: cohortsList.length > 0,
-          hasCourse: false, // Will be true once courses are linked to institution
-          hasLearner: false, // Updated below if members are fetched
-          hasSettings: !!(inst.terminology_pack || inst.contact_email),
-        })
-      } catch {
-        // Non-critical: checklist is optional
-      }
-
       if (membership.role === 'institution_admin' || membership.role === 'program_manager') {
         const membersResponse = await fetch(`/api/institutions/${membership.institution_id}/members`, {
           headers: {
@@ -319,7 +280,6 @@ export default function InstitutionDashboardPage() {
           const data = await membersResponse.json()
           const membersData = data.data?.members || data.members || []
           setMembers(membersData)
-          setChecklistData((prev) => prev ? { ...prev, hasLearner: membersData.length > 1 } : prev)
         }
       }
 
@@ -620,75 +580,6 @@ export default function InstitutionDashboardPage() {
             ))}
           </div>
         )}
-
-        {/* ── Onboarding Checklist ── */}
-        {institution.status === 'approved' && checklistData && (() => {
-          const steps = [
-            { key: 'hasProgram', label: `Create your first ${t.program.toLowerCase()}`, href: '/institution/programs', done: checklistData.hasProgram },
-            { key: 'hasCohort', label: `Set up a ${t.cohort.toLowerCase()}`, href: '/institution/cohorts', done: checklistData.hasCohort },
-            { key: 'hasLearner', label: `Invite your first ${t.learner.toLowerCase()}`, href: '/institution/cohorts', done: checklistData.hasLearner },
-            { key: 'hasSettings', label: 'Customize your workspace settings', href: '/institution/settings', done: checklistData.hasSettings },
-          ]
-          const completedCount = steps.filter((s) => s.done).length
-          const allDone = completedCount === steps.length
-
-          if (allDone) return null
-
-          return (
-            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Onboarding</p>
-                  <h2 className="text-lg font-semibold tracking-tight text-gray-900">
-                    Get <span className="font-serif italic text-red-600">started</span>
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Complete these steps to set up your workspace</p>
-                </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">
-                  {completedCount}/{steps.length} done
-                </span>
-              </div>
-
-              <div className="w-full bg-rose-50 rounded-full h-2 mb-5">
-                <div
-                  className="bg-gradient-to-r from-red-500 to-rose-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${(completedCount / steps.length) * 100}%` }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                {steps.map((step, index) => (
-                  <Link
-                    key={step.key}
-                    href={step.href}
-                    className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
-                      step.done
-                        ? 'bg-emerald-50/60 border-emerald-100'
-                        : 'bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {step.done ? (
-                        <span className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-4 h-4 text-emerald-600" />
-                        </span>
-                      ) : (
-                        <span className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0 font-serif italic text-sm text-red-600">
-                          {index + 1}
-                        </span>
-                      )}
-                      <span className={`text-sm font-medium ${step.done ? 'text-emerald-700 line-through' : 'text-gray-700'}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {!step.done && <ArrowRight className="w-4 h-4 text-rose-300" />}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
 
         {/* Vertical-Aware Stats Grid */}
         {institution.status === 'approved' && (
