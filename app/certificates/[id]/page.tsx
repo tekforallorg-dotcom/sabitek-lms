@@ -22,7 +22,9 @@ import {
   Linkedin,
   MessageCircle,
   Link2,
-  Check
+  Check,
+  Printer,
+  GraduationCap
 } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
 
@@ -32,7 +34,8 @@ interface Certificate {
   grade_percentage: number
   issued_at: string
   user_id: string
-  course_id: string
+  course_id: string | null
+  kind?: 'course' | 'program'
   user: {
     full_name: string
     email: string
@@ -43,7 +46,11 @@ interface Certificate {
     instructor: {
       full_name: string
     }
-  }
+  } | null
+  program?: {
+    name: string
+    institution?: { name: string } | null
+  } | null
 }
 
 // ============================================================
@@ -117,6 +124,10 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
             title,
             description,
             instructor:users!courses_instructor_id_fkey(full_name)
+          ),
+          program:programs(
+            name,
+            institution:institutions(name)
           )
         `)
         .eq('id', resolvedParams.id)
@@ -249,7 +260,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
     // Course title
     pdf.setFont('helvetica', 'bold')
-    const courseTitle = certificate!.course.title
+    const courseTitle = certificate!.course?.title || certificate!.program?.name || 'Program'
     const maxTitleWidth = 200
     let titleFontSize = 20
     pdf.setFontSize(titleFontSize)
@@ -304,7 +315,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     pdf.setFont('times', 'italic')
     pdf.setFontSize(18)
     pdf.setTextColor(17, 24, 39)
-    pdf.text(certificate!.course.instructor.full_name, instructorX, footerY + 4, { align: 'center' })
+    pdf.text(certificate!.course?.instructor?.full_name || certificate!.program?.institution?.name || 'Sabitek', instructorX, footerY + 4, { align: 'center' })
 
     // Instructor line
     pdf.setDrawColor(17, 24, 39)
@@ -410,7 +421,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
           pdfData: pdfBase64,
           certificateData: {
             userName: certificate.user.full_name,
-            courseName: certificate.course.title,
+            courseName: certificate.course?.title || certificate.program?.name || 'Program',
             certificateNumber: certificate.certificate_number,
             grade: certificate.grade_percentage,
             issuedAt: certificate.issued_at
@@ -433,7 +444,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     const shareUrl = `${window.location.origin}/verify/${certificate?.certificate_number}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Certificate - ${certificate?.course.title}`, url: shareUrl })
+        await navigator.share({ title: `Certificate - ${certificate?.course?.title || certificate?.program?.name || 'Sabitek'}`, url: shareUrl })
       } catch {}
     } else {
       handleCopyLink()
@@ -451,6 +462,10 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     toast.success('Verification link copied')
     setShareCopied(true)
     setTimeout(() => setShareCopied(false), 2000)
+  }
+
+  const handlePrint = () => {
+    window.print()
   }
 
   if (loading || authLoading) {
@@ -515,14 +530,17 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
             </div>
 
             <div className="hidden sm:flex items-center gap-2">
-              <button onClick={handleShare} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all">
+              <button onClick={handleShare} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all cursor-pointer">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all disabled:opacity-50">
+              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer">
                 {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Mail className="w-4 h-4" />}
                 {emailSent ? 'Sent!' : 'Email'}
               </button>
-              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden px-3.5 py-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 disabled:opacity-50">
+              <button onClick={handlePrint} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all cursor-pointer">
+                <Printer className="w-4 h-4" /> Print
+              </button>
+              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden px-3.5 py-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer">
                 <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isDownloading ? 'Generating...' : 'Download PDF'}
@@ -533,91 +551,106 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
         {/* Certificate Preview */}
         <div className="relative max-w-5xl mx-auto px-4 py-6">
-          <div className="sm:hidden flex items-center justify-center gap-2 text-xs text-gray-500 mb-3 bg-white/70 backdrop-blur border border-rose-100 rounded-full py-2 shadow-sm">
-            <ZoomIn className="w-3.5 h-3.5" />
-            <span>Scroll horizontally to view</span>
-          </div>
+          {/* ── The certificate: a premium document, fluid on every screen ── */}
+          <div className="cert-print-root relative overflow-hidden bg-white rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_50px_-25px_rgba(225,29,72,0.45)] p-2 sm:p-3">
+            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent no-print" aria-hidden="true" />
+            <div className="relative rounded-xl border border-rose-200 bg-[#fffcf9] overflow-hidden">
+              {/* inner decorative frame */}
+              <div className="absolute inset-2 sm:inset-3 border-2 border-rose-300/50 rounded-lg pointer-events-none" aria-hidden="true" />
+              {/* watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+                <GraduationCap className="w-[55%] h-[55%] text-rose-500 opacity-[0.04]" />
+              </div>
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255,228,230,0.5), transparent)' }}
+                aria-hidden="true"
+              />
 
-          <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="relative overflow-hidden bg-white rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_50px_-25px_rgba(225,29,72,0.45)] p-3" style={{ width: 824, minWidth: 824 }}>
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-              <div className="bg-white rounded-lg overflow-hidden" style={{ width: 800, minWidth: 800, height: 566 }}>
-              <div className="w-full h-full border-8 border-gray-900 bg-white">
-                <div className="w-full h-full border border-gray-300 relative">
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-600" />
+              <div className="relative px-5 py-7 sm:px-12 sm:py-10 text-center">
+                {/* Wordmark */}
+                <p className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
+                  Sabi
+                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">tek</span>
+                </p>
+                <p className="mt-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-gray-400">
+                  Certificate of Completion
+                </p>
+                {certificate.kind === 'program' && (
+                  <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 border border-rose-200 text-red-600">
+                    Program Certificate
+                  </span>
+                )}
 
-                  <div className="h-full flex flex-col px-12 py-8">
-                    {/* Header - Sabitek with sparkle */}
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <h1 className="text-3xl font-bold text-gray-900">Sabitek</h1>
-                        <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
-                          <circle cx="19" cy="5" r="2" />
-                        </svg>
-                      </div>
-                      <div className="w-20 h-0.5 bg-red-600 mx-auto my-1" />
-                      <p className="text-xs text-gray-600 uppercase tracking-[0.2em]">Certificate of Completion</p>
+                {/* Learner */}
+                <p className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500">This certifies that</p>
+                <h2 className="mt-2 font-serif text-2xl sm:text-4xl text-gray-900 leading-tight break-words">
+                  {certificate.user.full_name}
+                </h2>
+                <span className="block w-24 h-px mx-auto mt-3 bg-gradient-to-r from-transparent via-rose-400 to-transparent" aria-hidden="true" />
+
+                {/* Achievement */}
+                <p className="mt-4 text-xs sm:text-sm text-gray-500">
+                  {certificate.kind === 'program'
+                    ? 'has successfully completed the program'
+                    : 'has successfully completed the course'}
+                </p>
+                <h3 className="mt-1.5 text-base sm:text-xl font-semibold text-gray-900 break-words">
+                  {certificate.kind === 'program'
+                    ? certificate.program?.name || 'Program'
+                    : certificate.course?.title || 'Course'}
+                </h3>
+                {certificate.kind === 'program' && certificate.program?.institution?.name && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    offered by <span className="font-semibold text-gray-700">{certificate.program.institution.name}</span>
+                  </p>
+                )}
+                <p className="mt-2 text-[11px] sm:text-xs text-gray-400">{formattedDate}</p>
+
+                {/* Bottom row */}
+                <div className="mt-7 sm:mt-9 grid grid-cols-3 items-end gap-2">
+                  {/* Grade / Instructor */}
+                  <div className="text-left">
+                    {certificate.kind !== 'program' && certificate.grade_percentage != null ? (
+                      <>
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400">Grade</p>
+                        <p className="text-lg sm:text-2xl font-bold tabular-nums text-red-600">
+                          {certificate.grade_percentage}%
+                        </p>
+                        {certificate.course?.instructor?.full_name && (
+                          <p className="mt-1 text-[9px] sm:text-[10px] text-gray-400">
+                            Instructor: <span className="text-gray-600">{certificate.course.instructor.full_name}</span>
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400">Awarded by</p>
+                        <p className="text-xs sm:text-sm font-semibold text-gray-700">
+                          {certificate.program?.institution?.name || 'Sabitek'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Seal */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-red-500 to-rose-600 ring-4 ring-rose-100 flex items-center justify-center shadow-[0_10px_24px_-8px_rgba(225,29,72,0.6)]">
+                      <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
+                    <p className="mt-1.5 text-[8px] sm:text-[9px] tabular-nums text-gray-400">
+                      {certificate.certificate_number}
+                    </p>
+                  </div>
 
-                    {/* Main */}
-                    <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-                      <p className="text-gray-700 text-sm mb-2">This is to certify that</p>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-3 border-b-2 border-gray-300 pb-1 px-6">{certificate.user.full_name}</h2>
-                      <p className="text-gray-700 text-sm mb-2">has successfully completed the course</p>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-4">{certificate.course.title}</h3>
-
-                      <div className="flex items-center gap-8">
-                        <div className="text-center">
-                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">Grade</p>
-                          <p className="text-xl font-bold text-red-600">{certificate.grade_percentage}%</p>
-                        </div>
-                        <div className="w-px h-10 bg-gray-300" />
-                        <div className="text-center">
-                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">Issued</p>
-                          <p className="text-sm font-semibold text-gray-900">{formattedDate}</p>
-                        </div>
-                      </div>
+                  {/* QR */}
+                  <div className="flex flex-col items-end" id="qr-code-canvas">
+                    <div className="p-1 bg-white border border-rose-100 rounded-lg">
+                      <QRCodeCanvas value={verifyUrl} size={52} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#111111" />
                     </div>
-
-                    {/* Footer */}
-                    <div className="border-t border-gray-300 pt-3">
-                      <div className="flex justify-between items-end">
-                        <div className="text-left w-40">
-                          <p className="text-xl text-gray-900" style={{ fontFamily: "'Great Vibes', cursive" }}>{certificate.course.instructor.full_name}</p>
-                          <div className="border-t-2 border-gray-900 mt-0.5 mb-0.5" />
-                          <p className="text-[9px] text-gray-500 uppercase tracking-wider">Course Instructor</p>
-                        </div>
-
-                        <div className="text-center">
-                          <p className="text-[9px] text-gray-500 font-mono">{certificate.certificate_number}</p>
-                        </div>
-
-                        {/* QR Code */}
-                        <div className="text-center" id="qr-code-canvas">
-                          <div className="p-0.5 bg-white border border-gray-200 rounded inline-block">
-                            <QRCodeCanvas value={verifyUrl} size={50} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#000000" />
-                          </div>
-                          <p className="text-[8px] text-gray-400 mt-0.5">Scan to verify</p>
-                        </div>
-
-                        {/* Director - STAMP ONLY, no signature */}
-                        <div className="text-right w-40">
-                          <div className="flex justify-end mb-1">
-                            <div className="border-2 border-red-600 rounded px-2 py-1" style={{ transform: 'rotate(-3deg)', background: 'rgba(220,38,38,0.05)' }}>
-                              <p className="text-[11px] font-black text-red-700 uppercase tracking-wide">Tek4All</p>
-                              <p className="text-[8px] text-red-600 font-bold text-center">{stampDate}</p>
-                            </div>
-                          </div>
-                          <div className="border-t-2 border-gray-900 mt-2 mb-0.5" />
-                          <p className="text-[9px] text-gray-500 uppercase tracking-wider">Sabitek Director</p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="mt-1 text-[8px] sm:text-[9px] text-gray-400">Scan to verify</p>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>
@@ -740,6 +773,12 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
       <style jsx global>{`
         @media print {
           .no-print { display: none !important; }
+          body * { visibility: hidden; }
+          .cert-print-root, .cert-print-root * { visibility: visible; }
+          .cert-print-root {
+            position: absolute; left: 0; top: 0; width: 100%;
+            box-shadow: none !important; border: none !important;
+          }
         }
       `}</style>
     </>

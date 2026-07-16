@@ -28,12 +28,18 @@ export async function GET(
       certificate_number,
       grade_percentage,
       issued_at,
+      kind,
+      revoked_at,
       user:users!certificates_user_id_fkey(
         full_name
       ),
       course:courses(
         title,
         instructor:users!courses_instructor_id_fkey(full_name)
+      ),
+      program:programs(
+        name,
+        institution:institutions(name)
       )
     `)
     .eq('certificate_number', certificateNumber)

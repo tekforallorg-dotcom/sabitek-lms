@@ -20,6 +20,8 @@ interface Certificate {
   certificate_number: string
   grade_percentage: number
   issued_at: string
+  kind?: 'course' | 'program'
+  revoked_at?: string | null
   user: {
     full_name: string
   }
@@ -28,7 +30,11 @@ interface Certificate {
     instructor: {
       full_name: string
     }
-  }
+  } | null
+  program?: {
+    name: string
+    institution?: { name: string } | null
+  } | null
 }
 
 export default function VerifyCertificatePage({ params }: { params: Promise<{ certificateNumber: string }> }) {
@@ -68,20 +74,32 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
           ? (Array.isArray(courseData.instructor) ? courseData.instructor[0] : courseData.instructor)
           : { full_name: 'Unknown Instructor' }
 
+        const programData = Array.isArray(data.program) ? data.program[0] : data.program
+        const institutionData = programData?.institution
+          ? (Array.isArray(programData.institution) ? programData.institution[0] : programData.institution)
+          : null
+
         const transformedData: Certificate = {
           id: data.id,
           certificate_number: data.certificate_number,
           grade_percentage: data.grade_percentage,
           issued_at: data.issued_at,
+          kind: data.kind || 'course',
+          revoked_at: data.revoked_at || null,
           user: {
             full_name: userData?.full_name || 'Unknown'
           },
-          course: {
-            title: courseData?.title || 'Unknown Course',
-            instructor: {
-              full_name: instructorData?.full_name || 'Unknown Instructor'
-            }
-          }
+          course: courseData
+            ? {
+                title: courseData?.title || 'Unknown Course',
+                instructor: {
+                  full_name: instructorData?.full_name || 'Unknown Instructor'
+                }
+              }
+            : null,
+          program: programData
+            ? { name: programData.name, institution: institutionData }
+            : null
         }
         setCertificate(transformedData)
       }
@@ -270,7 +288,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Course Completed</p>
-                  <h3 className="text-lg font-semibold tracking-tight text-gray-900 leading-tight">{certificate?.course.title}</h3>
+                  <h3 className="text-lg font-semibold tracking-tight text-gray-900 leading-tight">{certificate?.kind === 'program' ? certificate?.program?.name || 'Program' : certificate?.course?.title || 'Course'}</h3>
                 </div>
               </div>
             </div>
@@ -304,7 +322,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
                   </div>
                   <span className="text-xs text-gray-500">Course Instructor</span>
                 </div>
-                <p className="text-base font-semibold text-gray-900">{certificate?.course.instructor.full_name}</p>
+                <p className="text-base font-semibold text-gray-900">{certificate?.kind === 'program' ? certificate?.program?.institution?.name || 'Sabitek' : certificate?.course?.instructor?.full_name || 'Unknown'}</p>
               </div>
             </div>
 
@@ -318,7 +336,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
                   <p className="text-sm font-semibold text-emerald-900 mb-1">Authenticity Confirmed</p>
                   <p className="text-xs text-emerald-700">
                     This certificate was issued by Sabitek and has been verified as authentic.
-                    The recipient has successfully completed the course requirements.
+                    The recipient has successfully completed all requirements.
                   </p>
                 </div>
               </div>

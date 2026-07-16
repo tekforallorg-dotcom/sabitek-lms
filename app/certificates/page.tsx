@@ -21,6 +21,7 @@ interface Certificate {
   grade_percentage: number
   issued_at: string
   completion_date: string
+  kind?: 'course' | 'program'
   course: {
     id: string
     title: string
@@ -29,7 +30,11 @@ interface Certificate {
     instructor?: {
       full_name: string
     }
-  }
+  } | null
+  program?: {
+    name: string
+    institution?: { name: string } | null
+  } | null
 }
 
 function CertificatesContent() {
@@ -58,6 +63,10 @@ function CertificatesContent() {
             description,
             thumbnail_url,
             instructor:users!courses_instructor_id_fkey(full_name)
+          ),
+          program:programs(
+            name,
+            institution:institutions(name)
           )
         `)
         .eq('user_id', user?.id)
@@ -212,11 +221,19 @@ function CertificatesContent() {
 
                   <Award className="w-12 h-12 text-gray-800 mb-2 group-hover:scale-110 transition-transform relative z-10" strokeWidth={1.5} />
                   <div className="text-center relative z-10">
-                    <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-[0.2em]">Certificate of Completion</p>
-                    <p className="text-sm font-semibold text-gray-900 line-clamp-2 px-4">{cert.course.title}</p>
+                    <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-[0.2em]">
+                      {cert.kind === 'program' ? 'Program Certificate' : 'Certificate of Completion'}
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900 line-clamp-2 px-4">
+                      {cert.kind === 'program' ? cert.program?.name || 'Program' : cert.course?.title || 'Course'}
+                    </p>
+                    {cert.kind === 'program' && cert.program?.institution?.name && (
+                      <p className="text-[10px] text-gray-400 mt-0.5">by {cert.program.institution.name}</p>
+                    )}
                   </div>
 
                   {/* Grade badge */}
+                  {cert.kind !== 'program' && (
                   <div className="absolute top-5 right-5 z-10">
                     <span className={`px-2.5 py-1 text-xs rounded-full font-semibold border ${
                       cert.grade_percentage >= 90
@@ -228,6 +245,7 @@ function CertificatesContent() {
                       {cert.grade_percentage}%
                     </span>
                   </div>
+                  )}
                 </div>
 
                 {/* Certificate Info */}
@@ -250,9 +268,11 @@ function CertificatesContent() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-500 text-xs">Instructor</span>
+                      <span className="text-gray-500 text-xs">{cert.kind === 'program' ? 'Awarded by' : 'Instructor'}</span>
                       <span className="text-gray-900 text-sm truncate max-w-[150px]">
-                        {cert.course.instructor?.full_name || 'Unknown'}
+                        {cert.kind === 'program'
+                          ? cert.program?.institution?.name || 'Sabitek'
+                          : cert.course?.instructor?.full_name || 'Unknown'}
                       </span>
                     </div>
                   </div>
