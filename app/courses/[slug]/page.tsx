@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
@@ -289,45 +290,41 @@ export default function CourseDetailPage() {
     try {
       setLoading(true)
 
-      // Fetch course
-      const { data: courseData, error: courseError } = await supabase
-        .from('courses')
-        .select(
-          `
-          *,
-          instructor:users!courses_instructor_id_fkey(full_name)
-        `
-        )
-        .eq('slug', params.slug)
-        .single()
+      // Single consolidated loader: course + lessons + modules + enrollment
+      // + access + progress + quiz-gating in parallel server-side. Token is
+      // optional because this page is reachable anonymously.
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
 
-      if (courseError) throw courseError
+      const res = await fetch(
+        `/api/learner/course-data?courseSlug=${encodeURIComponent(String(params.slug))}`,
+        accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined
+      )
+
+      if (!res.ok) {
+        // Course not found / hidden: leave course null so the not-found UI shows.
+        return
+      }
+
+      const json = await res.json()
+      const data = json.data || json
+
+      const courseData = data.course
       setCourse(courseData)
 
-      // Fetch lessons
-      const { data: lessonsData } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', courseData.id)
-        .order('lesson_order')
+      const lessonsData = data.lessons || []
+      setLessons(lessonsData)
 
-      setLessons(lessonsData || [])
-
-      // Fetch modules (public endpoint, courseData.status check happens server-side)
-      const { data: modulesData } = await supabase
-        .from('modules')
-        .select('id, course_id, title, description, order_index')
-        .eq('course_id', courseData.id)
-        .order('order_index', { ascending: true })
+      const modulesData = data.modules || []
 
       // Compute lesson_count per module from lessons we already have
       const lessonsByModule: Record<string, number> = {}
-      for (const l of lessonsData || []) {
+      for (const l of lessonsData) {
         if (l.module_id) {
           lessonsByModule[l.module_id] = (lessonsByModule[l.module_id] || 0) + 1
         }
       }
-      const enrichedModules: Module[] = (modulesData || []).map((m) => ({
+      const enrichedModules: Module[] = modulesData.map((m: any) => ({
         ...m,
         lesson_count: lessonsByModule[m.id] || 0,
       }))
@@ -338,101 +335,37 @@ export default function CourseDetailPage() {
         setExpandedModules(new Set([enrichedModules[0].id]))
       }
 
-      if (user) {
-        // Check enrollment
-        const { data: enrollment } = await supabase
-          .from('course_enrollments')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', courseData.id)
-          .maybeSingle()
+      setIsEnrolled(!!data.isEnrolled)
+      if (data.accessResult) {
+        setAccessResult(data.accessResult as CourseAccessResult)
+      }
 
-        setIsEnrolled(!!enrollment)
+      if (user && data.isEnrolled) {
+        const completed = new Set<string>(data.completedLessonIds || [])
+        setCompletedLessons(completed)
 
-        // Check access
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          try {
-            const res = await fetch(`/api/courses/${courseData.id}/access`, {
-              headers: { Authorization: `Bearer ${session.access_token}` },
-            })
-            if (res.ok) {
-              const accessData = await res.json()
-              const result: CourseAccessResult = accessData.data || accessData
-              setAccessResult(result)
-            } else {
-              const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-              setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
-            }
-          } catch (err: unknown) {
-            console.error('Error checking course access:', err)
-            const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-            setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
-          }
-        }
+        // Sequential lesson locking
+        if (courseData.instructor_id === user.id) {
+          // Instructors bypass gating entirely
+          setLockMap(new Map())
+        } else {
+          const lessonIds = lessonsData.map((l: any) => l.id)
+          if (lessonIds.length > 0) {
+            const quizLessonIds = new Set<string>(data.quizLessonIds || [])
+            const passedQuizIds = new Set<string>(data.passedLessonIds || [])
 
-        if (enrollment) {
-          const { data: progress } = await supabase
-            .from('user_progress')
-            .select('lesson_id')
-            .eq('user_id', user.id)
-            .eq('course_id', courseData.id)
-            .not('completed_at', 'is', null)
-
-          const completed = new Set(progress?.map((p) => p.lesson_id) || [])
-          setCompletedLessons(completed)
-
-          // Sequential lesson locking
-          if (courseData.instructor_id === user.id) {
-            // Instructors bypass gating entirely
-            setLockMap(new Map())
+            setLockMap(
+              computeLockMap(
+                buildLessonSequence(lessonsData, modulesData),
+                completed,
+                quizLessonIds,
+                passedQuizIds
+              )
+            )
           } else {
-            const lessonIds = (lessonsData || []).map((l) => l.id)
-            if (lessonIds.length > 0) {
-              const [{ data: quizzesData }, { data: attemptsData }] = await Promise.all([
-                supabase.from('quizzes').select('lesson_id, questions').in('lesson_id', lessonIds),
-                supabase
-                  .from('quiz_attempts')
-                  .select('lesson_id, passed')
-                  .eq('user_id', user.id)
-                  .in('lesson_id', lessonIds),
-              ])
-
-              const quizLessonIds = new Set<string>()
-              for (const q of quizzesData || []) {
-                let questions = q.questions
-                if (typeof questions === 'string') {
-                  try {
-                    questions = JSON.parse(questions)
-                  } catch {
-                    questions = []
-                  }
-                }
-                if (Array.isArray(questions) && questions.length > 0) {
-                  quizLessonIds.add(q.lesson_id)
-                }
-              }
-
-              const passedQuizIds = new Set<string>(
-                (attemptsData || []).filter((a) => a.passed === true).map((a) => a.lesson_id)
-              )
-
-              setLockMap(
-                computeLockMap(
-                  buildLessonSequence(lessonsData || [], modulesData || []),
-                  completed,
-                  quizLessonIds,
-                  passedQuizIds
-                )
-              )
-            } else {
-              setLockMap(new Map())
-            }
+            setLockMap(new Map())
           }
         }
-      } else {
-        const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-        setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
       }
     } catch (error: unknown) {
       console.error('Error fetching course:', error)
@@ -746,7 +679,7 @@ export default function CourseDetailPage() {
         <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
           {course.cover_image_url && (
             <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden mb-6 shadow-xl">
-              <img src={course.cover_image_url} alt={course.title} className="w-full h-full object-cover" />
+              <Image src={course.cover_image_url} alt={course.title} fill sizes="(max-width: 1152px) 100vw, 1152px" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
           )}

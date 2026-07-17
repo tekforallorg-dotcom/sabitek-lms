@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
-
-function parseQuestions(raw: unknown): any[] {
-  let qs = raw
-  if (typeof qs === 'string') {
-    try {
-      qs = JSON.parse(qs)
-    } catch {
-      qs = []
-    }
-  }
-  return Array.isArray(qs) ? qs : []
-}
+import { getSanitizedLessonQuiz } from '@/lib/quizzes/sanitize'
 
 /**
  * Sanitized quiz delivery: learners get questions WITHOUT correct answers
@@ -44,42 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
     }
 
-    const { data: lessonRows } = await supabaseAdmin
-      .from('lessons')
-      .select('id')
-      .eq('course_id', courseId)
-    const lessonIds = (lessonRows || []).map((l) => l.id)
-
-    const { data: quizRows } = await supabaseAdmin
-      .from('quizzes')
-      .select('id, lesson_id, title, description, pass_percentage, time_limit, questions')
-      .in('lesson_id', lessonIds.length > 0 ? lessonIds : ['00000000-0000-0000-0000-000000000000'])
-
-    const quizLessonIds = (quizRows || [])
-      .filter((q) => parseQuestions(q.questions).length > 0)
-      .map((q) => q.lesson_id)
-
-    const current = (quizRows || []).find((q) => q.lesson_id === lessonId) || null
-    let quiz = null
-    if (current) {
-      const questions = parseQuestions(current.questions)
-      if (questions.length > 0) {
-        quiz = {
-          id: current.id,
-          lesson_id: current.lesson_id,
-          title: current.title,
-          description: current.description,
-          pass_percentage: current.pass_percentage,
-          time_limit: current.time_limit,
-          questions: questions.map((q: any, i: number) => ({
-            id: q.id || `q-${i}`,
-            question: q.question,
-            options: q.options,
-            // correct_answer and explanation deliberately withheld
-          })),
-        }
-      }
-    }
+    const { quiz, quizLessonIds } = await getSanitizedLessonQuiz(courseId, lessonId)
 
     return NextResponse.json({ quiz, quizLessonIds })
   } catch (error) {

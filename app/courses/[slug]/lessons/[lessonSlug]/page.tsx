@@ -278,65 +278,44 @@ export default function LessonViewerPage() {
     try {
       setLoading(true)
 
-      const { data: courseData, error: courseError } = await supabase
-        .from('courses')
-        .select(
-          `
-          *,
-          instructor:users!courses_instructor_id_fkey(full_name)
-        `
-        )
-        .eq('slug', params.slug)
-        .single()
-
-      if (courseError) {
-        console.error('Course fetch error:', courseError)
-        router.push('/courses')
+      // Single consolidated loader: token-verified, service-role, all
+      // queries parallel server-side. Replaces the old 5-stage waterfall
+      // (course -> [enrollment, lessons, modules, progress] -> [notes,
+      // attempts, session] -> access -> quiz). Client-side state/gating
+      // logic below is unchanged - it is just fed from one payload.
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
+      if (!accessToken) {
+        router.push('/auth/login')
         return
       }
 
+      const res = await fetch(
+        `/api/learner/lesson-data?courseSlug=${encodeURIComponent(String(params.slug))}&lessonSlug=${encodeURIComponent(String(params.lessonSlug))}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        if (err.code === 'lesson_not_found') {
+          router.push(`/courses/${params.slug}`)
+        } else {
+          router.push('/courses')
+        }
+        return
+      }
+
+      const json = await res.json()
+      const data = json.data || json
+
+      const courseData = data.course
       setCourse(courseData)
 
-      const isInstructor = courseData.instructor_id === user.id
+      const isInstructor = data.isInstructor
 
-      // Batch 2: everything that only needs the course id, in parallel
-      // (was a serial waterfall of 4 round-trips).
-      const [enrollmentRes, lessonsRes, modulesRes, progressRes] = await Promise.all([
-        isInstructor
-          ? Promise.resolve({ data: { id: 'instructor' } })
-          : supabase
-              .from('course_enrollments')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('course_id', courseData.id)
-              .single(),
-        supabase
-          .from('lessons')
-          .select('*')
-          .eq('course_id', courseData.id)
-          .order('lesson_order'),
-        supabase
-          .from('modules')
-          .select('id, course_id, title, description, order_index')
-          .eq('course_id', courseData.id)
-          .order('order_index', { ascending: true }),
-        supabase
-          .from('user_progress')
-          .select('lesson_id, completed_at')
-          .eq('user_id', user.id)
-          .eq('course_id', courseData.id)
-          .not('completed_at', 'is', null),
-      ])
+      setEnrollmentStatus(!!data.enrollment)
 
-      setEnrollmentStatus(!!enrollmentRes.data)
-
-      const { data: lessonsData, error: lessonsError } = lessonsRes
-      if (lessonsError) {
-        console.error('Lessons fetch error:', lessonsError)
-        return
-      }
-
-      const mappedLessons: Lesson[] = (lessonsData || []).map((l) => ({
+      const mappedLessons: Lesson[] = (data.lessons || []).map((l: any) => ({
         id: l.id,
         title: l.title,
         slug: l.slug,
@@ -354,8 +333,8 @@ export default function LessonViewerPage() {
 
       setLessons(mappedLessons)
 
-      const modulesData = modulesRes.data
-      setModules(modulesData || [])
+      const modulesData: Module[] = data.modules || []
+      setModules(modulesData)
 
       const currentLesson = mappedLessons.find((l) => l.slug === params.lessonSlug)
       if (!currentLesson) {
@@ -368,100 +347,48 @@ export default function LessonViewerPage() {
       // Expand the module containing the current lesson by default
       if (currentLesson.module_id) {
         setExpandedModules(new Set([currentLesson.module_id]))
-      } else if (modulesData && modulesData.length > 0) {
+      } else if (modulesData.length > 0) {
         setExpandedModules(new Set([modulesData[0].id]))
       }
 
-      // Completion status came back in batch 2.
-      const completedSet = new Set((progressRes.data || []).map((p) => p.lesson_id))
+      const completedSet = new Set<string>(data.completedLessonIds || [])
       setCompletedLessonIds(completedSet)
       setIsCompleted(completedSet.has(currentLesson.id))
-
-      // Batch 3: notes for the current lesson, plus quizzes and quiz
-      // attempts for the WHOLE course (needed for sequential gating).
-      const allLessonIds = mappedLessons.map((l) => l.id)
-      const [notesRes, attemptsRes, sessionRes] = await Promise.all([
-        supabase
-          .from('lesson_notes')
-          .select('*')
-          .eq('lesson_id', currentLesson.id)
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('quiz_attempts')
-          .select('lesson_id, passed')
-          .eq('user_id', user.id)
-          .in('lesson_id', allLessonIds),
-        supabase.auth.getSession(),
-      ])
 
       // Program sequencing: block deep-links into a course that is still
       // locked behind an earlier course in the learner's program. Render a
       // friendly locked card instead of the player or a raw DB error.
-      if (!isInstructor) {
-        try {
-          const accessToken = sessionRes.data.session?.access_token
-          if (accessToken) {
-            const accessRes = await fetch(`/api/courses/${courseData.id}/access`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            })
-            if (accessRes.ok) {
-              const accessJson = await accessRes.json()
-              const access = accessJson.data || accessJson
-              if (access?.accessType === 'sequence_locked') {
-                setProgramLock({
-                  title: access.blocking?.title || '',
-                  slug: access.blocking?.slug || '',
-                })
-                setLoading(false)
-                return
-              }
-            }
-          }
-        } catch (e) {
-          console.error('Program access check failed:', e)
-        }
+      if (!isInstructor && data.programLock) {
+        setProgramLock({
+          title: data.programLock.title || '',
+          slug: data.programLock.slug || '',
+        })
+        setLoading(false)
+        return
       }
 
-      // Quiz data comes from the sanitized server API - correct answers
-      // never reach the browser (grading happens in /api/quizzes/grade).
-      let serverQuiz: Quiz | null = null
-      let serverQuizLessonIds: string[] = []
-      try {
-        const accessToken = sessionRes.data.session?.access_token
-        if (accessToken) {
-          const quizApiRes = await fetch(
-            `/api/quizzes/for-lesson?lessonId=${currentLesson.id}&courseId=${courseData.id}`,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          )
-          if (quizApiRes.ok) {
-            const payload = await quizApiRes.json()
-            serverQuiz = payload.quiz || null
-            serverQuizLessonIds = payload.quizLessonIds || []
-          }
-        }
-      } catch (e) {
-        console.error('Quiz fetch failed:', e)
-      }
-
-      const notesData = notesRes.data
-      if (notesData) {
-        const noteText = notesData.notes || notesData.content || notesData.note_content || ''
-        setNotesContent(noteText)
-        setNotesId(notesData.id)
+      // Notes for the current lesson (normalized server-side).
+      if (data.notes) {
+        setNotesContent(data.notes.content || '')
+        setNotesId(data.notes.id)
       } else {
         setNotesContent('')
         setNotesId(null)
       }
 
+      // Sanitized quiz - correct answers never reach the browser (grading
+      // happens in /api/quizzes/grade).
+      const serverQuiz: Quiz | null = data.quiz || null
+      const serverQuizLessonIds: string[] = data.quizLessonIds || []
+
       // Sequential gating: lesson N+1 unlocks once lesson N is complete
       // and its quiz (if any) is passed. Instructors bypass.
-      const attemptRows = attemptsRes.data || []
+      const attemptRows: Array<{ lesson_id: string; passed: boolean }> = data.attempts || []
       const quizLessonIds = new Set(serverQuizLessonIds)
       const passedQuizIds = new Set(
         attemptRows.filter((a) => a.passed).map((a) => a.lesson_id)
       )
-      const sequence = buildLessonSequence(mappedLessons, modulesData || [])
+      const sequence = buildLessonSequence(mappedLessons, modulesData)
       const computedLockMap = isInstructor
         ? new Map<string, LockInfo>()
         : computeLockMap(sequence, completedSet, quizLessonIds, passedQuizIds)

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Image from 'next/image'
 import SabiLoader from '@/components/ui/SabiLoader'
 import GamificationStrip from '@/components/dashboard/GamificationStrip'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
@@ -230,69 +231,24 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const { data: coursesData, error: coursesError } = await supabase
-        .from('course_enrollments')
-        .select(`
-          *,
-          course:courses(
-            *,
-            instructor:users!courses_instructor_id_fkey(full_name)
-          )
-        `)
-        .eq('user_id', user?.id)
-        .order('enrolled_at', { ascending: false })
-
-      if (coursesError) {
-        if (coursesError.code === 'PGRST116' || coursesError.message.includes('policy')) {
-          const { data: simpleEnrollments, error: simpleError } = await supabase
-            .from('course_enrollments')
-            .select('*')
-            .eq('user_id', user?.id)
-
-          if (!simpleError && simpleEnrollments) {
-            const courseIds = simpleEnrollments.map(e => e.course_id)
-            if (courseIds.length > 0) {
-              const { data: courseDetails } = await supabase
-                .from('courses')
-                .select(`*, instructor:users!courses_instructor_id_fkey(full_name)`)
-                .in('id', courseIds)
-
-              const combined = simpleEnrollments.map(enrollment => ({
-                ...enrollment,
-                course: courseDetails?.find(c => c.id === enrollment.course_id) || null
-              }))
-              setEnrolledCourses(combined.filter(e => e.course !== null))
-            }
-          }
-        }
-      } else {
-        setEnrolledCourses(coursesData || [])
+      // Single consolidated loader: verifies the token server-side and runs
+      // enrollments + courses + certificates + cohorts in parallel, returning
+      // one payload (replaces the old browser-side query waterfall).
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        return
       }
 
-      const { data: certsData } = await supabase
-        .from('certificates')
-        .select(`*, course:courses(title, cover_image_url)`)
-        .eq('user_id', user?.id)
-        .order('issued_at', { ascending: false })
-        .limit(3)
+      const res = await fetch('/api/learner/dashboard-data', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
 
-      setCertificates(certsData || [])
-
-      // Fetch cohort memberships
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          const res = await fetch('/api/cohorts/my-cohorts', {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          })
-          const json = await res.json()
-          const cohortData = json.data?.cohorts || json.cohorts
-          if (res.ok && cohortData) {
-            setCohorts(cohortData)
-          }
-        }
-      } catch (cohortErr) {
-        console.error('Failed to load cohorts:', cohortErr)
+      if (res.ok) {
+        const json = await res.json()
+        const payload = json.data || json
+        setEnrolledCourses(payload.enrolledCourses || [])
+        setCertificates(payload.certificates || [])
+        setCohorts(payload.cohorts || [])
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -357,10 +313,12 @@ export default function DashboardPage() {
                 <div className="group flex items-center gap-4 bg-white/80 backdrop-blur-xl rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_18px_40px_-22px_rgba(225,29,72,0.4)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-22px_rgba(225,29,72,0.5)] cursor-pointer">
                   <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-rose-50 border border-rose-100 flex-shrink-0">
                     {continueCourse.course.cover_image_url ? (
-                      <img
+                      <Image
                         src={continueCourse.course.cover_image_url}
                         alt=""
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="56px"
+                        className="object-cover"
                       />
                     ) : (
                       <BookOpen className="w-6 h-6 text-rose-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -557,10 +515,12 @@ export default function DashboardPage() {
                       {/* Thumbnail */}
                       <div className="relative h-28 bg-gradient-to-br from-rose-50 to-pink-50 overflow-hidden">
                         {enrollment.course.cover_image_url ? (
-                          <img
+                          <Image
                             src={enrollment.course.cover_image_url}
                             alt={enrollment.course.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
