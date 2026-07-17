@@ -9,9 +9,6 @@ import {
   BookOpen,
   Award,
   ArrowRight,
-  Zap,
-  Target,
-  TrendingUp,
   CheckCircle,
   Smartphone,
   GraduationCap,
@@ -21,7 +18,9 @@ import {
   Link2,
   Building2,
   Flame,
-  MessageSquare,
+  MessagesSquare,
+  FileQuestion,
+  ShieldAlert,
 } from 'lucide-react'
 
 const GRAIN =
@@ -77,18 +76,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
         {children}
       </span>
-    </div>
-  )
-}
-
-/* Checkmark bullet row */
-function CheckRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-rose-500 shadow-sm shadow-rose-200 flex items-center justify-center flex-shrink-0">
-        <CheckCircle className="w-3 h-3 text-white" />
-      </span>
-      <span className="text-[15px] text-gray-700 leading-relaxed">{children}</span>
     </div>
   )
 }
@@ -290,7 +277,7 @@ export default function HomePage() {
 
           <Reveal delay={400}>
             <div className="inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-white/50 backdrop-blur-md rounded-full border border-white/70 ring-1 ring-rose-100/70 shadow-[0_10px_30px_-14px_rgba(225,29,72,0.25)] px-6 py-2.5">
-              {['Works on any phone', 'AI tutor included', 'Certificates verify by QR'].map((item, i, arr) => (
+              {['Works on any device', 'AI tutor included', 'Certificates verify by QR'].map((item, i, arr) => (
                 <span key={i} className="flex items-center gap-4 text-sm text-gray-600">
                   <span className="flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5 text-red-500" />
@@ -317,32 +304,109 @@ export default function HomePage() {
       </section>
 
       {/* ============================================ */}
-      {/* THE PROBLEM, dark band                        */}
+      {/* THE PROBLEM, dark narrative band              */}
       {/* ============================================ */}
-      <section className="relative overflow-hidden bg-[#1c1412] py-16 sm:py-20">
-        <div className="absolute -top-24 right-[10%] w-96 h-96 bg-rose-900/30 rounded-full blur-[100px]" aria-hidden="true" />
-        <div className="absolute -bottom-32 left-[5%] w-80 h-80 bg-red-950/60 rounded-full blur-[90px]" aria-hidden="true" />
+      <section className="relative overflow-hidden bg-[#1c1412] py-16 sm:py-24">
+        {/* glow orbs */}
+        <div className="absolute -top-24 right-[8%] w-[28rem] h-[28rem] bg-rose-900/40 rounded-full blur-[110px]" aria-hidden="true" />
+        <div className="absolute -bottom-36 left-[4%] w-96 h-96 bg-red-950/70 rounded-full blur-[100px]" aria-hidden="true" />
+        {/* top hairline */}
+        <span className="absolute top-0 inset-x-16 h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent" aria-hidden="true" />
+        {/* dotted texture, masked to the right where the chain sits */}
+        <div
+          className="absolute inset-0 opacity-[0.14] pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,228,230,0.4) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+            maskImage: 'radial-gradient(ellipse 55% 65% at 78% 40%, black, transparent)',
+            WebkitMaskImage: 'radial-gradient(ellipse 55% 65% at 78% 40%, black, transparent)',
+          }}
+        />
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: GRAIN }} />
+        {/* oversized serif quote mark */}
+        <span
+          className="absolute -top-6 left-[3%] font-serif italic text-[16rem] leading-none text-rose-500/[0.07] select-none pointer-events-none"
+          aria-hidden="true"
+        >
+          &ldquo;
+        </span>
 
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <Reveal>
-            <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug text-white mb-6">
-              Training does not fail at teaching.{' '}
-              <span className="font-serif italic text-rose-300">It fails at follow-through.</span>
-            </h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <p className="text-base sm:text-lg text-rose-100/70 leading-relaxed mb-4">
-              Across Africa, serious programs still run on chat groups, PDFs and hope.
-              Nobody knows who actually finished, quizzes are marked by hand or not at
-              all, and certificates are images anyone can forge.
-            </p>
-            <p className="text-base sm:text-lg text-rose-100/70 leading-relaxed">
-              Sabitek replaces that with structure: sequenced lessons, checkpoints graded
-              on the server, dropout flagged before it happens, and credentials that
-              anyone can verify. All on the ordinary phones your learners already own.
-            </p>
-          </Reveal>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-20 items-center">
+            {/* Left: the statement */}
+            <Reveal>
+              <div>
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="h-px w-8 bg-gradient-to-r from-rose-400 to-transparent" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-300">The problem</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-[1.12] text-white mb-6">
+                  Training does not fail at teaching.{' '}
+                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-rose-200 to-pink-300">
+                    It fails at follow-through.
+                  </span>
+                </h2>
+                <p className="text-base sm:text-lg text-rose-100/70 leading-relaxed max-w-md">
+                  Across Africa, serious programs still run on goodwill and group
+                  chats. The teaching is real. The record of it is not, and funders,
+                  employers and learners all pay for that gap.
+                </p>
+              </div>
+            </Reveal>
+
+            {/* Right: the failure chain, resolved */}
+            <Reveal delay={150}>
+              <div className="relative">
+                {/* vertical connector */}
+                <span
+                  className="absolute left-[21px] top-10 bottom-28 w-px bg-gradient-to-b from-rose-500/15 via-rose-400/40 to-rose-300/70"
+                  aria-hidden="true"
+                />
+                <div className="space-y-4">
+                  {[
+                    {
+                      icon: MessagesSquare,
+                      title: 'Content lives in chat groups and PDFs',
+                      desc: 'Scattered, unsequenced, gone when the group goes quiet',
+                    },
+                    {
+                      icon: FileQuestion,
+                      title: 'Completion is a guess',
+                      desc: 'Assessments marked by hand, or never marked at all',
+                    },
+                    {
+                      icon: ShieldAlert,
+                      title: 'Certificates anyone can forge',
+                      desc: 'A JPEG with a logo on it proves nothing to anyone',
+                    },
+                  ].map((row, i) => (
+                    <div key={i} className="relative flex items-start gap-4">
+                      <div className="relative z-10 w-11 h-11 rounded-xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                        <row.icon className="w-5 h-5 text-rose-300" />
+                      </div>
+                      <div className="pt-0.5">
+                        <p className="text-[15px] font-semibold text-white/90">{row.title}</p>
+                        <p className="text-sm text-rose-100/50 leading-relaxed">{row.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* resolution card */}
+                <div className="relative mt-7 ml-0 sm:ml-14 rounded-2xl bg-gradient-to-b from-rose-500/20 to-rose-500/[0.07] border border-rose-300/25 backdrop-blur px-5 py-4 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)]">
+                  <span className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-rose-300/70 to-transparent" aria-hidden="true" />
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-rose-200 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-rose-50/90 leading-relaxed">
+                      <span className="font-semibold text-white">Sabitek closes the loop:</span>{' '}
+                      sequenced lessons, checkpoints graded on the server, dropout
+                      flagged early, and credentials anyone can verify.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -536,128 +600,6 @@ export default function HomePage() {
       </section>
 
       {/* ============================================ */}
-      {/* FOR EDUCATORS                                 */}
-      {/* ============================================ */}
-      <section className="py-14 sm:py-16 bg-gradient-to-b from-rose-50/50 to-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <Reveal>
-              <div>
-                <SectionLabel>For Educators</SectionLabel>
-                <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug mb-4">
-                  Turn your knowledge into a{' '}
-                  <span className="font-serif italic text-red-600">digital academy</span>
-                </h2>
-                <p className="text-gray-600 leading-relaxed mb-7 max-w-md">
-                  Author rich lessons, watch your learners progress in real time, and
-                  issue certificates. All without writing a single line of code.
-                </p>
-
-                <div className="space-y-3 mb-8">
-                  <CheckRow>Compose lessons with rich text, video, images and callouts</CheckRow>
-                  <CheckRow>Attach quizzes that gate progress and grade themselves</CheckRow>
-                  <CheckRow>See the exact lesson where learners drop off</CheckRow>
-                  <CheckRow>Issue verifiable QR certificates automatically</CheckRow>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/schools-and-tutors">
-                    <Button className="group relative overflow-hidden w-full sm:w-auto bg-gradient-to-b from-gray-800 to-gray-950 hover:to-gray-800 text-white px-7 py-5 text-sm font-semibold rounded-full shadow-[0_14px_28px_-12px_rgba(0,0,0,0.5)] transition-all hover:-translate-y-0.5">
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-full pointer-events-none" />
-                      Learn More
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                    </Button>
-                  </Link>
-                  <Link href="/become-a-provider">
-                    <Button variant="outline" className="w-full sm:w-auto bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white px-7 py-5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5">
-                      Become a Provider
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Mock instructor dashboard with layered depth */}
-            <Reveal delay={150}>
-              <div className="relative max-w-lg mx-auto lg:max-w-none">
-                {/* tilted backdrop panel */}
-                <div className="absolute inset-4 rotate-3 rounded-3xl bg-gradient-to-br from-rose-200/70 to-pink-100/70 blur-[1px]" aria-hidden="true" />
-
-                <div className="relative bg-white/85 backdrop-blur-xl rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_40px_80px_-35px_rgba(225,29,72,0.45)] overflow-hidden">
-                  {/* window chrome */}
-                  <div className="flex items-center gap-2 px-5 py-3.5 border-b border-rose-50">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-200" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-100" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-50 border border-rose-100" />
-                    <span className="ml-3 text-xs font-medium text-gray-400">Instructor dashboard</span>
-                  </div>
-
-                  <div className="p-5 sm:p-6 space-y-5">
-                    {/* course progress rows */}
-                    <div className="space-y-3.5">
-                      {[
-                        { icon: BookOpen, name: 'Digital Marketing 101', pct: 72 },
-                        { icon: GraduationCap, name: 'Data Literacy Cohort B', pct: 45 },
-                      ].map((row, i) => (
-                        <div key={i} className="flex items-center gap-3.5">
-                          <div className="w-9 h-9 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
-                            <row.icon className="w-4 h-4 text-red-500" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline justify-between mb-1.5">
-                              <p className="text-xs font-semibold text-gray-800 truncate">{row.name}</p>
-                              <span className="text-[11px] font-medium text-rose-500 tabular-nums">{row.pct}%</span>
-                            </div>
-                            <div className="h-1.5 rounded-full bg-rose-50 overflow-hidden">
-                              <div
-                                style={{ width: `${row.pct}%` }}
-                                className="h-full rounded-full bg-gradient-to-r from-red-500 to-pink-400"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* inline metric tiles */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { icon: TrendingUp, label: 'Lessons completed', value: '128' },
-                        { icon: Target, label: 'Avg. quiz score', value: '87%' },
-                        { icon: MessageSquare, label: 'Questions answered', value: '12' },
-                        { icon: Zap, label: 'At-risk flagged', value: '3' },
-                      ].map((m, i) => (
-                        <div key={i} className="rounded-xl bg-gradient-to-b from-rose-50/70 to-white border border-rose-100 px-3.5 py-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <m.icon className="w-3.5 h-3.5 text-red-500" />
-                            <span className="text-[11px] text-gray-500">{m.label}</span>
-                          </div>
-                          <p className="text-sm font-semibold text-gray-900 tabular-nums">{m.value}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* floating certificate chip overlapping the panel */}
-                <div className="absolute -bottom-5 -right-3 sm:-right-6 animate-float-b">
-                  <div className="bg-white/75 backdrop-blur-xl rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_40px_-16px_rgba(225,29,72,0.4)] px-4 py-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-500 shadow-sm flex items-center justify-center">
-                      <Award className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-800">Certificate issued</p>
-                      <p className="text-[11px] text-gray-500">Ada O. finished with 94%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
       {/* THREE STEPS                                   */}
       {/* ============================================ */}
       <section className="py-14 sm:py-16 bg-white">
@@ -696,11 +638,16 @@ export default function HomePage() {
             ].map((step, i) => (
               <Reveal key={i} delay={i * 80}>
                 <div className="relative h-full bg-white/80 backdrop-blur p-6 sm:p-7 rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-18px_rgba(225,29,72,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_45px_-20px_rgba(225,29,72,0.4)]">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-b from-red-500 to-rose-600 shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5">
-                    <span className="text-white font-semibold">{step.num}</span>
+                  <span className="absolute -right-1 -bottom-7 font-serif italic text-[5.5rem] leading-none text-rose-100/60 select-none pointer-events-none" aria-hidden="true">
+                    {step.num}
+                  </span>
+                  <div className="relative">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-b from-red-500 to-rose-600 shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5">
+                      <span className="text-white font-semibold">{step.num}</span>
+                    </div>
+                    <h3 className="font-semibold text-[15px] mb-1.5">{step.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
                   </div>
-                  <h3 className="font-semibold text-[15px] mb-1.5">{step.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -709,13 +656,15 @@ export default function HomePage() {
       </section>
 
       {/* ============================================ */}
-      {/* FOR PARTNERS AND FUNDERS, dark card           */}
+      {/* FOR PARTNERS AND FUNDERS, closing dark card   */}
       {/* ============================================ */}
-      <section className="py-10 sm:py-12 bg-white">
+      <section className="pb-16 pt-4 sm:pb-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="relative overflow-hidden rounded-[2rem] bg-[#1c1412] px-6 py-12 sm:px-12 sm:py-14 ring-1 ring-white/10 shadow-[0_40px_80px_-35px_rgba(28,20,18,0.7)]">
               <div className="absolute -top-20 right-[15%] w-72 h-72 bg-rose-900/30 rounded-full blur-[90px]" aria-hidden="true" />
+              <div className="absolute -bottom-24 left-[10%] w-64 h-64 bg-red-950/50 rounded-full blur-[80px]" aria-hidden="true" />
+              <span className="absolute top-0 inset-x-12 h-px bg-gradient-to-r from-transparent via-rose-400/40 to-transparent" aria-hidden="true" />
               <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: GRAIN }} />
 
               <div className="relative grid lg:grid-cols-2 gap-10 items-center">
@@ -736,16 +685,24 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link href="/request-access">
                       <Button className="group w-full sm:w-auto bg-white text-gray-900 hover:bg-rose-50 px-7 py-5 text-sm font-semibold rounded-full shadow-[0_14px_28px_-12px_rgba(0,0,0,0.5)] transition-all hover:-translate-y-0.5">
-                        Partner With Us
+                        Get Started Free
                         <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
                       </Button>
                     </Link>
                     <Link href="/about">
                       <Button variant="outline" className="w-full sm:w-auto bg-white/5 backdrop-blur border border-white/25 text-white hover:bg-white/15 hover:text-white px-7 py-5 text-sm font-semibold rounded-full transition-all hover:-translate-y-0.5">
-                        About Sabitek
+                        Partner With Us
                       </Button>
                     </Link>
                   </div>
+                  {!user && (
+                    <p className="text-sm text-rose-100/50 mt-6">
+                      Individual learner?{' '}
+                      <Link href="/waitlist" className="text-rose-200 underline underline-offset-4 hover:text-white font-medium">
+                        Join the waitlist
+                      </Link>
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -761,80 +718,6 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* FINAL CTA                                     */}
-      {/* ============================================ */}
-      <section className="pb-16 pt-4 sm:pb-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <Reveal>
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-red-600 via-rose-600 to-pink-600 px-6 py-16 sm:px-14 sm:py-20 text-center ring-1 ring-white/20 shadow-[0_45px_90px_-35px_rgba(190,18,60,0.6)]">
-              {/* light source from the top */}
-              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/15 to-transparent" aria-hidden="true" />
-              {/* glow orbs */}
-              <div className="absolute -top-24 -right-16 w-80 h-80 bg-white/10 rounded-full blur-[80px]" />
-              <div className="absolute -bottom-28 -left-16 w-72 h-72 bg-pink-300/25 rounded-full blur-[70px]" />
-              {/* concentric rings, top right */}
-              <svg className="absolute -top-20 -right-20 w-80 h-80 opacity-25" viewBox="0 0 200 200" fill="none" aria-hidden="true">
-                <circle cx="100" cy="100" r="60" stroke="white" strokeWidth="0.75" />
-                <circle cx="100" cy="100" r="80" stroke="white" strokeWidth="0.5" />
-                <circle cx="100" cy="100" r="99" stroke="white" strokeWidth="0.4" />
-              </svg>
-              {/* dotted texture + grain */}
-              <div
-                className="absolute inset-0 opacity-[0.07]"
-                style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '26px 26px' }}
-              />
-              <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: GRAIN }} />
-
-              <div className="relative">
-                <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white mb-4">
-                  Ready to run training{' '}
-                  <span className="font-serif italic">that ends in proof?</span>
-                </h2>
-                <p className="text-base sm:text-lg text-white/85 mb-9 max-w-lg mx-auto">
-                  Create your workspace today. Your first cohort could be learning
-                  this week.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                  {!user ? (
-                    <>
-                      <Link href="/request-access">
-                        <Button className="group w-full sm:w-auto bg-white text-red-600 hover:bg-rose-50 px-9 py-5 text-sm font-semibold rounded-full shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-12px_rgba(0,0,0,0.5)]">
-                          Get Started Free
-                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                        </Button>
-                      </Link>
-                      <Link href="/about">
-                        <Button variant="outline" className="w-full sm:w-auto bg-white/10 backdrop-blur border border-white/40 text-white hover:bg-white/20 hover:text-white px-9 py-5 text-sm font-semibold rounded-full transition-all hover:-translate-y-0.5">
-                          Learn More
-                        </Button>
-                      </Link>
-                    </>
-                  ) : (
-                    <Link href="/courses">
-                      <Button className="group w-full sm:w-auto bg-white text-red-600 hover:bg-rose-50 px-9 py-5 text-sm font-semibold rounded-full shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-0.5">
-                        Explore Courses
-                        <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-
-                {!user && (
-                  <p className="text-sm text-white/70 mt-7">
-                    Individual learner?{' '}
-                    <Link href="/waitlist" className="text-white underline underline-offset-4 hover:text-white/90 font-medium">
-                      Join the waitlist
-                    </Link>
-                  </p>
-                )}
               </div>
             </div>
           </Reveal>
