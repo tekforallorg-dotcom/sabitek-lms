@@ -444,26 +444,11 @@ export default function InstitutionDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#fffcfb]">
-      {/* Sub-header bar */}
-      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <Building2 className="w-4 h-4 text-red-500" />
-              <span className="font-medium text-gray-900">{t.dashboard_title}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span className="text-gray-900 font-medium">{institution.name}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Header / hero */}
       <div className="relative overflow-hidden border-b border-rose-100">
         <div className="absolute -top-24 -left-16 w-72 h-72 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"/>
         <div className="absolute -bottom-32 right-0 w-96 h-96 bg-rose-100/60 rounded-full blur-3xl pointer-events-none" aria-hidden="true"/>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
           <div className="flex flex-col sm:flex-row sm:items-start gap-6">
             <div className="relative w-20 h-20 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center flex-shrink-0 overflow-hidden">
               {institution.logo_url ? (
@@ -517,15 +502,28 @@ export default function InstitutionDashboardPage() {
               </Link>
             )}
           </div>
+
+          {/* Quick actions as slim pills inside the hero, not card boxes */}
+          {institution.status === 'approved' && (
+            <div className="flex flex-wrap gap-2.5 mt-7">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="group inline-flex items-center gap-2 pl-2.5 pr-4 py-2 bg-white/75 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm text-sm font-medium text-gray-800 transition-all hover:-translate-y-0.5"
+                >
+                  <span className="w-7 h-7 bg-rose-50 border border-rose-100 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <action.icon className="w-3.5 h-3.5 text-red-500" />
+                  </span>
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Persona onboarding checklist */}
-        <div className="mb-8 empty:mb-0">
-          <OnboardingChecklist persona="institution" />
-        </div>
-
         {/* Pending Approval Notice */}
         {institution.status === 'pending' && (
           <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-8">
@@ -564,73 +562,32 @@ export default function InstitutionDashboardPage() {
           </div>
         )}
 
-        {/* Quick Actions — uses vertical terminology */}
-        {institution.status === 'approved' && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {quickActions.map((action) => (
-              <Link
-                key={action.label}
-                href={action.href}
-                className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 flex flex-col items-center gap-3 hover:-translate-y-0.5 hover:ring-rose-200 transition-all text-center group"
-              >
-                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <action.icon className="w-6 h-6 text-red-500" />
-                </div>
-                <span className="text-sm font-medium text-gray-900">{action.label}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Vertical-Aware Stats Grid */}
-        {institution.status === 'approved' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
-                    <stat.icon className="w-6 h-6 text-red-500" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-semibold tracking-tight text-gray-900">{stat.value}</div>
-                    <div className="text-sm text-gray-500">{stat.label}</div>
-                  </div>
+        {/* Two-column body: work on the left, guidance on the right */}
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_330px] gap-6 items-start">
+          <div className="space-y-6 min-w-0">
+            {/* KPI band: one card, four measures */}
+            {institution.status === 'approved' && (
+              <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+                <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+                <div className="grid grid-cols-2 lg:grid-cols-4">
+                  {stats.map((stat, i) => (
+                    <div
+                      key={stat.label}
+                      className={`px-5 py-5 ${i % 2 === 1 ? 'border-l border-rose-100/80' : ''} ${i >= 2 ? 'border-t lg:border-t-0 border-rose-100/80' : ''} ${i >= 1 ? 'lg:border-l lg:border-rose-100/80' : ''}`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <stat.icon className="w-4 h-4 text-red-500" />
+                        <span className="text-xs text-gray-500">{stat.label}</span>
+                      </div>
+                      <div className="text-2xl font-semibold tracking-tight text-gray-900 tabular-nums">{stat.value}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Reporting Format Badge — shows what kind of reports this vertical gets */}
-        {institution.status === 'approved' && institution.reporting_pack?.format && (
-          <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-5 h-5 text-red-500" />
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-900">Reporting Format</span>
-                  <p className="text-xs text-gray-500">
-                    {institution.reporting_pack.format === 'DONOR' && 'Donor-ready reports with evidence packs'}
-                    {institution.reporting_pack.format === 'ACADEMIC' && 'Academic reporting with grade distributions'}
-                    {institution.reporting_pack.format === 'WORKFORCE' && 'Workforce compliance and readiness reports'}
-                    {institution.reporting_pack.format === 'GOV_COMPLIANCE' && 'Government compliance and coverage reports'}
-                    {institution.reporting_pack.format === 'GENERAL' && 'Standard completion and progress reports'}
-                  </p>
-                </div>
-              </div>
-              {institution.reporting_pack.evidence_pack_enabled && (
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                  Evidence Packs Enabled
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Team Members + Pending Invites */}
-        {institution.status === 'approved' && (userRole === 'institution_admin' || userRole === 'program_manager') && (
+            {/* Team Members + Pending Invites */}
+            {institution.status === 'approved' && (userRole === 'institution_admin' || userRole === 'program_manager') && (
           <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
             <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
             <div className="flex items-center justify-between mb-6">
@@ -742,6 +699,35 @@ export default function InstitutionDashboardPage() {
             )}
           </div>
         )}
+          </div>
+
+          {/* Right rail: onboarding guidance + reporting context */}
+          <aside className="space-y-6">
+            <OnboardingChecklist persona="institution" />
+
+            {institution.status === 'approved' && institution.reporting_pack?.format && (
+              <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5">
+                <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <FileText className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-semibold text-gray-900">Reporting format</span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {institution.reporting_pack.format === 'DONOR' && 'Donor-ready reports with evidence packs'}
+                  {institution.reporting_pack.format === 'ACADEMIC' && 'Academic reporting with grade distributions'}
+                  {institution.reporting_pack.format === 'WORKFORCE' && 'Workforce compliance and readiness reports'}
+                  {institution.reporting_pack.format === 'GOV_COMPLIANCE' && 'Government compliance and coverage reports'}
+                  {institution.reporting_pack.format === 'GENERAL' && 'Standard completion and progress reports'}
+                </p>
+                {institution.reporting_pack.evidence_pack_enabled && (
+                  <span className="inline-block mt-3 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Evidence packs enabled
+                  </span>
+                )}
+              </div>
+            )}
+          </aside>
+        </div>
       </main>
 
       {/* Invite team member modal */}

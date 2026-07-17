@@ -18,6 +18,7 @@ import {
   Link2,
   Building2,
   Flame,
+  Zap,
   MessagesSquare,
   FileQuestion,
   ShieldAlert,
@@ -68,18 +69,6 @@ function Reveal({
   )
 }
 
-/* Section label: thin rule + tracked caps */
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="h-px w-8 bg-gradient-to-r from-red-500 to-transparent" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
-        {children}
-      </span>
-    </div>
-  )
-}
-
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
 
@@ -99,12 +88,12 @@ export default function HomePage() {
           50% { transform: translate(28px, -18px); }
         }
         @keyframes float-a {
-          0%, 100% { transform: translateY(0) rotate(-5deg); }
-          50% { transform: translateY(-12px) rotate(-5deg); }
+          0%, 100% { transform: translateY(0) rotate(-4deg); }
+          50% { transform: translateY(-10px) rotate(-4deg); }
         }
         @keyframes float-b {
-          0%, 100% { transform: translateY(0) rotate(4deg); }
-          50% { transform: translateY(-9px) rotate(4deg); }
+          0%, 100% { transform: translateY(0) rotate(3deg); }
+          50% { transform: translateY(-8px) rotate(3deg); }
         }
         .animate-drift { animation: drift 16s ease-in-out infinite; }
         .animate-float-a { animation: float-a 7s ease-in-out infinite; }
@@ -116,182 +105,217 @@ export default function HomePage() {
       `}</style>
 
       {/* ============================================ */}
-      {/* HERO                                          */}
+      {/* HERO, split layout: story left, product right */}
       {/* ============================================ */}
       <section className="relative overflow-hidden">
-        {/* Layer 1: soft washes */}
-        <div className="absolute -top-32 right-[-10%] w-[36rem] h-[36rem] bg-rose-100/80 rounded-full blur-[110px] animate-drift" />
-        <div className="absolute top-44 left-[-12%] w-[28rem] h-[28rem] bg-red-50 rounded-full blur-[90px]" />
-        <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[44rem] h-[22rem] bg-pink-50/80 rounded-full blur-[100px]" />
-
-        {/* Layer 2: concentric rings behind headline */}
-        <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">
-          <div className="w-[34rem] h-[34rem] sm:w-[46rem] sm:h-[46rem] rounded-full border border-rose-200/50" />
-          <div className="absolute inset-14 rounded-full border border-rose-200/40" />
-          <div className="absolute inset-28 rounded-full border border-rose-200/30" />
-        </div>
-
-        {/* Layer 3: dotted texture + grain */}
+        <div className="absolute -top-32 right-[-8%] w-[34rem] h-[34rem] bg-rose-100/80 rounded-full blur-[110px] animate-drift" />
+        <div className="absolute top-52 left-[-12%] w-[26rem] h-[26rem] bg-red-50 rounded-full blur-[90px]" />
         <div
           className="absolute inset-0 opacity-[0.3]"
           style={{
             backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
             backgroundSize: '26px 26px',
-            maskImage: 'radial-gradient(ellipse 60% 55% at 50% 38%, black, transparent)',
-            WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 50% 38%, black, transparent)',
+            maskImage: 'radial-gradient(ellipse 50% 60% at 72% 40%, black, transparent)',
+            WebkitMaskImage: 'radial-gradient(ellipse 50% 60% at 72% 40%, black, transparent)',
           }}
         />
         <div className="absolute inset-0 opacity-[0.035] pointer-events-none" style={{ backgroundImage: GRAIN }} />
 
-        {/* Floating glass cards, desktop only */}
-        <div className="hidden xl:block absolute left-[7%] top-[30%] animate-float-a" aria-hidden="true">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/70 ring-1 ring-rose-100/80 shadow-[0_24px_50px_-18px_rgba(225,29,72,0.3)] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-md shadow-rose-200 flex items-center justify-center">
-                <Award className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-800">Certificate issued</p>
-                <p className="text-[11px] text-gray-500">QR verified in seconds</p>
-              </div>
-            </div>
-            <div className="mt-3 h-1.5 rounded-full bg-rose-100 overflow-hidden">
-              <div className="h-full w-full rounded-full bg-gradient-to-r from-red-400 to-rose-500" />
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden xl:block absolute right-[7%] top-[48%] animate-float-b" aria-hidden="true">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/70 ring-1 ring-rose-100/80 shadow-[0_24px_50px_-18px_rgba(225,29,72,0.3)] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 shadow-md shadow-rose-200 flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-800">Cohort progress</p>
-                <p className="text-[11px] text-gray-500">At-risk learners flagged early</p>
-              </div>
-            </div>
-            <div className="mt-3 flex items-end gap-1 h-7">
-              {[35, 55, 42, 70, 60, 85, 100].map((h, i) => (
-                <span
-                  key={i}
-                  style={{ height: `${h}%` }}
-                  className="flex-1 rounded-sm bg-gradient-to-t from-rose-400 to-pink-300"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-16 pb-16 sm:pt-24 sm:pb-24 text-center">
-          <Reveal>
-            <div className="flex items-center justify-center gap-4 mb-7">
-              <span className="hidden sm:block h-px w-12 bg-gradient-to-r from-transparent to-rose-300" />
-              <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-red-600">
-                For institutions, NGOs, training centers and instructors across Africa
-              </p>
-              <span className="hidden sm:block h-px w-12 bg-gradient-to-l from-transparent to-rose-300" />
-            </div>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <h1 className="text-[2.6rem] sm:text-6xl font-semibold tracking-tight leading-[1.06] mb-2">
-              Deliver real training.
-            </h1>
-            <div className="relative inline-block mb-7">
-              <span className="font-serif italic text-[2.6rem] sm:text-6xl leading-[1.06] text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-500 to-pink-600">
-                Prove real outcomes.
-              </span>
-              {/* hand-drawn underline flourish */}
-              <svg
-                className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 w-[70%] h-3 sm:h-4"
-                viewBox="0 0 300 16"
-                fill="none"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 11 C 75 3, 225 3, 296 9"
-                  stroke="url(#uline)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <defs>
-                  <linearGradient id="uline" x1="0" y1="0" x2="300" y2="0" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#f43f5e" stopOpacity="0.25" />
-                    <stop offset="0.5" stopColor="#e11d48" stopOpacity="0.8" />
-                    <stop offset="1" stopColor="#ec4899" stopOpacity="0.25" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </Reveal>
-
-          <Reveal delay={200}>
-            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-3">
-              Sabitek is the AI-powered learning platform that runs your courses,
-              keeps learners engaged to the finish line, and issues certificates
-              anyone can verify in seconds.
-            </p>
-            <p className="text-sm text-gray-500 max-w-xl mx-auto mb-9">
-              Mobile-first and light on data. If your learners have a phone, they can learn.
-            </p>
-          </Reveal>
-
-          <Reveal delay={300}>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
-              {user ? (
-                <>
-                  <Link href="/dashboard">
-                    <Button className="group relative overflow-hidden w-full sm:w-auto bg-gradient-to-b from-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-8 py-5 text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:shadow-[0_18px_38px_-10px_rgba(225,29,72,0.6)] hover:-translate-y-0.5">
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" />
-                      Go to Dashboard
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                    </Button>
-                  </Link>
-                  <Link href="/courses">
-                    <Button variant="outline" className="w-full sm:w-auto bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white px-8 py-5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5">
-                      Browse Courses
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/request-access">
-                    <Button className="group relative overflow-hidden w-full sm:w-auto bg-gradient-to-b from-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-8 py-5 text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:shadow-[0_18px_38px_-10px_rgba(225,29,72,0.6)] hover:-translate-y-0.5">
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" />
-                      Get Started Free
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                    </Button>
-                  </Link>
-                  <Link href="/auth/login">
-                    <Button variant="outline" className="w-full sm:w-auto bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white px-8 py-5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5">
-                      Sign In
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </Reveal>
-
-          <Reveal delay={400}>
-            <div className="inline-flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-white/50 backdrop-blur-md rounded-full border border-white/70 ring-1 ring-rose-100/70 shadow-[0_10px_30px_-14px_rgba(225,29,72,0.25)] px-6 py-2.5">
-              {['Works on any device', 'AI tutor included', 'Certificates verify by QR'].map((item, i, arr) => (
-                <span key={i} className="flex items-center gap-4 text-sm text-gray-600">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-red-500" />
-                    {item}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-24">
+          <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-8 items-center">
+            {/* Left: the story */}
+            <div className="text-center lg:text-left">
+              <Reveal>
+                <div className="inline-flex items-center gap-2.5 bg-white/60 backdrop-blur rounded-full border border-white ring-1 ring-rose-100 shadow-sm pl-2 pr-4 py-1.5 mb-7">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-rose-600">
+                    <ShieldCheck className="w-3 h-3 text-white" />
                   </span>
-                  {i < arr.length - 1 && <span className="hidden sm:block w-1 h-1 rounded-full bg-rose-300" />}
-                </span>
-              ))}
+                  <span className="text-xs font-semibold tracking-wide text-gray-700">
+                    Built for Africa&apos;s training ecosystem
+                  </span>
+                </div>
+              </Reveal>
+
+              <Reveal delay={100}>
+                <h1 className="text-[2.7rem] sm:text-6xl font-semibold tracking-tight leading-[1.05] mb-6">
+                  Deliver real training.{' '}
+                  <span className="relative inline-block font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-500 to-pink-600">
+                    Prove real outcomes.
+                    <svg
+                      className="absolute -bottom-2 sm:-bottom-3 left-0 w-full h-3"
+                      viewBox="0 0 300 16"
+                      fill="none"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 11 C 75 3, 225 3, 296 9" stroke="url(#uline)" strokeWidth="4" strokeLinecap="round" />
+                      <defs>
+                        <linearGradient id="uline" x1="0" y1="0" x2="300" y2="0" gradientUnits="userSpaceOnUse">
+                          <stop stopColor="#f43f5e" stopOpacity="0.25" />
+                          <stop offset="0.5" stopColor="#e11d48" stopOpacity="0.8" />
+                          <stop offset="1" stopColor="#ec4899" stopOpacity="0.25" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </span>
+                </h1>
+              </Reveal>
+
+              <Reveal delay={200}>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
+                  Sabitek runs your courses, keeps learners engaged to the finish
+                  line, and issues certificates anyone can verify in seconds.
+                  Institutions, NGOs, training centers and instructors, one platform.
+                </p>
+              </Reveal>
+
+              <Reveal delay={300}>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8">
+                  {user ? (
+                    <>
+                      <Link href="/dashboard">
+                        <Button className="group relative overflow-hidden w-full sm:w-auto bg-gradient-to-b from-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-8 py-5 text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:shadow-[0_18px_38px_-10px_rgba(225,29,72,0.6)] hover:-translate-y-0.5">
+                          <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" />
+                          Go to Dashboard
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
+                        </Button>
+                      </Link>
+                      <Link href="/courses">
+                        <Button variant="outline" className="w-full sm:w-auto bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white px-8 py-5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5">
+                          Browse Courses
+                        </Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/request-access">
+                        <Button className="group relative overflow-hidden w-full sm:w-auto bg-gradient-to-b from-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-8 py-5 text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:shadow-[0_18px_38px_-10px_rgba(225,29,72,0.6)] hover:-translate-y-0.5">
+                          <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" />
+                          Get Started Free
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
+                        </Button>
+                      </Link>
+                      <Link href="/auth/login">
+                        <Button variant="outline" className="w-full sm:w-auto bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white px-8 py-5 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5">
+                          Sign In
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </Reveal>
+
+              <Reveal delay={400}>
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2">
+                  {['Works on any device', 'AI tutor included', 'Certificates verify by QR'].map((item, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <CheckCircle className="w-3.5 h-3.5 text-red-500" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
+
+            {/* Right: layered product composition */}
+            <Reveal delay={250}>
+              <div className="relative max-w-sm mx-auto lg:max-w-none lg:mx-0 lg:pl-6" aria-hidden="true">
+                {/* tilted backdrop */}
+                <div className="absolute inset-x-10 inset-y-4 rotate-6 rounded-[2.5rem] bg-gradient-to-br from-rose-200/60 to-pink-100/60 blur-[2px]" />
+
+                {/* learner phone card */}
+                <div className="relative w-[264px] mx-auto bg-white/90 backdrop-blur-xl rounded-[2rem] border border-white ring-1 ring-rose-100 shadow-[0_40px_80px_-30px_rgba(225,29,72,0.45)] p-5">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <p className="text-[11px] text-gray-400">Good evening</p>
+                      <p className="text-sm font-semibold text-gray-900">Ada is learning</p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-rose-50 border border-rose-100 rounded-full px-2.5 py-1">
+                      <Flame className="w-3.5 h-3.5 text-red-500" />
+                      <span className="text-xs font-semibold text-gray-800 tabular-nums">5</span>
+                    </div>
+                  </div>
+
+                  {/* daily ring */}
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="relative w-14 h-14">
+                      <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#ffe4e6" strokeWidth="4" />
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="url(#ringGrad)" strokeWidth="4" strokeDasharray="97.4" strokeDashoffset="24" strokeLinecap="round" />
+                        <defs>
+                          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop stopColor="#ef4444" />
+                            <stop offset="1" stopColor="#e11d48" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-800">75%</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-800">Daily goal almost there</p>
+                      <p className="text-[11px] text-gray-500">1 lesson to go</p>
+                    </div>
+                  </div>
+
+                  {/* current lesson */}
+                  <div className="rounded-xl bg-gradient-to-b from-rose-50/80 to-white border border-rose-100 p-3.5 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BookOpen className="w-3.5 h-3.5 text-red-500" />
+                      <span className="text-xs font-semibold text-gray-800 truncate">Anatomy of a Good Prompt</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-rose-100 overflow-hidden">
+                      <div className="h-full w-[64%] rounded-full bg-gradient-to-r from-red-500 to-pink-400" />
+                    </div>
+                  </div>
+
+                  {/* quiz passed row */}
+                  <div className="flex items-center justify-between rounded-xl bg-white border border-rose-100 px-3.5 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      </span>
+                      <span className="text-xs font-medium text-gray-700">Quiz passed</span>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs font-semibold text-rose-600">
+                      <Zap className="w-3 h-3" /> +30 XP
+                    </span>
+                  </div>
+                </div>
+
+                {/* floating certificate chip */}
+                <div className="absolute -right-2 sm:right-0 lg:-right-2 top-8 animate-float-b">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_45px_-16px_rgba(225,29,72,0.4)] px-4 py-3 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-500 shadow-sm flex items-center justify-center">
+                      <Award className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-800">Certificate issued</p>
+                      <p className="text-[11px] text-gray-500">QR verified in seconds</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* floating cohort report chip */}
+                <div className="absolute -left-2 sm:left-0 lg:-left-4 bottom-6 animate-float-a">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_45px_-16px_rgba(225,29,72,0.4)] px-4 py-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BarChart3 className="w-3.5 h-3.5 text-red-500" />
+                      <p className="text-xs font-semibold text-gray-800">Cohort live report</p>
+                    </div>
+                    <div className="flex items-end gap-1 h-6 w-28">
+                      {[40, 65, 50, 80, 70, 95].map((h, i) => (
+                        <span key={i} style={{ height: `${h}%` }} className="flex-1 rounded-sm bg-gradient-to-t from-rose-400 to-pink-300" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* Quiet capability strip, dot separated */}
+      {/* Quiet capability strip */}
       <section className="border-y border-rose-100/80 bg-gradient-to-r from-rose-50/60 via-white to-rose-50/60">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           {['Structured courses', 'AI lesson tutor', 'Verified certificates', 'Cohort links', 'Live reports'].map((item, i, arr) => (
@@ -307,12 +331,9 @@ export default function HomePage() {
       {/* THE PROBLEM, dark narrative band              */}
       {/* ============================================ */}
       <section className="relative overflow-hidden bg-[#1c1412] py-16 sm:py-24">
-        {/* glow orbs */}
         <div className="absolute -top-24 right-[8%] w-[28rem] h-[28rem] bg-rose-900/40 rounded-full blur-[110px]" aria-hidden="true" />
         <div className="absolute -bottom-36 left-[4%] w-96 h-96 bg-red-950/70 rounded-full blur-[100px]" aria-hidden="true" />
-        {/* top hairline */}
         <span className="absolute top-0 inset-x-16 h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent" aria-hidden="true" />
-        {/* dotted texture, masked to the right where the chain sits */}
         <div
           className="absolute inset-0 opacity-[0.14] pointer-events-none"
           style={{
@@ -323,17 +344,12 @@ export default function HomePage() {
           }}
         />
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: GRAIN }} />
-        {/* oversized serif quote mark */}
-        <span
-          className="absolute -top-6 left-[3%] font-serif italic text-[16rem] leading-none text-rose-500/[0.07] select-none pointer-events-none"
-          aria-hidden="true"
-        >
+        <span className="absolute -top-6 left-[3%] font-serif italic text-[16rem] leading-none text-rose-500/[0.07] select-none pointer-events-none" aria-hidden="true">
           &ldquo;
         </span>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-20 items-center">
-            {/* Left: the statement */}
             <Reveal>
               <div>
                 <div className="flex items-center gap-3 mb-5">
@@ -354,31 +370,14 @@ export default function HomePage() {
               </div>
             </Reveal>
 
-            {/* Right: the failure chain, resolved */}
             <Reveal delay={150}>
               <div className="relative">
-                {/* vertical connector */}
-                <span
-                  className="absolute left-[21px] top-10 bottom-28 w-px bg-gradient-to-b from-rose-500/15 via-rose-400/40 to-rose-300/70"
-                  aria-hidden="true"
-                />
+                <span className="absolute left-[21px] top-10 bottom-28 w-px bg-gradient-to-b from-rose-500/15 via-rose-400/40 to-rose-300/70" aria-hidden="true" />
                 <div className="space-y-4">
                   {[
-                    {
-                      icon: MessagesSquare,
-                      title: 'Content lives in chat groups and PDFs',
-                      desc: 'Scattered, unsequenced, gone when the group goes quiet',
-                    },
-                    {
-                      icon: FileQuestion,
-                      title: 'Completion is a guess',
-                      desc: 'Assessments marked by hand, or never marked at all',
-                    },
-                    {
-                      icon: ShieldAlert,
-                      title: 'Certificates anyone can forge',
-                      desc: 'A JPEG with a logo on it proves nothing to anyone',
-                    },
+                    { icon: MessagesSquare, title: 'Content lives in chat groups and PDFs', desc: 'Scattered, unsequenced, gone when the group goes quiet' },
+                    { icon: FileQuestion, title: 'Completion is a guess', desc: 'Assessments marked by hand, or never marked at all' },
+                    { icon: ShieldAlert, title: 'Certificates anyone can forge', desc: 'A JPEG with a logo on it proves nothing to anyone' },
                   ].map((row, i) => (
                     <div key={i} className="relative flex items-start gap-4">
                       <div className="relative z-10 w-11 h-11 rounded-xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
@@ -392,7 +391,6 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                {/* resolution card */}
                 <div className="relative mt-7 ml-0 sm:ml-14 rounded-2xl bg-gradient-to-b from-rose-500/20 to-rose-500/[0.07] border border-rose-300/25 backdrop-blur px-5 py-4 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)]">
                   <span className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-rose-300/70 to-transparent" aria-hidden="true" />
                   <div className="flex items-start gap-3">
@@ -411,201 +409,166 @@ export default function HomePage() {
       </section>
 
       {/* ============================================ */}
-      {/* HOW IT WORKS, three persona panels            */}
+      {/* THE SYSTEM, bento grid                        */}
       {/* ============================================ */}
-      <section className="relative py-14 sm:py-16 bg-white">
+      <section className="relative py-14 sm:py-20 bg-white">
         <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{ backgroundImage: GRAIN }} />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="text-center max-w-2xl mx-auto mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <span className="h-px w-10 bg-gradient-to-r from-transparent to-red-400" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">How it works</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">The system</span>
                 <span className="h-px w-10 bg-gradient-to-l from-transparent to-red-400" />
               </div>
               <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug">
-                One platform,{' '}
-                <span className="font-serif italic text-red-600">three seats at the table</span>
+                Everything a training program needs,{' '}
+                <span className="font-serif italic text-red-600">wired together</span>
               </h2>
-              <p className="text-gray-600 mt-3">
-                Learners learn, instructors see everything, institutions get proof.
-              </p>
             </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-fr">
+            {/* Wide tile: the proof engine */}
+            <Reveal className="md:col-span-4">
+              <div className="group relative h-full overflow-hidden rounded-3xl bg-[#1c1412] p-7 sm:p-8 ring-1 ring-white/10 shadow-[0_24px_60px_-30px_rgba(28,20,18,0.8)]">
+                <div className="absolute -top-16 right-[10%] w-64 h-64 bg-rose-900/40 rounded-full blur-[80px]" aria-hidden="true" />
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: GRAIN }} />
+                <div className="relative flex flex-col sm:flex-row sm:items-center gap-8">
+                  <div className="flex-1">
+                    <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-300 mb-3">The proof engine</span>
+                    <h3 className="text-xl sm:text-2xl font-semibold text-white leading-snug mb-3">
+                      Completion you can{' '}
+                      <span className="font-serif italic text-rose-300">defend</span>
+                    </h3>
+                    <p className="text-sm text-rose-100/60 leading-relaxed max-w-sm">
+                      Lessons unlock in sequence, quizzes grade on the server, and
+                      the certificate at the end carries a QR code anyone can check.
+                      No JPEGs, no guesswork.
+                    </p>
+                  </div>
+                  {/* mini certificate visual */}
+                  <div className="relative flex-shrink-0 w-52 mx-auto sm:mx-0" aria-hidden="true">
+                    <div className="absolute inset-2 rotate-3 rounded-2xl bg-rose-500/20 blur-[2px]" />
+                    <div className="relative rounded-2xl bg-[#fffcf9] border border-rose-200 p-4 text-center shadow-xl">
+                      <p className="text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">Certificate</p>
+                      <p className="font-serif italic text-sm text-gray-900 mb-1">Ada Okafor</p>
+                      <div className="mx-auto w-10 h-px bg-rose-300 mb-1.5" />
+                      <p className="text-[10px] text-gray-500 mb-2.5">Data Literacy, verified</p>
+                      <div className="mx-auto w-9 h-9 rounded-md bg-gray-900 flex items-center justify-center">
+                        <QrCode className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* AI tutor tile */}
+            <Reveal delay={80} className="md:col-span-2">
+              <div className="group relative h-full overflow-hidden rounded-3xl bg-gradient-to-b from-white to-rose-50/40 p-6 border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center mb-4">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-[15px] mb-1.5">A tutor beside every lesson</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                  SabiBot answers from the exact lesson on screen, in the learner&apos;s language.
+                </p>
+                <div className="rounded-xl bg-white border border-rose-100 px-3.5 py-2.5 text-xs text-gray-600 shadow-sm" aria-hidden="true">
+                  <span className="font-semibold text-rose-600">SabiBot:</span> Think of a prompt like a recipe. Let us look at the one in this lesson...
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Persona tiles */}
             {[
               {
-                chip: 'For learners',
+                chip: 'Learners',
                 chipClass: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
                 icon: GraduationCap,
-                title: 'A tutor in your pocket',
-                items: [
-                  'Lessons unlock in order as you master each one',
-                  'SabiBot explains the exact lesson you are reading, in your language',
-                  'Streaks, XP and badges keep you coming back daily',
-                  'Finish with a certificate anyone can scan and trust',
-                ],
+                title: 'Stay to the finish',
+                desc: 'Streaks, XP, badges and a daily goal ring built on the habit loops that make Duolingo work.',
               },
               {
-                chip: 'For instructors',
+                chip: 'Instructors',
                 chipClass: 'bg-rose-50 text-rose-700 ring-rose-200',
                 icon: BookOpen,
-                title: 'Author once, see everything',
-                items: [
-                  'A modern lesson composer with rich blocks and images',
-                  'Quizzes graded on the server, never in the browser',
-                  'A funnel that shows exactly where learners drop off',
-                  'Announce to the class and answer questions inside the lesson',
-                ],
+                title: 'See everything',
+                desc: 'A rich lesson composer, a drop-off funnel per lesson, and learner questions answered in place.',
               },
               {
-                chip: 'For institutions',
+                chip: 'Institutions',
                 chipClass: 'bg-amber-50 text-amber-700 ring-amber-200',
                 icon: Building2,
                 title: 'Run cohorts, not chaos',
-                items: [
-                  'Your own branded workspace with private courses',
-                  'One link enrolls a whole cohort: sabitek.app/c/yourname',
-                  'Programs that unlock course by course, in sequence',
-                  'Live reports with at-risk flags and CSV export for funders',
-                ],
+                desc: 'Branded workspace, sequenced programs, at-risk flags and CSV reports your funders can use.',
               },
-            ].map((panel, i) => (
-              <Reveal key={i} delay={i * 80}>
-                <div className="group h-full bg-gradient-to-b from-white to-rose-50/40 p-6 sm:p-7 rounded-2xl border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)] hover:-translate-y-1 hover:border-rose-200">
-                  <div className="flex items-center justify-between mb-5">
-                    <span className={`text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ring-1 ${panel.chipClass}`}>
-                      {panel.chip}
+            ].map((tile, i) => (
+              <Reveal key={i} delay={i * 80} className="md:col-span-2">
+                <div className="group h-full rounded-3xl bg-gradient-to-b from-white to-rose-50/40 p-6 border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)]">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ring-1 ${tile.chipClass}`}>
+                      {tile.chip}
                     </span>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
-                      <panel.icon className="w-5 h-5 text-white" />
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
+                      <tile.icon className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <h3 className="font-semibold text-lg mb-4">{panel.title}</h3>
-                  <div className="space-y-3">
-                    {panel.items.map((item, j) => (
-                      <div key={j} className="flex items-start gap-2.5">
-                        <CheckCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <h3 className="font-semibold text-[15px] mb-1.5">{tile.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{tile.desc}</p>
                 </div>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ============================================ */}
-      {/* WHY IT'S DIFFERENT, numbered cards            */}
-      {/* ============================================ */}
-      <section className="relative py-14 sm:py-16 bg-gradient-to-b from-white to-rose-50/50">
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-[1fr_1.6fr] gap-8 lg:gap-14 mb-10">
-            <Reveal>
-              <div>
-                <SectionLabel>Why it&apos;s different</SectionLabel>
-                <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight leading-snug">
-                  Not another LMS{' '}
-                  <span className="font-serif italic text-red-600">bolted onto Africa</span>
-                </h2>
-              </div>
-            </Reveal>
-            <Reveal delay={100} className="self-end">
-              <p className="text-gray-600 leading-relaxed max-w-lg">
-                Most platforms track attendance and call it learning. Sabitek is built
-                around a harder question: can you prove it worked?
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              {
-                icon: QrCode,
-                num: '01',
-                title: 'Proof, not promises',
-                desc: 'Completion means every lesson finished in sequence and every quiz passed on our servers. The certificate carries a QR code anyone can verify in seconds.',
-              },
-              {
-                icon: Smartphone,
-                num: '02',
-                title: 'Built for real networks',
-                desc: 'No app to install, light pages, and content that works on the phones and data plans your learners actually have.',
-              },
-              {
-                icon: Bot,
-                num: '03',
-                title: 'AI that tutors, not distracts',
-                desc: 'SabiBot answers from the lesson your learner is actually on, speaks local languages, and is engineered to stay affordable at scale.',
-              },
-              {
-                icon: Flame,
-                num: '04',
-                title: 'Retention is built in',
-                desc: 'Daily streaks with a safety freeze, nudge emails at the right moment, and at-risk flags that reach admins before learners disappear.',
-              },
-            ].map((f, i) => (
-              <Reveal key={i} delay={i * 60}>
-                <div className="group relative h-full overflow-hidden bg-gradient-to-b from-white to-rose-50/40 p-6 sm:p-7 rounded-2xl border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)] hover:-translate-y-1 hover:border-rose-200">
-                  <span className="absolute -right-1 -bottom-7 font-serif italic text-[5.5rem] leading-none text-rose-100/70 select-none pointer-events-none transition-colors group-hover:text-rose-100" aria-hidden="true">
-                    {f.num}
-                  </span>
-                  <div className="relative">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
-                      <f.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-[15px] mb-1.5">{f.title}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed max-w-[46ch]">{f.desc}</p>
-                  </div>
+            {/* Cohort link tile */}
+            <Reveal delay={120} className="md:col-span-3">
+              <div className="group h-full rounded-3xl bg-gradient-to-b from-white to-rose-50/40 p-6 border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center mb-4">
+                  <Link2 className="w-5 h-5 text-white" />
                 </div>
-              </Reveal>
-            ))}
+                <h3 className="font-semibold text-[15px] mb-1.5">One link enrolls a cohort</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                  Share it on WhatsApp, print it on a flyer. Learners land on your
+                  branded page and start immediately.
+                </p>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white border border-rose-100 px-4 py-2 shadow-sm" aria-hidden="true">
+                  <span className="text-xs font-mono text-gray-700">sabitek.app/c/yourprogram</span>
+                  <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">32 joined</span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Any device tile */}
+            <Reveal delay={160} className="md:col-span-3">
+              <div className="group h-full rounded-3xl bg-gradient-to-b from-white to-rose-50/40 p-6 border border-rose-100 ring-1 ring-white shadow-[0_10px_30px_-18px_rgba(225,29,72,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(225,29,72,0.4)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] flex items-center justify-center mb-4">
+                  <Smartphone className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-[15px] mb-1.5">Zero apps, any device</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                  Runs in the browser, light on data, built for the phones and
+                  networks your learners actually have.
+                </p>
+                <div className="flex flex-wrap gap-2" aria-hidden="true">
+                  {['No downloads', 'Low bandwidth', 'Mobile-first'].map((chip, i) => (
+                    <span key={i} className="text-[11px] font-medium text-gray-600 bg-white border border-rose-100 rounded-full px-3 py-1 shadow-sm">
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* ============================================ */}
-      {/* PRODUCT PROMISES, elevated glass card         */}
+      {/* THREE STEPS, connected timeline               */}
       {/* ============================================ */}
-      <section className="py-10 sm:py-12 bg-rose-50/50">
+      <section className="relative py-14 sm:py-20 bg-gradient-to-b from-white to-rose-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="relative rounded-3xl bg-white/80 backdrop-blur-xl border border-rose-100 ring-1 ring-white shadow-[0_30px_60px_-30px_rgba(225,29,72,0.3)] overflow-hidden">
-              <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-              <div className="absolute -top-24 left-1/3 w-72 h-72 bg-rose-50 rounded-full blur-[80px] pointer-events-none" />
-              <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-y-8 py-10 px-6">
-                {[
-                  { icon: Smartphone, value: '0', label: 'Apps to install. Runs in any browser' },
-                  { icon: Link2, value: '1 link', label: 'Enrolls an entire cohort' },
-                  { icon: QrCode, value: 'Seconds', label: 'To verify any certificate' },
-                  { icon: Bot, value: '24/7', label: 'AI tutor beside every lesson' },
-                ].map((stat, i) => (
-                  <div key={i} className={`text-center px-4 ${i > 0 ? 'lg:border-l lg:border-rose-100' : ''}`}>
-                    <div className="flex justify-center mb-2">
-                      <stat.icon className="w-5 h-5 text-rose-400" />
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-rose-600 mb-1">
-                      {stat.value}
-                    </div>
-                    <p className="text-xs sm:text-sm text-gray-500 max-w-[20ch] mx-auto">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* THREE STEPS                                   */}
-      {/* ============================================ */}
-      <section className="py-14 sm:py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <Reveal>
-            <div className="text-center max-w-xl mx-auto mb-10">
+            <div className="text-center max-w-xl mx-auto mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <span className="h-px w-10 bg-gradient-to-r from-transparent to-red-400" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">Getting started</span>
@@ -618,39 +581,26 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              {
-                num: '1',
-                title: 'Create your workspace',
-                desc: 'Sign up as an instructor or apply as an institution. Free to start, no card required.',
-              },
-              {
-                num: '2',
-                title: 'Add your courses',
-                desc: 'Build lessons in the composer, attach quizzes, and arrange courses into a sequenced program.',
-              },
-              {
-                num: '3',
-                title: 'Share one link',
-                desc: 'Learners join your cohort at sabitek.app/c/yourname. You watch progress arrive live.',
-              },
-            ].map((step, i) => (
-              <Reveal key={i} delay={i * 80}>
-                <div className="relative h-full bg-white/80 backdrop-blur p-6 sm:p-7 rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-18px_rgba(225,29,72,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_45px_-20px_rgba(225,29,72,0.4)]">
-                  <span className="absolute -right-1 -bottom-7 font-serif italic text-[5.5rem] leading-none text-rose-100/60 select-none pointer-events-none" aria-hidden="true">
-                    {step.num}
-                  </span>
-                  <div className="relative">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-b from-red-500 to-rose-600 shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5">
+          <div className="relative">
+            {/* connecting line, desktop */}
+            <span className="hidden md:block absolute top-[22px] left-[17%] right-[17%] h-px bg-gradient-to-r from-rose-200 via-rose-300 to-rose-200" aria-hidden="true" />
+            <div className="grid md:grid-cols-3 gap-10 md:gap-6">
+              {[
+                { num: '1', title: 'Create your workspace', desc: 'Sign up as an instructor or apply as an institution. Free to start, no card required.' },
+                { num: '2', title: 'Add your courses', desc: 'Build lessons in the composer, attach quizzes, arrange courses into a sequenced program.' },
+                { num: '3', title: 'Share one link', desc: 'Learners join at sabitek.app/c/yourname. Progress starts arriving live the same day.' },
+              ].map((step, i) => (
+                <Reveal key={i} delay={i * 100}>
+                  <div className="text-center px-2">
+                    <div className="relative inline-flex w-11 h-11 rounded-full bg-gradient-to-b from-red-500 to-rose-600 shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)] ring-4 ring-[#fffcfb] items-center justify-center mb-4">
                       <span className="text-white font-semibold">{step.num}</span>
                     </div>
                     <h3 className="font-semibold text-[15px] mb-1.5">{step.title}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+                    <p className="text-sm text-gray-500 leading-relaxed max-w-[32ch] mx-auto">{step.desc}</p>
                   </div>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -658,7 +608,7 @@ export default function HomePage() {
       {/* ============================================ */}
       {/* FOR PARTNERS AND FUNDERS, closing dark card   */}
       {/* ============================================ */}
-      <section className="pb-16 pt-4 sm:pb-20 bg-white">
+      <section className="pb-16 pt-4 sm:pb-20 bg-rose-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="relative overflow-hidden rounded-[2rem] bg-[#1c1412] px-6 py-12 sm:px-12 sm:py-14 ring-1 ring-white/10 shadow-[0_40px_80px_-35px_rgba(28,20,18,0.7)]">

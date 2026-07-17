@@ -82,12 +82,11 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <NavLink href="/courses" active={pathname === '/courses'}>
-              Courses
-            </NavLink>
-
             {user && (
               <>
+                <NavLink href="/courses" active={pathname === '/courses'}>
+                  Courses
+                </NavLink>
                 <NavLink href={getDashboardLink()} active={pathname === getDashboardLink()}>
                   Dashboard
                 </NavLink>
@@ -264,16 +263,16 @@ export default function Header() {
                 </div>
               )}
 
-              <Link
-                href="/courses"
-                className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Courses
-              </Link>
-
               {user && (
                 <>
+                  <Link
+                    href="/courses"
+                    className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Courses
+                  </Link>
+
                   <Link
                     href={getDashboardLink()}
                     className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
