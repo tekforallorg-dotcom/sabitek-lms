@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { supabase } from '@/lib/supabase'
 
 // One-time generation per lesson (cached in lesson_summaries), so this
-// is a publish-time cost, not a per-learner cost.
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+// is a publish-time cost, not a per-learner cost. Runs on DeepSeek
+// (mirrors the SabiBot pattern): the OpenAI SDK pointed at DeepSeek's
+// OpenAI-compatible endpoint.
+const openai = new OpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: 'https://api.deepseek.com',
+})
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,16 +62,21 @@ export async function POST(req: NextRequest) {
       Include what students should focus on and how to approach this type of content.`
     }
 
-    const completion = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 400,
-      system:
-        'You are an educational assistant helping students understand lesson content. Provide clear, concise summaries focused on learning objectives.',
-      messages: [{ role: 'user', content: prompt }],
+    const completion = await openai.chat.completions.create({
+      model: 'deepseek-chat',
+      max_tokens: 500,
+      temperature: 0.7,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an educational assistant helping students understand lesson content. Provide clear, concise summaries focused on learning objectives. Respond in plain text. Never use em dashes or en dashes; use commas, periods, or the word "and" instead.',
+        },
+        { role: 'user', content: prompt },
+      ],
     })
 
-    const firstBlock = completion.content[0]
-    const summary = firstBlock?.type === 'text' ? firstBlock.text : ''
+    const summary = completion.choices[0]?.message?.content || ''
 
     // Store the summary for future use
     await supabase

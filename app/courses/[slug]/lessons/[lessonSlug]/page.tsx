@@ -174,6 +174,9 @@ export default function LessonViewerPage() {
   const [isCompleted, setIsCompleted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrollmentStatus, setEnrollmentStatus] = useState(false)
+  // Program sequencing: set when this course is still locked behind an
+  // earlier course in the learner's program (deep-link guard).
+  const [programLock, setProgramLock] = useState<{ title: string; slug: string } | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   // Workspace tabs under the player: notes, AI summary, Q&A, practice quiz
   const [activeTab, setActiveTab] = useState<'notes' | 'summary' | 'qa' | 'instructor'>('notes')
@@ -392,6 +395,34 @@ export default function LessonViewerPage() {
         supabase.auth.getSession(),
       ])
 
+      // Program sequencing: block deep-links into a course that is still
+      // locked behind an earlier course in the learner's program. Render a
+      // friendly locked card instead of the player or a raw DB error.
+      if (!isInstructor) {
+        try {
+          const accessToken = sessionRes.data.session?.access_token
+          if (accessToken) {
+            const accessRes = await fetch(`/api/courses/${courseData.id}/access`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            })
+            if (accessRes.ok) {
+              const accessJson = await accessRes.json()
+              const access = accessJson.data || accessJson
+              if (access?.accessType === 'sequence_locked') {
+                setProgramLock({
+                  title: access.blocking?.title || '',
+                  slug: access.blocking?.slug || '',
+                })
+                setLoading(false)
+                return
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Program access check failed:', e)
+        }
+      }
+
       // Quiz data comes from the sanitized server API - correct answers
       // never reach the browser (grading happens in /api/quizzes/grade).
       let serverQuiz: Quiz | null = null
@@ -493,15 +524,12 @@ export default function LessonViewerPage() {
         .select()
 
       if (error) {
-        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('policy')) {
-          showModal(
-            'Permission Error',
-            `You don't have permission to mark lessons as complete.\n\nError: ${error.message}`,
-            'warning'
-          )
-        } else {
-          showModal('Error', `Error marking lesson as complete: ${error.message}`, 'error')
-        }
+        console.error('Mark complete error:', error)
+        showModal(
+          'Not available yet',
+          'This lesson cannot be completed yet. You may need to finish the previous lesson, pass its quiz, or complete an earlier course in your program first.',
+          'warning'
+        )
         return
       }
 
@@ -535,7 +563,11 @@ export default function LessonViewerPage() {
         .eq('course_id', course?.id)
     } catch (error) {
       console.error('Unexpected error:', error)
-      showModal('Error', `An unexpected error occurred: ${error}`, 'error')
+      showModal(
+        'Not available yet',
+        'We could not mark this lesson complete right now. Please refresh the page and try again in a moment.',
+        'error'
+      )
     }
   }
 
@@ -567,7 +599,8 @@ export default function LessonViewerPage() {
           .eq('user_id', user.id)
 
         if (updateError) {
-          showModal('Error', `Failed to update notes: ${updateError.message}`, 'error')
+          console.error('Notes update error:', updateError)
+          showModal('Not saved', 'We could not save your notes right now. Please try again in a moment.', 'error')
         } else {
           setNotesId(existingNote.id)
           setNotesSaved(true)
@@ -618,7 +651,7 @@ export default function LessonViewerPage() {
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      showModal('Error', `Unexpected error: ${error}`, 'error')
+      showModal('Not saved', 'We could not save your notes right now. Please try again in a moment.', 'error')
     } finally {
       setSavingNotes(false)
     }
@@ -880,6 +913,36 @@ export default function LessonViewerPage() {
     )
   }
 
+  if (programLock) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#fffcfb]">
+        <Card className="max-w-md w-full relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <CardHeader className="text-center pb-2">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Lock className="w-7 h-7 text-white" />
+            </div>
+            <CardTitle className="text-xl font-semibold tracking-tight">Locked for now</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 text-sm mb-5">
+              {programLock.title
+                ? `This course unlocks after you finish "${programLock.title}". Head there to continue your path.`
+                : 'This course unlocks after you finish the previous course in your program.'}
+            </p>
+            <Button
+              onClick={() => router.push(programLock.slug ? `/courses/${programLock.slug}` : '/courses')}
+              className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+            >
+              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+              {programLock.title ? `Go to ${programLock.title}` : 'Browse courses'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-[#fffcfb]">
@@ -931,229 +994,10 @@ export default function LessonViewerPage() {
     lessonsByModule[mid].sort((a, b) => a.lesson_order - b.lesson_order)
   }
 
-  return (
-    <div className="min-h-screen bg-[#fffcfb]">
-      <Modal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-        message={modal.message}
-        type={modal.type}
-        actions={modal.actions}
-      />
-
-      {/* Header */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-10 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/courses/${params.slug}`)}
-                size="sm"
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 flex-shrink-0 rounded-full shadow-sm"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Back</span>
-              </Button>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs text-gray-500 break-words">{course?.title}</p>
-                <h1 className="text-sm md:text-base font-semibold tracking-tight text-gray-900 break-words">
-                  Lesson {currentIndex + 1}: {lesson?.title}
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {lesson?.duration_minutes && (
-                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
-                  <Clock className="w-3 h-3 text-red-500" />
-                  {lesson.duration_minutes}m
-                </span>
-              )}
-              {isCompleted ? (
-                <span className="px-2 md:px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" />
-                  <span className="hidden sm:inline">Completed</span>
-                </span>
-              ) : (
-                <Button
-                  onClick={markAsComplete}
-                  size="sm"
-                  disabled={currentQuizPending}
-                  title={currentQuizPending ? 'Pass the quiz below to complete this lesson' : undefined}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:shadow-none disabled:translate-y-0"
-                >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  {currentQuizPending ? (
-                    <>
-                      <Lock className="w-3 h-3 mr-1" />
-                      Pass quiz to complete
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Complete
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6">
-        {/* Mobile sidebar toggle */}
-        <div className="lg:hidden mb-4">
-          <Button
-            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-            variant="outline"
-            size="sm"
-            className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
-          >
-            <Layers className="w-4 h-4 mr-2 text-red-500" />
-            {showMobileSidebar ? 'Hide Lessons' : 'Show Lessons'}
-            <ChevronDown
-              className={`w-4 h-4 ml-2 text-gray-400 transition-transform ${showMobileSidebar ? 'rotate-180' : ''}`}
-            />
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Lesson Content */}
-          <div className="lg:col-span-2 space-y-5">
-            {renderContent()}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between gap-3">
-              <Button
-                variant="outline"
-                onClick={() => previousLesson && navigateToLesson(previousLesson)}
-                disabled={!previousLesson}
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm disabled:opacity-50"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </Button>
-              <Button
-                onClick={() => nextLesson && navigateToLesson(nextLesson)}
-                disabled={!nextLesson || !!lockMap.get(nextLesson.id)?.locked}
-                title={
-                  nextLesson && lockMap.get(nextLesson.id)?.locked
-                    ? 'Complete this lesson (and pass its quiz) to continue'
-                    : undefined
-                }
-                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
-              >
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                {nextLesson && lockMap.get(nextLesson.id)?.locked ? (
-                  <Lock className="w-4 h-4 mr-1.5" />
-                ) : null}
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-
-            {/* ══════════════════════════════════════════════════════
-                 LESSON WORKSPACE — Notes / AI Summary / Ask AI / Practice
-                 ══════════════════════════════════════════════════════ */}
-            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-              <CardContent className="p-4 sm:p-5">
-                {/* Tab bar */}
-                <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
-                  {(() => {
-                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'instructor'; label: string; icon: React.ElementType }[] = [
-                      { key: 'notes', label: 'My Notes', icon: FileText },
-                      { key: 'summary', label: 'AI Summary', icon: BookOpen },
-                      { key: 'qa', label: 'Ask AI', icon: MessageSquare },
-                      { key: 'instructor', label: 'Ask Instructor', icon: MessageCircleQuestion },
-                    ]
-                                        return tabs.map((tab) => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setActiveTab(tab.key)}
-                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                          activeTab === tab.key
-                            ? 'bg-white text-red-600 shadow-sm ring-1 ring-rose-100'
-                            : 'text-gray-500 hover:text-gray-800'
-                        }`}
-                      >
-                        <tab.icon className="w-3.5 h-3.5" />
-                        {tab.label}
-                      </button>
-                    ))
-                  })()}
-                </div>
-
-                {/* Notes tab */}
-                {activeTab === 'notes' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-900">Notes for this lesson</p>
-                      {notesSaved && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
-                          <CheckCircle className="w-3 h-3" />
-                          Saved
-                        </span>
-                      )}
-                    </div>
-                    <Textarea
-                      value={notesContent}
-                      onChange={(e) => setNotesContent(e.target.value)}
-                      placeholder="Take notes while learning..."
-                      rows={7}
-                      className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
-                    />
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={saveNotes}
-                        disabled={savingNotes || !notesContent.trim()}
-                        className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
-                        size="sm"
-                      >
-                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                        <Save className="w-3 h-3 mr-2" />
-                        {savingNotes ? 'Saving...' : 'Save Notes'}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* AI Summary tab */}
-                {activeTab === 'summary' && lesson && (
-                  lesson.content_type === 'text' && lesson.content ? (
-                    <LessonSummary lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
-                  ) : (
-                    <LessonSummary lessonId={lesson.id} contentType={lesson.content_type} />
-                  )
-                )}
-
-                {/* Ask AI tab */}
-                {activeTab === 'qa' && lesson && (
-                  lesson.content_type === 'text' && lesson.content ? (
-                    <LessonQA lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
-                  ) : (
-                    <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
-                  )
-                )}
-
-                {/* Ask Instructor tab */}
-                {activeTab === 'instructor' && lesson && (
-                  <LessonQuestions lessonId={lesson.id} courseId={lesson.course_id} />
-                )}
-
-                {/* Practice quiz tab (only when the lesson has no instructor quiz) */}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className={`${showMobileSidebar ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-4`}>
-            {/* Instructor Quiz Card */}
-            {quiz && quiz.questions && quiz.questions.length > 0 && (
+  // Instructor quiz card, hoisted so it can render in the sidebar (lg+)
+  // and in the main column on mobile without duplicating the JSX.
+  const quizCard =
+    quiz && quiz.questions && quiz.questions.length > 0 ? (
               <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -1373,7 +1217,233 @@ export default function LessonViewerPage() {
                   )}
                 </CardContent>
               </Card>
-            )}
+    ) : null
+
+  return (
+    <div className="min-h-screen bg-[#fffcfb]">
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        actions={modal.actions}
+      />
+
+      {/* Header */}
+      <div className="relative overflow-hidden bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-10 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/courses/${params.slug}`)}
+                size="sm"
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 flex-shrink-0 rounded-full shadow-sm"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Back</span>
+              </Button>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-gray-500 break-words">{course?.title}</p>
+                <h1 className="text-sm md:text-base font-semibold tracking-tight text-gray-900 break-words">
+                  Lesson {currentIndex + 1}: {lesson?.title}
+                </h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {lesson?.duration_minutes && (
+                <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+                  <Clock className="w-3 h-3 text-red-500" />
+                  {lesson.duration_minutes}m
+                </span>
+              )}
+              {isCompleted ? (
+                <span className="px-2 md:px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-semibold flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="hidden sm:inline">Completed</span>
+                </span>
+              ) : (
+                <Button
+                  onClick={markAsComplete}
+                  size="sm"
+                  disabled={currentQuizPending}
+                  title={currentQuizPending ? 'Pass the quiz below to complete this lesson' : undefined}
+                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:shadow-none disabled:translate-y-0"
+                >
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                  {currentQuizPending ? (
+                    <>
+                      <Lock className="w-3 h-3 mr-1" />
+                      Pass quiz to complete
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Complete
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6">
+        {/* Mobile sidebar toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            variant="outline"
+            size="sm"
+            className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+          >
+            <Layers className="w-4 h-4 mr-2 text-red-500" />
+            {showMobileSidebar ? 'Hide Lessons' : 'Show Lessons'}
+            <ChevronDown
+              className={`w-4 h-4 ml-2 text-gray-400 transition-transform ${showMobileSidebar ? 'rotate-180' : ''}`}
+            />
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Lesson Content */}
+          <div className="lg:col-span-2 space-y-5">
+            {renderContent()}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={() => previousLesson && navigateToLesson(previousLesson)}
+                disabled={!previousLesson}
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <Button
+                onClick={() => nextLesson && navigateToLesson(nextLesson)}
+                disabled={!nextLesson || !!lockMap.get(nextLesson.id)?.locked}
+                title={
+                  nextLesson && lockMap.get(nextLesson.id)?.locked
+                    ? 'Complete this lesson (and pass its quiz) to continue'
+                    : undefined
+                }
+                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+              >
+                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                {nextLesson && lockMap.get(nextLesson.id)?.locked ? (
+                  <Lock className="w-4 h-4 mr-1.5" />
+                ) : null}
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════
+                 LESSON WORKSPACE - Notes / AI Summary / Ask AI / Practice
+                 ══════════════════════════════════════════════════════ */}
+            {/* Quiz card on mobile: sidebar is hidden on phones, so surface it here */}
+            <div className="lg:hidden">{quizCard}</div>
+            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+              <CardContent className="p-4 sm:p-5">
+                {/* Tab bar */}
+                <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
+                  {(() => {
+                    const tabs: { key: 'notes' | 'summary' | 'qa' | 'instructor'; label: string; icon: React.ElementType }[] = [
+                      { key: 'notes', label: 'My Notes', icon: FileText },
+                      { key: 'summary', label: 'AI Summary', icon: BookOpen },
+                      { key: 'qa', label: 'Ask AI', icon: MessageSquare },
+                      { key: 'instructor', label: 'Ask Instructor', icon: MessageCircleQuestion },
+                    ]
+                                        return tabs.map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                          activeTab === tab.key
+                            ? 'bg-white text-red-600 shadow-sm ring-1 ring-rose-100'
+                            : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                      >
+                        <tab.icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    ))
+                  })()}
+                </div>
+
+                {/* Notes tab */}
+                {activeTab === 'notes' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-900">Notes for this lesson</p>
+                      {notesSaved && (
+                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
+                          <CheckCircle className="w-3 h-3" />
+                          Saved
+                        </span>
+                      )}
+                    </div>
+                    <Textarea
+                      value={notesContent}
+                      onChange={(e) => setNotesContent(e.target.value)}
+                      placeholder="Take notes while learning..."
+                      rows={7}
+                      className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={saveNotes}
+                        disabled={savingNotes || !notesContent.trim()}
+                        className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        size="sm"
+                      >
+                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                        <Save className="w-3 h-3 mr-2" />
+                        {savingNotes ? 'Saving...' : 'Save Notes'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Summary tab */}
+                {activeTab === 'summary' && lesson && (
+                  lesson.content_type === 'text' && lesson.content ? (
+                    <LessonSummary lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
+                  ) : (
+                    <LessonSummary lessonId={lesson.id} contentType={lesson.content_type} />
+                  )
+                )}
+
+                {/* Ask AI tab */}
+                {activeTab === 'qa' && lesson && (
+                  lesson.content_type === 'text' && lesson.content ? (
+                    <LessonQA lessonId={lesson.id} lessonContent={lesson.content} contentType={lesson.content_type} />
+                  ) : (
+                    <LessonQA lessonId={lesson.id} contentType={lesson.content_type} />
+                  )
+                )}
+
+                {/* Ask Instructor tab */}
+                {activeTab === 'instructor' && lesson && (
+                  <LessonQuestions lessonId={lesson.id} courseId={lesson.course_id} />
+                )}
+
+                {/* Practice quiz tab (only when the lesson has no instructor quiz) */}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className={`${showMobileSidebar ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-4`}>
+            {/* Instructor Quiz Card (shared with the mobile main column) */}
+            {quizCard}
 
             {/* ══════════════════════════════════════════════════════
                  COURSE NAVIGATION (Modules → Lessons)

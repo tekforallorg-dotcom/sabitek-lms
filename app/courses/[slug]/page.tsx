@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { PurchaseCourseModal } from '@/components/courses/PurchaseCourseModal'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
 import { toast } from '@/components/ui/toast'
@@ -18,7 +17,6 @@ import {
   ArrowRight,
   PartyPopper,
   X,
-  ShoppingCart,
   AlertCircle,
   AlertTriangle,
   GraduationCap,
@@ -250,13 +248,10 @@ export default function CourseDetailPage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
-  const [purchasing, setPurchasing] = useState(false)
-  const [hasPurchased, setHasPurchased] = useState(false)
   const [accessResult, setAccessResult] = useState<CourseAccessResult | null>(null)
   const [finishingCourse, setFinishingCourse] = useState(false)
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [generatedCertificateId, setGeneratedCertificateId] = useState<string | null>(null)
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
   const [modal, setModal] = useState<{
     isOpen: boolean
@@ -318,7 +313,7 @@ export default function CourseDetailPage() {
 
       setLessons(lessonsData || [])
 
-      // Fetch modules (public endpoint — courseData.status check happens server-side)
+      // Fetch modules (public endpoint, courseData.status check happens server-side)
       const { data: modulesData } = await supabase
         .from('modules')
         .select('id, course_id, title, description, order_index')
@@ -365,16 +360,13 @@ export default function CourseDetailPage() {
               const accessData = await res.json()
               const result: CourseAccessResult = accessData.data || accessData
               setAccessResult(result)
-              setHasPurchased(result.hasAccess)
             } else {
               const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-              setHasPurchased(isFree)
               setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
             }
           } catch (err: unknown) {
             console.error('Error checking course access:', err)
             const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-            setHasPurchased(isFree)
             setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
           }
         }
@@ -440,7 +432,6 @@ export default function CourseDetailPage() {
         }
       } else {
         const isFree = courseData.is_free || courseData.price === 0 || !courseData.price
-        setHasPurchased(isFree)
         setAccessResult({ hasAccess: isFree, accessType: isFree ? 'free' : 'none' })
       }
     } catch (error: unknown) {
@@ -468,6 +459,20 @@ export default function CourseDetailPage() {
       return
     }
 
+    // Program sequencing: never enroll into a course that is still locked
+    // behind an earlier course in the learner's program.
+    if (accessResult?.accessType === 'sequence_locked') {
+      const blockingTitle = accessResult.blocking?.title
+      showModal(
+        'Locked for now',
+        blockingTitle
+          ? `This course unlocks after you finish "${blockingTitle}". Head there to continue your path.`
+          : 'This course unlocks after you finish the previous course in your program. Head there to continue your path.',
+        'warning'
+      )
+      return
+    }
+
     try {
       setEnrolling(true)
 
@@ -483,29 +488,14 @@ export default function CourseDetailPage() {
       showModal('Success', 'Successfully enrolled! You can now start learning.', 'success')
     } catch (error: unknown) {
       console.error('Error enrolling:', error)
-      const message = error instanceof Error ? error.message : 'Failed to enroll. Please try again.'
-      showModal('Enrollment Failed', message, 'error')
+      showModal(
+        'Enrollment not available yet',
+        'We could not enroll you in this course right now. Please refresh the page and try again in a moment.',
+        'error'
+      )
     } finally {
       setEnrolling(false)
     }
-  }
-
-  const handlePurchase = () => {
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    if (!course) return
-    setShowPurchaseModal(true)
-  }
-
-  const handlePurchaseSuccess = () => {
-    setShowPurchaseModal(false)
-    setHasPurchased(true)
-    setIsEnrolled(true)
-    setAccessResult({ hasAccess: true, accessType: 'purchased' })
-    fetchCourseData()
   }
 
   const handleFinishCourse = async () => {
@@ -573,8 +563,11 @@ export default function CourseDetailPage() {
       }
     } catch (error: unknown) {
       console.error('Error finishing course:', error)
-      const message = error instanceof Error ? error.message : 'Failed to complete course. Please try again.'
-      showModal('Error', message, 'error')
+      showModal(
+        'Not available yet',
+        'We could not complete this course right now. Please make sure every lesson is finished and its quiz passed, then try again in a moment.',
+        'error'
+      )
     } finally {
       setFinishingCourse(false)
     }
@@ -583,11 +576,28 @@ export default function CourseDetailPage() {
   const totalDuration = lessons.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0)
   const progressPercentage = lessons.length > 0 ? Math.round((completedLessons.size / lessons.length) * 100) : 0
 
-  const isFree = course?.is_free || course?.price === 0 || !course?.price
   const isCohortSponsored = accessResult?.accessType === 'cohort_sponsored'
   const isSequenceLocked = accessResult?.accessType === 'sequence_locked'
 
-  // Group lessons by module — preserve global lesson numbering
+  // Program sequencing: while the course is locked behind an earlier course,
+  // every lesson stays locked and clicking one points the learner onward.
+  const openLesson = (lesson: Lesson, lessonLocked: boolean) => {
+    if (isSequenceLocked) {
+      toast.warning(
+        accessResult?.blocking
+          ? `Finish "${accessResult.blocking.title}" first to unlock this course.`
+          : 'Finish the previous course in your program first.'
+      )
+      return
+    }
+    if (lessonLocked) {
+      toast.warning('Complete the previous lesson (and pass its quiz) to unlock this one.')
+      return
+    }
+    router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
+  }
+
+  // Group lessons by module, preserve global lesson numbering
   const lessonIndexMap = new Map<string, number>()
   lessons.forEach((l, idx) => lessonIndexMap.set(l.id, idx))
 
@@ -654,21 +664,6 @@ export default function CourseDetailPage() {
         type={modal.type}
         actions={modal.actions}
       />
-
-      {/* Purchase Modal */}
-      {course && (
-        <PurchaseCourseModal
-          isOpen={showPurchaseModal}
-          onClose={() => setShowPurchaseModal(false)}
-          course={{
-            id: course.id,
-            title: course.title,
-            price: course.price || 0,
-            currency: course.currency,
-          }}
-          onSuccess={handlePurchaseSuccess}
-        />
-      )}
 
       {/* Congratulations Modal */}
       {showCongratsModal && (
@@ -773,26 +768,12 @@ export default function CourseDetailPage() {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 mb-2">{course.title}</h1>
             </div>
 
-            {!isEnrolled && (
+            {!isEnrolled && isCohortSponsored && (
               <div className="flex-shrink-0">
-                {isCohortSponsored ? (
-                  <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25">
-                    <GraduationCap className="w-4 h-4 mr-1.5" />
-                    Sponsored
-                  </span>
-                ) : isFree ? (
-                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-b from-emerald-400 to-green-500 text-white shadow-lg shadow-emerald-500/25 ring-1 ring-green-600/40">
-                    Free
-                  </span>
-                ) : (
-                  <span className="relative overflow-hidden inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold bg-gradient-to-b from-red-500 to-rose-600 text-white shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50">
-                    <span
-                      className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                      aria-hidden="true"
-                    />
-                    ₦{course.price?.toLocaleString()}
-                  </span>
-                )}
+                <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25">
+                  <GraduationCap className="w-4 h-4 mr-1.5" />
+                  Sponsored
+                </span>
               </div>
             )}
           </div>
@@ -834,7 +815,7 @@ export default function CourseDetailPage() {
                   <h4 className="font-semibold text-purple-900 text-sm">Institution Sponsored Access</h4>
                   <p className="text-xs text-purple-700 mt-0.5">
                     You have access to this course through{' '}
-                    <span className="font-medium">{accessResult.cohort.programName}</span> —{' '}
+                    <span className="font-medium">{accessResult.cohort.programName}</span>,{' '}
                     <span className="font-medium">{accessResult.cohort.name}</span>. No payment required.
                   </p>
                 </div>
@@ -862,10 +843,10 @@ export default function CourseDetailPage() {
           )}
 
           {isSequenceLocked && (
-            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5 flex flex-wrap items-center gap-4">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-              <div className="w-11 h-11 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Lock className="w-5 h-5 text-rose-400" />
+            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-amber-100 ring-1 ring-amber-100 shadow-[0_12px_30px_-20px_rgba(217,119,6,0.35)] p-5 flex flex-wrap items-center gap-4">
+              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent" aria-hidden="true" />
+              <div className="w-11 h-11 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Lock className="w-5 h-5 text-amber-500" />
               </div>
               <div className="flex-1 min-w-[200px]">
                 <p className="font-semibold text-gray-900 text-sm">This course unlocks later in your program</p>
@@ -882,7 +863,7 @@ export default function CourseDetailPage() {
                   size="sm"
                 >
                   <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  Continue that course
+                  Go to {accessResult.blocking.title}
                   <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               )}
@@ -891,45 +872,23 @@ export default function CourseDetailPage() {
 
           {!isEnrolled && !isSequenceLocked && (
             <div className="flex flex-wrap gap-3">
-              {hasPurchased ? (
-                <Button
-                  onClick={handleEnroll}
-                  disabled={enrolling}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
-                  size="lg"
-                >
-                  <span
-                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                    aria-hidden="true"
-                  />
-                  {enrolling
-                    ? 'Enrolling...'
-                    : isCohortSponsored
-                    ? 'Start Learning (Sponsored)'
-                    : isFree
-                    ? 'Enroll for Free'
-                    : 'Start Learning'}
-                  {isCohortSponsored ? (
-                    <GraduationCap className="w-4 h-4 ml-2" />
-                  ) : (
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handlePurchase}
-                  disabled={purchasing}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
-                  size="lg"
-                >
-                  <span
-                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                    aria-hidden="true"
-                  />
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
-                </Button>
-              )}
+              <Button
+                onClick={handleEnroll}
+                disabled={enrolling}
+                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                size="lg"
+              >
+                <span
+                  className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
+                  aria-hidden="true"
+                />
+                {enrolling ? 'Enrolling...' : isCohortSponsored ? 'Start Learning (Sponsored)' : 'Enroll'}
+                {isCohortSponsored ? (
+                  <GraduationCap className="w-4 h-4 ml-2" />
+                ) : (
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                )}
+              </Button>
             </div>
           )}
         </div>
@@ -987,11 +946,7 @@ export default function CourseDetailPage() {
                 <p className="text-sm text-gray-600 mb-4">
                   {isCohortSponsored
                     ? 'Click "Start Learning" above to begin your sponsored course'
-                    : isFree
-                    ? 'Enroll in this course to start learning'
-                    : hasPurchased
-                    ? 'Click "Start Learning" above to begin'
-                    : 'Purchase this course to access all lessons'}
+                    : 'Enroll in this course to start learning'}
                 </p>
 
                 {/* Preview modules list for non-enrolled users */}
@@ -1019,19 +974,6 @@ export default function CourseDetailPage() {
                   </div>
                 )}
 
-                {!hasPurchased && !isFree && (
-                  <div className="mt-6">
-                    <Button
-                      onClick={handlePurchase}
-                      disabled={purchasing}
-                      variant="outline"
-                      className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-red-600 rounded-full shadow-sm"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {purchasing ? 'Processing...' : `Buy Course - ₦${course.price?.toLocaleString()}`}
-                    </Button>
-                  </div>
-                )}
               </div>
             ) : lessons.length === 0 ? (
               <p className="text-center text-sm text-gray-500 py-8">No lessons available yet</p>
@@ -1093,7 +1035,7 @@ export default function CourseDetailPage() {
                             <div className="pt-3 space-y-2">
                               {moduleLessons.map((lesson) => {
                                 const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
-                                const isLocked = !!lockMap.get(lesson.id)?.locked
+                                const lessonLocked = !!lockMap.get(lesson.id)?.locked
                                 return (
                                   <LessonRow
                                     key={lesson.id}
@@ -1101,16 +1043,8 @@ export default function CourseDetailPage() {
                                     index={globalIndex}
                                     totalLessonsIndex={globalIndex}
                                     isCompleted={completedLessons.has(lesson.id)}
-                                    locked={isLocked}
-                                    onClick={() => {
-                                      if (isLocked) {
-                                        toast.warning(
-                                          'Complete the previous lesson (and pass its quiz) to unlock this one.'
-                                        )
-                                        return
-                                      }
-                                      router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
-                                    }}
+                                    locked={isSequenceLocked || lessonLocked}
+                                    onClick={() => openLesson(lesson, lessonLocked)}
                                   />
                                 )
                               })}
@@ -1130,7 +1064,7 @@ export default function CourseDetailPage() {
                       <div className="space-y-2">
                         {unassignedLessons.map((lesson) => {
                           const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
-                          const isLocked = !!lockMap.get(lesson.id)?.locked
+                          const lessonLocked = !!lockMap.get(lesson.id)?.locked
                           return (
                             <LessonRow
                               key={lesson.id}
@@ -1138,16 +1072,8 @@ export default function CourseDetailPage() {
                               index={globalIndex}
                               totalLessonsIndex={globalIndex}
                               isCompleted={completedLessons.has(lesson.id)}
-                              locked={isLocked}
-                              onClick={() => {
-                                if (isLocked) {
-                                  toast.warning(
-                                    'Complete the previous lesson (and pass its quiz) to unlock this one.'
-                                  )
-                                  return
-                                }
-                                router.push(`/courses/${params.slug}/lessons/${lesson.slug}`)
-                              }}
+                              locked={isSequenceLocked || lessonLocked}
+                              onClick={() => openLesson(lesson, lessonLocked)}
                             />
                           )
                         })}

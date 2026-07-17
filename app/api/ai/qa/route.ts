@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { supabase } from '@/lib/supabase'
 
+// Ask AI runs on DeepSeek (mirrors the SabiBot pattern): the OpenAI SDK
+// pointed at DeepSeek's OpenAI-compatible endpoint.
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: 'https://api.deepseek.com',
 })
 
 export async function POST(req: NextRequest) {
@@ -41,9 +44,10 @@ export async function POST(req: NextRequest) {
       })
 
     // Generate context-aware response
-    let systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}". 
+    let systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}".
     Be helpful, clear, and encouraging. Keep answers concise but comprehensive.
-    Focus on educational value and helping the student learn.`
+    Focus on educational value and helping the student learn.
+    Respond in plain text. Never use em dashes or en dashes; use commas, periods, or the word "and" instead.`
 
     let userPrompt = ''
 
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'deepseek-chat',
       messages: [
         {
           role: 'system',
