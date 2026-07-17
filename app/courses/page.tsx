@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Image from 'next/image'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { BookOpen, User, Search, Filter, ArrowRight, Play } from 'lucide-react'
 
@@ -44,19 +45,19 @@ export default function CoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select(`
-          *,
-          instructor:users!courses_instructor_id_fkey(full_name),
-          lessons(id)
-        `)
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setCourses(data || [])
-      setFilteredCourses(data || [])
+      // Cached catalog route: the public-course portion is shared-cached for
+      // 60s server-side, proprietary courses are merged in fresh per user.
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(
+        '/api/catalog',
+        session ? { headers: { Authorization: `Bearer ${session.access_token}` } } : undefined
+      )
+      if (res.ok) {
+        const json = await res.json()
+        const list = json.data?.courses || json.courses || []
+        setCourses(list)
+        setFilteredCourses(list)
+      }
     } catch (error) {
       console.error('Error fetching courses:', error)
     } finally {
@@ -212,10 +213,12 @@ export default function CoursesPage() {
                   {/* Cover */}
                   <div className="relative h-36 bg-gradient-to-br from-rose-50 to-pink-50 overflow-hidden">
                     {course.cover_image_url ? (
-                      <img
+                      <Image
                         src={course.cover_image_url}
                         alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

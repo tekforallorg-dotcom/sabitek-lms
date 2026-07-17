@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+// Light, read-only JSON lookup with no Node-only APIs - safe on the edge.
+export const runtime = 'edge'
+
 /**
  * Public certificate verification.
  *
@@ -53,5 +56,10 @@ export async function GET(
     return NextResponse.json({ error: 'verification_failed' }, { status: 500 })
   }
 
-  return NextResponse.json({ data })
+  // Verification results are public and rarely change - let the CDN serve
+  // repeat lookups (and shield the DB) while staying reasonably fresh.
+  return NextResponse.json(
+    { data },
+    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' } }
+  )
 }

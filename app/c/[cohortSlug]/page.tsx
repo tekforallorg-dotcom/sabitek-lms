@@ -3,6 +3,7 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { toast } from '@/components/ui/toast'
 import {
@@ -158,9 +159,11 @@ export default function CohortLandingPage({
         {/* Institution identity leads */}
         <div className="text-center mb-8">
           {institution?.logo_url ? (
-            <img
+            <Image
               src={institution.logo_url}
               alt={institution.name}
+              width={64}
+              height={64}
               className="w-16 h-16 mx-auto rounded-2xl object-cover ring-1 ring-rose-100 border border-white shadow-[0_12px_30px_-15px_rgba(0,0,0,0.25)] mb-4"
             />
           ) : (

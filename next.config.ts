@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   // Required for pdf-parse to work in API routes
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
 
+  // next/image: allow Supabase Storage (course covers, logos, avatars) plus
+  // the common OAuth avatar hosts so provider avatars keep loading.
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'jlylhwytecmhpaekffws.supabase.co', pathname: '/storage/v1/object/**' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+    ],
+  },
+
   // Turbopack config (Next.js 16 defaults to Turbopack)
   turbopack: {},
   // Webpack config for PDF.js worker support

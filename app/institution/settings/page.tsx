@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 import {
   getDefaultTerminology,
   type TerminologyPack,
@@ -347,7 +348,7 @@ export default function InstitutionSettingsPage() {
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center">
               {institution.logo_url ? (
-                <img src={institution.logo_url} alt={institution.name} className="w-10 h-10 rounded-xl object-cover" />
+                <Image src={institution.logo_url} alt={institution.name} width={40} height={40} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
                 <Building2 className="w-7 h-7 text-red-500" />
               )}

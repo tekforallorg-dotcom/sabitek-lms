@@ -10,6 +10,9 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Light JSON access check, supabase-js only (no Node-only APIs) - edge-safe.
+export const runtime = 'edge'
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }

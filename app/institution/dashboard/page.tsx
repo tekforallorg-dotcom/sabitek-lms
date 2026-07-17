@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 import { useTerminology } from '@/hooks/useTerminology'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -464,9 +465,9 @@ export default function InstitutionDashboardPage() {
         <div className="absolute -bottom-32 right-0 w-96 h-96 bg-rose-100/60 rounded-full blur-3xl pointer-events-none" aria-hidden="true"/>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-            <div className="w-20 h-20 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="relative w-20 h-20 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center flex-shrink-0 overflow-hidden">
               {institution.logo_url ? (
-                <img src={institution.logo_url} alt={institution.name} className="w-full h-full object-cover rounded-2xl" />
+                <Image src={institution.logo_url} alt={institution.name} fill sizes="80px" className="object-cover rounded-2xl" />
               ) : (
                 <Building2 className="w-10 h-10 text-red-500" />
               )}
@@ -661,9 +662,9 @@ export default function InstitutionDashboardPage() {
                 {members.map((member) => (
                   <div key={member.id} className="flex items-center justify-between p-4 bg-white/70 border border-rose-100 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-b from-red-500 to-rose-500 rounded-full flex items-center justify-center overflow-hidden">
+                      <div className="relative w-10 h-10 bg-gradient-to-b from-red-500 to-rose-500 rounded-full flex items-center justify-center overflow-hidden">
                         {member.user.avatar_url ? (
-                          <img src={member.user.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                          <Image src={member.user.avatar_url} alt="" fill sizes="40px" className="rounded-full object-cover" />
                         ) : (
                           <span className="text-white font-semibold">
                             {member.user.full_name?.charAt(0) || '?'}

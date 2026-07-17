@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useWallet } from '@/hooks/useWallet'
 import { supabase } from '@/lib/supabase'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
-import { 
+import {
   Clock, 
   DollarSign, 
   CheckCircle, 
@@ -123,10 +121,17 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       if (!pdfContent) {
         throw new Error('Content not found')
       }
-      
+
+      // Lazy-load the heavy PDF libs only when the user actually exports,
+      // keeping them out of the initial page bundle.
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
+
       setExpandAllForPDF(true)
       await new Promise(resolve => setTimeout(resolve, 300))
-      
+
       const canvas = await html2canvas(pdfContent, {
         scale: 2,
         useCORS: true,
@@ -175,6 +180,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       if (!pdfContent) {
         throw new Error('Content not found')
       }
+
+      // Lazy-load the heavy PDF libs only when the user actually exports.
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
 
       setExpandAllForPDF(true)
       await new Promise(resolve => setTimeout(resolve, 300))
