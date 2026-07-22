@@ -153,7 +153,7 @@ export async function sendCourseReceiptEmail({
             <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">✦</span></h1>
           </div>
           
-          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
             <h2 style="margin: 0 0 10px 0; font-size: 24px;">Course Unlocked! 🎉</h2>
             <p style="margin: 0; opacity: 0.9;">${courseName}</p>
           </div>
@@ -179,7 +179,7 @@ export async function sendCourseReceiptEmail({
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #666;">Access</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #10b981;">Lifetime</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #e11d48;">Lifetime</td>
               </tr>
             </table>
           </div>
@@ -322,7 +322,7 @@ export async function sendWorkspaceWelcomeEmail({
             <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
           </div>
 
-          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
             <h2 style="margin: 0 0 10px 0; font-size: 24px;">Your Workspace is Ready!</h2>
             <p style="margin: 0; opacity: 0.9;">${organisationName}</p>
           </div>

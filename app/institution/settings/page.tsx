@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Save,
   Building2,
+  Image as ImageIcon,
   Globe,
   Mail,
   Phone,
@@ -150,6 +151,42 @@ export default function InstitutionSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  // Logo upload
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [logoError, setLogoError] = useState('')
+
+  const handleLogoUpload = async (file: File) => {
+    if (!institution) return
+    setLogoError('')
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError('Logo must be under 2MB')
+      return
+    }
+    setLogoUploading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch(`/api/institutions/${institution.id}/logo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: fd,
+      })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.logo_url) {
+        setInstitution((prev) => (prev ? { ...prev, logo_url: json.logo_url } : prev))
+      } else {
+        setLogoError(json.error || 'Upload failed. Please try again.')
+      }
+    } catch {
+      setLogoError('Upload failed. Please try again.')
+    } finally {
+      setLogoUploading(false)
+    }
+  }
 
   const [name, setName] = useState('')
   const [type, setType] = useState('school')
@@ -346,19 +383,43 @@ export default function InstitutionSettingsPage() {
       <div className="relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center">
+            <div className="relative w-14 h-14 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] flex items-center justify-center overflow-hidden">
               {institution.logo_url ? (
                 <Image src={institution.logo_url} alt={institution.name} width={40} height={40} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
                 <Building2 className="w-7 h-7 text-red-500" />
               )}
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Institution</p>
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
                 Institution <span className="font-serif italic text-red-600">settings</span>
               </h1>
               <p className="text-gray-600 mt-0.5">Manage profile and preferences for {institution.name}</p>
+            </div>
+            <div className="flex-shrink-0">
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleLogoUpload(f)
+                  e.target.value = ''
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={logoUploading}
+                onClick={() => logoInputRef.current?.click()}
+                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                {logoUploading ? 'Uploading...' : institution.logo_url ? 'Change logo' : 'Upload logo'}
+              </Button>
+              {logoError && <p className="text-xs text-red-600 mt-1.5 max-w-[180px]">{logoError}</p>}
             </div>
           </div>
         </div>
