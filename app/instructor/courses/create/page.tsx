@@ -28,7 +28,7 @@ const courseSchema = z.object({
     .min(1, 'Description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description must be less than 500 characters'),
-  difficulty_level: z.enum(['absolute-beginner', 'beginner', 'elementary', 'intermediate', 'upper-intermediate', 'advanced', 'expert', 'all-levels']),
+  difficulty_level: z.enum(['beginner', 'intermediate', 'advanced', 'expert', 'all-levels']),
   category: z.string().min(1, 'Category is required'),
   intro_video_url: z.string().optional(),
   is_free: z.boolean(),
@@ -78,11 +78,8 @@ const categories = [
 ]
 
 const difficultyLevels = [
-  { value: 'absolute-beginner', label: 'Absolute Beginner', description: 'No prior knowledge needed' },
-  { value: 'beginner', label: 'Beginner', description: 'Basic understanding helpful' },
-  { value: 'elementary', label: 'Elementary', description: 'Some foundational knowledge' },
-  { value: 'intermediate', label: 'Intermediate', description: 'Comfortable with basics' },
-  { value: 'upper-intermediate', label: 'Upper Intermediate', description: 'Strong foundation required' },
+  { value: 'beginner', label: 'Beginner', description: 'No prior knowledge needed' },
+  { value: 'intermediate', label: 'Intermediate', description: 'Comfortable with the basics' },
   { value: 'advanced', label: 'Advanced', description: 'Significant experience needed' },
   { value: 'expert', label: 'Expert', description: 'Professional-level content' },
   { value: 'all-levels', label: 'All Levels', description: 'Suitable for everyone' },
