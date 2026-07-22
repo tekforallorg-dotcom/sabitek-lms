@@ -58,7 +58,7 @@ export async function POST(
       }
       const { data: updated, error: updateError } = await supabaseAdmin
         .from('institution_members')
-        .update({ status: 'active', role: invite.role, joined_at: new Date().toISOString() })
+        .update({ status: 'active', role: invite.role, accepted_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select('id')
         .single()
@@ -77,7 +77,7 @@ export async function POST(
           status: 'active',
           invited_by: invite.created_by,
           invited_at: invite.created_at,
-          joined_at: new Date().toISOString(),
+          accepted_at: new Date().toISOString(),
         })
         .select('id')
         .single()

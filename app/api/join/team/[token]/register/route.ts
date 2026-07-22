@@ -94,7 +94,7 @@ export async function POST(
         status: 'active',
         invited_by: invite.created_by,
         invited_at: invite.created_at,
-        joined_at: new Date().toISOString(),
+        accepted_at: new Date().toISOString(),
       })
       .select('id')
       .single()
