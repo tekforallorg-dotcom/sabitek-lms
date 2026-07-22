@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -53,12 +54,16 @@ function RegisterPageContent() {
   const [error, setError] = useState<string | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const { signUp } = useAuth()
+  const router = useRouter()
 
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invite')
 
   const [gate, setGate] = useState<SignupGateDecision | null>(null)
   const [gateLoading, setGateLoading] = useState(true)
+  // Team invite (instructor/viewer/program manager): registered server-side so
+  // the membership attaches atomically and no confirmation email is needed.
+  const [teamInvite, setTeamInvite] = useState<{ email: string | null; role: string; institution_name: string } | null>(null)
 
   // Check signup eligibility on mount and whenever the invite token changes.
   useEffect(() => {
@@ -76,6 +81,17 @@ function RegisterPageContent() {
           // apiSuccess returns the payload directly (flat envelope).
           setGate((json.data || json) as SignupGateDecision)
         }
+        if (inviteToken) {
+          const tRes = await fetch(`/api/join/team/${encodeURIComponent(inviteToken)}/preview`)
+          if (tRes.ok) {
+            const tJson = await tRes.json()
+            const info = tJson.data || tJson
+            if (!cancelled && info?.role) {
+              setTeamInvite({ email: info.email || null, role: info.role, institution_name: info.institution_name })
+              if (info.email) setValue('email', info.email)
+            }
+          }
+        }
       } catch {
         if (!cancelled) {
           setGate({ allowed: false, reason: 'invite_required' })
@@ -91,6 +107,7 @@ function RegisterPageContent() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -108,7 +125,43 @@ function RegisterPageContent() {
     setIsLoading(true)
     setError(null)
 
-    // When arriving via invite, always register as learner.
+    // Team invites register server-side: the account arrives confirmed with
+    // the membership already attached, then we sign in and go straight in.
+    if (teamInvite && inviteToken) {
+      try {
+        const res = await fetch(`/api/join/team/${encodeURIComponent(inviteToken)}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: data.fullName,
+            email: data.email,
+            password: data.password,
+          }),
+        })
+        const payload = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          setError(payload.error || payload.message || 'Could not create the account. Please try again.')
+          setIsLoading(false)
+          return
+        }
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: payload.email || data.email,
+          password: data.password,
+        })
+        setIsLoading(false)
+        if (signInError) {
+          router.push('/auth/login')
+          return
+        }
+        router.push(payload.next_route || '/dashboard')
+      } catch {
+        setError('Could not create the account. Please try again.')
+        setIsLoading(false)
+      }
+      return
+    }
+
+    // When arriving via a learner invite, always register as learner.
     const roleToUse = gate.reason === 'valid_invite' ? 'learner' : data.role
 
     const result = await signUp(data.email, data.password, data.fullName, roleToUse)
@@ -394,10 +447,15 @@ function RegisterPageContent() {
               <Input
                 {...register('email')}
                 type="email"
+                autoComplete="email"
                 placeholder="name@example.com"
-                className={authInputClass}
+                readOnly={!!teamInvite?.email}
+                className={`${authInputClass} ${teamInvite?.email ? 'opacity-75 cursor-not-allowed' : ''}`}
               />
             </div>
+            {teamInvite?.email && (
+              <p className="text-xs text-gray-500">This invite was sent to this email address.</p>
+            )}
             {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
           </div>
 

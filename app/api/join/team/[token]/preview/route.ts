@@ -26,7 +26,7 @@ export async function GET(
 
   const { data: invite } = await supabaseAdmin
     .from('institution_invites')
-    .select('id, role, status, expires_at, max_uses, use_count, institution:institutions(name, slug)')
+    .select('id, email, role, status, expires_at, max_uses, use_count, institution:institutions(name, slug)')
     .eq('token', token)
     .single()
 
@@ -49,6 +49,7 @@ export async function GET(
       institution_name: institution?.name || 'Institution',
       role: invite.role,
       role_label: ROLE_LABELS[invite.role] || invite.role,
+      email: invite.email || null,
     },
   })
 }
