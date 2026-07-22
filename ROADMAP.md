@@ -32,6 +32,9 @@ session starts with a clean map instead of archaeology.
   Should land BEFORE the next big build wave.
 
 ## Small items (discovered late, logged 2026-07-16/17)
+- Invite-accept flow: when the invite is email-bound, create the account server-side with email_confirm true (link possession proves the email) so signup never depends on the auth mailer
+- Approval email: replace plaintext temp password with a one-time set-password link
+- Supabase custom SMTP via Resend (owner dashboard task) so auth emails are never rate-limited
 
 - **Historical program completers**: the completion cron only examines
   members who studied *yesterday*, so anyone who finished all program
