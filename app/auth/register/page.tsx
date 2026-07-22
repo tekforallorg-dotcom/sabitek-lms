@@ -431,6 +431,7 @@ function RegisterPageContent() {
                 <Input
                   {...register('password')}
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   className={authInputClass}
                 />
@@ -445,6 +446,7 @@ function RegisterPageContent() {
                 <Input
                   {...register('confirmPassword')}
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   className={authInputClass}
                 />

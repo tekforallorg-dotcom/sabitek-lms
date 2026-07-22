@@ -134,6 +134,7 @@ export default function LoginPage() {
               <Input
                 {...register('password')}
                 type="password"
+                autoComplete="current-password"
                 placeholder="Enter your password"
                 className={authInputClass}
               />
