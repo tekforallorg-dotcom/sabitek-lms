@@ -23,8 +23,10 @@ const CONFIG = {
 // ============================================================================
 // API KEYS
 // ============================================================================
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
-const DEEPSEEK_API_KEY = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || ''
+// Server-only names: NEXT_PUBLIC_* variants are banned here because Next.js
+// exposes them to the browser (the July 2026 Gemini key abuse came from that).
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ''
 
 // ============================================================================
 // TYPES
@@ -62,7 +64,7 @@ let genAI: GoogleGenerativeAI | null = null
 function getGeminiClient(): GoogleGenerativeAI {
   if (!genAI) {
     if (!GEMINI_API_KEY) {
-      throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY in environment variables')
+      throw new Error('Missing GEMINI_API_KEY in environment variables')
     }
     genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
   }
