@@ -21,7 +21,7 @@ export async function GET(
       supabaseAdmin
         .from('courses')
         .select(
-          'id, title, slug, status, difficulty_level, created_at, instructor:users!courses_instructor_id_fkey(full_name), lessons(id), program_courses(program_id, programs(name))'
+          'id, title, slug, status, difficulty_level, created_at, published_at, instructor:users!courses_instructor_id_fkey(full_name), lessons(id), program_courses(program_id, programs(name))'
         )
         .eq('institution_id', institutionId)
         .order('created_at', { ascending: false }),
@@ -45,6 +45,7 @@ export async function GET(
         status: c.status,
         difficulty_level: c.difficulty_level,
         created_at: c.created_at,
+        published_at: c.published_at,
         instructor_name: c.instructor?.full_name || 'Unknown',
         lesson_count: (c.lessons || []).length,
         programs: (c.program_courses || [])

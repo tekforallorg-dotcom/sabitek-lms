@@ -797,3 +797,48 @@ export async function sendCourseAnnouncementEmail({
     return { success: false as const, error }
   }
 }
+
+
+export async function sendCourseInLibraryEmail({
+  to,
+  adminName,
+  instructorName,
+  courseTitle,
+}: {
+  to: string
+  adminName: string
+  instructorName: string
+  courseTitle: string
+}) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `New course in your Library: ${courseTitle}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1a1a1a; margin-bottom: 5px;">Sabitek<span style="color: #ef4444;">&#10022;</span></h1>
+          </div>
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 24px;">New course in your Library</h2>
+            <p style="margin: 0; opacity: 0.9;">${courseTitle}</p>
+          </div>
+          <p>Hi ${adminName},</p>
+          <p><strong>${instructorName}</strong> just published <strong>${courseTitle}</strong>. It is now in your Course Library, ready to be added to a program and run with your cohorts.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://www.sabitek.app/institution/courses" style="background: #ef4444; color: white; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 16px;">Open Course Library</a>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+    if (error) return { success: false as const, error }
+    return { success: true as const, data }
+  } catch (error) {
+    return { success: false as const, error }
+  }
+}

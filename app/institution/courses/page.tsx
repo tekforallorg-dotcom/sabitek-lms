@@ -24,6 +24,7 @@ interface Course {
   status: string
   difficulty_level: string | null
   created_at: string
+  published_at: string | null
   instructor_name: string
   lesson_count: number
   programs: string[]
@@ -289,6 +290,12 @@ export default function InstitutionCoursesPage() {
                             >
                               {course.status}
                             </span>
+                            {course.published_at &&
+                              Date.now() - new Date(course.published_at).getTime() < 7 * 24 * 60 * 60 * 1000 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200">
+                                  New
+                                </span>
+                              )}
                           </div>
                           <p className="text-sm text-gray-500 mb-2">
                             by {course.instructor_name} · {course.lesson_count}{' '}

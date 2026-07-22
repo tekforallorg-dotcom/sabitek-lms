@@ -83,6 +83,7 @@ interface Course {
   status: string
   difficulty_level: string
   category: string
+  institution_id?: string | null
   cover_image_url?: string
   intro_video_url?: string
   is_free: boolean
@@ -685,14 +686,51 @@ export default function CourseManagementPage() {
     )
   }
 
+  const confirmPublish = () => {
+    if (!course) return
+    const isInstitutionCourse = !!course.institution_id
+    showModal(
+      'Publish course',
+      isInstitutionCourse
+        ? `Publish "${course.title}"?\n\nIt will appear in your institution's Course Library, ready for your admin to add to programs and cohorts. It will not appear in the public catalog.`
+        : `Publish "${course.title}"?\n\nLogged-in learners will be able to find and enroll in it from the course catalog.`,
+      'confirm',
+      [
+        { label: 'Cancel', onClick: closeModal, variant: 'secondary' },
+        {
+          label: 'Publish',
+          onClick: () => {
+            closeModal()
+            publishCourse()
+          },
+        },
+      ]
+    )
+  }
+
   const publishCourse = async () => {
     if (!course) return
 
     try {
-      const { error } = await supabase.from('courses').update({ status: 'published' }).eq('id', course.id)
+      const { error } = await supabase
+        .from('courses')
+        .update({ status: 'published', published_at: new Date().toISOString() })
+        .eq('id', course.id)
 
       if (!error) {
-        toast.success('Course published successfully! It is now visible to learners.')
+        if (course.institution_id) {
+          toast.success('Published to your institution\'s Course Library. Your admin has been notified.')
+          // Fire-and-forget: bell + email for the institution admins.
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) return
+            fetch(`/api/instructor/courses/${course.id}/notify-published`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            }).catch(() => {})
+          })
+        } else {
+          toast.success('Course published! Learners can now find it in the catalog.')
+        }
         setCourse({ ...course, status: 'published' })
       }
     } catch (error) {
@@ -953,7 +991,7 @@ export default function CourseManagementPage() {
                 </Button>
               ) : (
                 <Button
-                  onClick={publishCourse}
+                  onClick={confirmPublish}
                   className="relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5"
                   size="sm"
                 >
@@ -1058,7 +1096,7 @@ export default function CourseManagementPage() {
               </span>
               {!isPublished && (
                 <Button
-                  onClick={publishCourse}
+                  onClick={confirmPublish}
                   size="sm"
                   className="ml-1 relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5"
                 >
