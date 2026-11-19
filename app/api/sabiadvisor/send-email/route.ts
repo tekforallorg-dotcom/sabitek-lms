@@ -1,17 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { requireUser } from '@/lib/api-auth'
+
+// ~10 MB PDF once base64-decoded; matches the client-side limit.
+const MAX_PDF_BASE64_CHARS = 14_000_000
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, pdfData, resultData } = await request.json()
+    // Only ever send to the signed-in user's own address. An address in the
+    // body would turn this into an open mail relay.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const email = auth.user.email
 
-    if (!email || !pdfData) {
+    const { pdfData, resultData } = await request.json()
+
+    if (!email || typeof pdfData !== 'string' || !pdfData) {
       return NextResponse.json(
         { error: 'Missing email or PDF data' },
         { status: 400 }
       )
+    }
+
+    if (pdfData.length > MAX_PDF_BASE64_CHARS) {
+      return NextResponse.json({ error: 'PDF is too large to email' }, { status: 413 })
     }
 
     const pdfBuffer = Buffer.from(pdfData, 'base64')

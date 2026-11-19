@@ -3,6 +3,7 @@ import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import { useWallet } from '@/hooks/useWallet'
 import { supabase } from '@/lib/supabase'
 import {
@@ -227,11 +228,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         throw new Error('PDF is too large to email. Please use Download instead.')
       }
 
-      const response = await fetch('/api/sabiadvisor/send-email', {
+      const response = await authFetch('/api/sabiadvisor/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: user.email,
           pdfData: pdfBase64,
           resultData: {
             primaryTracks: result.primary_tracks || [],

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireUser } from '@/lib/api-auth'
+import { canAccessCourseContent } from '@/lib/access/course-tenancy'
+
+// Bound the prompt so one request cannot run up an arbitrary bill.
+const MAX_LESSON_CHARS = 12000
 
 // One-time generation per lesson (cached in lesson_summaries), so this
 // is a publish-time cost, not a per-learner cost. Runs on DeepSeek
@@ -13,12 +18,22 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { lessonId, content, contentType } = await req.json()
+    const auth = await requireUser(req)
+    if ('error' in auth) return auth.error
 
-    // Verify the lesson exists
-    const { data: lesson, error: lessonError } = await supabase
+    const body = await req.json()
+    const lessonId: string | undefined = body.lessonId
+    const contentType: string | undefined = body.contentType
+    const content = typeof body.content === 'string' ? body.content.slice(0, MAX_LESSON_CHARS) : ''
+
+    if (!lessonId) {
+      return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
+    }
+
+    // Verify the lesson exists and the caller may read it
+    const { data: lesson, error: lessonError } = await supabaseAdmin
       .from('lessons')
-      .select('id, title')
+      .select('id, title, course_id')
       .eq('id', lessonId)
       .single()
 
@@ -29,8 +44,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (!(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
+      return NextResponse.json({ error: 'You do not have access to this lesson' }, { status: 403 })
+    }
+
     // Check if summary already exists
-    const { data: existingSummary } = await supabase
+    const { data: existingSummary } = await supabaseAdmin
       .from('lesson_summaries')
       .select('summary')
       .eq('lesson_id', lessonId)
@@ -79,7 +98,7 @@ export async function POST(req: NextRequest) {
     const summary = completion.choices[0]?.message?.content || ''
 
     // Store the summary for future use
-    await supabase
+    await supabaseAdmin
       .from('lesson_summaries')
       .insert({
         lesson_id: lessonId,

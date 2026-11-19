@@ -6,6 +6,7 @@ import {
   CheckCircle2, AlertCircle, BarChart3, Briefcase, GraduationCap,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import SabiLoader from '@/components/ui/SabiLoader'
 
 interface LearningStatsProps {
@@ -86,7 +87,7 @@ const LearningStats = memo(({ isOpen, onClose }: LearningStatsProps) => {
     if (!user?.id) return
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/sabibot/memory?userId=${user.id}`)
+      const response = await authFetch('/api/sabibot/memory')
       if (response.ok) {
         const data = await response.json()
         setMemory(data)
@@ -102,7 +103,7 @@ const LearningStats = memo(({ isOpen, onClose }: LearningStatsProps) => {
     if (!user?.id) return
     setLoadingCourses(true)
     try {
-      const response = await fetch(`/api/sabibot/recommend-courses?userId=${user.id}`)
+      const response = await authFetch('/api/sabibot/recommend-courses')
       if (response.ok) {
         const data = await response.json()
         setRecommendedCourses(data.recommendations || [])

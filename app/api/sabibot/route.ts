@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createHash } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
+import { getRequestUser } from '@/lib/api-auth'
 
 // Cost engine on DeepSeek (the high-volume surface): capped answers,
 // sliding history window, per-user daily quota, usage metering, and a
@@ -614,8 +615,36 @@ export async function POST(request: NextRequest) {
     // Server-to-server calls must target THIS deployment, not localhost
     const appOrigin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin
 
+    // SabiBot is a signed-in feature. The caller's id and role come from the
+    // access token and the database, never from the request body, so the daily
+    // quota and lesson access checks cannot be skipped or borrowed.
+    const authUser = await getRequestUser(request)
+    if (!authUser) {
+      return new Response(
+        JSON.stringify({
+          content: 'Please sign in to chat with SabiBot.',
+          auth_required: true,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+    const authHeader = request.headers.get('authorization') || ''
+
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('full_name, role')
+      .eq('id', authUser.id)
+      .maybeSingle()
+
     const body = await request.json()
-    const { messages, userContext, lessonId } = body
+    const { messages, lessonId } = body
+    const userContext = {
+      ...(body.userContext || {}),
+      userId: authUser.id,
+      userName: profile?.full_name || body.userContext?.userName,
+      userRole: profile?.role || 'learner',
+      isAuthenticated: true,
+    }
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(
@@ -733,8 +762,8 @@ export async function POST(request: NextRequest) {
     if (userContext?.userId) {
       try {
         const memoryResponse = await fetch(
-          `${appOrigin}/api/sabibot/memory?userId=${userContext.userId}`,
-          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+          `${appOrigin}/api/sabibot/memory`,
+          { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: authHeader } }
         )
         if (memoryResponse.ok) {
           userMemory = await memoryResponse.json()
@@ -872,16 +901,15 @@ export async function POST(request: NextRequest) {
 
             fetch(`${baseUrl}/api/sabibot/memory`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: userContext.userId, action: 'update_streak' }),
+              headers: { 'Content-Type': 'application/json', Authorization: authHeader },
+              body: JSON.stringify({ action: 'update_streak' }),
             }).catch((err) => console.error('Streak update failed:', err))
 
             if (lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
               fetch(`${baseUrl}/api/sabibot/extract-insights`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: authHeader },
                 body: JSON.stringify({
-                  userId: userContext.userId,
                   messageContent: lastUserMsg.content,
                   aiResponse: fullContent,
                 }),

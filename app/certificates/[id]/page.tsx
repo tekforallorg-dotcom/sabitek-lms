@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { authFetch } from '@/lib/auth-fetch'
 import { QRCodeCanvas } from 'qrcode.react'
 import type { jsPDF } from 'jspdf'
 import SabiLoader from '@/components/ui/SabiLoader'
@@ -413,11 +414,10 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         throw new Error('PDF is too large to email.')
       }
 
-      const response = await fetch('/api/certificates/send-email', {
+      const response = await authFetch('/api/certificates/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: user.email,
           pdfData: pdfBase64,
           certificateData: {
             userName: certificate.user.full_name,

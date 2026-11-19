@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { executeAdvisorOperation } from '@/lib/advisor/pricing'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -9,8 +10,12 @@ export async function POST(request: NextRequest) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   
   try {
+    // Generation debits a wallet, so the payer must be the signed-in caller.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
+
     const { 
-      userId, 
       materialId, 
       materialText, 
       category, 
@@ -18,11 +23,22 @@ export async function POST(request: NextRequest) {
       questionCount = 10 
     } = await request.json()
 
-    if (!userId || !materialId || !materialText) {
+    if (!materialId || !materialText) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    // The material must belong to the caller.
+    const { data: material } = await supabase
+      .from('sabiquiz_materials')
+      .select('id, user_id')
+      .eq('id', materialId)
+      .maybeSingle()
+
+    if (!material || material.user_id !== userId) {
+      return NextResponse.json({ error: 'Material not found' }, { status: 404 })
     }
 
     // Generate unique input to avoid caching (charge every time)

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { User } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { ApiErrors } from '@/lib/api-response'
 
@@ -40,4 +41,35 @@ export async function requireInstitutionAdmin(
   }
 
   return { userId: user.id }
+}
+
+/**
+ * Resolve the signed-in caller from the `Authorization: Bearer <token>` header.
+ * Returns null when the header is missing or the token is invalid.
+ *
+ * Routes must take the user id from here, never from the request body or
+ * query string: those are caller-controlled.
+ */
+export async function getRequestUser(request: Request): Promise<User | null> {
+  const token = extractBearer(request.headers.get('authorization'))
+  if (!token) return null
+  const {
+    data: { user },
+  } = await supabaseAdmin.auth.getUser(token)
+  return user ?? null
+}
+
+/**
+ * Guard for routes that need a signed-in caller.
+ *
+ *   const auth = await requireUser(request)
+ *   if ('error' in auth) return auth.error
+ *   const userId = auth.user.id
+ */
+export async function requireUser(
+  request: Request
+): Promise<{ error: ReturnType<typeof ApiErrors.unauthorized> } | { user: User }> {
+  const user = await getRequestUser(request)
+  if (!user) return { error: ApiErrors.unauthorized('Sign in required') }
+  return { user }
 }

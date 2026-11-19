@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { X, Send, Bot, User, Loader2, ChevronDown, BookOpen, GraduationCap, Target, Briefcase, Globe, BarChart3 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import { supabase } from '@/lib/supabase'
 import LearningStats from './learning-stats'
 
@@ -362,7 +363,7 @@ What would you like to learn today?`
     const assistantMessageId = (Date.now() + 1).toString()
 
     try {
-      const response = await fetch('/api/sabibot', {
+      const response = await authFetch('/api/sabibot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -506,11 +507,10 @@ What would you like to learn today?`
 
   const updateMemory = async (userId: string, userMsg: string, assistantMsg: string) => {
     try {
-      fetch('/api/sabibot/memory', {
+      authFetch('/api/sabibot/memory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           action: 'update_streak'
         })
       }).catch(err => console.log('Streak update failed:', err))

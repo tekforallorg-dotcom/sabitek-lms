@@ -1,4 +1,5 @@
 'use client'
+import { authFetch } from '@/lib/auth-fetch'
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,7 +18,7 @@ export default function LessonSummary({ lessonId, lessonContent, contentType }: 
   const generateSummary = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/ai/summary', {
+      const response = await authFetch('/api/ai/summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

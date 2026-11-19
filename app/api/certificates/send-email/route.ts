@@ -1,20 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { requireUser } from '@/lib/api-auth'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+
+// ~10 MB PDF once base64-decoded; matches the client-side limit.
+const MAX_PDF_BASE64_CHARS = 14_000_000
+
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+
+/** Values below are interpolated into the email's HTML, so escape them. */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => HTML_ESCAPES[c])
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, pdfData, certificateData } = await req.json()
+    // A certificate is only ever emailed to its owner's own address. Taking
+    // the address from the body made this an open relay for Sabitek-branded
+    // mail with caller-supplied content.
+    const auth = await requireUser(req)
+    if ('error' in auth) return auth.error
+    const email = auth.user.email
 
-    if (!email || !pdfData || !certificateData) {
+    const { pdfData, certificateData } = await req.json()
+
+    if (!email || typeof pdfData !== 'string' || !pdfData || !certificateData) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    const { userName, courseName, certificateNumber, grade, issuedAt } = certificateData
+    if (pdfData.length > MAX_PDF_BASE64_CHARS) {
+      return NextResponse.json({ error: 'PDF is too large to email' }, { status: 413 })
+    }
+
+    const { data: ownedCertificate } = await supabaseAdmin
+      .from('certificates')
+      .select('id')
+      .eq('certificate_number', String(certificateData.certificateNumber ?? ''))
+      .eq('user_id', auth.user.id)
+      .maybeSingle()
+
+    if (!ownedCertificate) {
+      return NextResponse.json({ error: 'Certificate not found' }, { status: 404 })
+    }
+
+    const userName = escapeHtml(certificateData.userName)
+    const courseName = escapeHtml(certificateData.courseName)
+    const certificateNumber = escapeHtml(certificateData.certificateNumber)
+    const grade = escapeHtml(certificateData.grade)
+    const issuedAt = certificateData.issuedAt
 
     // Format date
     const issueDate = new Date(issuedAt).toLocaleDateString('en-US', {

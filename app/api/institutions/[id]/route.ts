@@ -32,27 +32,38 @@ export async function GET(
     if (error || !institution) return ApiErrors.notFound('Institution not found')
 
     const token = extractBearerToken(request.headers.get('authorization'))
-    
-    if (institution.status !== 'approved') {
-      if (!token) return ApiErrors.notFound('Institution not found')
 
+    // Who is asking? The creator and platform admins see everything; anyone
+    // else sees approved institutions only, without the creator's email.
+    let isCreator = false
+    let isPlatformAdmin = false
+
+    if (token) {
       const { data: { user } } = await supabaseAdmin.auth.getUser(token)
-      if (!user) return ApiErrors.notFound('Institution not found')
-
-      if (institution.created_by === user.id) return apiSuccess(institution)
-
-      const { data: userProfile } = await supabaseAdmin
-        .from('users')
-        .select('is_super_admin, platform_role')
-        .eq('id', user.id)
-        .single()
-
-      if (!userProfile?.is_super_admin && !userProfile?.platform_role) {
-        return ApiErrors.notFound('Institution not found')
+      if (user) {
+        isCreator = institution.created_by === user.id
+        if (!isCreator) {
+          const { data: userProfile } = await supabaseAdmin
+            .from('users')
+            .select('is_super_admin, platform_role')
+            .eq('id', user.id)
+            .single()
+          isPlatformAdmin = !!userProfile?.is_super_admin || !!userProfile?.platform_role
+        }
       }
     }
 
-    return apiSuccess(institution)
+    if (isCreator || isPlatformAdmin) return apiSuccess(institution)
+
+    if (institution.status !== 'approved') {
+      return ApiErrors.notFound('Institution not found')
+    }
+
+    const creator = institution.creator
+      ? { ...institution.creator, email: undefined }
+      : institution.creator
+
+    return apiSuccess({ ...institution, creator })
   } catch (error) {
     console.error('Institution GET error:', error)
     return ApiErrors.internal()

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireUser } from '@/lib/api-auth'
+import { canAccessCourseContent } from '@/lib/access/course-tenancy'
+
+// Bound the prompt so one request cannot run up an arbitrary bill.
+const MAX_QUESTION_CHARS = 1000
+const MAX_LESSON_CHARS = 12000
 
 // Ask AI runs on DeepSeek (mirrors the SabiBot pattern): the OpenAI SDK
 // pointed at DeepSeek's OpenAI-compatible endpoint.
@@ -11,7 +17,15 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { lessonId, question, lessonContent, contentType } = await req.json()
+    const auth = await requireUser(req)
+    if ('error' in auth) return auth.error
+
+    const body = await req.json()
+    const lessonId: string | undefined = body.lessonId
+    const contentType: string | undefined = body.contentType
+    const question = typeof body.question === 'string' ? body.question.slice(0, MAX_QUESTION_CHARS) : ''
+    const lessonContent =
+      typeof body.lessonContent === 'string' ? body.lessonContent.slice(0, MAX_LESSON_CHARS) : ''
 
     if (!question || !lessonId) {
       return NextResponse.json(
@@ -21,9 +35,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Get lesson details
-    const { data: lesson, error: lessonError } = await supabase
+    const { data: lesson, error: lessonError } = await supabaseAdmin
       .from('lessons')
-      .select('title, content')
+      .select('title, course_id')
       .eq('id', lessonId)
       .single()
 
@@ -34,14 +48,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Store the question for analytics
-    await supabase
-      .from('lesson_questions')
-      .insert({
-        lesson_id: lessonId,
-        question: question,
-        asked_at: new Date().toISOString()
-      })
+    if (!(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
+      return NextResponse.json({ error: 'You do not have access to this lesson' }, { status: 403 })
+    }
 
     // Generate context-aware response
     let systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}".
@@ -87,7 +96,7 @@ export async function POST(req: NextRequest) {
     const answer = completion.choices[0].message.content
 
     // Store Q&A pair for future reference
-    await supabase
+    await supabaseAdmin
       .from('lesson_qa_history')
       .insert({
         lesson_id: lessonId,
