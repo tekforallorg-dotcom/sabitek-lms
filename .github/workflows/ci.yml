@@ -1,0 +1,56 @@
+name: CI
+
+# Runs on every pull request and on pushes to main. main deploys straight to
+# production, so this is the automated gate in front of it.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Type-check
+        run: npx tsc --noEmit -p .
+
+      # The build only needs these variables to exist; no step here talks to
+      # Supabase, Paystack or an AI provider. Real values live in Vercel.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder-project.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-key
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          RESEND_API_KEY: re_placeholder
+          OPENAI_API_KEY: placeholder
+          ANTHROPIC_API_KEY: placeholder
+          GEMINI_API_KEY: placeholder
+          DEEPSEEK_API_KEY: placeholder
+          PAYSTACK_SECRET_KEY: placeholder
+          PAYSTACK_PUBLIC_KEY: placeholder
+          CRON_SECRET: placeholder
+
+# Lint is intentionally not a gate yet: the codebase has several hundred
+# existing lint errors. It becomes a required step once those are cleared.
