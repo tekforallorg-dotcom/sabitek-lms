@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useWallet } from '@/hooks/useWallet'
 import { supabase } from '@/lib/supabase'
+import { authFetch } from '@/lib/auth-fetch'
 
 interface Course {
   id: string
@@ -107,13 +108,11 @@ export function PurchaseCourseModal({
         return
       }
 
-      const response = await fetch('/api/billing/purchase-course', {
+      const response = await authFetch('/api/billing/purchase-course', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: session.user.id,
-          courseId: course.id,
-          email: session.user.email
+          courseId: course.id
         })
       })
 

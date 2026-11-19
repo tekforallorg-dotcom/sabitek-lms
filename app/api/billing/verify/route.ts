@@ -15,14 +15,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Reference required' }, { status: 400 })
     }
 
-    // Check if already processed
+    // The reference must be one this app created in /api/billing/initialize or
+    // /api/billing/purchase-course. Wallet top-ups and anything else are not
+    // ours to fulfil here.
     const { data: existingTx } = await supabaseAdmin
       .from('transactions')
-      .select('*')
+      .select('id, user_id, amount, currency, status, transaction_type, plan_id, course_id')
       .eq('provider_tx_ref', reference)
-      .single()
+      .maybeSingle()
 
-    if (existingTx?.status === 'successful') {
+    if (!existingTx) {
+      return NextResponse.json({ error: 'Unknown payment reference' }, { status: 404 })
+    }
+
+    if (existingTx.status === 'successful') {
       return NextResponse.json({ success: true, message: 'Already processed' })
     }
 
@@ -45,15 +51,29 @@ export async function POST(request: NextRequest) {
     }
 
     const txData = paystackData.data
-    const userId = txData.metadata?.user_id
-    const transactionType = txData.metadata?.transaction_type || 'subscription'
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Invalid metadata: missing user_id' }, { status: 400 })
+    // What was paid must match what we asked for.
+    const expectedKobo = Math.round(Number(existingTx.amount) * 100)
+    const expectedCurrency = existingTx.currency || 'NGN'
+    if (txData.amount !== expectedKobo || (txData.currency || 'NGN') !== expectedCurrency) {
+      console.error('Payment amount mismatch', {
+        reference,
+        expectedKobo,
+        paidKobo: txData.amount,
+        expectedCurrency,
+        paidCurrency: txData.currency,
+      })
+      return NextResponse.json({ error: 'Payment amount does not match the order' }, { status: 400 })
     }
 
-    // Update transaction as successful
-    await supabaseAdmin
+    // Fulfil for the user who started the transaction, as recorded by us.
+    const userId: string = existingTx.user_id
+    const transactionType: string = existingTx.transaction_type || 'subscription'
+
+    // Claim the transaction in a single statement. Only the request that flips
+    // it to successful goes on to fulfil, so a replay or a race with the
+    // webhook cannot grant twice.
+    const { data: claimed } = await supabaseAdmin
       .from('transactions')
       .update({
         status: 'successful',
@@ -61,11 +81,17 @@ export async function POST(request: NextRequest) {
         raw_event: paystackData,
       })
       .eq('provider_tx_ref', reference)
+      .neq('status', 'successful')
+      .select('id')
+
+    if (!claimed || claimed.length === 0) {
+      return NextResponse.json({ success: true, message: 'Already processed' })
+    }
 
     // Handle based on transaction type
     if (transactionType === 'course_purchase') {
       // Course purchase flow
-      const courseId = txData.metadata?.course_id
+      const courseId = existingTx.course_id || txData.metadata?.course_id
 
       if (!courseId) {
         return NextResponse.json({ error: 'Invalid metadata: missing course_id' }, { status: 400 })
@@ -117,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     } else {
       // Subscription flow
-      const planId = txData.metadata?.plan_id
+      const planId = existingTx.plan_id || txData.metadata?.plan_id
       const planCode = txData.metadata?.plan_code
 
       if (!planId) {

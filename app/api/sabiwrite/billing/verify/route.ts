@@ -1,26 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { verifyAndCreditTopup } from '@/lib/wallet/topup'
+import { requireUser } from '@/lib/api-auth'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
-
+/**
+ * GET /api/sabiwrite/billing/verify?reference=xxx
+ * Verify a Paystack wallet top-up started from SabiWrite and credit it (once).
+ */
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
 
     const { searchParams } = new URL(request.url)
     const reference = searchParams.get('reference')
@@ -29,92 +18,61 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Reference required' }, { status: 400 })
     }
 
-    // Check if already verified
-    const { data: existingTx } = await supabaseAdmin
-      .from('wallet_transactions')
-      .select('status')
-      .eq('reference', reference)
-      .single()
-
-    if (existingTx?.status === 'completed') {
-      return NextResponse.json({
-        verified: true,
-        message: 'Payment already verified and credited.',
-        already_processed: true
-      })
-    }
-
-    // Verify with Paystack
-    const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-      },
+    const result = await verifyAndCreditTopup({
+      reference,
+      userId: auth.user.id,
+      service: 'sabiwrite',
     })
 
-    const verifyData = await verifyResponse.json()
-
-    if (!verifyData.status) {
-      return NextResponse.json({
-        verified: false,
-        message: 'Could not verify payment with Paystack'
-      })
-    }
-
-    if (verifyData.data.status !== 'success') {
-      // Update transaction to failed
-      await supabaseAdmin
-        .from('wallet_transactions')
-        .update({ status: 'failed' })
-        .eq('reference', reference)
-
-      return NextResponse.json({
-        verified: false,
-        message: `Payment ${verifyData.data.status}. Please try again.`
-      })
-    }
-
-    const amountKobo = verifyData.data.amount
-
-    // Update transaction status
-    await supabaseAdmin
-      .from('wallet_transactions')
-      .update({ 
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('reference', reference)
-
-    // Credit wallet
-    const { data: wallet } = await supabaseAdmin
-      .from('wallet_accounts')
-      .select('balance_kobo')
-      .eq('user_id', user.id)
-      .single()
-
-    if (wallet) {
-      await supabaseAdmin
-        .from('wallet_accounts')
-        .update({ 
-          balance_kobo: wallet.balance_kobo + amountKobo,
-          updated_at: new Date().toISOString()
+    switch (result.outcome) {
+      case 'credited':
+        return NextResponse.json({
+          verified: true,
+          amount_kobo: result.amountKobo,
+          message: 'Payment successful! Wallet credited.',
         })
-        .eq('user_id', user.id)
-    } else {
-      // Create wallet if doesn't exist
-      await supabaseAdmin
-        .from('wallet_accounts')
-        .insert({
-          user_id: user.id,
-          balance_kobo: amountKobo,
+
+      case 'already_processed':
+        return NextResponse.json({
+          verified: true,
+          message: 'Payment already verified and credited.',
+          already_processed: true,
         })
+
+      case 'not_found':
+        return NextResponse.json(
+          { verified: false, message: 'No matching wallet top-up was found for your account.' },
+          { status: 404 }
+        )
+
+      case 'unverifiable':
+        return NextResponse.json({
+          verified: false,
+          message: 'Could not verify payment with Paystack',
+        })
+
+      case 'not_successful':
+        return NextResponse.json({
+          verified: false,
+          message: `Payment ${result.paystackStatus}. Please try again.`,
+        })
+
+      case 'mismatch':
+        return NextResponse.json(
+          { verified: false, message: 'The amount paid does not match this top-up. Please contact support.' },
+          { status: 400 }
+        )
+
+      case 'credit_failed':
+        return NextResponse.json(
+          {
+            verified: true,
+            credited: false,
+            message: 'Payment verified but failed to credit wallet. Please try again or contact support.',
+          },
+          { status: 500 }
+        )
     }
-
-    return NextResponse.json({
-      verified: true,
-      amount_kobo: amountKobo,
-      message: 'Payment successful! Wallet credited.'
-    })
-
   } catch (error) {
     console.error('Payment verification error:', error)
     return NextResponse.json({ error: 'Verification failed' }, { status: 500 })

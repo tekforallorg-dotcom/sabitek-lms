@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
       .update(body)
       .digest('hex')
 
-    if (hash !== signature) {
+    const expected = Buffer.from(hash, 'hex')
+    const received = Buffer.from(signature, 'hex')
+    if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
       console.error('Invalid webhook signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }

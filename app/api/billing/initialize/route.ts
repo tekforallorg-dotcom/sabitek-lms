@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { validateBody } from '@/lib/validations'
 import { initializePaymentSchema } from '@/lib/validations/billing'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,15 +12,26 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // 0. The payer is the signed-in caller. userId and email in the body are
+    //    ignored so a payment can never be attributed to someone else.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+
     // 1. Validate request body with Zod
     const body = await request.json()
-    const validation = validateBody(initializePaymentSchema, body)
+    const validation = validateBody(initializePaymentSchema, {
+      ...body,
+      userId: auth.user.id,
+      email: auth.user.email,
+    })
     
     if (!validation.success) {
       return validation.error
     }
     
-    const { planCode, userId, email } = validation.data
+    const { planCode } = validation.data
+    const userId = auth.user.id
+    const email = auth.user.email
 
     // 2. Reject free plan
     if (planCode === 'free') {
