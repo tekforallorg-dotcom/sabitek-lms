@@ -48,7 +48,7 @@
     "jspdf": "^4.1.0",
     "lucide-react": "^0.544.0",
     "mammoth": "^1.11.0",
-    "next": "^16.1.0",
+    "next": "^16.4.5",
     "openai": "^5.23.1",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.394",
