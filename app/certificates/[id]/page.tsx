@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { fetchPublicProfiles } from '@/lib/public-profiles'
 import { authFetch } from '@/lib/auth-fetch'
 import { QRCodeCanvas } from 'qrcode.react'
 import type { jsPDF } from 'jspdf'
@@ -44,7 +45,8 @@ interface Certificate {
   course: {
     title: string
     description: string
-    instructor: {
+    instructor_id?: string | null
+    instructor?: {
       full_name: string
     }
   } | null
@@ -124,7 +126,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
           course:courses(
             title,
             description,
-            instructor:users!courses_instructor_id_fkey(full_name)
+            instructor_id
           ),
           program:programs(
             name,
@@ -139,6 +141,16 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         router.push('/certificates')
         return
       }
+      // The instructor is another user, so their name comes from the
+      // public-profile lookup rather than an embed of the users table.
+      if (data.course?.instructor_id) {
+        const profiles = await fetchPublicProfiles([data.course.instructor_id])
+        const instructor = profiles.get(data.course.instructor_id)
+        if (instructor?.full_name) {
+          data.course.instructor = { full_name: instructor.full_name }
+        }
+      }
+
       setCertificate(data)
     } catch (error) {
       console.error('Error fetching certificate:', error)
