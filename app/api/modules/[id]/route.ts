@@ -1,13 +1,9 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody, extractBearerToken } from '@/lib/validations'
 import { updateModuleSchema } from '@/lib/validations/module'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 async function canManageCourse(userId: string, courseId: string): Promise<boolean> {
   const { data: course } = await supabaseAdmin

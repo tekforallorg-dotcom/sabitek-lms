@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { formatNaira } from '@/lib/wallet'
 import { validateBody, extractBearerToken } from '@/lib/validations'
 import { topupSchema, WALLET_LIMITS } from '@/lib/validations/wallet'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'

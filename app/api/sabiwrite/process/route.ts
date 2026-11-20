@@ -1,12 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { routeModel, getModelConfig } from '@/lib/sabiwrite/model-router'
 import { getPricingRule, calculateCostEstimate, estimateTokens } from '@/lib/sabiwrite/pricing'
 import { debitWallet, getOrCreateWallet } from '@/lib/wallet'
 import { ToolType, ToneType, PlanTier } from '@/lib/sabiwrite/types'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const SYSTEM_PROMPTS: Record<string, (tone: ToneType, action: string) => string> = {
   rewrite: (tone, action) => `You are a professional writing assistant. Rewrite the following text in a ${tone} tone. Maintain the original meaning but improve clarity and flow. Output only plain text - no markdown, no bold, no asterisks, no special formatting. Use regular dashes (-) not em-dashes (—). Only output the rewritten text, no explanations.`,
@@ -92,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = supabaseAdmin
     
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {

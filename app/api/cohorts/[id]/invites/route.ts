@@ -1,15 +1,11 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody, validateQuery, extractBearerToken } from '@/lib/validations'
 import { createInviteSchema, listInvitesQuerySchema } from '@/lib/validations/invite'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STANDARD } from '@/lib/rate-limit'
 import { generateInviteToken } from '@/lib/crypto'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 /**
  * Build the public join URL for a given token.

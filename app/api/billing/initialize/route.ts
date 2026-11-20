@@ -1,14 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody } from '@/lib/validations'
 import { initializePaymentSchema } from '@/lib/validations/billing'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { requireUser } from '@/lib/api-auth'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {

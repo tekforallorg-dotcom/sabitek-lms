@@ -1,14 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody, extractBearerToken } from '@/lib/validations'
 import { revokeInviteSchema } from '@/lib/validations/invite'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STANDARD } from '@/lib/rate-limit'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 /**
  * Authorization: user must be institution_admin or program_manager

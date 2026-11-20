@@ -1,15 +1,11 @@
 import { NextRequest } from 'next/server'
 import { sendCohortWelcomeEmail } from '@/lib/email'
 import { notify } from '@/lib/notifications'
-import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { z } from 'zod'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const joinByCodeSchema = z.object({
   access_code: z
