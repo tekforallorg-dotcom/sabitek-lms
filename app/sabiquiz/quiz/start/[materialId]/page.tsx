@@ -302,11 +302,6 @@ export default function QuizStartPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Gradient Hero Header */}
       <div className="bg-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gray-900/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-red-500/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-amber-500/10 rounded-lg rotate-45 blur-sm" />
-
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
           <button

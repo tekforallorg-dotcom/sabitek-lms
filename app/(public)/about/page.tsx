@@ -181,7 +181,7 @@ export default function AboutPage() {
       <section className="pb-16 pt-2 sm:pb-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-red-600 px-6 py-14 sm:px-14 sm:py-16 text-center ring-1 ring-white/20">
+            <div className="relative overflow-hidden rounded-xl bg-red-600 px-6 py-14 sm:px-14 sm:py-16 text-center ring-1 ring-white/20">
               <div className="absolute inset-x-0 top-0 h-28" aria-hidden="true" />
 
               <div className="relative">

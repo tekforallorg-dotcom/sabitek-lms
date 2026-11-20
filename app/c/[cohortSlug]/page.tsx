@@ -142,7 +142,7 @@ export default function CohortLandingPage({
   }
 
   const { cohort, program, institution } = data
-  const accent = institution?.accent_color || '#e11d48'
+  const accent = institution?.accent_color || '#dc2626'
   const needsCode = cohort.enrollment_mode === 'access_code'
   const inviteOnly = cohort.enrollment_mode === 'invite_only'
   const full = cohort.seats_left !== null && cohort.seats_left <= 0

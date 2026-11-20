@@ -96,7 +96,7 @@ const BADGE_ICONS: Record<string, string> = {
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   'easy': '#22c55e',
-  'medium': '#eab308',
+  'medium': '#f59e0b',
   'hard': '#ef4444'
 }
 
@@ -315,11 +315,6 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Gradient Hero Header */}
       <div className="bg-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-32 h-32 bg-gray-900/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[10%] w-20 h-20 bg-red-500/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-16 h-16 bg-amber-500/10 rounded-xl rotate-45 blur-sm" />
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
           <button
@@ -592,17 +587,11 @@ export default function AnalyticsPage() {
                     <Line 
                       type="monotone" 
                       dataKey="score" 
-                      stroke="url(#colorGradient)" 
+                      stroke="#ef4444" 
                       strokeWidth={3}
                       dot={{ fill: '#ef4444', strokeWidth: 2, r: 5 }}
                       activeDot={{ r: 7, fill: '#ef4444' }}
                     />
-                    <defs>
-                      <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#ef4444" />
-                        <stop offset="100%" stopColor="#ec4899" />
-                      </linearGradient>
-                    </defs>
                   </LineChart>
                 </ResponsiveContainer>
               ) : (

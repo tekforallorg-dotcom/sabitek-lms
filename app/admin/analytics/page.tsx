@@ -69,7 +69,7 @@ interface AnalyticsData {
   }
 }
 
-const COLORS = ['#e11d48', '#fb7185', '#fda4af', '#be123c', '#f43f5e', '#fecdd3', '#9f1239', '#ffe4e6']
+const COLORS = ['#dc2626', '#f87171', '#fca5a5', '#b91c1c', '#ef4444', '#fecaca', '#991b1b', '#fee2e2']
 
 export default function AnalyticsPage() {
   const { loading: authLoading, userProfile } = useAdminAuth()
@@ -147,9 +147,9 @@ export default function AnalyticsPage() {
   const getEngagementData = () => {
     if (!analytics) return []
     return [
-      { name: 'Daily Active', value: analytics.metrics.activeUsers.dau, fill: '#e11d48' },
-      { name: 'Weekly Active', value: analytics.metrics.activeUsers.wau, fill: '#fb7185' },
-      { name: 'Monthly Active', value: analytics.metrics.activeUsers.mau, fill: '#fda4af' },
+      { name: 'Daily Active', value: analytics.metrics.activeUsers.dau, fill: '#dc2626' },
+      { name: 'Weekly Active', value: analytics.metrics.activeUsers.wau, fill: '#f87171' },
+      { name: 'Monthly Active', value: analytics.metrics.activeUsers.mau, fill: '#fca5a5' },
     ]
   }
 
@@ -389,13 +389,7 @@ export default function AnalyticsPage() {
               </div>
               <ResponsiveContainer width="100%" height={320}>
                 <ComposedChart data={analytics.userGrowth}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#e11d48" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
                   <XAxis
                     dataKey="date"
                     tickFormatter={(date: string) => format(new Date(date), 'MMM d')}
@@ -406,9 +400,9 @@ export default function AnalyticsPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#fff',
-                      border: '1px solid #ffe4e6',
+                      border: '1px solid #fee2e2',
                       borderRadius: '12px',
-                      boxShadow: '0 4px 6px rgba(225,29,72,0.08)'
+                      boxShadow: '0 4px 6px rgba(220,38,38,0.08)'
                     }}
                     labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
@@ -416,14 +410,15 @@ export default function AnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="count"
-                    fill="url(#colorCount)"
-                    stroke="#e11d48"
+                    fill="#dc2626"
+                    fillOpacity={0.12}
+                    stroke="#dc2626"
                     strokeWidth={3}
                     name="Total Users"
                   />
                   <Bar
                     dataKey="newUsers"
-                    fill="#fda4af"
+                    fill="#fca5a5"
                     name="New Users"
                     radius={[8, 8, 0, 0]}
                   />
@@ -450,7 +445,7 @@ export default function AnalyticsPage() {
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={90}
-                    fill="#e11d48"
+                    fill="#dc2626"
                     dataKey="value"
                   >
                     {getEngagementData().map((entry, index) => (
@@ -477,17 +472,7 @@ export default function AnalyticsPage() {
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={analytics.enrollmentTrend}>
-                  <defs>
-                    <linearGradient id="colorEnrollments" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#e11d48" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#fda4af" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#fda4af" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
                   <XAxis
                     dataKey="date"
                     tickFormatter={(date: string) => format(new Date(date), 'MMM d')}
@@ -498,9 +483,9 @@ export default function AnalyticsPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#fff',
-                      border: '1px solid #ffe4e6',
+                      border: '1px solid #fee2e2',
                       borderRadius: '12px',
-                      boxShadow: '0 4px 6px rgba(225,29,72,0.08)'
+                      boxShadow: '0 4px 6px rgba(220,38,38,0.08)'
                     }}
                     labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
@@ -508,17 +493,17 @@ export default function AnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="count"
-                    stroke="#e11d48"
-                    fillOpacity={1}
-                    fill="url(#colorEnrollments)"
+                    stroke="#dc2626"
+                    fillOpacity={0.15}
+                    fill="#dc2626"
                     name="Total Enrollments"
                   />
                   <Area
                     type="monotone"
                     dataKey="active"
-                    stroke="#fda4af"
-                    fillOpacity={1}
-                    fill="url(#colorActive)"
+                    stroke="#fca5a5"
+                    fillOpacity={0.15}
+                    fill="#fca5a5"
                     name="Active"
                   />
                 </AreaChart>
@@ -537,7 +522,7 @@ export default function AnalyticsPage() {
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={analytics.certificateTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
                   <XAxis
                     dataKey="date"
                     tickFormatter={(date: string) => format(new Date(date), 'MMM d')}
@@ -548,15 +533,15 @@ export default function AnalyticsPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#fff',
-                      border: '1px solid #ffe4e6',
+                      border: '1px solid #fee2e2',
                       borderRadius: '12px',
-                      boxShadow: '0 4px 6px rgba(225,29,72,0.08)'
+                      boxShadow: '0 4px 6px rgba(220,38,38,0.08)'
                     }}
                     labelFormatter={(date) => format(new Date(date), 'MMM d, yyyy')}
                   />
                   <Bar
                     dataKey="count"
-                    fill="#e11d48"
+                    fill="#dc2626"
                     radius={[12, 12, 0, 0]}
                     name="Certificates"
                   />
@@ -591,7 +576,7 @@ export default function AnalyticsPage() {
                         <img
                           src={course.thumbnail}
                           alt={course.title}
-                          className="w-20 h-14 object-cover rounded-lg shadow"
+                          className="w-20 h-14 object-cover rounded-lg shadow-sm"
                         />
                       ) : (
                         <div className="w-20 h-14 bg-red-50 border border-gray-200 rounded-lg flex items-center justify-center">
@@ -640,7 +625,7 @@ export default function AnalyticsPage() {
                       labelLine={false}
                      label={({ percent }: any) => `${((percent as number) * 100).toFixed(0)}%`}
                       outerRadius={100}
-                      fill="#e11d48"
+                      fill="#dc2626"
                       dataKey="value"
                     >
                       {getCategoryData().map((entry, index) => (

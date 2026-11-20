@@ -95,7 +95,6 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
   const title =
     completed >= total - 1 ? "You're almost set up" : PERSONA_TITLES[persona]
   const firstPendingKey = steps.find((s) => !s.done)?.key
-  const gradientId = `onboarding-ring-${persona}`
 
   return (
     <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5">
@@ -114,18 +113,12 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
             className="-rotate-90"
             aria-hidden="true"
           >
-            <defs>
-              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ef4444" />
-                <stop offset="100%" stopColor="#fb7185" />
-              </linearGradient>
-            </defs>
             <circle
               cx={RING_SIZE / 2}
               cy={RING_SIZE / 2}
               r={RING_RADIUS}
               fill="none"
-              stroke="#ffe4e6"
+              stroke="#fee2e2"
               strokeWidth={RING_STROKE}
             />
             <circle
@@ -133,7 +126,7 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
               cy={RING_SIZE / 2}
               r={RING_RADIUS}
               fill="none"
-              stroke={`url(#${gradientId})`}
+              stroke="#dc2626"
               strokeWidth={RING_STROKE}
               strokeLinecap="round"
               strokeDasharray={RING_CIRCUMFERENCE}

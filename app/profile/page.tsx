@@ -281,10 +281,10 @@ export default function ProfilePage() {
                   <img
                     src={profileData.avatar_url}
                     alt="Profile"
-                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover ring-2 ring-white shadow"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover ring-2 ring-white shadow-sm"
                   />
                 ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow-sm">
                     <span className="text-4xl font-medium text-white">
                       {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
@@ -421,10 +421,10 @@ export default function ProfilePage() {
                     <img
                       src={profileData.avatar_url}
                       alt="Profile"
-                      className="w-32 h-32 rounded-xl object-cover ring-2 ring-white shadow"
+                      className="w-32 h-32 rounded-xl object-cover ring-2 ring-white shadow-sm"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow">
+                    <div className="w-32 h-32 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow-sm">
                       <span className="text-4xl font-medium text-white">
                         {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>

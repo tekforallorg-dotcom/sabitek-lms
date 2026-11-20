@@ -158,18 +158,12 @@ export default function GamificationStrip() {
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
               <svg width={size} height={size} className="-rotate-90">
-                <defs>
-                  <linearGradient id="gs-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ef4444" />
-                    <stop offset="100%" stopColor="#fb7185" />
-                  </linearGradient>
-                </defs>
                 <circle
                   cx={size / 2}
                   cy={size / 2}
                   r={radius}
                   fill="none"
-                  stroke="#ffe4e6"
+                  stroke="#fee2e2"
                   strokeWidth={stroke}
                 />
                 <circle
@@ -177,7 +171,7 @@ export default function GamificationStrip() {
                   cy={size / 2}
                   r={radius}
                   fill="none"
-                  stroke="url(#gs-ring-grad)"
+                  stroke="#dc2626"
                   strokeWidth={stroke}
                   strokeLinecap="round"
                   strokeDasharray={circumference}
@@ -282,7 +276,7 @@ export default function GamificationStrip() {
                     <div
                       key={badge.key}
                       title={badge.name}
-                      className={`w-9 h-9 rounded-full bg-red-600 ring-2 ring-white shadow flex items-center justify-center ${
+                      className={`w-9 h-9 rounded-full bg-red-600 ring-2 ring-white shadow-sm flex items-center justify-center ${
  i === 0 ? 'ml-0' : '-ml-2'
                       }`}
                     >

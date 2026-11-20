@@ -80,25 +80,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 overflow-x-clip">
       <style jsx global>{`
-        @keyframes drift {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(28px, -18px); }
-        }
-        @keyframes float-a {
-          0%, 100% { transform: translateY(0) rotate(-4deg); }
-          50% { transform: translateY(-10px) rotate(-4deg); }
-        }
-        @keyframes float-b {
-          0%, 100% { transform: translateY(0) rotate(3deg); }
-          50% { transform: translateY(-8px) rotate(3deg); }
-        }
-        .animate-drift { animation: drift 16s ease-in-out infinite; }
-        .animate-float-a { animation: float-a 7s ease-in-out infinite; }
-        .animate-float-b { animation: float-b 8s ease-in-out infinite; }
-        ::selection { background: #fecdd3; color: #881337; }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-drift, .animate-float-a, .animate-float-b { animation: none; }
-        }
+        ::selection { background: #fecaca; color: #7f1d1d; }
       `}</style>
 
       {/* ============================================ */}
@@ -133,14 +115,7 @@ export default function HomePage() {
                       preserveAspectRatio="none"
                       aria-hidden="true"
                     >
-                      <path d="M4 11 C 75 3, 225 3, 296 9" stroke="url(#uline)" strokeWidth="4" strokeLinecap="round" />
-                      <defs>
-                        <linearGradient id="uline" x1="0" y1="0" x2="300" y2="0" gradientUnits="userSpaceOnUse">
-                          <stop stopColor="#f43f5e" stopOpacity="0.25" />
-                          <stop offset="0.5" stopColor="#e11d48" stopOpacity="0.8" />
-                          <stop offset="1" stopColor="#ec4899" stopOpacity="0.25" />
-                        </linearGradient>
-                      </defs>
+                      <path d="M4 11 C 75 3, 225 3, 296 9" stroke="#dc2626" strokeOpacity="0.6" strokeWidth="4" strokeLinecap="round" />
                     </svg>
                   </span>
                 </h1>
@@ -206,7 +181,7 @@ export default function HomePage() {
                 {/* tilted backdrop */}
 
                 {/* learner phone card */}
-                <div className="relative w-[264px] mx-auto bg-white rounded-[2rem] border border-gray-200 p-5">
+                <div className="relative w-[264px] mx-auto bg-white rounded-xl border border-gray-200 p-5">
                   <div className="flex items-center justify-between mb-5">
                     <div>
                       <p className="text-xs text-gray-400">Good evening</p>
@@ -222,14 +197,8 @@ export default function HomePage() {
                   <div className="flex items-center gap-4 mb-5">
                     <div className="relative w-14 h-14">
                       <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
-                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#ffe4e6" strokeWidth="4" />
-                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="url(#ringGrad)" strokeWidth="4" strokeDasharray="97.4" strokeDashoffset="24" strokeLinecap="round" />
-                        <defs>
-                          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop stopColor="#ef4444" />
-                            <stop offset="1" stopColor="#e11d48" />
-                          </linearGradient>
-                        </defs>
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#fee2e2" strokeWidth="4" />
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#dc2626" strokeWidth="4" strokeDasharray="97.4" strokeDashoffset="24" strokeLinecap="round" />
                       </svg>
                       <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-800">75%</span>
                     </div>
@@ -265,7 +234,7 @@ export default function HomePage() {
                 </div>
 
                 {/* floating certificate chip */}
-                <div className="absolute -right-2 sm:right-0 lg:-right-2 top-8 animate-float-b">
+                <div className="absolute -right-2 sm:right-0 lg:-right-2 top-8">
                   <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-red-600 shadow-sm flex items-center justify-center">
                       <Award className="w-4 h-4 text-white" />
@@ -278,7 +247,7 @@ export default function HomePage() {
                 </div>
 
                 {/* floating cohort report chip */}
-                <div className="absolute -left-2 sm:left-0 lg:-left-4 bottom-6 animate-float-a">
+                <div className="absolute -left-2 sm:left-0 lg:-left-4 bottom-6">
                   <div className="bg-white rounded-xl border border-gray-200 px-4 py-3">
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart3 className="w-3.5 h-3.5 text-red-500" />
@@ -577,7 +546,7 @@ export default function HomePage() {
       <section className="pb-16 pt-4 sm:pb-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="relative overflow-hidden rounded-[2rem] bg-gray-900 px-6 py-12 sm:px-12 sm:py-14 ring-1 ring-white/10">
+            <div className="relative overflow-hidden rounded-xl bg-gray-900 px-6 py-12 sm:px-12 sm:py-14 ring-1 ring-white/10">
               <span className="absolute top-0 inset-x-12 h-px bg-gray-200" aria-hidden="true" />
 
               <div className="relative grid lg:grid-cols-2 gap-10 items-center">

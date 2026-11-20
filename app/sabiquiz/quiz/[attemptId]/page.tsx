@@ -297,7 +297,7 @@ function TimeAttackFuse({
             className="h-full rounded-full transition-all duration-1000 ease-linear"
             style={{ 
               width: `${100 - progress}%`,
-              background: 'linear-gradient(90deg, #f97316 0%, #fbbf24 30%, #6b7280 30%, #6b7280 100%)',
+              background: 'linear-gradient(90deg, #d97706 0%, #fbbf24 30%, #6b7280 30%, #6b7280 100%)',
               backgroundSize: '200% 100%',
               animationDuration: '2s',
               float: 'right'
@@ -1295,10 +1295,6 @@ export default function QuizPage() {
       
       {/* Enhanced Sticky Header with Dark Gradient */}
       <div className="sticky top-0 z-10 bg-gray-900 shadow-sm">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-2 right-[15%] w-16 h-16 bg-red-500/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-2 left-[10%] w-12 h-12 bg-gray-900/10 rounded-xl -rotate-12 blur-sm" />
-        
         <div className="relative max-w-5xl mx-auto px-4 pt-4 pb-3">
           {/* Controls and Stats */}
           <div className="flex items-center justify-between mb-4">

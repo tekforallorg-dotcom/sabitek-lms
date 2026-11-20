@@ -382,11 +382,6 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Dark Gradient Hero Header */}
       <div className="bg-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-32 h-32 bg-red-500/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-20 left-[10%] w-24 h-24 bg-gray-900/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-16 h-16 bg-amber-500/10 rounded-xl rotate-45 blur-sm" />
-
         <div className="relative max-w-4xl mx-auto px-4 py-8 sm:py-12">
           {/* Top Row: Back Button */}
           <div className="flex items-center justify-between mb-8">

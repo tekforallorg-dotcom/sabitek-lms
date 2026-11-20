@@ -690,7 +690,7 @@ export default function AdminBillingPage() {
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}
@@ -706,7 +706,7 @@ export default function AdminBillingPage() {
                 formatter={(value) => [formatCurrency((value as number) || 0), 'Revenue']}
                 labelStyle={{ color: '#666' }}
               />
-              <Bar dataKey="revenue" fill="#e11d48" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="#dc2626" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

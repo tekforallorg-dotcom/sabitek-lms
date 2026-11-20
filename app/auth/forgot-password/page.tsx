@@ -42,11 +42,6 @@ export default function ForgotPasswordPage() {
       <div className="min-h-screen flex">
         {/* Left Side - Hero (hidden on mobile) */}
         <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
-          {/* Floating elements */}
-          <div className="absolute top-20 right-[20%] w-32 h-32 bg-green-500/10 rounded-xl rotate-12 blur-sm" />
-          <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-green-500/10 rounded-xl -rotate-12 blur-sm" />
-          <div className="absolute top-1/2 right-[10%] w-16 h-16 bg-green-500/10 rounded-xl rotate-45 blur-sm" />
-
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
             {/* Logo */}
             <Link href="/" className="inline-flex items-center gap-2 mb-12">
@@ -154,11 +149,6 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex">
       {/* Left Side - Hero (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
-        {/* Floating elements */}
-        <div className="absolute top-20 right-[20%] w-32 h-32 bg-red-500/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-red-500/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[10%] w-16 h-16 bg-amber-500/10 rounded-xl rotate-45 blur-sm" />
-
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12">

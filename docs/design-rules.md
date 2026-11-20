@@ -20,13 +20,15 @@ the lesson.
 
 ## The rules
 
-1. **No gradients.** Each surface is one flat colour. The only exception is a
-   black fade over a photo so text on it stays readable.
+1. **No gradients.** Each surface is one flat colour, and that includes SVG
+   strokes and chart fills. The only exception is a black fade over a photo
+   so text on it stays readable.
 2. **No blur and no glow.** Cards are white with a 1px gray border. Shadows are
    at most `shadow-sm`.
 3. **Five colours.** Gray for surfaces and text, red for the brand, and green,
    amber and blue for status only (success, warning, information). Nothing
-   else exists in the Tailwind theme.
+   else exists in the Tailwind theme, so a class outside it produces no CSS.
+   Hex codes in charts and inline SVG come from the same five.
 4. **Two font weights: 400 and 500.** Hierarchy comes from size, colour and
    space, not from boldness.
 5. **Spacing on a 4px grid.** Padding, margin and gap use whole steps of the
@@ -34,8 +36,9 @@ the lesson.
 6. **Corners at most 12px** (`rounded-xl`). Pills and avatars (`rounded-full`)
    are the exception.
 7. **Motion only when it tells the user something.** Loading spinners and
-   skeletons are fine. No bouncing, pinging or zoom-on-hover. People who ask
-   their device for reduced motion get none.
+   skeletons are fine, and so is content fading or sliding in once. No
+   bouncing, pinging, floating or zoom-on-hover. People who ask their device
+   for reduced motion get none.
 8. **Icons, not emojis.** Use `lucide-react`.
 
 ## Where the theme lives

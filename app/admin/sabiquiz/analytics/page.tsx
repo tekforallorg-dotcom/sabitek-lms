@@ -31,7 +31,7 @@ import {
   type SystemStats,
 } from '@/lib/admin/sabiquiz-admin'
 
-const COLORS = ['#e11d48', '#fb7185', '#f59e0b', '#10b981', '#8b5cf6', '#64748b']
+const COLORS = ['#dc2626', '#f87171', '#f59e0b', '#16a34a', '#3b82f6', '#6b7280']
 
 export default function AnalyticsAdminPage() {
   const router = useRouter()
@@ -205,7 +205,7 @@ export default function AnalyticsAdminPage() {
           <div className="p-6 pt-2">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={usageData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
                 <XAxis dataKey="day" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
                 <Tooltip />
@@ -213,14 +213,14 @@ export default function AnalyticsAdminPage() {
                 <Line
                   type="monotone"
                   dataKey="materials"
-                  stroke="#fb7185"
+                  stroke="#f87171"
                   strokeWidth={2}
                   name="Materials Uploaded"
                 />
                 <Line
                   type="monotone"
                   dataKey="attempts"
-                  stroke="#e11d48"
+                  stroke="#dc2626"
                   strokeWidth={2}
                   name="Quiz Attempts"
                 />
@@ -245,7 +245,7 @@ export default function AnalyticsAdminPage() {
                   labelLine={false}
                   label={({ name, value }) => `${name}: ${value}`}
                   outerRadius={80}
-                  fill="#e11d48"
+                  fill="#dc2626"
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
@@ -276,11 +276,11 @@ export default function AnalyticsAdminPage() {
                   { name: 'Attempts', value: stats.attemptsThisMonth },
                 ]}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffe4e6" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#fee2e2" />
                 <XAxis dataKey="name" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
                 <Tooltip />
-                <Bar dataKey="value" fill="#e11d48" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="value" fill="#dc2626" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

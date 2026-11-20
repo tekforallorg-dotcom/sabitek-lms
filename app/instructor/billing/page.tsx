@@ -84,7 +84,7 @@ interface ChartData {
   sales: number
 }
 
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
+const COLORS = ['#ef4444', '#b45309', '#f59e0b', '#22c55e', '#3b82f6', '#6b7280']
 
 export default function InstructorBillingPage() {
   const router = useRouter()
@@ -395,11 +395,6 @@ export default function InstructorBillingPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Gradient Hero Header */}
       <div className="bg-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-24 h-24 bg-green-500/10 rounded-xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-red-500/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-amber-500/10 rounded-lg rotate-45 blur-sm" />
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <Link href="/instructor" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" />
@@ -503,13 +498,7 @@ export default function InstructorBillingPage() {
                         formatter={(value) => [formatCurrency((value as number) || 0), 'Earnings']} 
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                       />
-                      <Bar dataKey="earnings" fill="url(#greenGradient)" radius={[6, 6, 0, 0]} />
-                      <defs>
-                        <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#22c55e" />
-                          <stop offset="100%" stopColor="#10b981" />
-                        </linearGradient>
-                      </defs>
+                      <Bar dataKey="earnings" fill="#22c55e" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
