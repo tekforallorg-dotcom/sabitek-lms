@@ -65,6 +65,9 @@ export async function POST(
       password,
       email_confirm: true,
       user_metadata: { full_name: fullName },
+      // Marks the account as created by the server. Only the service role can
+      // set app metadata, so the sign-up gate trusts it (see enforce_signup_gate).
+      app_metadata: { provisioned_by: 'server' },
     })
     if (createError || !created?.user) {
       console.error('Invite register createUser error:', createError)

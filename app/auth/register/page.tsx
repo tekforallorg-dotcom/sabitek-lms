@@ -164,7 +164,7 @@ function RegisterPageContent() {
     // When arriving via a learner invite, always register as learner.
     const roleToUse = gate.reason === 'valid_invite' ? 'learner' : data.role
 
-    const result = await signUp(data.email, data.password, data.fullName, roleToUse)
+    const result = await signUp(data.email, data.password, data.fullName, roleToUse, inviteToken)
 
     if (result.error) {
       setError(result.error.message)

@@ -14,7 +14,7 @@ interface AuthReturn {
   institutionName: string | null
   homeRoute: string | null
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string, role: string) => Promise<{ error: any; needsVerification?: boolean }>
+  signUp: (email: string, password: string, fullName: string, role: string, inviteToken?: string | null) => Promise<{ error: any; needsVerification?: boolean }>
   signOut: () => Promise<void>
 }
 
@@ -211,7 +211,13 @@ export function useAuth(): AuthReturn {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName: string, role: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    role: string,
+    inviteToken?: string | null
+  ) => {
     try {
       setLoading(true)
       const { data, error } = await supabase.auth.signUp({
@@ -221,6 +227,9 @@ export function useAuth(): AuthReturn {
           data: {
             full_name: fullName,
             role: role,
+            // While sign-up is invite-only the database checks this token
+            // before it will create the account (see enforce_signup_gate).
+            ...(inviteToken ? { invite_token: inviteToken } : {}),
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         }
