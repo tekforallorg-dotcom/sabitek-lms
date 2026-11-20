@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Sabitek database schema snapshot (public schema + storage.objects policies)
 -- =============================================================================
--- GENERATED on 2026-11-20 (after the phase 1 migrations) from the live project by generate_snapshot.sql.
+-- GENERATED on 2026-11-20 (after the notifications fix) from the live project by generate_snapshot.sql.
 -- Do not edit by hand; re-run the generator after schema changes.
 --
 -- Why this exists: most of this schema was created by hand in the SQL editor
@@ -866,7 +866,9 @@ create table public.notifications (
   title text not null,
   body text,
   is_read boolean default false,
-  created_at timestamp with time zone default now()
+  created_at timestamp with time zone default now(),
+  href text,
+  read_at timestamp with time zone
 );
 
 create table public.org_metrics_daily (
@@ -1729,7 +1731,7 @@ alter table public.modules add constraint unique_course_module_order UNIQUE (cou
 
 alter table public.notifications add constraint notifications_pkey PRIMARY KEY (id);
 
-alter table public.notifications add constraint notifications_type_check CHECK ((type = ANY (ARRAY['session_request'::text, 'session_request_accepted'::text, 'session_request_declined'::text, 'offer'::text, 'offer_accepted'::text, 'offer_declined'::text, 'session_scheduled'::text, 'session_reminder'::text, 'message'::text, 'review_prompt'::text])));
+alter table public.notifications add constraint notifications_type_check CHECK ((type = ANY (ARRAY['session_request'::text, 'session_request_accepted'::text, 'session_request_declined'::text, 'offer'::text, 'offer_accepted'::text, 'offer_declined'::text, 'session_scheduled'::text, 'session_reminder'::text, 'message'::text, 'review_prompt'::text, 'badge'::text, 'announcement'::text, 'cohort'::text, 'completion'::text, 'system'::text])));
 
 alter table public.org_metrics_daily add constraint org_metrics_daily_date_key UNIQUE (date);
 
