@@ -39,8 +39,17 @@ vi.mock('@anthropic-ai/sdk', () => {
   return { default: Anthropic }
 })
 
+const inserts = vi.hoisted(() => [] as Array<Record<string, unknown>>)
+
 vi.mock('@/lib/supabase-admin', () => ({
-  supabaseAdmin: { from: () => ({ insert: async () => ({ error: null }) }) },
+  supabaseAdmin: {
+    from: () => ({
+      insert: async (row: Record<string, unknown>) => {
+        inserts.push(row)
+        return { error: null }
+      },
+    }),
+  },
 }))
 
 import { AIError, AI_MODELS, generateText } from '@/lib/ai'
@@ -53,6 +62,7 @@ const message = (overrides: Record<string, unknown> = {}) => ({
 })
 
 beforeEach(() => {
+  inserts.length = 0
   sdk.requests.length = 0
   sdk.next = () => message()
   vi.stubEnv('ANTHROPIC_API_KEY', 'test-anthropic')
@@ -109,6 +119,30 @@ describe('generateText on Claude', () => {
     const error = await generateText({ provider: 'claude', prompt: 'x', maxTokens: 200, attempts: 1 }).catch((e) => e)
     expect(error).toBeInstanceOf(AIError)
     expect(error.kind).toBe('blocked')
+  })
+
+  it('still meters a call that Claude declined', async () => {
+    sdk.next = () => message({ stop_reason: 'refusal', content: [] })
+
+    await generateText({
+      provider: 'claude',
+      prompt: 'x',
+      maxTokens: 200,
+      attempts: 1,
+      userId: 'user-1',
+      feature: 'cover_letter',
+    }).catch(() => null)
+
+    expect(inserts).toEqual([
+      {
+        user_id: 'user-1',
+        feature: 'cover_letter',
+        model: AI_MODELS.claude,
+        input_tokens: 120,
+        cache_read_tokens: 0,
+        output_tokens: 80,
+      },
+    ])
   })
 
   it('marks a rate limit as temporary and a bad request as final', async () => {

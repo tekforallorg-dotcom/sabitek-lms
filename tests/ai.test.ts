@@ -253,6 +253,36 @@ describe('generateText on Gemini', () => {
     expect(error.kind).toBe('blocked')
     expect(calls).toHaveLength(1)
   })
+
+  it('still meters a call that was answered with a safety block', async () => {
+    stubFetch([
+      {
+        json: {
+          candidates: [{ finishReason: 'SAFETY' }],
+          usageMetadata: { promptTokenCount: 70, candidatesTokenCount: 5 },
+        },
+      },
+    ])
+
+    await generateText({
+      provider: 'gemini',
+      prompt: 'x',
+      maxTokens: 50,
+      userId: 'user-1',
+      feature: 'sabiquiz',
+    }).catch(() => null)
+
+    expect(db.inserts).toEqual([
+      {
+        user_id: 'user-1',
+        feature: 'sabiquiz',
+        model: AI_MODELS.gemini,
+        input_tokens: 70,
+        cache_read_tokens: 0,
+        output_tokens: 5,
+      },
+    ])
+  })
 })
 
 describe('usage metering', () => {

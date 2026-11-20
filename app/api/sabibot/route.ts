@@ -796,6 +796,22 @@ export async function POST(request: NextRequest) {
         let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number } | null =
           null
 
+        // The provider was called whether or not the stream finishes, so the
+        // call is metered either way. If the stream breaks before its last
+        // event the token counts are unknown and recorded as zero; the call
+        // still counts towards the daily limit.
+        let metered = false
+        const meter = async () => {
+          if (metered) return
+          metered = true
+          await recordAIUsage({
+            userId: userContext?.userId ?? null,
+            feature: 'sabibot',
+            model,
+            usage: normalizeDeepseekUsage(usage),
+          })
+        }
+
         try {
           while (true) {
             const { done, value } = await reader.read()
@@ -827,12 +843,7 @@ export async function POST(request: NextRequest) {
           controller.close()
 
           // ── Post-stream background work ──
-          await recordAIUsage({
-            userId: userContext?.userId ?? null,
-            feature: 'sabibot',
-            model,
-            usage: normalizeDeepseekUsage(usage),
-          })
+          await meter()
 
           // Seed the Q&A cache for future learners on this lesson
           if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
@@ -875,7 +886,13 @@ export async function POST(request: NextRequest) {
           }
         } catch (error) {
           console.error('Stream processing error:', error)
-          controller.error(error)
+          await meter()
+          // If the reader went away the controller is already closed.
+          try {
+            controller.error(error)
+          } catch {
+            // Nothing left to tell.
+          }
         }
       },
     })

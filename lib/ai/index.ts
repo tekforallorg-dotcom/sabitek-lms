@@ -111,6 +111,10 @@ export async function generateText(input: GenerateTextInput): Promise<GenerateTe
         }
       } catch (error) {
         lastError = error
+        // A declined answer was still answered, and paid for.
+        if (error instanceof AIError && error.billed) {
+          await recordAIUsage({ userId, feature, model: error.billed.model, usage: error.billed.usage })
+        }
         const retryable = error instanceof AIError ? error.retryable : true
         console.error(
           `[ai] ${feature}: ${provider} attempt ${attempt}/${attempts} failed:`,
