@@ -55,8 +55,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ summary: cached.summary })
     }
 
-    // Only a fresh generation counts against the learner's daily limit.
-    const quota = await checkAIQuota(auth.user.id, 'lesson_summary')
+    // Only a fresh generation counts against the caller's daily limit, which
+    // is higher for instructors.
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('role')
+      .eq('id', auth.user.id)
+      .maybeSingle()
+    const quota = await checkAIQuota(auth.user.id, 'lesson_summary', profile?.role)
     if (!quota.ok) {
       return NextResponse.json({ error: quotaMessage(quota) }, { status: 429 })
     }

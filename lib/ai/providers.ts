@@ -48,7 +48,13 @@ export class AIError extends Error {
     public readonly provider: AIProvider,
     public readonly kind: AIErrorKind,
     message: string,
-    public readonly status?: number
+    public readonly status?: number,
+    /**
+     * Set when the provider answered (and so charged for the call) but the
+     * answer cannot be used, for example a safety decline. The call is still
+     * metered from this.
+     */
+    public readonly billed?: { model: string; usage: TokenUsage }
   ) {
     super(message)
     this.name = 'AIError'
@@ -233,11 +239,29 @@ export async function callGemini(req: ProviderRequest): Promise<ProviderResult> 
   const data = await response.json().catch(() => null)
   const candidate = data?.candidates?.[0]
 
+  const meta = data?.usageMetadata ?? {}
+  const prompt: number = meta.promptTokenCount ?? 0
+  const cached: number = Math.min(meta.cachedContentTokenCount ?? 0, prompt)
+  const usage: TokenUsage = {
+    inputTokens: prompt - cached,
+    cacheReadTokens: cached,
+    outputTokens: (meta.candidatesTokenCount ?? 0) + (meta.thoughtsTokenCount ?? 0),
+  }
+
   if (data?.promptFeedback?.blockReason) {
-    throw new AIError('gemini', 'blocked', `Gemini blocked the prompt: ${data.promptFeedback.blockReason}`)
+    throw new AIError(
+      'gemini',
+      'blocked',
+      `Gemini blocked the prompt: ${data.promptFeedback.blockReason}`,
+      undefined,
+      { model, usage }
+    )
   }
   if (candidate?.finishReason === 'SAFETY' || candidate?.finishReason === 'PROHIBITED_CONTENT') {
-    throw new AIError('gemini', 'blocked', `Gemini blocked the answer: ${candidate.finishReason}`)
+    throw new AIError('gemini', 'blocked', `Gemini blocked the answer: ${candidate.finishReason}`, undefined, {
+      model,
+      usage,
+    })
   }
 
   const parts: Array<{ text?: string; thought?: boolean }> = candidate?.content?.parts ?? []
@@ -246,20 +270,7 @@ export async function callGemini(req: ProviderRequest): Promise<ProviderResult> 
     .map((p) => p.text ?? '')
     .join('')
 
-  const meta = data?.usageMetadata ?? {}
-  const prompt: number = meta.promptTokenCount ?? 0
-  const cached: number = Math.min(meta.cachedContentTokenCount ?? 0, prompt)
-
-  return {
-    text,
-    provider: 'gemini',
-    model,
-    usage: {
-      inputTokens: prompt - cached,
-      cacheReadTokens: cached,
-      outputTokens: (meta.candidatesTokenCount ?? 0) + (meta.thoughtsTokenCount ?? 0),
-    },
-  }
+  return { text, provider: 'gemini', model, usage }
 }
 
 // ============================================================================
@@ -309,9 +320,15 @@ export async function callClaude(req: ProviderRequest): Promise<ProviderResult> 
     throw error
   }
 
+  const usage: TokenUsage = {
+    inputTokens: response.usage.input_tokens ?? 0,
+    cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+    outputTokens: response.usage.output_tokens ?? 0,
+  }
+
   // A safety decline is a normal 200 response; check before reading content.
   if (response.stop_reason === 'refusal') {
-    throw new AIError('claude', 'blocked', 'Claude declined the request')
+    throw new AIError('claude', 'blocked', 'Claude declined the request', undefined, { model, usage })
   }
 
   // The answer can be preceded by thinking blocks, so read blocks by type.
@@ -320,16 +337,7 @@ export async function callClaude(req: ProviderRequest): Promise<ProviderResult> 
     .map((block) => block.text)
     .join('')
 
-  return {
-    text,
-    provider: 'claude',
-    model,
-    usage: {
-      inputTokens: response.usage.input_tokens ?? 0,
-      cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
-      outputTokens: response.usage.output_tokens ?? 0,
-    },
-  }
+  return { text, provider: 'claude', model, usage }
 }
 
 export const PROVIDER_CALLS: Record<AIProvider, (req: ProviderRequest) => Promise<ProviderResult>> = {
