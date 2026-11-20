@@ -6,6 +6,7 @@ import { reviewApplicationSchema } from '@/lib/validations/institution-applicati
 import { sendWorkspaceWelcomeEmail, sendApplicationRejectionEmail } from '@/lib/email'
 import crypto from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import type { TablesInsert } from '@/types/supabase'
 
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sabitek.app'
@@ -153,7 +154,7 @@ async function provisionWorkspace(application: {
     .insert({
       name: application.organisation_name,
       slug,
-      type: institutionType,
+      type: institutionType as TablesInsert<'institutions'>['type'],
       status: 'approved',
       created_by: userId,
       contact_email: email,

@@ -703,7 +703,7 @@ export async function POST(request: NextRequest) {
           .eq('id', lessonId)
           .single()
         const allowed =
-          lesson && userContext?.userId
+          lesson && lesson.course_id && userContext?.userId
             ? await canAccessCourseContent(userContext.userId, lesson.course_id)
             : false
         if (lesson && allowed) {

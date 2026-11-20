@@ -68,20 +68,9 @@ export async function POST(request: NextRequest) {
       return ApiErrors.internal('Something went wrong. Please try again.')
     }
 
-    // Audit log (non-blocking)
-    try {
-      await supabaseAdmin.from('audit_logs').insert({
-        actor_user_id: null,
-        action: 'institution_application.submitted',
-        entity_type: 'institution_application',
-        entity_id: application.id,
-        after: {
-          email: input.email.toLowerCase(),
-          organisation_name: input.organisation_name,
-          org_type: input.org_type,
-        },
-      })
-    } catch {}
+    // No audit_logs row here: that table requires an actor, and a public
+    // application is submitted by someone who is not signed in. The
+    // institution_applications row itself is the record.
 
     return apiSuccess({
       submitted: true,

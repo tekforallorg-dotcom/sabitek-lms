@@ -5,6 +5,7 @@ import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STANDARD } from '@/lib/rate-limit'
 import { generateInviteToken } from '@/lib/crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 
 /**
@@ -250,7 +251,7 @@ export async function POST(
         max_uses: input.max_uses ?? null,
         use_count: 0,
         created_by: user.id,
-        metadata: input.metadata || {},
+        metadata: toJson(input.metadata || {}),
       })
       .select('*, creator:users!created_by(id, full_name, email)')
       .single()

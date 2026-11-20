@@ -3,6 +3,8 @@ import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
+import type { TablesUpdate } from '@/types/supabase'
 
 
 /* ── Zod schemas ── */
@@ -158,7 +160,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         const { data: updated, error: updateError } = await supabaseAdmin
           .from('cohort_members')
-          .update(updateData)
+          .update(updateData as TablesUpdate<'cohort_members'>)
           .eq('id', memberId)
           .select(`
             *,
@@ -338,7 +340,7 @@ async function writeAuditLog(
       action,
       entity_type: entityType,
       entity_id: entityId,
-      new_state: newState,
+      after: toJson(newState),
     })
   } catch (err: unknown) {
     console.error('Failed to write audit log:', err)

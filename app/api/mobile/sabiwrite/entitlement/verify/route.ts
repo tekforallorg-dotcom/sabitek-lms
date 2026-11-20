@@ -16,7 +16,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getMobilePrice, type MobileToolType } from '@/lib/sabiwrite/mobile-pricing';
-import { supabaseAdmin } from '@/lib/supabase-admin'
+// Untyped on purpose: this area is scheduled for removal or rebuild (rework phase 3).
+import { supabaseAdminUntyped as supabaseAdmin } from '@/lib/supabase-admin'
 
 
 type PaymentProvider = 'google_play' | 'apple_iap' | 'paystack';

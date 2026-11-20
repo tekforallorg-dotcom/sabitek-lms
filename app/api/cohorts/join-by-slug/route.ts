@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       status: 'active',
       joined_at: new Date().toISOString(),
-      sponsorship: cohort.default_sponsorship ?? null,
+      sponsorship: cohort.default_sponsorship ?? undefined,
     })
     if (insertError) {
       console.error('cohort join insert failed:', insertError)

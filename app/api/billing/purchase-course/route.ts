@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if course is free
-    if (course.is_free || course.price === 0) {
+    if (course.is_free || !course.price) {
       return NextResponse.json(
         { error: 'This course is free. Please enroll directly.' },
         { status: 400 }

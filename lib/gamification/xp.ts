@@ -22,7 +22,7 @@ export async function syncXpForUser(userId: string): Promise<void> {
         .not('completed_at', 'is', null),
       supabaseAdmin
         .from('quiz_attempts')
-        .select('lesson_id, score_percentage, completed_at, created_at')
+        .select('lesson_id, score_percentage, created_at')
         .eq('user_id', userId)
         .eq('passed', true)
         .not('lesson_id', 'is', null),
@@ -36,7 +36,7 @@ export async function syncXpForUser(userId: string): Promise<void> {
         source: 'lesson_complete',
         points: XP_VALUES.lesson_complete,
         ref_id: p.lesson_id,
-        created_at: p.completed_at,
+        created_at: p.completed_at ?? new Date().toISOString(),
       })
     }
 
@@ -44,7 +44,7 @@ export async function syncXpForUser(userId: string): Promise<void> {
     const seenPass = new Set<string>()
     const seenPerfect = new Set<string>()
     for (const a of attemptsRes.data || []) {
-      const at = a.completed_at || a.created_at || new Date().toISOString()
+      const at = a.created_at || new Date().toISOString()
       if (!seenPass.has(a.lesson_id)) {
         seenPass.add(a.lesson_id)
         events.push({

@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
         const result = await sendStreakReminderEmail({
           to: email,
           firstName,
-          streakDays: streak.current_streak,
+          streakDays: streak.current_streak ?? 0,
         })
 
         if (result.success) {

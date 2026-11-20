@@ -8,6 +8,7 @@ import {
   type CoverLetterDocument,
 } from '@/lib/cover-letter'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 
 // ============================================
@@ -214,8 +215,8 @@ export async function POST(request: NextRequest) {
             tone: tone || 'professional',
             length: length || 'standard',
             letter_text: generationResult.letter.letterText,
-            sections: generationResult.letter.sections,
-            insights: generationResult.letter.insights,
+            sections: toJson(generationResult.letter.sections),
+            insights: toJson(generationResult.letter.insights),
             status: 'completed',
             action,
             version: 1,

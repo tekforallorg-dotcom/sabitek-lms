@@ -3,7 +3,8 @@ import { routeModel, getModelConfig } from '@/lib/sabiwrite/model-router'
 import { getPricingRule, calculateCostEstimate, estimateTokens } from '@/lib/sabiwrite/pricing'
 import { debitWallet, getOrCreateWallet } from '@/lib/wallet'
 import { ToolType, ToneType, PlanTier } from '@/lib/sabiwrite/types'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+// Untyped on purpose: this area is scheduled for removal or rebuild (rework phase 3).
+import { supabaseAdminUntyped as supabaseAdmin } from '@/lib/supabase-admin'
 
 
 const SYSTEM_PROMPTS: Record<string, (tone: ToneType, action: string) => string> = {

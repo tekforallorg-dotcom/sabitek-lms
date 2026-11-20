@@ -2982,8 +2982,10 @@ export type Database = {
           created_at: string | null
           entity_id: string | null
           entity_type: string | null
+          href: string | null
           id: string
           is_read: boolean | null
+          read_at: string | null
           title: string
           type: string
           user_id: string
@@ -2993,8 +2995,10 @@ export type Database = {
           created_at?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          href?: string | null
           id?: string
           is_read?: boolean | null
+          read_at?: string | null
           title: string
           type: string
           user_id: string
@@ -3004,8 +3008,10 @@ export type Database = {
           created_at?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          href?: string | null
           id?: string
           is_read?: boolean | null
+          read_at?: string | null
           title?: string
           type?: string
           user_id?: string

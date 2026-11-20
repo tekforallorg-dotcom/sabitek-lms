@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       action: 'cohort.created',
       entity_type: 'cohort',
       entity_id: cohort.id,
-      new_state: cohort,
+      after: cohort,
     })
 
     return apiSuccess(cohort, 201)

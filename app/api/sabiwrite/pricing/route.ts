@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPricingRule, calculateCostEstimate, estimateTokens, formatNaira, getWalletBalance } from '@/lib/sabiwrite/pricing'
 import { routeModel } from '@/lib/sabiwrite/model-router'
 import { ToolType, PlanTier, ToneType } from '@/lib/sabiwrite/types'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+// Untyped on purpose: this area is scheduled for removal or rebuild (rework phase 3).
+import { supabaseAdminUntyped as supabaseAdmin } from '@/lib/supabase-admin'
 
 
 export async function POST(request: NextRequest) {

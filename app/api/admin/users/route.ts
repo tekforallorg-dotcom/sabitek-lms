@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { supabase } from '@/lib/supabase'
+import type { Tables } from '@/types/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,11 +55,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (role) {
-      query = query.eq('role', role)
+      query = query.eq('role', role as Tables<'users'>['role'])
     }
 
     if (status) {
-      query = query.eq('status', status)
+      query = query.eq('status', status as Tables<'users'>['status'])
     }
 
     const { data: users, error, count } = await query

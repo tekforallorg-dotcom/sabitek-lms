@@ -11,6 +11,7 @@ import {
   type CVFailure,
 } from '@/lib/cv'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 
 // CV Section structure for database storage (matches existing schema)
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (profile.profile_completeness < 30) {
+    if ((profile.profile_completeness ?? 0) < 30) {
       return NextResponse.json({ 
         error: 'Please add more information to your profile (at least 30% complete)',
         profileCompleteness: profile.profile_completeness,
@@ -262,12 +263,12 @@ async function handleBuildCV(
         .from('cv_documents')
         .insert({
           user_id: userId,
-          profile_id: profile.id,
+          profile_id: profile.id as string,
           target_role: targetRole,
           level,
           region,
           format,
-          sections,
+          sections: toJson(sections),
           job_description_keywords: keywords,
           title: `${targetRole} CV`,
           status: 'complete',
@@ -395,12 +396,12 @@ async function handleTailorCV(
         .from('cv_documents')
         .insert({
           user_id: userId,
-          profile_id: profile.id,
+          profile_id: profile.id as string,
           target_role: targetRole,
           level,
           region,
           format,
-          sections,
+          sections: toJson(sections),
           job_description_text: jobDescription,
           job_description_keywords: keywords,
           title: `${targetRole} CV (Tailored)`,

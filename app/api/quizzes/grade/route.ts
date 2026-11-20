@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
       .select('id, course_id')
       .eq('id', lessonId)
       .single()
-    if (!lesson) {
+    if (!lesson || !lesson.course_id) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
-    if (!(await canAccessCourseContent(userId, lesson.course_id))) {
+    const courseId = lesson.course_id
+    if (!(await canAccessCourseContent(userId, courseId))) {
       return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
     }
 
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
     const { error: insertError } = await supabaseAdmin.from('quiz_attempts').insert({
       user_id: userId,
       lesson_id: lessonId,
-      course_id: lesson.course_id,
+      course_id: courseId,
       score_percentage: score,
       passed,
       answers: results,

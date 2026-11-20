@@ -206,8 +206,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         action: 'program.updated',
         entity_type: 'program',
         entity_id: program.id,
-        old_state: existingProgram,
-        new_state: program,
+        before: existingProgram,
+        after: program,
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)
@@ -287,7 +287,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         action: 'program.archived',
         entity_type: 'program',
         entity_id: id,
-        old_state: existingProgram,
+        before: existingProgram,
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)

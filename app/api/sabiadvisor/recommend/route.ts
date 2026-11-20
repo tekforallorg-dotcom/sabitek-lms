@@ -3,6 +3,7 @@ import { getCareerRecommendations } from '@/lib/gemini-advisor'
 import { executeAdvisorOperation } from '@/lib/advisor/pricing'
 import { requireUser } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 const supabase = supabaseAdmin
 
@@ -70,12 +71,12 @@ export async function POST(request: NextRequest) {
           .insert({
             user_id: userId,
             survey_id: survey.id,
-            top_tracks: all_tracks,
-            primary_tracks: recommendations.primary_tracks,
-            alternative_tracks: recommendations.alternative_tracks,
+            top_tracks: toJson(all_tracks),
+            primary_tracks: toJson(recommendations.primary_tracks),
+            alternative_tracks: toJson(recommendations.alternative_tracks),
             confidence: recommendations.overall_confidence,
-            next_steps: recommendations.next_steps,
-            roadmap_6m: recommendations.roadmap_6m,
+            next_steps: toJson(recommendations.next_steps),
+            roadmap_6m: toJson(recommendations.roadmap_6m),
           })
           .select()
           .single()

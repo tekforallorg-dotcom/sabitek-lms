@@ -124,8 +124,8 @@ export async function POST(request: NextRequest) {
         course_id: courseId,
         amount: course.price,
         currency: course.currency || 'NGN',
-        payment_method: 'wallet',
-        transaction_reference: txRef,
+        provider: 'wallet',
+        provider_tx_ref: txRef,
         status: 'successful',
         purchased_at: new Date().toISOString()
       })

@@ -157,6 +157,7 @@ export async function GET(request: NextRequest) {
       quizLessonIds = (quizzesRes.data || [])
         .filter((q) => parseQuizQuestions(q.questions).length > 0)
         .map((q) => q.lesson_id)
+        .filter((id): id is string => !!id)
       passedLessonIds = (attemptsRes.data || [])
         .filter((a) => a.passed === true)
         .map((a) => a.lesson_id)

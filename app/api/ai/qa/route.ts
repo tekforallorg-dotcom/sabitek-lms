@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
+    if (!lesson.course_id || !(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
       return NextResponse.json({ error: 'You do not have access to this lesson' }, { status: 403 })
     }
 
@@ -94,16 +94,6 @@ export async function POST(req: NextRequest) {
     })
 
     const answer = completion.choices[0].message.content
-
-    // Store Q&A pair for future reference
-    await supabaseAdmin
-      .from('lesson_qa_history')
-      .insert({
-        lesson_id: lessonId,
-        question: question,
-        answer: answer,
-        created_at: new Date().toISOString()
-      })
 
     return NextResponse.json({ answer })
   } catch (error) {

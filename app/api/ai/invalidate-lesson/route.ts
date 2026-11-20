@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     await Promise.all([
       supabaseAdmin.from('qa_cache').delete().eq('lesson_id', lessonId),
-      supabaseAdmin.from('lesson_summaries').delete().eq('lesson_id', lessonId),
+      supabaseAdmin.from('lesson_ai_artifacts').delete().eq('lesson_id', lessonId),
     ])
     return NextResponse.json({ invalidated: true })
   } catch (error) {

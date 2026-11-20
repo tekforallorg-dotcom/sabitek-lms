@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { supabase } from '@/lib/supabase'
+import type { Tables } from '@/types/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -71,11 +72,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      query = query.eq('status', status)
+      query = query.eq('status', status as NonNullable<Tables<'courses'>['status']>)
     }
 
     if (difficulty) {
-      query = query.eq('difficulty_level', difficulty)
+      query = query.eq('difficulty_level', difficulty as NonNullable<Tables<'courses'>['difficulty_level']>)
     }
 
     const { data: courses, error, count } = await query

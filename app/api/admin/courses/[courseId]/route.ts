@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { supabase } from '@/lib/supabase'
 import { createAuditLog } from '@/lib/audit-logger'
+import type { TablesUpdate } from '@/types/supabase'
 
 export async function PATCH(
   request: NextRequest,
@@ -81,7 +82,7 @@ export async function PATCH(
     // Update course
     const { error: updateError } = await supabaseAdmin
       .from('courses')
-      .update(updates)
+      .update(updates as TablesUpdate<'courses'>)
       .eq('id', courseId)
 
     if (updateError) {
