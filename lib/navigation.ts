@@ -31,7 +31,7 @@ import {
  * at a page that exists.
  */
 
-export type Persona = 'learner' | 'instructor' | 'institution' | 'admin'
+export type Persona = 'learner' | 'instructor' | 'institution' | 'viewer' | 'admin'
 
 export interface NavItem {
   label: string
@@ -56,6 +56,8 @@ export function resolvePersona(facts: {
 }): Persona {
   if (facts.homeRoute === '/admin' || facts.isSuperAdmin) return 'admin'
   if (facts.homeRoute === '/institution/dashboard') return 'institution'
+  // An institution member who may only read reports.
+  if (facts.homeRoute === '/institution/reports') return 'viewer'
   if (facts.role === 'instructor' || facts.homeRoute === '/instructor') return 'instructor'
   return 'learner'
 }
@@ -64,6 +66,7 @@ export const HOME_ROUTE: Record<Persona, string> = {
   learner: '/dashboard',
   instructor: '/instructor',
   institution: '/institution/dashboard',
+  viewer: '/institution/reports',
   admin: '/admin',
 }
 
@@ -131,18 +134,23 @@ const NAV: Record<Persona, NavGroup[]> = {
         { label: 'Reports', href: '/institution/reports', icon: BarChart3, keywords: 'progress analytics export' },
       ],
     },
-    {
-      heading: 'Build',
-      items: [
-        { label: 'Your courses', href: '/instructor', icon: PenLine, keywords: 'create author teach' },
-        COURSES,
-      ],
-    },
+    // No link to /instructor: an institution admin whose own role is learner
+    // is turned away from it (lib/route-access.ts).
+    { heading: 'Learn', items: [COURSES] },
     CONNECT,
     {
       heading: 'Organisation',
       items: [{ label: 'Settings', href: '/institution/settings', icon: Settings, keywords: 'branding team members' }],
     },
+  ],
+  viewer: [
+    {
+      items: [
+        { label: 'Reports', href: '/institution/reports', icon: BarChart3, exact: true, keywords: 'progress analytics export' },
+      ],
+    },
+    { heading: 'Learn', items: [COURSES] },
+    CONNECT,
   ],
   admin: [
     { items: [{ label: 'Admin panel', href: '/admin', icon: ShieldCheck, exact: true, keywords: 'users institutions billing' }] },
@@ -188,6 +196,7 @@ const SHORTCUTS: Record<Persona, NavItem[]> = {
     { label: 'Ask SabiBot a question', href: '/sabibot/chat', icon: Sparkles, keywords: 'chat ai' },
     { label: 'Read messages', href: '/community/inbox', icon: MessageSquare, keywords: 'community inbox chat' },
   ],
+  viewer: [],
   institution: [
     { label: 'Create a cohort', href: '/institution/cohorts/create', icon: PlusCircle, keywords: 'new class group' },
     { label: 'Read messages', href: '/community/inbox', icon: MessageSquare, keywords: 'community inbox chat' },
@@ -213,7 +222,7 @@ export function commandsFor(persona: Persona): Command[] {
 
 /** Every link in the map, for the test that checks each one exists. */
 export function allNavHrefs(): string[] {
-  const personas: Persona[] = ['learner', 'instructor', 'institution', 'admin']
+  const personas: Persona[] = ['learner', 'instructor', 'institution', 'viewer', 'admin']
   const hrefs = personas.flatMap((persona) => commandsFor(persona).map((command) => command.href))
   return [...new Set(hrefs)].sort()
 }
@@ -230,8 +239,16 @@ const SIGNED_IN_ONLY = ['/dashboard', '/instructor', '/institution', '/courses',
 /** Areas with a public landing page for visitors and the shell once signed in. */
 const SIGNED_IN_OR_PUBLIC = ['/sabiquiz', '/sabiadvisor', '/sabibot', '/community', '/cohorts', '/billing']
 
-/** Screens that need the whole window: a lesson, or a quiz in progress. */
-const FOCUS_ROUTES = [/^\/courses\/[^/]+\/lessons\//, /^\/sabiquiz\/quiz\//]
+/**
+ * Screens that need the whole window: a lesson, a quiz in progress, and the
+ * SabiAdvisor document builders, which have a sidebar and a preview of their
+ * own.
+ */
+const FOCUS_ROUTES = [
+  /^\/courses\/[^/]+\/lessons\//,
+  /^\/sabiquiz\/quiz\//,
+  /^\/sabiadvisor\/(?:cv|cover-letter|profile)(?:\/|$)/,
+]
 
 const under = (prefixes: string[], pathname: string) =>
   prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))

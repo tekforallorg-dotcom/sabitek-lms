@@ -7,7 +7,7 @@ import SabiLoader from '@/components/ui/SabiLoader'
 import GamificationStrip from '@/components/dashboard/GamificationStrip'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard'
-import ResumeCard from '@/components/dashboard/ResumeCard'
+import ResumeCard, { ContinueCourseCard } from '@/components/dashboard/ResumeCard'
 import LearnerHome, {
   type Certificate,
   type CohortSummary,
@@ -70,13 +70,31 @@ export default function DashboardPage() {
     )
   }
 
+  // Used when the next lesson is not known: a started course, else any
+  // unfinished one.
+  const continueCourse =
+    enrolledCourses.find((c) => c.progress_percentage > 0 && c.progress_percentage < 100) ||
+    enrolledCourses.find((c) => c.progress_percentage < 100)
+
   return (
     <LearnerHome
       firstName={userProfile?.full_name?.split(' ')[0]}
       enrolledCourses={enrolledCourses}
       certificates={certificates}
       cohorts={cohorts}
-      resume={<ResumeCard />}
+      resume={
+        <ResumeCard
+          fallback={
+            continueCourse && (
+              <ContinueCourseCard
+                title={continueCourse.course.title}
+                href={`/courses/${continueCourse.course.slug}`}
+                progress={continueCourse.progress_percentage || 0}
+              />
+            )
+          }
+        />
+      }
       onboarding={<OnboardingChecklist persona="learner" />}
       achievements={
         <div className="space-y-4">

@@ -31,7 +31,7 @@ function pageRoutes(dir: string = APP, out: string[] = []): string[] {
   return out
 }
 
-const PERSONAS: Persona[] = ['learner', 'instructor', 'institution', 'admin']
+const PERSONAS: Persona[] = ['learner', 'instructor', 'institution', 'viewer', 'admin']
 
 describe('navigation map', () => {
   it('only links to pages that exist', () => {
@@ -62,10 +62,36 @@ describe('navigation map', () => {
   })
 })
 
+describe('who can open what', () => {
+  const hrefsFor = (persona: Persona) => commandsFor(persona).map((command) => command.href)
+  const under = (prefix: string) => (href: string) => href === prefix || href.startsWith(`${prefix}/`)
+
+  it('never sends an account into an area the server would turn it away from', () => {
+    // lib/route-access.ts: /instructor needs the instructor role, /institution
+    // needs a membership, /admin needs a super admin.
+    expect(hrefsFor('learner').filter((h) => ['/instructor', '/institution', '/admin'].some((p) => under(p)(h)))).toEqual([])
+    expect(hrefsFor('instructor').filter((h) => ['/institution', '/admin'].some((p) => under(p)(h)))).toEqual([])
+    expect(hrefsFor('institution').filter((h) => ['/instructor', '/admin'].some((p) => under(p)(h)))).toEqual([])
+    expect(hrefsFor('viewer').filter((h) => ['/instructor', '/admin'].some((p) => under(p)(h)))).toEqual([])
+  })
+
+  it('never offers /dashboard to an account whose home is elsewhere', () => {
+    // The learner guard sends those accounts straight back to their own home.
+    for (const persona of PERSONAS.filter((p) => p !== 'learner')) {
+      expect(hrefsFor(persona).filter(under('/dashboard'))).toEqual([])
+    }
+  })
+
+  it('shows a reports-only member the reports page and nothing else of the institution', () => {
+    expect(hrefsFor('viewer').filter(under('/institution'))).toEqual(['/institution/reports'])
+  })
+})
+
 describe('resolvePersona', () => {
   it('trusts the server-resolved home over the role column', () => {
     expect(resolvePersona({ role: 'learner', homeRoute: '/institution/dashboard' })).toBe('institution')
     expect(resolvePersona({ role: 'instructor', homeRoute: '/institution/dashboard' })).toBe('institution')
+    expect(resolvePersona({ role: 'learner', homeRoute: '/institution/reports' })).toBe('viewer')
     expect(resolvePersona({ role: 'learner', homeRoute: '/admin' })).toBe('admin')
     expect(resolvePersona({ role: 'learner', homeRoute: '/dashboard', isSuperAdmin: true })).toBe('admin')
   })
@@ -106,8 +132,15 @@ describe('shellModeFor', () => {
     expect(shellModeFor('/sabiquiz/quiz/start/abc')).toBe('focus')
   })
 
+  it('leaves the document builders alone, which have their own sidebar', () => {
+    for (const path of ['/sabiadvisor/cv', '/sabiadvisor/cover-letter', '/sabiadvisor/profile']) {
+      expect(shellModeFor(path)).toBe('focus')
+    }
+    expect(shellModeFor('/sabiadvisor')).toBe('app-if-signed-in')
+  })
+
   it('waits for sign-in state where visitors get a public page', () => {
-    for (const path of ['/sabiquiz', '/sabiadvisor/cv', '/sabibot/chat', '/community/inbox']) {
+    for (const path of ['/sabiquiz', '/sabiadvisor/survey', '/sabibot/chat', '/community/inbox']) {
       expect(shellModeFor(path)).toBe('app-if-signed-in')
     }
   })

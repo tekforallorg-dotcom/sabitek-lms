@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { LogOut, Menu, Search, Sparkles, X } from 'lucide-react'
+import Header from '@/components/layout/header'
+import Footer from '@/components/layout/footer'
 import NotificationBell from '@/components/layout/NotificationBell'
 import CommandPalette, { type PaletteCommand } from '@/components/shell/CommandPalette'
 import {
@@ -113,14 +115,15 @@ function AccountMenu({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
     }
   }, [open])
 
+  // A plain show/hide panel of links, reached with Tab like any others.
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Account menu"
+        aria-controls="account-menu"
+        aria-label="Account"
         className="flex items-center rounded-full p-1 transition-colors hover:bg-gray-100"
       >
         <Avatar user={user} size="sm" />
@@ -128,8 +131,8 @@ function AccountMenu({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
 
       {open && (
         <div
-          role="menu"
-          className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+          id="account-menu"
+          className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
         >
           <div className="flex items-center gap-3 border-b border-gray-200 p-4">
             <Avatar user={user} size="md" />
@@ -145,7 +148,6 @@ function AccountMenu({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
                 <Link
                   key={item.href}
                   href={item.href}
-                  role="menuitem"
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 >
@@ -156,7 +158,6 @@ function AccountMenu({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
             })}
             <button
               type="button"
-              role="menuitem"
               onClick={() => {
                 setOpen(false)
                 onSignOut()
@@ -173,31 +174,116 @@ function AccountMenu({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
   )
 }
 
+/** The slide-in menu on small screens. Holds focus while open and gives it back after. */
+function Drawer({
+  home,
+  roleLine,
+  groups,
+  pathname,
+  onClose,
+}: {
+  home: string
+  roleLine: React.ReactNode
+  groups: NavGroup[]
+  pathname: string | null
+  onClose: () => void
+}) {
+  const panel = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab' || !panel.current) return
+      const stops = panel.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')
+      if (stops.length === 0) return
+      const first = stops[0]
+      const last = stops[stops.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = overflow
+      document.removeEventListener('keydown', onKey)
+      previouslyFocused?.focus?.()
+    }
+  }, [onClose])
+
+  return (
+    // Above the top bar and the chat button (both z-50), below dialogs.
+    <div className="fixed inset-0 z-[55] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+      <div className="absolute inset-0 bg-gray-900/40" onClick={onClose} aria-hidden="true" />
+      <div ref={panel} className="relative flex h-full w-72 max-w-[85%] flex-col border-r border-gray-200 bg-white">
+        <div className="flex h-14 flex-shrink-0 items-center justify-between pl-6 pr-3">
+          <Wordmark href={home} />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            autoFocus
+            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {roleLine}
+        <NavList groups={groups} pathname={pathname} onNavigate={onClose} />
+      </div>
+    </div>
+  )
+}
+
 /**
- * The frame around every signed-in page: grouped navigation in a sidebar
- * (a drawer on phones), one top bar, and the command palette.
+ * The frame around a page.
+ *
+ * `frame="app"` is the signed-in frame: grouped navigation in a sidebar (a
+ * drawer on phones), one top bar, and the command palette. `frame="site"` is
+ * the public header and footer.
+ *
+ * Both are drawn by this one component, with the page at the same place in
+ * the tree, so switching between them (when sign-in state arrives, or on
+ * sign-out) does not unmount the page and run its effects twice.
  *
  * It takes everything it shows as props and fetches nothing, so it can be
  * drawn with sample data. components/layout/ConditionalLayout.tsx feeds it
  * the real account.
  */
 export default function AppShell({
+  frame = 'app',
   persona,
   user,
   pathname,
   onSignOut,
   navReady = true,
+  after,
   children,
 }: {
+  frame?: 'app' | 'site'
   persona: Persona
   user: ShellUser
   pathname: string | null
   onSignOut: () => void
   /** False while the account's role is still being worked out. */
   navReady?: boolean
+  /** Rendered after the page, outside its landmark: the chat button, toasts. */
+  after?: React.ReactNode
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const app = frame === 'app'
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcut, setShortcut] = useState('Ctrl K')
@@ -226,6 +312,7 @@ export default function AppShell({
   }, [])
 
   useEffect(() => {
+    if (!app) return
     const onKey = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
@@ -234,112 +321,99 @@ export default function AppShell({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [app])
 
-  // Moving to another page closes the drawer.
+  // Moving to another page, or leaving the app frame, closes what was open.
   useEffect(() => {
     setDrawerOpen(false)
-  }, [pathname])
+    if (!app) setPaletteOpen(false)
+  }, [pathname, app])
 
-  useEffect(() => {
-    if (!drawerOpen) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setDrawerOpen(false)
-    }
-    const { overflow } = document.body.style
-    document.body.style.overflow = 'hidden'
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = overflow
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [drawerOpen])
-
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
   const closePalette = useCallback(() => setPaletteOpen(false), [])
 
   const roleLine = user.roleLabel ? (
     <p className="truncate px-6 pb-4 text-xs capitalize text-gray-500">{user.roleLabel}</p>
   ) : null
 
+  // The page lives at root > column > main in both frames. Keep that path
+  // (element types and order) identical, or React will remount the page.
   return (
-    <div className="min-h-screen bg-gray-50">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
-      >
-        Skip to content
-      </a>
+    <div className={app ? 'min-h-screen bg-gray-50' : 'flex min-h-screen flex-col'}>
+      {app && (
+        <>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+          >
+            Skip to content
+          </a>
 
-      {/* Sidebar, large screens */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-gray-200 bg-white lg:flex">
-        <div className="flex h-14 flex-shrink-0 items-center px-6">
-          <Wordmark href={home} />
-        </div>
-        {roleLine}
-        <NavList groups={groups} pathname={pathname} />
-      </aside>
-
-      {/* Drawer, small screens */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
-          <div className="absolute inset-0 bg-gray-900/40" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-          <div className="relative flex h-full w-72 max-w-[85%] flex-col border-r border-gray-200 bg-white">
-            <div className="flex h-14 flex-shrink-0 items-center justify-between pl-6 pr-3">
+          {/* Sidebar, large screens */}
+          <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-gray-200 bg-white lg:flex">
+            <div className="flex h-14 flex-shrink-0 items-center px-6">
               <Wordmark href={home} />
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close menu"
-                autoFocus
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
             {roleLine}
-            <NavList groups={groups} pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
-          </div>
-        </div>
+            <NavList groups={groups} pathname={pathname} />
+          </aside>
+
+          {drawerOpen && (
+            <Drawer home={home} roleLine={roleLine} groups={groups} pathname={pathname} onClose={closeDrawer} />
+          )}
+        </>
       )}
 
-      <div className="lg:pl-60">
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-gray-200 bg-white px-3 sm:px-6">
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="lg:hidden">
-            <Wordmark href={home} />
-          </div>
+      <div className={app ? 'lg:pl-60' : 'flex flex-grow flex-col'}>
+        {app ? (
+          // z-50, like the public header it replaces: pages have sticky bars
+          // of their own at z-40 that must slide under it, not over it.
+          <header className="sticky top-0 z-50 flex h-14 items-center gap-2 border-b border-gray-200 bg-white px-3 sm:px-6">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open menu"
+              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="lg:hidden">
+              <Wordmark href={home} />
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            aria-label="Search pages and actions"
-            aria-keyshortcuts="Control+K Meta+K"
-            className="ml-auto flex h-9 items-center gap-2 rounded-lg px-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:ml-0 sm:w-80 sm:border sm:border-gray-200 sm:bg-gray-50 sm:px-3 sm:hover:border-gray-300 sm:hover:bg-white"
-          >
-            <Search className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
-            <span className="hidden flex-1 text-left sm:inline">Search pages and actions</span>
-            <kbd className="hidden rounded-md border border-gray-200 bg-white px-2 py-1 font-sans text-xs text-gray-500 sm:inline">
-              {shortcut}
-            </kbd>
-          </button>
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              aria-label="Search pages and actions"
+              aria-keyshortcuts="Control+K Meta+K"
+              className="ml-auto flex h-9 items-center gap-2 rounded-lg px-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:ml-0 sm:w-80 sm:border sm:border-gray-200 sm:bg-gray-50 sm:px-3 sm:hover:border-gray-300 sm:hover:bg-white"
+            >
+              <Search className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
+              <span className="hidden flex-1 text-left sm:inline">Search pages and actions</span>
+              <kbd className="hidden rounded-md border border-gray-200 bg-white px-2 py-1 font-sans text-xs text-gray-500 sm:inline">
+                {shortcut}
+              </kbd>
+            </button>
 
-          <div className="flex items-center gap-1 sm:ml-auto">
-            <NotificationBell />
-            <AccountMenu user={user} onSignOut={onSignOut} />
-          </div>
-        </header>
+            <div className="flex items-center gap-1 sm:ml-auto">
+              <NotificationBell />
+              <AccountMenu user={user} onSignOut={onSignOut} />
+            </div>
+          </header>
+        ) : (
+          <Header />
+        )}
 
-        <main id="main">{children}</main>
+        <main id="main" className={app ? undefined : 'flex-grow'}>
+          {children}
+        </main>
+
+        {!app && <Footer />}
       </div>
 
-      <CommandPalette open={paletteOpen} onClose={closePalette} commands={commands} />
+      {after}
+
+      {app && <CommandPalette open={paletteOpen} onClose={closePalette} commands={commands} />}
     </div>
   )
 }

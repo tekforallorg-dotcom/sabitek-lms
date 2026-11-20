@@ -104,10 +104,17 @@ export default function CommandPalette({
     }
   }
 
-  let lastGroup = ''
+  // Results in their groups, keeping each command's place in `results` so
+  // the arrow keys and the highlight share one index.
+  const groups: Array<{ name: string; items: Array<{ command: PaletteCommand; index: number }> }> = []
+  results.forEach((command, index) => {
+    const last = groups[groups.length - 1]
+    if (last && last.name === command.group) last.items.push({ command, index })
+    else groups.push({ name: command.group, items: [{ command, index }] })
+  })
 
   return (
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Search pages and actions">
+    <div className="fixed inset-0 z-[110]" role="dialog" aria-modal="true" aria-label="Search pages and actions">
       <div className="absolute inset-0 bg-gray-900/40" onClick={onClose} aria-hidden="true" />
 
       <div className="relative mx-auto mt-16 w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:mt-24">
@@ -128,8 +135,10 @@ export default function CommandPalette({
             autoComplete="off"
             spellCheck={false}
           />
+          {/* For the mouse and touch. The keyboard has the Esc key itself. */}
           <button
             type="button"
+            tabIndex={-1}
             onClick={onClose}
             className="flex-shrink-0 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
           >
@@ -143,35 +152,37 @@ export default function CommandPalette({
               Nothing matches &ldquo;{query}&rdquo;. Try a page name, like &ldquo;courses&rdquo;.
             </p>
           ) : (
-            results.map((command, index) => {
-              const Icon = command.icon
-              const selected = index === active
-              const heading = command.group !== lastGroup ? command.group : null
-              lastGroup = command.group
-              return (
-                <div key={command.id}>
-                  {heading && (
-                    <p className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-                      {heading}
-                    </p>
-                  )}
-                  <div
-                    id={`${listId}-${command.id}`}
-                    role="option"
-                    aria-selected={selected}
-                    onMouseMove={() => setActive(index)}
-                    onClick={() => choose(command)}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm ${
-                      selected ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                    }`}
-                  >
-                    <Icon className={`h-4 w-4 flex-shrink-0 ${selected ? 'text-red-600' : 'text-gray-400'}`} />
-                    <span className="flex-1 truncate">{command.label}</span>
-                    {selected && <CornerDownLeft className="h-4 w-4 text-gray-400" aria-hidden="true" />}
-                  </div>
-                </div>
-              )
-            })
+            groups.map((group) => (
+              <div key={group.name} role="group" aria-label={group.name}>
+                <p
+                  className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wider text-gray-500"
+                  aria-hidden="true"
+                >
+                  {group.name}
+                </p>
+                {group.items.map(({ command, index }) => {
+                  const Icon = command.icon
+                  const selected = index === active
+                  return (
+                    <div
+                      key={command.id}
+                      id={`${listId}-${command.id}`}
+                      role="option"
+                      aria-selected={selected}
+                      onMouseMove={() => setActive(index)}
+                      onClick={() => choose(command)}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+                        selected ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                      }`}
+                    >
+                      <Icon className={`h-4 w-4 flex-shrink-0 ${selected ? 'text-red-600' : 'text-gray-400'}`} />
+                      <span className="flex-1 truncate">{command.label}</span>
+                      {selected && <CornerDownLeft className="h-4 w-4 text-gray-400" aria-hidden="true" />}
+                    </div>
+                  )
+                })}
+              </div>
+            ))
           )}
         </div>
       </div>

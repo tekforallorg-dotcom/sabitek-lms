@@ -50,6 +50,30 @@ export function ResumeCardView({ resume }: { resume: Resume }) {
 }
 
 /**
+ * The same card for when the next lesson is not known: it opens the course.
+ */
+export function ContinueCourseCard({ title, href, progress }: { title: string; href: string; progress: number }) {
+  return (
+    <div className={`${PANEL} p-4 sm:p-6`}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">Up next</p>
+          <p className="mt-1 text-base font-medium leading-6 text-gray-900 line-clamp-2">{title}</p>
+        </div>
+        <Link href={href} className={`${buttonVariants({ size: 'lg' })} group w-full flex-shrink-0 sm:w-auto`}>
+          {progress > 0 ? 'Continue course' : 'Start course'}
+          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+        </Link>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <ProgressBar value={progress} label={`${title} progress`} />
+        <span className="flex-shrink-0 text-xs tabular-nums leading-4 text-gray-500">{progress}% done</span>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Fetches the learner's next incomplete lesson from GET /api/learner/resume
  * and shows it. Renders `fallback` when there is no session, the request
  * fails, or there is nothing to resume.
