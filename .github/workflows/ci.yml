@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   verify:
-    name: Type-check and build
+    name: Type-check, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,6 +32,9 @@ jobs:
 
       - name: Type-check
         run: npx tsc --noEmit -p .
+
+      - name: Unit tests
+        run: npm test
 
       # The build only needs these variables to exist; no step here talks to
       # Supabase, Paystack or an AI provider. Real values live in Vercel.

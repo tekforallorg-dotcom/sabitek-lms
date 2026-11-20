@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import {
+  AREA_DENIED_REDIRECT,
+  allowWhenFactsUnavailable,
+  decideAreaAccess,
+  getProtectedArea,
+} from '@/lib/route-access'
+import { loadAreaFacts } from '@/lib/route-access.server'
+import {
   rateLimit,
   RATE_LIMIT_STRICT,
   RATE_LIMIT_AI,
@@ -161,6 +168,28 @@ export async function middleware(request: NextRequest) {
       loginUrl.pathname = '/auth/login'
       loginUrl.search = ''
       return NextResponse.redirect(loginUrl)
+    }
+
+    // ── Role-restricted areas: decided here, on the server ──
+    // /admin, /instructor and /institution used to be gated only by client
+    // components, so the page was served to anyone signed in and then
+    // bounced in the browser. The rules live in lib/route-access.ts.
+    const area = getProtectedArea(pathname)
+    if (area) {
+      const facts = await loadAreaFacts(user.id)
+      const allowed = facts
+        ? decideAreaAccess(area, pathname, facts)
+        : allowWhenFactsUnavailable(area)
+
+      if (!allowed) {
+        const deniedUrl = request.nextUrl.clone()
+        deniedUrl.pathname = AREA_DENIED_REDIRECT
+        deniedUrl.search = ''
+        const redirect = NextResponse.redirect(deniedUrl)
+        // Keep any session cookies refreshed during this request.
+        response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+        return redirect
+      }
     }
   }
 
