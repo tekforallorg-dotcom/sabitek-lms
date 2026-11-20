@@ -482,7 +482,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
   if (loading || authLoading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <SabiLoader text="Loading certificate..." size="lg" />
     </div>
   )
@@ -490,13 +490,13 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
   if (!certificate) {
     return (
-      <div className="min-h-screen bg-[#fffcfb] p-4">
+      <div className="min-h-screen bg-gray-50 p-4">
         <Link href="/certificates" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
         <div className="text-center py-20">
-          <Award className="w-16 h-16 text-rose-200 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">Certificate not found</h2>
+          <Award className="w-16 h-16 text-red-200 mx-auto mb-4" />
+          <h2 className="text-xl font-medium tracking-tight text-gray-900 mb-2">Certificate not found</h2>
           <Link href="/certificates" className="text-red-600 hover:underline">Back to certificates</Link>
         </div>
       </div>
@@ -507,53 +507,42 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
     <>
       <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Allura&display=swap" rel="stylesheet" />
 
-      <div className="min-h-screen bg-[#fffcfb] relative">
+      <div className="min-h-screen bg-gray-50 relative">
         {/* Backdrop washes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[32rem] h-[24rem] bg-rose-100/70 rounded-full blur-[100px]" />
-          <div
-            className="absolute inset-0 opacity-40"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-              backgroundSize: '22px 22px',
-              maskImage: 'radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent)',
-              WebkitMaskImage: 'radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent)'
-            }}
-          />
         </div>
 
         {/* Header */}
-        <div className="bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-20 no-print">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-20 no-print">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <Link href="/certificates" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors">
+              <Link href="/certificates" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Certificates</span>
               </Link>
-              <ChevronRight className="w-4 h-4 text-rose-200" />
+              <ChevronRight className="w-4 h-4 text-red-200" />
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_6px_12px_-4px_rgba(225,29,72,0.5)]">
+                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
                   <Award className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="font-semibold text-gray-900 text-xs sm:text-sm truncate max-w-[150px]">
+                <span className="font-medium text-gray-900 text-xs sm:text-sm truncate max-w-[150px]">
                   {certificate.certificate_number}
                 </span>
               </div>
             </div>
 
             <div className="hidden sm:flex items-center gap-2">
-              <button onClick={handleShare} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all cursor-pointer">
+              <button onClick={handleShare} className="px-3 py-2 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-2 transition-all cursor-pointer">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer">
-                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Mail className="w-4 h-4" />}
+              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="px-3 py-2 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer">
+                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Mail className="w-4 h-4" />}
                 {emailSent ? 'Sent!' : 'Email'}
               </button>
-              <button onClick={handlePrint} className="px-3 py-1.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-1.5 transition-all cursor-pointer">
+              <button onClick={handlePrint} className="px-3 py-2 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-600 rounded-full shadow-sm text-sm flex items-center gap-2 transition-all cursor-pointer">
                 <Printer className="w-4 h-4" /> Print
               </button>
-              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden px-3.5 py-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-medium ring-1 ring-red-600/50 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer">
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isDownloading ? 'Generating...' : 'Download PDF'}
               </button>
@@ -564,32 +553,26 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
         {/* Certificate Preview */}
         <div className="relative max-w-5xl mx-auto px-4 py-6">
           {/* ── The certificate: a premium document, fluid on every screen ── */}
-          <div className="cert-print-root relative overflow-hidden bg-white rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_50px_-25px_rgba(225,29,72,0.45)] p-2 sm:p-3">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent no-print" aria-hidden="true" />
-            <div className="relative rounded-xl border border-rose-200 bg-[#fffcf9] overflow-hidden">
+          <div className="cert-print-root relative overflow-hidden bg-white rounded-xl border border-gray-200 p-2 sm:p-3">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200 no-print" aria-hidden="true" />
+            <div className="relative rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
               {/* inner decorative frame */}
-              <div className="absolute inset-2 sm:inset-3 border-2 border-rose-300/50 rounded-lg pointer-events-none" aria-hidden="true" />
               {/* watermark */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <GraduationCap className="w-[55%] h-[55%] text-rose-500 opacity-[0.04]" />
+                <GraduationCap className="w-[55%] h-[55%] text-red-600 opacity-[0.04]" />
               </div>
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255,228,230,0.5), transparent)' }}
-                aria-hidden="true"
-              />
 
               <div className="relative px-5 py-7 sm:px-12 sm:py-10 text-center">
                 {/* Wordmark */}
-                <p className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
+                <p className="text-xl sm:text-2xl font-medium tracking-tight text-gray-900">
                   Sabi
-                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">tek</span>
+                  <span className="font-serif italic text-red-600">tek</span>
                 </p>
-                <p className="mt-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-gray-400">
+                <p className="mt-2 text-xs sm:text-xs uppercase tracking-[0.35em] text-gray-400">
                   Certificate of Completion
                 </p>
                 {certificate.kind === 'program' && (
-                  <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 border border-rose-200 text-red-600">
+                  <span className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-50 border border-gray-200 text-red-600">
                     Program Certificate
                   </span>
                 )}
@@ -599,7 +582,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                 <h2 className="mt-2 font-serif text-2xl sm:text-4xl text-gray-900 leading-tight break-words">
                   {certificate.user.full_name}
                 </h2>
-                <span className="block w-24 h-px mx-auto mt-3 bg-gradient-to-r from-transparent via-rose-400 to-transparent" aria-hidden="true" />
+                <span className="block w-24 h-px mx-auto mt-3 bg-gray-200" aria-hidden="true" />
 
                 {/* Achievement */}
                 <p className="mt-4 text-xs sm:text-sm text-gray-500">
@@ -607,17 +590,17 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                     ? 'has successfully completed the program'
                     : 'has successfully completed the course'}
                 </p>
-                <h3 className="mt-1.5 text-base sm:text-xl font-semibold text-gray-900 break-words">
+                <h3 className="mt-2 text-base sm:text-xl font-medium text-gray-900 break-words">
                   {certificate.kind === 'program'
                     ? certificate.program?.name || 'Program'
                     : certificate.course?.title || 'Course'}
                 </h3>
                 {certificate.kind === 'program' && certificate.program?.institution?.name && (
                   <p className="mt-1 text-xs text-gray-500">
-                    offered by <span className="font-semibold text-gray-700">{certificate.program.institution.name}</span>
+                    offered by <span className="font-medium text-gray-700">{certificate.program.institution.name}</span>
                   </p>
                 )}
-                <p className="mt-2 text-[11px] sm:text-xs text-gray-400">{formattedDate}</p>
+                <p className="mt-2 text-xs sm:text-xs text-gray-400">{formattedDate}</p>
 
                 {/* Bottom row */}
                 <div className="mt-7 sm:mt-9 grid grid-cols-3 items-end gap-2">
@@ -625,20 +608,20 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                   <div className="text-left">
                     {certificate.kind !== 'program' && certificate.grade_percentage != null ? (
                       <>
-                        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400">Grade</p>
-                        <p className="text-lg sm:text-2xl font-bold tabular-nums text-red-600">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Grade</p>
+                        <p className="text-lg sm:text-2xl font-medium tabular-nums text-red-600">
                           {certificate.grade_percentage}%
                         </p>
                         {certificate.course?.instructor?.full_name && (
-                          <p className="mt-1 text-[9px] sm:text-[10px] text-gray-400">
+                          <p className="mt-1 text-xs sm:text-xs text-gray-400">
                             Instructor: <span className="text-gray-600">{certificate.course.instructor.full_name}</span>
                           </p>
                         )}
                       </>
                     ) : (
                       <>
-                        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400">Awarded by</p>
-                        <p className="text-xs sm:text-sm font-semibold text-gray-700">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Awarded by</p>
+                        <p className="text-xs sm:text-sm font-medium text-gray-700">
                           {certificate.program?.institution?.name || 'Sabitek'}
                         </p>
                       </>
@@ -647,20 +630,20 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 
                   {/* Seal */}
                   <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-red-500 to-rose-600 ring-4 ring-rose-100 flex items-center justify-center shadow-[0_10px_24px_-8px_rgba(225,29,72,0.6)]">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-red-600 ring-4 ring-gray-200 flex items-center justify-center">
                       <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <p className="mt-1.5 text-[8px] sm:text-[9px] tabular-nums text-gray-400">
+                    <p className="mt-2 text-[8px] sm:text-xs tabular-nums text-gray-400">
                       {certificate.certificate_number}
                     </p>
                   </div>
 
                   {/* QR */}
                   <div className="flex flex-col items-end" id="qr-code-canvas">
-                    <div className="p-1 bg-white border border-rose-100 rounded-lg">
+                    <div className="p-1 bg-white border border-gray-200 rounded-lg">
                       <QRCodeCanvas value={verifyUrl} size={52} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#111111" />
                     </div>
-                    <p className="mt-1 text-[8px] sm:text-[9px] text-gray-400">Scan to verify</p>
+                    <p className="mt-1 text-[8px] sm:text-xs text-gray-400">Scan to verify</p>
                   </div>
                 </div>
               </div>
@@ -668,48 +651,48 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
           </div>
 
           {/* Info Card */}
-          <div className="no-print relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-            <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_8px_16px_-6px_rgba(225,29,72,0.5)]">
+          <div className="no-print relative overflow-hidden mt-6 bg-white rounded-xl p-5 border border-gray-200">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
+            <h3 className="text-lg font-medium tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                 <Award className="w-4 h-4 text-white" />
               </div>
               Certificate <span className="font-serif italic text-red-600">details</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Certificate ID</p>
                 <p className="font-mono text-gray-900 text-sm truncate">{certificate.certificate_number}</p>
               </div>
-              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Issued Date</p>
                 <p className="text-gray-900 font-medium">{formattedDate}</p>
               </div>
-              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Recipient</p>
                 <p className="text-gray-900 font-medium truncate">{certificate.user.full_name}</p>
               </div>
-              <div className="bg-rose-50/60 border border-rose-100 rounded-xl p-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                 <p className="text-gray-500 text-xs mb-1">Grade</p>
-                <p className="text-red-600 font-semibold">{certificate.grade_percentage}%</p>
+                <p className="text-red-600 font-medium">{certificate.grade_percentage}%</p>
               </div>
             </div>
 
-            <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-4">
+            <div className="bg-green-50/70 border border-green-100 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-gradient-to-b from-emerald-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-[0_8px_16px_-6px_rgba(16,185,129,0.5)]">
+                <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-emerald-900 mb-1">Verification Link</p>
+                  <p className="text-sm font-medium text-green-900 mb-1">Verification Link</p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <code className="text-xs bg-white/80 px-2 py-1 rounded-full border border-emerald-100 text-emerald-800 truncate flex-1">{verifyUrl}</code>
-                    <button onClick={handleCopyLink} className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 hover:border-emerald-200 shadow-sm text-xs font-semibold flex items-center gap-1 transition-all">
+                    <code className="text-xs bg-white/80 px-2 py-1 rounded-full border border-green-100 text-green-800 truncate flex-1">{verifyUrl}</code>
+                    <button onClick={handleCopyLink} className="px-3 py-1 bg-white hover:bg-green-50 text-green-700 rounded-full border border-green-100 hover:border-green-200 shadow-sm text-xs font-medium flex items-center gap-1 transition-all">
                       {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
-                    <Link href={`/verify/${certificate.certificate_number}`} target="_blank" className="px-2.5 py-1 bg-gradient-to-b from-emerald-500 to-green-600 hover:to-green-500 text-white rounded-full text-xs font-semibold shadow-[0_8px_16px_-6px_rgba(16,185,129,0.5)] ring-1 ring-green-600/50 flex items-center gap-1 transition-all">
+                    <Link href={`/verify/${certificate.certificate_number}`} target="_blank" className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-full text-xs font-medium ring-1 ring-green-600/50 flex items-center gap-1 transition-all">
                       <ExternalLink className="w-3 h-3" /> View
                     </Link>
                   </div>
@@ -719,10 +702,10 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
           </div>
 
           {/* Share block */}
-          <div className="no-print relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-            <h3 className="text-lg font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-b from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-[0_8px_16px_-6px_rgba(225,29,72,0.5)]">
+          <div className="no-print relative overflow-hidden mt-6 bg-white rounded-xl p-5 border border-gray-200">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
+            <h3 className="text-lg font-medium tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                 <Share2 className="w-4 h-4 text-white" />
               </div>
               Share your <span className="font-serif italic text-red-600">achievement</span>
@@ -733,7 +716,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                 href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verifyUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 border border-gray-200 hover:border-gray-200 rounded-full text-xs font-medium text-gray-700 transition-all cursor-pointer"
               >
                 <Linkedin className="w-3.5 h-3.5" />
                 LinkedIn
@@ -742,37 +725,36 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
                 href={`https://wa.me/?text=${encodeURIComponent('I earned a certificate on Sabitek! Verify it here: ' + verifyUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 border border-gray-200 hover:border-gray-200 rounded-full text-xs font-medium text-gray-700 transition-all cursor-pointer"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 WhatsApp
               </a>
               <button
                 onClick={handleShareCopy}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/70 border border-rose-100 hover:border-rose-200 rounded-full text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 border border-gray-200 hover:border-gray-200 rounded-full text-xs font-medium text-gray-700 transition-all cursor-pointer"
               >
-                {shareCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Link2 className="w-3.5 h-3.5" />}
+                {shareCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Link2 className="w-3.5 h-3.5" />}
                 {shareCopied ? 'Copied' : 'Copy link'}
               </button>
             </div>
 
-            <p className="text-[11px] text-gray-400 mt-3">
+            <p className="text-xs text-gray-400 mt-3">
               Anyone with this link can verify your certificate is genuine.
             </p>
           </div>
 
           {/* Mobile buttons */}
-          <div className="no-print sm:hidden fixed bottom-0 left-0 right-0 bg-white/85 backdrop-blur border-t border-rose-100 p-4 z-30">
+          <div className="no-print sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-30">
             <div className="flex gap-2">
-              <button onClick={handleShare} className="flex-1 py-2.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-1.5 transition-all">
+              <button onClick={handleShare} className="flex-1 py-3 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-2 transition-all">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="flex-1 py-2.5 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-1.5 transition-all disabled:opacity-50">
-                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Mail className="w-4 h-4" />}
+              <button onClick={handleSendEmail} disabled={isSendingEmail || emailSent} className="flex-1 py-3 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm font-medium text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : emailSent ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Mail className="w-4 h-4" />}
                 {emailSent ? 'Sent!' : 'Email'}
               </button>
-              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden flex-[1.5] py-2.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full font-semibold text-sm shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 flex items-center justify-center gap-1.5 transition-all disabled:opacity-50">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+              <button onClick={handleDownloadPDF} disabled={isDownloading} className="relative overflow-hidden flex-[1.5] py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium text-sm ring-1 ring-red-600/50 flex items-center justify-center gap-2 transition-all disabled:opacity-50">
                 {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isDownloading ? 'Generating...' : 'Download'}
               </button>
@@ -800,7 +782,7 @@ function CertificateViewContent({ params }: { params: Promise<{ id: string }> })
 export default function CertificateViewPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={
-  <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <SabiLoader text="Loading certificate..." size="lg" />
   </div>
 }>

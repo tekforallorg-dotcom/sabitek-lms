@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
           </head>
           <body>
             <div class="header">
-              <h1>🎯 Your Tech Career Path is Ready!</h1>
+              <h1>Your Tech Career Path is Ready!</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Personalized recommendations from SabiAdvisor</p>
             </div>
 

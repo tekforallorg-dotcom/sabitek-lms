@@ -194,15 +194,15 @@ export default function CareerProfilePage() {
     { id: 'basic', label: 'Basic Info', icon: User, color: 'text-gray-600', bgColor: 'bg-gray-100' },
     { id: 'experience', label: 'Experience', icon: Briefcase, color: 'text-blue-600', bgColor: 'bg-blue-50' },
     { id: 'education', label: 'Education', icon: GraduationCap, color: 'text-green-600', bgColor: 'bg-green-50' },
-    { id: 'skills', label: 'Skills', icon: Code, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    { id: 'links', label: 'Links', icon: LinkIcon, color: 'text-orange-600', bgColor: 'bg-orange-50' },
+    { id: 'skills', label: 'Skills', icon: Code, color: 'text-gray-600', bgColor: 'bg-gray-50' },
+    { id: 'links', label: 'Links', icon: LinkIcon, color: 'text-amber-600', bgColor: 'bg-amber-50' },
     { id: 'goals', label: 'Goals', icon: Target, color: 'text-red-600', bgColor: 'bg-red-50' }
   ]
 
   const getProgressColor = () => {
-    if (profileCompleteness >= 70) return 'from-green-500 to-emerald-500'
-    if (profileCompleteness >= 30) return 'from-yellow-500 to-orange-500'
-    return 'from-red-500 to-pink-500'
+    if (profileCompleteness >= 70) return 'bg-green-600'
+    if (profileCompleteness >= 30) return 'bg-amber-600'
+    return 'bg-red-600'
   }
 
   if (authLoading || loading) {
@@ -219,18 +219,18 @@ export default function CareerProfilePage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-50 to-slate-100 border-b border-gray-200/50 px-4 py-4">
+      <div className="bg-gray-50 border-b border-gray-200/50 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center shadow-lg shadow-gray-500/20">
+            <div className="w-10 h-10 bg-gray-600 rounded-xl flex items-center justify-center shadow-sm">
               <User className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Career Profile</h1>
-              <div className="flex items-center gap-2 mt-0.5">
+              <h1 className="text-lg font-medium text-gray-900">Career Profile</h1>
+              <div className="flex items-center gap-2 mt-1">
                 <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className={`h-full bg-gradient-to-r ${getProgressColor()} transition-all duration-500`}
+                    className={`h-full ${getProgressColor()} transition-all duration-500`}
                     style={{ width: `${profileCompleteness}%` }}
                   />
                 </div>
@@ -241,12 +241,12 @@ export default function CareerProfilePage() {
           <button
             onClick={saveProfile}
             disabled={saving}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg ${
-              saveStatus === 'success'
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-green-500/20'
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all shadow-sm ${
+ saveStatus === 'success'
+                ? 'bg-green-600 text-white'
                 : saveStatus === 'error'
-                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-red-500/20'
-                : 'bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white shadow-gray-500/20'
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-700 hover:bg-gray-800 text-white'
             } disabled:opacity-50`}
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 
@@ -263,7 +263,7 @@ export default function CareerProfilePage() {
         <select
           value={activeSection}
           onChange={(e) => setActiveSection(e.target.value)}
-          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+          className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
           {sections.map((s) => (
             <option key={s.id} value={s.id}>{s.label}</option>
@@ -273,7 +273,7 @@ export default function CareerProfilePage() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Section Nav */}
-        <div className="w-52 bg-white/80 backdrop-blur-sm border-r border-gray-200/50 p-3 hidden md:block">
+        <div className="w-52 bg-white border-r border-gray-200/50 p-3 hidden md:block">
           <div className="space-y-1">
             {sections.map((section) => {
               const Icon = section.icon
@@ -282,7 +282,7 @@ export default function CareerProfilePage() {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-all ${
                     isActive
                       ? `${section.bgColor} ${section.color} font-medium shadow-sm`
                       : 'text-gray-600 hover:bg-gray-50'
@@ -300,7 +300,7 @@ export default function CareerProfilePage() {
           </div>
 
           {/* Profile Tips */}
-          <div className="mt-4 p-3 bg-gradient-to-br from-gray-50 to-slate-100 rounded-xl border border-gray-200/50">
+          <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-200/50">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-4 h-4 text-gray-600" />
               <span className="text-xs font-medium text-gray-700">Profile Tips</span>
@@ -312,7 +312,7 @@ export default function CareerProfilePage() {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gradient-to-br from-gray-50/50 to-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50/50">
           {/* Basic Info */}
           {activeSection === 'basic' && (
             <div className="max-w-2xl">
@@ -320,59 +320,59 @@ export default function CareerProfilePage() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">Basic Information</h3>
+                <h3 className="font-medium text-gray-900">Basic Information</h3>
               </div>
               
-              <div className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm space-y-4">
+              <div className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
                       placeholder="John Doe"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
                       placeholder="john@example.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
                       placeholder="+234 800 000 0000"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                     <input
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
+                      className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors"
                       placeholder="Lagos, Nigeria"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Professional Summary</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
                   <textarea
                     value={summary}
                     onChange={(e) => setSummary(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors resize-none"
+                    className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent hover:border-gray-300 transition-colors resize-none"
                     placeholder="Brief overview of your professional background..."
                   />
                 </div>
@@ -388,18 +388,18 @@ export default function CareerProfilePage() {
                   <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                     <Briefcase className="w-4 h-4 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">Work Experience</h3>
+                  <h3 className="font-medium text-gray-900">Work Experience</h3>
                 </div>
                 <button
                   onClick={addWorkExperience}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" /> Add
                 </button>
               </div>
 
               {workExperience.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-200/50 p-8 shadow-sm text-center">
+                <div className="bg-white rounded-xl border border-gray-200/50 p-8 shadow-sm text-center">
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
                     <Briefcase className="w-6 h-6 text-blue-400" />
                   </div>
@@ -414,12 +414,12 @@ export default function CareerProfilePage() {
               ) : (
                 <div className="space-y-4">
                   {workExperience.map((exp, i) => (
-                    <div key={exp.id} className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm">
+                    <div key={exp.id} className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm">
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">Experience {i + 1}</span>
                         <button 
                           onClick={() => setWorkExperience(workExperience.filter((_, idx) => idx !== i))} 
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -434,7 +434,7 @@ export default function CareerProfilePage() {
                             setWorkExperience(updated)
                           }}
                           placeholder="Company"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors"
                         />
                         <input
                           type="text"
@@ -445,7 +445,7 @@ export default function CareerProfilePage() {
                             setWorkExperience(updated)
                           }}
                           placeholder="Job Title"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors"
                         />
                       </div>
                       <textarea
@@ -457,7 +457,7 @@ export default function CareerProfilePage() {
                         }}
                         placeholder="Key achievements (one per line)"
                         rows={3}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors resize-none"
+                        className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors resize-none"
                       />
                     </div>
                   ))}
@@ -474,18 +474,18 @@ export default function CareerProfilePage() {
                   <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
                     <GraduationCap className="w-4 h-4 text-green-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">Education</h3>
+                  <h3 className="font-medium text-gray-900">Education</h3>
                 </div>
                 <button 
                   onClick={addEducation} 
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" /> Add
                 </button>
               </div>
 
               {education.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-200/50 p-8 shadow-sm text-center">
+                <div className="bg-white rounded-xl border border-gray-200/50 p-8 shadow-sm text-center">
                   <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
                     <GraduationCap className="w-6 h-6 text-green-400" />
                   </div>
@@ -500,12 +500,12 @@ export default function CareerProfilePage() {
               ) : (
                 <div className="space-y-4">
                   {education.map((edu, i) => (
-                    <div key={edu.id} className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm">
+                    <div key={edu.id} className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm">
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">Education {i + 1}</span>
                         <button 
                           onClick={() => setEducation(education.filter((_, idx) => idx !== i))} 
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -520,7 +520,7 @@ export default function CareerProfilePage() {
                             setEducation(updated)
                           }}
                           placeholder="Institution"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
                         />
                         <input
                           type="text"
@@ -531,7 +531,7 @@ export default function CareerProfilePage() {
                             setEducation(updated)
                           }}
                           placeholder="Degree"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
                         />
                         <input
                           type="text"
@@ -542,7 +542,7 @@ export default function CareerProfilePage() {
                             setEducation(updated)
                           }}
                           placeholder="Field of Study"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
                         />
                         <input
                           type="text"
@@ -553,7 +553,7 @@ export default function CareerProfilePage() {
                             setEducation(updated)
                           }}
                           placeholder="Year"
-                          className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
+                          className="px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-300 transition-colors"
                         />
                       </div>
                     </div>
@@ -567,13 +567,13 @@ export default function CareerProfilePage() {
           {activeSection === 'skills' && (
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <Code className="w-4 h-4 text-purple-600" />
+                <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                  <Code className="w-4 h-4 text-gray-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">Skills</h3>
+                <h3 className="font-medium text-gray-900">Skills</h3>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm">
+              <div className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm">
                 <div className="flex gap-2 mb-4">
                   <input
                     type="text"
@@ -581,11 +581,11 @@ export default function CareerProfilePage() {
                     onChange={(e) => setNewSkill(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addSkill()}
                     placeholder="Add a skill (press Enter)"
-                    className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 hover:border-gray-300 transition-colors"
+                    className="flex-1 px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 hover:border-gray-300 transition-colors"
                   />
                   <button 
                     onClick={addSkill} 
-                    className="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl text-sm font-medium shadow-lg shadow-purple-500/20 transition-all"
+                    className="px-4 py-3 bg-gray-900 hover:bg-gray-900 text-white rounded-xl text-sm font-medium shadow-sm transition-all"
                   >
                     Add
                   </button>
@@ -598,12 +598,12 @@ export default function CareerProfilePage() {
                     {skills.map((skill, i) => (
                       <span 
                         key={i} 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-xl text-sm text-purple-700"
+                        className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-700"
                       >
                         {skill}
                         <button 
                           onClick={() => setSkills(skills.filter((_, idx) => idx !== i))} 
-                          className="text-purple-400 hover:text-red-500 transition-colors"
+                          className="text-gray-400 hover:text-red-500 transition-colors"
                         >
                           ×
                         </button>
@@ -619,41 +619,41 @@ export default function CareerProfilePage() {
           {activeSection === 'links' && (
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-                  <LinkIcon className="w-4 h-4 text-orange-600" />
+                <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                  <LinkIcon className="w-4 h-4 text-amber-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">Professional Links</h3>
+                <h3 className="font-medium text-gray-900">Professional Links</h3>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm space-y-4">
+              <div className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">LinkedIn</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
                   <input
                     type="url"
                     value={links.linkedin || ''}
                     onChange={(e) => setLinks({ ...links, linkedin: e.target.value })}
                     placeholder="https://linkedin.com/in/yourprofile"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 hover:border-gray-300 transition-colors"
+                    className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 hover:border-gray-300 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">GitHub</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">GitHub</label>
                   <input
                     type="url"
                     value={links.github || ''}
                     onChange={(e) => setLinks({ ...links, github: e.target.value })}
                     placeholder="https://github.com/yourusername"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 hover:border-gray-300 transition-colors"
+                    className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 hover:border-gray-300 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Portfolio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio</label>
                   <input
                     type="url"
                     value={links.portfolio || ''}
                     onChange={(e) => setLinks({ ...links, portfolio: e.target.value })}
                     placeholder="https://yourportfolio.com"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 hover:border-gray-300 transition-colors"
+                    className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 hover:border-gray-300 transition-colors"
                   />
                 </div>
               </div>
@@ -667,10 +667,10 @@ export default function CareerProfilePage() {
                 <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
                   <Target className="w-4 h-4 text-red-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">Target Roles</h3>
+                <h3 className="font-medium text-gray-900">Target Roles</h3>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200/50 p-5 shadow-sm">
+              <div className="bg-white rounded-xl border border-gray-200/50 p-5 shadow-sm">
                 <div className="flex gap-2 mb-4">
                   <input
                     type="text"
@@ -678,11 +678,11 @@ export default function CareerProfilePage() {
                     onChange={(e) => setNewTargetRole(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addTargetRole()}
                     placeholder="Add a target role (press Enter)"
-                    className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 hover:border-gray-300 transition-colors"
+                    className="flex-1 px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 hover:border-gray-300 transition-colors"
                   />
                   <button 
                     onClick={addTargetRole} 
-                    className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-red-500/20 transition-all"
+                    className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-medium shadow-sm transition-all"
                   >
                     Add
                   </button>
@@ -695,7 +695,7 @@ export default function CareerProfilePage() {
                     {targetRoles.map((role, i) => (
                       <span 
                         key={i} 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-50 to-pink-50 border border-red-100 rounded-xl text-sm text-red-700"
+                        className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700"
                       >
                         {role}
                         <button 

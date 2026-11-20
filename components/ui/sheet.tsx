@@ -30,9 +30,9 @@ export function Sheet({ open, onClose, children, title }: SheetProps) {
         className="fixed inset-0 bg-black/50 z-50 transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white shadow-xl overflow-hidden">
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-medium text-gray-900">{title}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

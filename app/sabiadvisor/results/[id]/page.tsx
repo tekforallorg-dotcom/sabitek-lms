@@ -31,7 +31,8 @@ import {
   Wallet,
   Plus,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
 
@@ -260,10 +261,10 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-3 border-pink-200"></div>
+            <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
             <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-red-500 animate-spin"></div>
           </div>
           <p className="text-sm text-gray-600">Loading your career roadmap...</p>
@@ -274,14 +275,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
   if (error || !result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+      <div className="min-h-screen bg-gray-50">
         {/* Sub Header */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-20">
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
           <div className="max-w-5xl mx-auto px-4 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Link 
                 href="/sabiadvisor"
-                className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -294,14 +295,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">❌</span>
+            <div className="w-16 h-16 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-7 h-7 text-red-600" aria-hidden="true" />
             </div>
-            <h2 className="text-xl font-bold mb-2 text-gray-900">Something went wrong</h2>
+            <h2 className="text-xl font-medium mb-2 text-gray-900">Something went wrong</h2>
             <p className="text-sm text-gray-500 mb-6">{error || 'Results not found'}</p>
             <button
               onClick={() => router.push('/sabiadvisor')}
-              className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all"
+              className="px-5 py-3 bg-red-600 text-white rounded-xl text-sm font-medium transition-all"
             >
               Start New Assessment
             </button>
@@ -317,31 +318,31 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
   const roadmap = result.roadmap_6m
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-white to-red-50/30">
+    <div className="min-h-screen bg-gray-50">
       {/* Sub Header - Matching CV/Cover Letter style */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-20">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Link 
                 href="/sabiadvisor"
-                className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back</span>
               </Link>
               <ChevronRight className="w-4 h-4 text-gray-300" />
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center shadow-sm">
                   <CheckCircle className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="font-semibold text-gray-900">Your Results</span>
+                <span className="font-medium text-gray-900">Your Results</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
               >
                 <Wallet className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">
@@ -350,7 +351,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               </Link>
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
+                className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Top Up</span>
@@ -363,30 +364,26 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 py-6" id="pdf-content">
         {/* Hero Card */}
-        <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-2xl p-5 sm:p-6 mb-6 relative overflow-hidden shadow-lg shadow-pink-500/20">
+        <div className="bg-red-600 rounded-xl p-5 sm:p-6 mb-6 relative overflow-hidden shadow-sm">
           {/* Floating shapes */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-2 right-10 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-            <div className="absolute bottom-0 left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-          </div>
           
           <div className="relative z-10">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shadow-lg">
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center border border-white/30 shadow-sm">
                 <CheckCircle className="w-7 h-7 text-white" strokeWidth={2.5} />
               </div>
               <div className="flex-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Your Career Path Found!</h1>
+                <h1 className="text-xl sm:text-2xl font-medium text-white mb-1">Your Career Path Found!</h1>
                 <p className="text-sm text-white/80">Personalized recommendations based on your responses</p>
               </div>
             </div>
 
             {/* Confidence Badge */}
             {result.confidence && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30">
+              <div className="mt-4 inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl border border-white/30">
                 <Target className="w-4 h-4 text-white" />
                 <span className="text-sm text-white/90">Match Confidence:</span>
-                <span className="text-lg font-bold text-white">{Math.round(result.confidence)}%</span>
+                <span className="text-lg font-medium text-white">{Math.round(result.confidence)}%</span>
               </div>
             )}
           </div>
@@ -395,32 +392,32 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         {/* Top Recommendations */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-sm">
               <Star className="w-4 h-4 text-white fill-white" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Top Recommendations</h2>
+            <h2 className="text-lg font-medium text-gray-900">Top Recommendations</h2>
           </div>
           
           <div className="space-y-4">
             {primaryTracks.map((track, idx) => (
               <div
                 key={idx}
-                className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-gray-100 hover:border-pink-200 transition-all hover:shadow-md"
+                className="bg-white rounded-xl p-5 border border-gray-100 hover:border-gray-200 transition-all"
               >
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md shadow-pink-500/20">
-                    <span className="text-lg font-bold text-white">{idx + 1}</span>
+                  <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <span className="text-lg font-medium text-white">{idx + 1}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-lg font-bold text-gray-900">{track.name}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">{track.name}</h3>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="px-2.5 py-1 bg-green-50 rounded-lg text-xs font-bold text-green-700 border border-green-100">
+                        <div className="px-3 py-1 bg-green-50 rounded-lg text-xs font-medium text-green-700 border border-green-100">
                           {track.confidence}% match
                         </div>
                         {track.demand && track.demand >= 70 && (
-                          <div className="px-2.5 py-1 bg-blue-50 rounded-lg text-xs font-semibold text-blue-700 border border-blue-100">
-                            🔥 High Demand
+                          <div className="px-3 py-1 bg-blue-50 rounded-lg text-xs font-medium text-blue-700 border border-blue-100">
+                            High Demand
                           </div>
                         )}
                       </div>
@@ -428,13 +425,13 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     <p className="text-sm text-gray-600 leading-relaxed mb-3">{track.why_fits}</p>
                     
                     <div className="flex flex-wrap gap-4 mb-3">
-                      <div className="flex items-center gap-1.5 text-sm">
+                      <div className="flex items-center gap-2 text-sm">
                         <div className="w-6 h-6 bg-green-50 rounded-lg flex items-center justify-center">
                           <DollarSign className="w-3.5 h-3.5 text-green-600" />
                         </div>
                         <span className="text-gray-700 font-medium">{track.salary_range_ngn}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-sm">
+                      <div className="flex items-center gap-2 text-sm">
                         <div className="w-6 h-6 bg-gray-50 rounded-lg flex items-center justify-center">
                           <Clock className="w-3.5 h-3.5 text-gray-500" />
                         </div>
@@ -442,11 +439,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {track.top_skills.slice(0, 5).map((skill, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-1 bg-gradient-to-r from-pink-50 to-red-50 text-gray-700 rounded-lg text-xs font-medium border border-pink-100"
+                          className="px-3 py-1 bg-red-50 text-gray-700 rounded-lg text-xs font-medium border border-gray-200"
                         >
                           {skill}
                         </span>
@@ -466,7 +463,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                 <Lightbulb className="w-4 h-4 text-gray-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Alternative Paths</h2>
+              <h2 className="text-lg font-medium text-gray-900">Alternative Paths</h2>
               <span className="text-xs text-gray-500">(if primary paths don&apos;t fit)</span>
             </div>
             
@@ -474,7 +471,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
               {alternativeTracks.map((track, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100 hover:border-gray-200 transition-all"
+                  className="bg-white rounded-xl p-4 border border-gray-100 hover:border-gray-200 transition-all"
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -482,8 +479,8 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="text-base font-bold text-gray-900">{track.name}</h3>
-                        <div className="px-2 py-0.5 bg-gray-50 rounded-lg text-xs font-semibold text-gray-600 border border-gray-100">
+                        <h3 className="text-base font-medium text-gray-900">{track.name}</h3>
+                        <div className="px-2 py-1 bg-gray-50 rounded-lg text-xs font-medium text-gray-600 border border-gray-100">
                           {track.confidence}%
                         </div>
                       </div>
@@ -512,37 +509,37 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         {nextSteps.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center shadow-sm">
                 <Rocket className="w-4 h-4 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Your Next Steps</h2>
+              <h2 className="text-lg font-medium text-gray-900">Your Next Steps</h2>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {nextSteps.map((step, idx) => {
                 const IconComponent = iconMap[step.icon] || Target
                 const priorityColors = {
-                  high: 'from-red-500 to-pink-600',
-                  medium: 'from-orange-400 to-pink-500',
-                  low: 'from-gray-400 to-gray-500'
+                  high: 'bg-red-600',
+                  medium: 'bg-amber-600',
+                  low: 'bg-gray-400'
                 }
                 const priorityBg = {
                   high: 'bg-red-50 border-red-100',
-                  medium: 'bg-orange-50 border-orange-100',
+                  medium: 'bg-amber-50 border-amber-100',
                   low: 'bg-gray-50 border-gray-100'
                 }
                 
                 return (
                   <div
                     key={idx}
-                    className={`bg-white/90 backdrop-blur-sm rounded-xl p-4 border hover:shadow-md transition-all group ${priorityBg[step.priority]}`}
+                    className={`bg-white rounded-xl p-4 border transition-all group ${priorityBg[step.priority]}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 bg-gradient-to-br ${priorityColors[step.priority]} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md`}>
+                      <div className={`w-10 h-10 ${priorityColors[step.priority]} rounded-xl flex items-center justify-center flex-shrink-0 transition-transform shadow-sm`}>
                         <IconComponent className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-sm font-bold text-gray-900 mb-1">{step.title}</h3>
+                        <h3 className="text-sm font-medium text-gray-900 mb-1">{step.title}</h3>
                         <p className="text-xs text-gray-600 leading-relaxed">{step.description}</p>
                       </div>
                     </div>
@@ -557,18 +554,14 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         {roadmap && (
           <div className="mb-6">
             {/* Roadmap Header Card */}
-            <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-2xl p-5 mb-4 relative overflow-hidden shadow-lg shadow-pink-500/20">
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-2 right-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-                <div className="absolute bottom-0 left-10 w-28 h-28 bg-white/5 rounded-full blur-2xl"></div>
-              </div>
+            <div className="bg-red-600 rounded-xl p-5 mb-4 relative overflow-hidden shadow-sm">
               
               <div className="relative z-10 flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-0.5">Your 6-Month Learning Roadmap</h2>
+                  <h2 className="text-xl font-medium text-white mb-1">Your 6-Month Learning Roadmap</h2>
                   <p className="text-sm text-white/80">{roadmap.track}</p>
                 </div>
               </div>
@@ -576,7 +569,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
             {/* Timeline */}
             <div className="relative">
-              <div className="absolute left-8 top-12 bottom-12 w-0.5 bg-gradient-to-b from-red-300 via-pink-300 to-red-300 hidden sm:block"></div>
+              <div className="absolute left-8 top-12 bottom-12 w-0.5 bg-red-300 hidden sm:block"></div>
 
               <div className="space-y-3">
                 {roadmap.months.map((month: MonthPlan, idx: number) => {
@@ -586,35 +579,35 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                     <div key={month.month} className="relative">
                       <div
                         onClick={() => setSelectedMonth(isExpanded ? null : month.month)}
-                        className={`bg-white/90 backdrop-blur-sm rounded-xl border transition-all cursor-pointer ${
-                          isExpanded 
-                            ? 'border-pink-300 shadow-md' 
-                            : 'border-gray-100 hover:border-pink-200 hover:shadow-sm'
+                        className={`bg-white rounded-xl border transition-all cursor-pointer ${
+ isExpanded 
+ ? 'border-red-300 shadow-sm' 
+                            : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
                         }`}
                       >
                         <div className="p-4">
                           <div className="flex items-center gap-4">
                             <div className="relative flex-shrink-0">
-                              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex flex-col items-center justify-center shadow-md shadow-pink-500/20">
-                                <span className="text-[9px] text-red-100 font-medium uppercase">Month</span>
-                                <span className="text-lg font-black text-white leading-none">{month.month}</span>
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-600 rounded-xl flex flex-col items-center justify-center shadow-sm">
+                                <span className="text-xs text-red-100 font-medium uppercase">Month</span>
+                                <span className="text-lg font-medium text-white leading-none">{month.month}</span>
                               </div>
                               {idx < roadmap.months.length - 1 && (
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-3 bg-pink-200 hidden sm:block"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-3 bg-red-200 hidden sm:block"></div>
                               )}
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-bold text-gray-900 mb-0.5">
+                              <h3 className="text-base font-medium text-gray-900 mb-1">
                                 {month.title}
                               </h3>
                               <p className="text-sm text-gray-600 line-clamp-1">{month.focus}</p>
                             </div>
 
                             <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                              isExpanded ? 'bg-pink-100 rotate-180' : 'bg-gray-50'
+                              isExpanded ? 'bg-red-100 rotate-180' : 'bg-gray-50'
                             }`}>
-                              <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-pink-600' : 'text-gray-400'}`} />
+                              <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-red-600' : 'text-gray-400'}`} />
                             </div>
                           </div>
                         </div>
@@ -623,16 +616,16 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                           <div className="border-t border-gray-100 p-4 space-y-4 animate-fadeIn">
                             {/* Milestones */}
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2 flex items-center gap-1.5">
+                              <h4 className="text-xs font-medium text-gray-900 uppercase mb-2 flex items-center gap-2">
                                 <div className="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
                                   <CheckCircle className="w-3 h-3 text-green-600" />
                                 </div>
                                 Milestones
                               </h4>
-                              <ul className="space-y-1.5">
+                              <ul className="space-y-2">
                                 {month.milestones.map((milestone, i) => (
                                   <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                    <span className="text-green-500 mt-0.5">✓</span>
+                                    <span className="text-green-500 mt-1">✓</span>
                                     <span>{milestone}</span>
                                   </li>
                                 ))}
@@ -641,17 +634,17 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
                             {/* Skills */}
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2 flex items-center gap-1.5">
+                              <h4 className="text-xs font-medium text-gray-900 uppercase mb-2 flex items-center gap-2">
                                 <div className="w-5 h-5 bg-red-100 rounded flex items-center justify-center">
                                   <TrendingUp className="w-3 h-3 text-red-600" />
                                 </div>
                                 Skills to Learn
                               </h4>
-                              <div className="flex flex-wrap gap-1.5">
+                              <div className="flex flex-wrap gap-2">
                                 {month.skills.map((skill, i) => (
                                   <span
                                     key={i}
-                                    className="px-2.5 py-1 bg-gradient-to-r from-red-50 to-pink-50 text-red-700 rounded-lg text-xs font-medium border border-red-100"
+                                    className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-medium border border-red-100"
                                   >
                                     {skill}
                                   </span>
@@ -661,16 +654,16 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
                             {/* Projects */}
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2 flex items-center gap-1.5">
-                                <div className="w-5 h-5 bg-pink-100 rounded flex items-center justify-center">
-                                  <Code className="w-3 h-3 text-pink-600" />
+                              <h4 className="text-xs font-medium text-gray-900 uppercase mb-2 flex items-center gap-2">
+                                <div className="w-5 h-5 bg-red-100 rounded flex items-center justify-center">
+                                  <Code className="w-3 h-3 text-red-600" />
                                 </div>
                                 Projects to Build
                               </h4>
-                              <ul className="space-y-1.5">
+                              <ul className="space-y-2">
                                 {month.projects.map((project, i) => (
                                   <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                    <span className="text-pink-500 mt-0.5">•</span>
+                                    <span className="text-red-600 mt-1">•</span>
                                     <span>{project}</span>
                                   </li>
                                 ))}
@@ -679,17 +672,17 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
 
                             {/* Resources */}
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2 flex items-center gap-1.5">
+                              <h4 className="text-xs font-medium text-gray-900 uppercase mb-2 flex items-center gap-2">
                                 <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center">
                                   <BookOpen className="w-3 h-3 text-gray-600" />
                                 </div>
                                 Resources
                               </h4>
-                              <div className="flex flex-wrap gap-1.5">
+                              <div className="flex flex-wrap gap-2">
                                 {month.resources.map((resource, i) => (
                                   <span
                                     key={i}
-                                    className="px-2.5 py-1 bg-gray-50 text-gray-700 rounded-lg text-xs border border-gray-100"
+                                    className="px-3 py-1 bg-gray-50 text-gray-700 rounded-lg text-xs border border-gray-100"
                                   >
                                     {resource}
                                   </span>
@@ -708,12 +701,12 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
         )}
 
         {/* Action Buttons */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-gray-100">
+        <div className="bg-white rounded-xl p-5 border border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
             <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-pink-500/25 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex items-center justify-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDownloading ? (
                 <>
@@ -731,7 +724,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
             <button
               onClick={handleSendEmail}
               disabled={isSendingEmail || emailSent}
-              className="flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-xl text-sm font-bold border border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-xl text-sm font-medium border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSendingEmail ? (
                 <>
@@ -755,11 +748,11 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/courses"
-              className="flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-6 py-3 rounded-xl text-sm font-semibold border border-gray-200 transition-all group"
+              className="flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-6 py-3 rounded-xl text-sm font-medium border border-gray-200 transition-all group"
             >
               <BookOpen className="w-4 h-4" />
               Browse Courses
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 transition-transform" />
             </Link>
             <Link
               href="/sabiadvisor/survey"

@@ -102,14 +102,14 @@ export default function SupportPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+      <section className="relative overflow-hidden bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-24 text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-1.5 rounded-full mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full mb-6 shadow-sm">
             <HelpCircle className="w-4 h-4 text-red-600" />
             <span className="text-xs font-medium text-gray-700">Support Center</span>
           </div>
           
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium text-gray-900 mb-4">
             How can we help?
           </h1>
           
@@ -126,7 +126,7 @@ export default function SupportPage() {
               placeholder="Search help topics (e.g. 'certificate', 'login', 'school setup')"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all text-sm"
+              className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all text-sm"
             />
           </div>
         </div>
@@ -142,20 +142,20 @@ export default function SupportPage() {
                 red: 'bg-red-50 text-red-600 group-hover:bg-red-100',
                 blue: 'bg-blue-50 text-blue-600 group-hover:bg-blue-100',
                 green: 'bg-green-50 text-green-600 group-hover:bg-green-100',
-                purple: 'bg-purple-50 text-purple-600 group-hover:bg-purple-100'
+                purple: 'bg-gray-50 text-gray-600 group-hover:bg-gray-100'
               };
               
               return (
                 <Link
                   key={index}
                   href={`/contact?subject=${action.value}`}
-                  className="group flex items-start gap-4 p-5 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all bg-white"
+                  className="group flex items-start gap-4 p-5 border border-gray-200 rounded-xl hover:border-gray-300 transition-all bg-white"
                 >
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${colorClasses[action.color as keyof typeof colorClasses]}`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-red-600 transition-colors">
+                    <h3 className="font-medium text-gray-900 mb-1 group-hover:text-red-600 transition-colors">
                       {action.title}
                     </h3>
                     <p className="text-sm text-gray-600">
@@ -172,7 +172,7 @@ export default function SupportPage() {
       {/* Help Categories */}
       <section className="py-12 md:py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-xl md:text-2xl font-medium text-gray-900 mb-8 text-center">
             Browse by topic
           </h2>
           
@@ -183,17 +183,17 @@ export default function SupportPage() {
               return (
                 <div
                   key={index}
-                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
+                  className="bg-white border border-gray-200 rounded-xl p-6 transition-shadow"
                 >
                   <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-red-600" />
                   </div>
                   
-                  <h3 className="font-semibold text-gray-900 mb-4">
+                  <h3 className="font-medium text-gray-900 mb-4">
                     {category.title}
                   </h3>
                   
-                  <ul className="space-y-2.5 mb-6">
+                  <ul className="space-y-3 mb-6">
                     {category.links.map((link, linkIndex) => (
                       <li key={linkIndex}>
                         <Link
@@ -224,7 +224,7 @@ export default function SupportPage() {
       {/* Featured Guides */}
       <section className="py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-xl md:text-2xl font-medium text-gray-900 mb-8 text-center">
             Featured guides
           </h2>
           
@@ -236,13 +236,13 @@ export default function SupportPage() {
                 <Link
                   key={index}
                   href={guide.href}
-                  className="group bg-white border border-gray-200 rounded-xl p-6 hover:border-red-200 hover:shadow-lg transition-all"
+                  className="group bg-white border border-gray-200 rounded-xl p-6 hover:border-red-200 transition-all"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-50 to-red-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center mb-4 transition-transform">
                     <Icon className="w-6 h-6 text-red-600" />
                   </div>
                   
-                  <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
+                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
                     {guide.title}
                   </h3>
                   
@@ -252,7 +252,7 @@ export default function SupportPage() {
                   
                   <div className="flex items-center gap-1 text-sm text-red-600 font-medium">
                     Learn more
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 transition-transform" />
                   </div>
                 </Link>
               );
@@ -264,12 +264,12 @@ export default function SupportPage() {
       {/* Still Need Help CTA */}
       <section className="py-12 md:py-16 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 md:p-12 text-center shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl p-8 md:p-12 text-center shadow-sm">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Mail className="w-8 h-8 text-red-600" />
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-4">
               Still need help?
             </h2>
             
@@ -280,7 +280,7 @@ export default function SupportPage() {
             
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center px-8 py-4 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
             >
               <Mail className="w-5 h-5 mr-2" />
               Contact Sabitek Support

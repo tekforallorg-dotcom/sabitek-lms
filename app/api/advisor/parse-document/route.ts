@@ -108,11 +108,11 @@ async function parsePdfFile(file: File): Promise<ParsedDocument> {
     const arrayBuffer = await file.arrayBuffer()
     const uint8Array = new Uint8Array(arrayBuffer)
     
-    console.log(`📄 Parsing PDF: ${file.name} (${uint8Array.length} bytes)`)
+    console.log(`Parsing PDF: ${file.name} (${uint8Array.length} bytes)`)
     
     const { text, totalPages } = await extractText(uint8Array)
     
-    console.log(`📄 PDF loaded: ${totalPages} pages`)
+    console.log(`PDF loaded: ${totalPages} pages`)
     
     const cleanedText = cleanText(text)
     const charCount = cleanedText.length
@@ -127,7 +127,7 @@ async function parsePdfFile(file: File): Promise<ParsedDocument> {
       parseQuality = 'partial'
     }
 
-    console.log(`✅ PDF parsed: ${charCount} chars from ${totalPages} pages, quality: ${parseQuality}`)
+    console.log(`PDF parsed: ${charCount} chars from ${totalPages} pages, quality: ${parseQuality}`)
 
     return {
       rawText: cleanedText,

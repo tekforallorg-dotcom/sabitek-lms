@@ -74,7 +74,7 @@ function InviteLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gray-200 rounded-xl animate-pulse" />
             <div className="flex-1 space-y-2">
@@ -194,11 +194,11 @@ export default function JoinByTokenPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
           <div className="w-14 h-14 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-4">
             <AlertCircle className="w-7 h-7 text-red-500" />
           </div>
-          <h1 className="text-lg font-bold text-gray-900 mb-2">Invite Unavailable</h1>
+          <h1 className="text-lg font-medium text-gray-900 mb-2">Invite Unavailable</h1>
           <p className="text-sm text-gray-600 mb-6">{error}</p>
           <Link href="/">
             <Button className="w-full bg-red-600 hover:bg-red-700 rounded-xl">
@@ -217,30 +217,30 @@ export default function JoinByTokenPage() {
     const requiresApproval = acceptResult.requires_approval
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="text-center">
             <div
               className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                requiresApproval ? 'bg-amber-50' : 'bg-emerald-50'
+                requiresApproval ? 'bg-amber-50' : 'bg-green-50'
               }`}
             >
               {requiresApproval ? (
                 <Clock className="w-8 h-8 text-amber-500" />
               ) : (
-                <CheckCircle className="w-8 h-8 text-emerald-500" />
+                <CheckCircle className="w-8 h-8 text-green-500" />
               )}
             </div>
 
-            <h1 className="text-xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl font-medium text-gray-900 mb-2">
               {acceptResult.already_member
                 ? "You're already in this cohort"
                 : requiresApproval
                 ? 'Application Submitted'
-                : '🎉 Welcome to the cohort!'}
+                : 'Welcome to the cohort!'}
             </h1>
 
             <p className="text-sm text-gray-600 mb-2">
-              <span className="font-semibold text-gray-900">{acceptResult.cohort_name}</span>
+              <span className="font-medium text-gray-900">{acceptResult.cohort_name}</span>
             </p>
             <p className="text-xs text-gray-500 mb-6">Part of {acceptResult.program_name}</p>
 
@@ -296,17 +296,17 @@ export default function JoinByTokenPage() {
         {/* Sabitek top bar */}
         <div className="flex items-center justify-center mb-4">
           <div className="flex items-center gap-1">
-            <span className="text-lg font-bold text-gray-900">Sabitek</span>
+            <span className="text-lg font-medium text-gray-900">Sabitek</span>
             <Sparkles className="w-4 h-4 text-red-500" />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Institution header — uses their accent color */}
           <div
             className="p-5 border-b border-gray-100"
             style={{
-              background: `linear-gradient(135deg, ${accentColor}0D 0%, ${accentColor}05 100%)`,
+              background: `${accentColor}0D`,
             }}
           >
             <div className="flex items-center gap-3">
@@ -325,17 +325,17 @@ export default function JoinByTokenPage() {
                 <p className="text-xs text-gray-500 capitalize">
                   {preview.institution.type.replace('_', ' ')}
                 </p>
-                <p className="font-semibold text-gray-900 truncate">{preview.institution.name}</p>
+                <p className="font-medium text-gray-900 truncate">{preview.institution.name}</p>
               </div>
             </div>
           </div>
 
           {/* Invitation pitch */}
           <div className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
               You&apos;re invited to join
             </p>
-            <h1 className="text-xl font-bold text-gray-900 mb-1">{preview.cohort.name}</h1>
+            <h1 className="text-xl font-medium text-gray-900 mb-1">{preview.cohort.name}</h1>
             <p className="text-sm text-gray-600 mb-4">Part of {preview.program.name}</p>
 
             {preview.cohort.description && (
@@ -385,7 +385,7 @@ export default function JoinByTokenPage() {
             {/* Unusable invite warning */}
             {!usable && (
               <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
                 <p className="text-sm text-red-700">
                   {unusableMessage[reason || ''] ||
                     'This invite is no longer active. Please contact the institution for a new one.'}
@@ -396,7 +396,7 @@ export default function JoinByTokenPage() {
             {/* Accept error */}
             {acceptError && usable && (
               <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
                 <p className="text-sm text-red-700">{acceptError}</p>
               </div>
             )}

@@ -56,17 +56,6 @@ type ApplyInput = z.infer<typeof applySchema>
 function PanelBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" />
-      <div className="absolute bottom-0 -right-24 w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" />
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse at center, black, transparent 75%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at center, black, transparent 75%)',
-        }}
-      />
     </div>
   )
 }
@@ -168,28 +157,27 @@ export default function InstitutionApplyPage() {
   if (!user) {
     if (authLoading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="w-6 h-6 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
         </div>
       )
     }
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-[#fffcfb] px-4">
+      <div className="relative min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <PanelBackdrop />
-        <Card className="relative w-full max-w-md bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+        <Card className="relative w-full max-w-md bg-white rounded-xl border border-gray-200">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-red-500" />
             </div>
-            <CardTitle className="font-semibold tracking-tight">Sign In Required</CardTitle>
+            <CardTitle className="font-medium tracking-tight">Sign In Required</CardTitle>
             <CardDescription>
               You need to be signed in to apply for an institution account.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/auth/login?redirect=/institution/apply">
-              <Button className="relative overflow-hidden w-full bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+              <Button className="relative overflow-hidden w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
                 Sign In to Continue
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -205,19 +193,19 @@ export default function InstitutionApplyPage() {
     return (
       <div className="min-h-screen flex">
         {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[#fffcfb] border-r border-rose-100">
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-50 border-r border-gray-200">
           <PanelBackdrop />
 
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
             <Link href="/" className="flex items-center gap-2 mb-12">
-              <h1 className="text-4xl font-semibold tracking-tight flex items-center gap-1">
+              <h1 className="text-4xl font-medium tracking-tight flex items-center gap-1">
                 <span className="text-gray-900">Sabitek</span>
                 <Sparkles className="w-7 h-7 text-red-500" />
               </h1>
             </Link>
 
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-3">Institution application</p>
-            <h2 className="text-4xl xl:text-5xl font-semibold tracking-tight text-gray-900 mb-4 leading-tight">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-3">Institution application</p>
+            <h2 className="text-4xl xl:text-5xl font-medium tracking-tight text-gray-900 mb-4 leading-tight">
               Application<br />
               <span className="font-serif italic text-red-600">submitted</span>
             </h2>
@@ -229,13 +217,13 @@ export default function InstitutionApplyPage() {
         </div>
 
         {/* Right Side - Success Message */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-[#fffcfb]">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
           <div className="w-full max-w-md text-center">
-            <div className="w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-emerald-500" />
+            <div className="w-20 h-20 bg-green-50 border border-green-100 rounded-xl flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
 
-            <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2">
+            <h2 className="text-2xl font-medium tracking-tight text-gray-900 mb-2">
               Application <span className="font-serif italic text-red-600">received</span>
             </h2>
 
@@ -243,19 +231,19 @@ export default function InstitutionApplyPage() {
               Your application for <strong>{createdInstitution.name}</strong> has been submitted successfully.
             </p>
 
-            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 mb-6 text-left">
-              <h3 className="font-semibold tracking-tight text-gray-900 mb-3">What happens next?</h3>
+            <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6 mb-6 text-left">
+              <h3 className="font-medium tracking-tight text-gray-900 mb-3">What happens next?</h3>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-rose-50 border border-rose-100 text-red-600 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">1</span>
+                  <span className="w-5 h-5 bg-red-50 border border-gray-200 text-red-600 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-1">1</span>
                   <span>Our team will review your application within 2-3 business days</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-rose-50 border border-rose-100 text-red-600 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">2</span>
+                  <span className="w-5 h-5 bg-red-50 border border-gray-200 text-red-600 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-1">2</span>
                   <span>You&apos;ll receive an email notification about the status</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-rose-50 border border-rose-100 text-red-600 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">3</span>
+                  <span className="w-5 h-5 bg-red-50 border border-gray-200 text-red-600 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-1">3</span>
                   <span>Once approved, you can start creating programs and inviting team members</span>
                 </li>
               </ul>
@@ -263,14 +251,13 @@ export default function InstitutionApplyPage() {
 
             <div className="flex flex-col gap-3">
               <Link href="/dashboard">
-                <Button className="relative overflow-hidden w-full bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+                <Button className="relative overflow-hidden w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
                   Go to Dashboard
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
               <Link href="/">
-                <Button variant="outline" className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
+                <Button variant="outline" className="w-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">
                   Back to Home
                 </Button>
               </Link>
@@ -284,19 +271,19 @@ export default function InstitutionApplyPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[#fffcfb] border-r border-rose-100">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-50 border-r border-gray-200">
         <PanelBackdrop />
 
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
           <Link href="/" className="flex items-center gap-2 mb-12">
-            <h1 className="text-4xl font-semibold tracking-tight flex items-center gap-1">
+            <h1 className="text-4xl font-medium tracking-tight flex items-center gap-1">
               <span className="text-gray-900">Sabitek</span>
               <Sparkles className="w-7 h-7 text-red-500" />
             </h1>
           </Link>
 
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-3">For institutions</p>
-          <h2 className="text-4xl xl:text-5xl font-semibold tracking-tight text-gray-900 mb-4 leading-tight">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-3">For institutions</p>
+          <h2 className="text-4xl xl:text-5xl font-medium tracking-tight text-gray-900 mb-4 leading-tight">
             Partner with<br />
             <span className="font-serif italic text-red-600">Sabitek</span>
           </h2>
@@ -312,7 +299,7 @@ export default function InstitutionApplyPage() {
               { icon: Globe, text: 'Built for African learners' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3 text-gray-700">
-                <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
                   <item.icon className="w-4 h-4 text-red-500" />
                 </div>
                 <span>{item.text}</span>
@@ -323,19 +310,19 @@ export default function InstitutionApplyPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-start justify-center p-4 sm:p-8 bg-[#fffcfb] overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-start justify-center p-4 sm:p-8 bg-gray-50 overflow-y-auto">
         <div className="w-full max-w-lg py-4">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-1">
+            <h1 className="text-2xl font-medium tracking-tight flex items-center gap-1">
               <span className="text-gray-900">Sabitek</span>
               <Sparkles className="w-5 h-5 text-red-500" />
             </h1>
           </div>
 
           <div className="mb-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Institution account</p>
-            <h2 className="text-2xl font-semibold tracking-tight text-gray-900">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">Institution account</p>
+            <h2 className="text-2xl font-medium tracking-tight text-gray-900">
               Apply for an <span className="font-serif italic text-red-600">institution</span> account
             </h2>
             <p className="text-gray-600 mt-1">
@@ -344,7 +331,7 @@ export default function InstitutionApplyPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-red-700 text-sm">
+            <div className="mb-6 p-4 bg-red-50 border border-gray-200 rounded-xl text-red-700 text-sm">
               {error}
             </div>
           )}
@@ -352,7 +339,7 @@ export default function InstitutionApplyPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Institution Type */}
             <div>
-              <label className="block text-[13px] font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Institution Type *
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -363,8 +350,8 @@ export default function InstitutionApplyPage() {
                     onClick={() => handleTypeChange(option.value)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       selectedType === option.value
-                        ? 'border-red-400 bg-rose-50/70 ring-1 ring-rose-200'
-                        : 'border-rose-100 hover:border-rose-200 bg-white/70'
+                        ? 'border-red-400 bg-gray-50 ring-1 ring-gray-200'
+                        : 'border-gray-200 hover:border-gray-200 bg-white/70'
                     }`}
                   >
                     <option.icon className={`w-5 h-5 mb-1 ${
@@ -385,7 +372,7 @@ export default function InstitutionApplyPage() {
 
             {/* Institution Name */}
             <div>
-              <label className="block text-[13px] font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Institution Name *
               </label>
               <div className="relative">
@@ -400,7 +387,7 @@ export default function InstitutionApplyPage() {
                     selectedType === 'government' ? 'e.g., Federal Ministry of Education' :
                     'e.g., African Leadership Academy'
                   }
-                  className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               {errors.name && (
@@ -410,14 +397,14 @@ export default function InstitutionApplyPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-[13px] font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
               <textarea
                 {...register('description')}
                 placeholder="Brief description of your institution..."
                 rows={3}
-                className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none"
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
@@ -426,7 +413,7 @@ export default function InstitutionApplyPage() {
 
             {/* ── Vertical-Specific Extra Fields ── */}
             {requiredFieldsPack.fields.length > 0 && (
-              <div className="bg-rose-50/50 border border-rose-100 rounded-2xl p-4 space-y-4">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                   <Info className="w-4 h-4 text-red-500" />
                   <span>
@@ -441,7 +428,7 @@ export default function InstitutionApplyPage() {
 
                 {requiredFieldsPack.fields.map((field) => (
                   <div key={field.key}>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       {field.label}
                       {field.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -452,7 +439,7 @@ export default function InstitutionApplyPage() {
                         onChange={(e) =>
                           setVerticalFields((prev) => ({ ...prev, [field.key]: e.target.value }))
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm cursor-pointer"
                         required={field.required}
                       >
                         <option value="">Select {field.label.toLowerCase()}...</option>
@@ -471,7 +458,7 @@ export default function InstitutionApplyPage() {
                         }
                         placeholder={field.placeholder || ''}
                         required={field.required}
-                        className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                        className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                       />
                     ) : (
                       <Input
@@ -482,7 +469,7 @@ export default function InstitutionApplyPage() {
                         }
                         placeholder={field.placeholder || ''}
                         required={field.required}
-                        className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                        className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                       />
                     )}
                   </div>
@@ -493,7 +480,7 @@ export default function InstitutionApplyPage() {
             {/* Location */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Country *
                 </label>
                 <div className="relative">
@@ -501,7 +488,7 @@ export default function InstitutionApplyPage() {
                   <Input
                     {...register('country')}
                     placeholder="Nigeria"
-                    className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                 </div>
                 {errors.country && (
@@ -509,13 +496,13 @@ export default function InstitutionApplyPage() {
                 )}
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   State *
                 </label>
                 <Input
                   {...register('state')}
                   placeholder="e.g., Lagos"
-                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
                 {errors.state && (
                   <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
@@ -525,23 +512,23 @@ export default function InstitutionApplyPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   LGA (optional)
                 </label>
                 <Input
                   {...register('lga')}
                   placeholder="Local Government Area"
-                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Address (optional)
                 </label>
                 <Input
                   {...register('address')}
                   placeholder="Street address"
-                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
             </div>
@@ -549,7 +536,7 @@ export default function InstitutionApplyPage() {
             {/* Contact Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Contact Email
                 </label>
                 <div className="relative">
@@ -558,7 +545,7 @@ export default function InstitutionApplyPage() {
                     {...register('contact_email')}
                     type="email"
                     placeholder="admin@institution.edu"
-                    className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                 </div>
                 {errors.contact_email && (
@@ -566,7 +553,7 @@ export default function InstitutionApplyPage() {
                 )}
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Contact Phone
                 </label>
                 <div className="relative">
@@ -574,7 +561,7 @@ export default function InstitutionApplyPage() {
                   <Input
                     {...register('contact_phone')}
                     placeholder="+234 800 000 0000"
-                    className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                 </div>
               </div>
@@ -582,7 +569,7 @@ export default function InstitutionApplyPage() {
 
             {/* Website */}
             <div>
-              <label className="block text-[13px] font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Website (optional)
               </label>
               <div className="relative">
@@ -590,7 +577,7 @@ export default function InstitutionApplyPage() {
                 <Input
                   {...register('website')}
                   placeholder="https://www.institution.edu"
-                  className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               {errors.website && (
@@ -601,9 +588,8 @@ export default function InstitutionApplyPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="relative overflow-hidden w-full h-12 text-base bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="relative overflow-hidden w-full h-12 text-base bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -97,12 +97,12 @@ export function WalletTopupModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -110,7 +110,7 @@ export function WalletTopupModal({
               <Wallet className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Top Up Wallet</h2>
+              <h2 className="text-lg font-medium text-gray-900">Top Up Wallet</h2>
               <p className="text-sm text-gray-500">
                 Balance: {balance?.balanceFormatted || '₦0'}
               </p>
@@ -188,13 +188,13 @@ export function WalletTopupModal({
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Amount to add</span>
-                <span className="text-xl font-bold text-gray-900">
+                <span className="text-xl font-medium text-gray-900">
                   {formatAmount(amountKobo)}
                 </span>
               </div>
               <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                 <span className="text-gray-600">New balance</span>
-                <span className="text-lg font-semibold text-green-600">
+                <span className="text-lg font-medium text-green-600">
                   {formatAmount((balance?.balanceKobo || 0) + amountKobo)}
                 </span>
               </div>
@@ -249,16 +249,16 @@ export function TopupSuccessModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
       
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 text-center">
+      <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-sm mx-4 p-6 text-center">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
         
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl font-medium text-gray-900 mb-2">
           Top Up Successful!
         </h2>
         
@@ -268,7 +268,7 @@ export function TopupSuccessModal({
         
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <p className="text-sm text-gray-500">New Balance</p>
-          <p className="text-2xl font-bold text-green-600">{newBalance}</p>
+          <p className="text-2xl font-medium text-green-600">{newBalance}</p>
         </div>
         
         <button

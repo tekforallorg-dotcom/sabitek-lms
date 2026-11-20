@@ -11,7 +11,6 @@ import {
   AuthShell,
   AuthCard,
   AuthDivider,
-  BtnSheen,
   authInputClass,
   authPrimaryBtnClass,
 } from '@/components/auth/AuthShell'
@@ -107,14 +106,14 @@ export default function LoginPage() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100 flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-[13px] font-medium text-gray-700">Email Address</label>
+            <label className="text-sm font-medium text-gray-700">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
@@ -128,7 +127,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[13px] font-medium text-gray-700">Password</label>
+            <label className="text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
@@ -152,7 +151,6 @@ export default function LoginPage() {
           </div>
 
           <Button type="submit" disabled={isLoading} className={authPrimaryBtnClass}>
-            <BtnSheen />
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -161,7 +159,7 @@ export default function LoginPage() {
             ) : (
               <span className="flex items-center justify-center gap-2">
                 Sign In
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="w-4 h-4 transition-transform" />
               </span>
             )}
           </Button>
@@ -172,14 +170,14 @@ export default function LoginPage() {
             {publicSignupOpen ? (
               <p className="text-sm text-gray-600">
                 Don&apos;t have an account?{' '}
-                <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-semibold">
+                <Link href="/auth/register" className="text-red-500 hover:text-red-600 font-medium">
                   Sign up for free
                 </Link>
               </p>
             ) : (
               <p className="text-sm text-gray-600">
                 New to Sabitek?{' '}
-                <Link href="/request-access" className="text-red-500 hover:text-red-600 font-semibold">
+                <Link href="/request-access" className="text-red-500 hover:text-red-600 font-medium">
                   Get Started
                 </Link>
               </p>

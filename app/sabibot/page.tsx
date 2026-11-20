@@ -64,8 +64,8 @@ export default function SabiBotPage() {
       title: 'Tech Roadmaps',
       description: 'Frontend, Backend, DevOps, Data Science paths',
       icon: TrendingUp,
-      lightColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
+      lightColor: 'bg-gray-50',
+      textColor: 'text-gray-600',
       features: ['Step-by-step paths', 'Resource recommendations', 'Timeline estimates'],
     },
     {
@@ -73,8 +73,8 @@ export default function SabiBotPage() {
       title: 'Certification Help',
       description: 'AWS, Azure, Google Cloud, CompTIA guidance',
       icon: BookOpen,
-      lightColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
+      lightColor: 'bg-amber-50',
+      textColor: 'text-amber-600',
       features: ['Exam strategies', 'Study resources', 'Practice tips'],
     },
   ]
@@ -90,7 +90,7 @@ export default function SabiBotPage() {
   const stats = [
     { icon: Globe, value: '5', label: 'Languages', color: 'bg-blue-100', iconColor: 'text-blue-600' },
     { icon: Clock, value: '24/7', label: 'Available', color: 'bg-green-100', iconColor: 'text-green-600' },
-    { icon: Brain, value: 'Free', label: 'Unlimited', color: 'bg-purple-100', iconColor: 'text-purple-600' },
+    { icon: Brain, value: 'Free', label: 'Unlimited', color: 'bg-gray-100', iconColor: 'text-gray-600' },
   ]
 
   const samplePrompts = [
@@ -123,15 +123,15 @@ export default function SabiBotPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-red-500" />
-              <span className="font-semibold text-gray-900">SabiBot</span>
+              <span className="font-medium text-gray-900">SabiBot</span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
   {/* Desktop: Show all languages */}
-  <div className="hidden sm:flex flex-wrap gap-1.5">
+  <div className="hidden sm:flex flex-wrap gap-2">
     {languages.map(lang => (
       <span 
         key={lang.name}
-        className="px-2 py-0.5 bg-gray-100 rounded-full text-xs flex items-center gap-1"
+        className="px-2 py-1 bg-gray-100 rounded-full text-xs flex items-center gap-1"
       >
         <span>{lang.flag}</span>
         <span>{lang.name}</span>
@@ -139,7 +139,7 @@ export default function SabiBotPage() {
     ))}
   </div>
   {/* Mobile: Show only UK + Nigeria flags */}
-  <div className="flex sm:hidden gap-1.5">
+  <div className="flex sm:hidden gap-2">
     <span className="px-2 py-1 bg-gray-100 rounded-full text-sm">🇬🇧</span>
     <span className="px-2 py-1 bg-gray-100 rounded-full text-sm">🇳🇬</span>
   </div>
@@ -150,18 +150,18 @@ export default function SabiBotPage() {
 
       {/* Hero - Compact with Gradient */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        <div className="absolute inset-0 bg-red-100"></div>
+        <div className="absolute inset-0"></div>
         
         <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-red-200">
+            <div className="inline-flex items-center gap-2 bg-white text-red-600 px-4 py-2 rounded-full text-xs font-medium mb-3 border border-red-200">
               <Zap className="w-3 h-3" />
               AI Learning Companion
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-              Your Personal <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">Study Buddy</span>
+            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-2">
+              Your Personal <span className="text-red-600">Study Buddy</span>
             </h1>
             
             <p className="text-sm text-gray-600 max-w-xl mx-auto mb-4">
@@ -171,7 +171,7 @@ export default function SabiBotPage() {
             <button
               onClick={() => handleStartChat()}
               disabled={isStarting}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-lg font-medium text-sm transition-all disabled:opacity-50"
             >
               {isStarting ? (
                 <>
@@ -196,7 +196,7 @@ export default function SabiBotPage() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Sample Prompts */}
         {user && (
-          <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-3 mb-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-5">
             <div className="flex items-center gap-2 mb-2">
               <MessageSquare className="w-4 h-4 text-gray-600" />
               <span className="text-sm font-medium text-gray-700">Try asking:</span>
@@ -206,7 +206,7 @@ export default function SabiBotPage() {
                 <button
                   key={idx}
                   onClick={() => handleStartChat(prompt)}
-                  className="text-xs bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 px-3 py-1.5 rounded-lg text-gray-700 hover:text-red-700 transition-colors"
+                  className="text-xs bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 px-3 py-2 rounded-lg text-gray-700 hover:text-red-700 transition-colors"
                 >
                   &quot;{prompt.length > 40 ? prompt.slice(0, 40) + '...' : prompt}&quot;
                 </button>
@@ -223,7 +223,7 @@ export default function SabiBotPage() {
               <div
                 key={cap.id}
                 onClick={() => handleStartChat()}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all group cursor-pointer"
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-all group cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 ${cap.lightColor} rounded-lg flex-shrink-0`}>
@@ -231,16 +231,16 @@ export default function SabiBotPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                      <h3 className="text-sm font-medium text-gray-900 group-hover:text-red-600 transition-colors">
                         {cap.title}
                       </h3>
-                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-all" />
                     </div>
                     <p className="text-xs text-gray-500 mb-2">{cap.description}</p>
                     
                     <div className="space-y-1">
                       {cap.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
                           <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                           {feature}
                         </div>
@@ -262,7 +262,7 @@ export default function SabiBotPage() {
                 <div className={`w-8 h-8 ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
                   <Icon className={`w-4 h-4 ${stat.iconColor}`} />
                 </div>
-                <h3 className="text-sm font-bold">{stat.value}</h3>
+                <h3 className="text-sm font-medium">{stat.value}</h3>
                 <p className="text-xs text-gray-500">{stat.label}</p>
               </div>
             )
@@ -278,8 +278,8 @@ export default function SabiBotPage() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Icon className="w-4 h-4 text-gray-700" />
                 </div>
-                <h3 className="text-xs font-semibold text-gray-900 mb-0.5">{feature.title}</h3>
-                <p className="text-[10px] text-gray-500">{feature.desc}</p>
+                <h3 className="text-xs font-medium text-gray-900 mb-1">{feature.title}</h3>
+                <p className="text-xs text-gray-500">{feature.desc}</p>
               </div>
             )
           })}
@@ -287,7 +287,7 @@ export default function SabiBotPage() {
 
         {/* How It Works */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 text-center">How It Works</h2>
+          <h2 className="text-sm font-medium text-gray-900 mb-3 text-center">How It Works</h2>
           <div className="grid grid-cols-4 gap-3">
             {[
               { num: 1, title: 'Start Chat', desc: 'Ask anything' },
@@ -296,11 +296,11 @@ export default function SabiBotPage() {
               { num: 4, title: 'Achieve Goals', desc: 'Step by step' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg flex items-center justify-center mx-auto mb-1.5 text-sm font-bold">
+                <div className="w-8 h-8 bg-red-600 text-white rounded-lg flex items-center justify-center mx-auto mb-2 text-sm font-medium">
                   {step.num}
                 </div>
-                <h3 className="font-semibold text-gray-900 text-xs mb-0.5">{step.title}</h3>
-                <p className="text-[10px] text-gray-500">{step.desc}</p>
+                <h3 className="font-medium text-gray-900 text-xs mb-1">{step.title}</h3>
+                <p className="text-xs text-gray-500">{step.desc}</p>
               </div>
             ))}
           </div>

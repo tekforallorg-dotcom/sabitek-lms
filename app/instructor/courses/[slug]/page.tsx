@@ -44,7 +44,7 @@ import SabiLoader from '@/components/ui/SabiLoader'
 const RichTextEditor = dynamic(() => import('@/components/editor/rich-text-editor'), {
   ssr: false,
   loading: () => (
-    <div className="w-full min-h-[200px] rounded-xl border border-rose-100 bg-rose-50/40 animate-pulse flex items-center justify-center text-sm text-gray-400">
+    <div className="w-full min-h-[200px] rounded-xl border border-gray-200 bg-gray-50 animate-pulse flex items-center justify-center text-sm text-gray-400">
       Loading editor...
     </div>
   ),
@@ -116,36 +116,36 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
   }
 
   const bgMap = {
-    info: 'from-blue-500 to-blue-600',
-    success: 'from-green-500 to-emerald-600',
-    error: 'from-red-500 to-rose-600',
-    warning: 'from-amber-500 to-orange-500',
-    confirm: 'from-amber-500 to-orange-500',
+    info: 'bg-blue-600',
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    warning: 'bg-amber-600',
+    confirm: 'bg-amber-600',
   }
 
   const getButtonClass = (variant?: string) => {
     switch (variant) {
       case 'primary':
-        return 'bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50'
+        return 'bg-red-600 hover:bg-red-700 text-white font-medium ring-1 ring-red-600/50'
       case 'danger':
-        return 'bg-gradient-to-b from-red-600 to-rose-700 hover:to-rose-600 text-white font-semibold ring-1 ring-red-700/50'
+        return 'bg-red-600 hover:bg-red-700 text-white font-medium ring-1 ring-red-700/50'
       case 'secondary':
       default:
-        return 'bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white shadow-sm'
+        return 'bg-white border border-gray-200 hover:border-gray-200 hover:bg-white shadow-sm'
     }
   }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-      <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+      <div className="relative bg-white rounded-xl border border-gray-200 max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className={`${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               {iconMap[type]}
             </div>
-            <h3 className="text-lg font-semibold tracking-tight text-white">{title}</h3>
+            <h3 className="text-lg font-medium tracking-tight text-white">{title}</h3>
           </div>
         </div>
 
@@ -169,7 +169,7 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
           ) : (
             <Button
               onClick={onClose}
-              className="bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50"
+              className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50"
               size="sm"
             >
               OK
@@ -856,14 +856,14 @@ export default function CourseManagementPage() {
 
   if (loading || courseLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading course..." size="lg" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Modal */}
       <Modal
         isOpen={modal.isOpen}
@@ -876,8 +876,6 @@ export default function CourseManagementPage() {
 
       {/* Hero Header */}
       <section className="relative overflow-hidden">
-        <div className="absolute -top-24 right-[10%] w-72 h-72 bg-rose-100/60 rounded-full blur-3xl" aria-hidden="true" />
-        <div className="absolute -bottom-32 left-[5%] w-80 h-80 bg-red-100/50 rounded-full blur-3xl" aria-hidden="true" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -890,33 +888,33 @@ export default function CourseManagementPage() {
 
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">
                 Course builder
               </p>
               <div className="flex items-center gap-3 mb-3">
                 {course?.status === 'published' ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true" />
                     Published
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
                     Draft
                   </span>
                 )}
                 {course?.is_free ? (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-100">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
                     Free
                   </span>
                 ) : (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                     ₦{course?.price?.toLocaleString()}
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900 mb-2">
                 {(() => {
                   const words = (course?.title || '').trim().split(' ')
                   const last = words.pop()
@@ -932,19 +930,19 @@ export default function CourseManagementPage() {
               <p className="text-gray-500 text-sm max-w-2xl line-clamp-2">{course?.description}</p>
 
               <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-red-500" />
                   {modules.length} module{modules.length !== 1 ? 's' : ''}
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-red-500" />
                   {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 text-red-500" />
                   {course?.difficulty_level}
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-red-500" />
                   {course?.category}
                 </span>
@@ -955,48 +953,47 @@ export default function CourseManagementPage() {
               <Button
                 onClick={() => setIsEditingCourse(true)}
                 variant="outline"
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                 size="sm"
               >
-                <Edit3 className="w-4 h-4 mr-1.5" />
+                <Edit3 className="w-4 h-4 mr-2" />
                 Edit
               </Button>
               <Button
                 onClick={() => window.open(`/courses/${course?.slug}`, '_blank', 'noopener,noreferrer')}
                 variant="outline"
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                 size="sm"
               >
-                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                <Eye className="w-3.5 h-3.5 mr-2" />
                 Preview as learner
               </Button>
               <Button
                 onClick={() => router.push(`/instructor/courses/${course?.slug}/analytics`)}
                 variant="outline"
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                 size="sm"
               >
-                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                <BarChart3 className="w-3.5 h-3.5 mr-2" />
                 Analytics
               </Button>
               {course?.status === 'published' ? (
                 <Button
                   onClick={unpublishCourse}
                   variant="outline"
-                  className="bg-white/70 backdrop-blur border border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 rounded-full shadow-sm"
+                  className="bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 rounded-full shadow-sm"
                   size="sm"
                 >
-                  <EyeOff className="w-4 h-4 mr-1.5" />
+                  <EyeOff className="w-4 h-4 mr-2" />
                   Unpublish
                 </Button>
               ) : (
                 <Button
                   onClick={confirmPublish}
-                  className="relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-green-600 hover:bg-green-700 text-white font-medium rounded-full ring-1 ring-green-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <Globe className="w-4 h-4 mr-1.5" />
+                  <Globe className="w-4 h-4 mr-2" />
                   Publish
                 </Button>
               )}
@@ -1006,7 +1003,7 @@ export default function CourseManagementPage() {
                 className="bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 rounded-full"
                 size="sm"
               >
-                <Trash2 className="w-4 h-4 mr-1.5" />
+                <Trash2 className="w-4 h-4 mr-2" />
                 Delete
               </Button>
             </div>
@@ -1016,8 +1013,8 @@ export default function CourseManagementPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Publish Stepper */}
-        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] px-5 py-4">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+        <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 px-5 py-4">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-3">
             {/* Step 1: Details */}
             <button
@@ -1025,18 +1022,18 @@ export default function CourseManagementPage() {
               onClick={() => scrollToSection('builder-details')}
               className="flex items-center gap-3 text-left group"
             >
-              <span className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center flex-shrink-0">
+              <span className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                 <Check className="w-4 h-4 text-white" />
               </span>
               <span>
-                <span className="block text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                <span className="block text-sm font-medium text-gray-900 group-hover:text-red-600 transition-colors">
                   Details
                 </span>
                 <span className="block text-xs text-gray-500">Course info saved</span>
               </span>
             </button>
 
-            <span className="hidden sm:block h-px flex-1 bg-rose-100" aria-hidden="true" />
+            <span className="hidden sm:block h-px flex-1 bg-red-100" aria-hidden="true" />
 
             {/* Step 2: Curriculum */}
             <button
@@ -1045,16 +1042,16 @@ export default function CourseManagementPage() {
               className="flex items-center gap-3 text-left group"
             >
               {curriculumComplete ? (
-                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center flex-shrink-0">
+                <span className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                   <Check className="w-4 h-4 text-white" />
                 </span>
               ) : (
-                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-white">
+                <span className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0 text-sm font-medium text-white">
                   2
                 </span>
               )}
               <span>
-                <span className="block text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                <span className="block text-sm font-medium text-gray-900 group-hover:text-red-600 transition-colors">
                   Curriculum
                 </span>
                 <span className="block text-xs text-gray-500">
@@ -1063,29 +1060,29 @@ export default function CourseManagementPage() {
               </span>
             </button>
 
-            <span className="hidden sm:block h-px flex-1 bg-rose-100" aria-hidden="true" />
+            <span className="hidden sm:block h-px flex-1 bg-red-100" aria-hidden="true" />
 
             {/* Step 3: Publish */}
             <div className="flex items-center gap-3">
               {isPublished ? (
-                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center flex-shrink-0">
+                <span className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
                   <Check className="w-4 h-4 text-white" />
                 </span>
               ) : curriculumComplete ? (
-                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-white">
+                <span className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0 text-sm font-medium text-white">
                   3
                 </span>
               ) : (
-                <span className="w-9 h-9 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-gray-400">
+                <span className="w-9 h-9 rounded-full bg-red-50 border border-gray-200 flex items-center justify-center flex-shrink-0 text-sm font-medium text-gray-400">
                   3
                 </span>
               )}
               <span>
-                <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
                   Publish
                   {isPublished && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                      <span className="w-1 h-1 rounded-full bg-emerald-500" aria-hidden="true" />
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                      <span className="w-1 h-1 rounded-full bg-green-500" aria-hidden="true" />
                       Live
                     </span>
                   )}
@@ -1098,10 +1095,9 @@ export default function CourseManagementPage() {
                 <Button
                   onClick={confirmPublish}
                   size="sm"
-                  className="ml-1 relative overflow-hidden bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5"
+                  className="ml-1 relative overflow-hidden bg-green-600 hover:bg-green-700 text-white font-medium rounded-full ring-1 ring-green-600/50 transition-all"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <Globe className="w-4 h-4 mr-1.5" />
+                  <Globe className="w-4 h-4 mr-2" />
                   Publish
                 </Button>
               )}
@@ -1113,16 +1109,16 @@ export default function CourseManagementPage() {
         {isEditingCourse && (
           <Card
             id="builder-details"
-            className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]"
+            className="relative overflow-hidden bg-white rounded-xl border border-gray-200"
           >
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                   <Edit3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-semibold tracking-tight">Edit Course Details</CardTitle>
+                  <CardTitle className="text-lg font-medium tracking-tight">Edit Course Details</CardTitle>
                   <CardDescription className="text-xs">Update your course information</CardDescription>
                 </div>
               </div>
@@ -1130,19 +1126,19 @@ export default function CourseManagementPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Course Title <span className="text-red-500">*</span>
                   </label>
                   <Input
                     value={courseForm.title}
                     onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
                     placeholder="Enter course title"
-                    className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description <span className="text-red-500">*</span>
                     <span className="text-xs text-gray-500 ml-2">
                       ({courseForm.description.length}/500 characters)
@@ -1153,18 +1149,18 @@ export default function CourseManagementPage() {
                     maxLength={500}
                     value={courseForm.description}
                     onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-                    className="flex w-full rounded-xl border border-rose-100 bg-white/70 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="flex w-full rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     placeholder="Describe what students will learn..."
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Category</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                     <select
                       value={courseForm.category}
                       onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400"
+                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
                     >
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>
@@ -1175,11 +1171,11 @@ export default function CourseManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Difficulty Level</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty Level</label>
                     <select
                       value={courseForm.difficulty_level}
                       onChange={(e) => setCourseForm({ ...courseForm, difficulty_level: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400"
+                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
                     >
                       <option value="beginner">Beginner</option>
                       <option value="intermediate">Intermediate</option>
@@ -1189,7 +1185,7 @@ export default function CourseManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Cover Image</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
                   <FileUploader
                     label="Upload Cover Image"
                     accept="image/*"
@@ -1200,12 +1196,12 @@ export default function CourseManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Intro Video URL (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Intro Video URL (Optional)</label>
                   <Input
                     value={courseForm.intro_video_url}
                     onChange={(e) => setCourseForm({ ...courseForm, intro_video_url: e.target.value })}
                     placeholder="YouTube or Vimeo link"
-                    className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                    className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                   />
                 </div>
 
@@ -1215,7 +1211,7 @@ export default function CourseManagementPage() {
                     id="is_free_edit"
                     checked={courseForm.is_free}
                     onChange={(e) => setCourseForm({ ...courseForm, is_free: e.target.checked })}
-                    className="h-4 w-4 rounded border-rose-200 text-red-500 focus:ring-red-400"
+                    className="h-4 w-4 rounded border-gray-200 text-red-500 focus:ring-red-400"
                   />
                   <label htmlFor="is_free_edit" className="text-sm font-medium text-gray-700">
                     This course is free
@@ -1224,26 +1220,25 @@ export default function CourseManagementPage() {
 
                 {!courseForm.is_free && (
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Price (₦)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (₦)</label>
                     <Input
                       type="number"
                       value={courseForm.price}
                       onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) || 0 })}
                       placeholder="0.00"
-                      className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                      className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     />
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-rose-100">
-                  <Button variant="outline" onClick={() => setIsEditingCourse(false)} className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <Button variant="outline" onClick={() => setIsEditingCourse(false)} className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">
                     Cancel
                   </Button>
                   <Button
                     onClick={handleUpdateCourse}
-                    className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                    className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   >
-                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                     Save Changes
                   </Button>
                 </div>
@@ -1257,20 +1252,20 @@ export default function CourseManagementPage() {
              ══════════════════════════════════════════════════════════════ */}
         <Card
           id="builder-curriculum"
-          className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]"
+          className="relative overflow-hidden bg-white rounded-xl border border-gray-200"
         >
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                   <Layers className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                  <CardTitle className="text-lg font-medium tracking-tight flex items-center gap-2">
                     Course Modules
                     {isSavingModuleOrder && (
-                      <span className="text-xs font-normal text-gray-500 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">
+                      <span className="text-xs font-normal text-gray-500 bg-red-50 border border-gray-200 px-2 py-1 rounded-full">
                         Saving...
                       </span>
                     )}
@@ -1286,11 +1281,10 @@ export default function CourseManagementPage() {
               {!isAddingModule && !editingModule && (
                 <Button
                   onClick={() => setIsAddingModule(true)}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <FolderPlus className="w-4 h-4 mr-1.5" />
+                  <FolderPlus className="w-4 h-4 mr-2" />
                   Add Module
                 </Button>
               )}
@@ -1299,46 +1293,45 @@ export default function CourseManagementPage() {
           <CardContent>
             {/* Add/Edit Module Form */}
             {(isAddingModule || editingModule) && (
-              <div className="border border-rose-100 rounded-2xl p-5 mb-6 bg-rose-50/40">
-                <h3 className="font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
+              <div className="border border-gray-200 rounded-xl p-5 mb-6 bg-gray-50">
+                <h3 className="font-medium tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                     {editingModule ? <Edit3 className="w-4 h-4 text-white" /> : <FolderPlus className="w-4 h-4 text-white" />}
                   </div>
                   {editingModule ? 'Edit Module' : 'Add New Module'}
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Module Title <span className="text-red-500">*</span>
                     </label>
                     <Input
                       value={moduleForm.title}
                       onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
                       placeholder="e.g., Introduction, Week 1, Final Project"
-                      className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                      className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Description (optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
                     <textarea
                       rows={2}
                       value={moduleForm.description}
                       onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
                       placeholder="What this module covers..."
-                      className="flex w-full rounded-xl border border-rose-100 bg-white/70 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                      className="flex w-full rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-rose-100">
-                    <Button variant="outline" onClick={cancelModuleForm} className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <Button variant="outline" onClick={cancelModuleForm} className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleAddOrUpdateModule}
-                      className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                      className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       {editingModule ? 'Update Module' : 'Add Module'}
                     </Button>
                   </div>
@@ -1352,19 +1345,19 @@ export default function CourseManagementPage() {
                 {modules.map((module, index) => (
                   <div
                     key={module.id}
-                    className="border border-rose-100 rounded-xl p-4 bg-white/70 hover:bg-rose-50/40 transition-all group"
+                    className="border border-gray-200 rounded-xl p-4 bg-white/70 hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {/* Reorder Buttons */}
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col gap-1">
                           <button
                             onClick={() => moveModule(module.id, 'up')}
                             disabled={index === 0 || isSavingModuleOrder}
                             className={`p-1 rounded-lg transition-colors ${
                               index === 0 || isSavingModuleOrder
                                 ? 'text-gray-200 cursor-not-allowed'
-                                : 'text-gray-400 hover:text-red-500 hover:bg-rose-50'
+                                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                             }`}
                             title="Move up"
                           >
@@ -1376,7 +1369,7 @@ export default function CourseManagementPage() {
                             className={`p-1 rounded-lg transition-colors ${
                               index === modules.length - 1 || isSavingModuleOrder
                                 ? 'text-gray-200 cursor-not-allowed'
-                                : 'text-gray-400 hover:text-red-500 hover:bg-rose-50'
+                                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                             }`}
                             title="Move down"
                           >
@@ -1385,13 +1378,13 @@ export default function CourseManagementPage() {
                         </div>
 
                         {/* Module Number */}
-                        <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-semibold text-red-500">{index + 1}</span>
+                        <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-medium text-red-500">{index + 1}</span>
                         </div>
 
                         {/* Module Info */}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-900 text-sm truncate">{module.title}</h4>
+                          <h4 className="font-medium text-gray-900 text-sm truncate">{module.title}</h4>
                           <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                             <span className="flex items-center gap-1">
                               <BookOpen className="w-3 h-3" />
@@ -1416,7 +1409,7 @@ export default function CourseManagementPage() {
                               description: module.description || '',
                             })
                           }}
-                          className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm text-xs"
+                          className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm text-xs"
                         >
                           <Edit3 className="w-3 h-3 mr-1" />
                           Edit
@@ -1436,19 +1429,18 @@ export default function CourseManagementPage() {
               </div>
             ) : (
               <div className="text-center py-10">
-                <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
-                  <FolderOpen className="w-8 h-8 text-rose-300" />
+                <div className="w-16 h-16 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
+                  <FolderOpen className="w-8 h-8 text-red-300" />
                 </div>
                 <p className="text-gray-500 text-sm mb-4">
                   No modules yet. Create modules to organize lessons into logical groups.
                 </p>
                 <Button
                   onClick={() => setIsAddingModule(true)}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <FolderPlus className="w-4 h-4 mr-1.5" />
+                  <FolderPlus className="w-4 h-4 mr-2" />
                   Add First Module
                 </Button>
               </div>
@@ -1459,19 +1451,19 @@ export default function CourseManagementPage() {
         {/* ══════════════════════════════════════════════════════════════
              COURSE LESSONS CARD
              ══════════════════════════════════════════════════════════════ */}
-        <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+        <Card className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                   <PlayCircle className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                  <CardTitle className="text-lg font-medium tracking-tight flex items-center gap-2">
                     Course Lessons
                     {isSavingOrder && (
-                      <span className="text-xs font-normal text-gray-500 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">
+                      <span className="text-xs font-normal text-gray-500 bg-red-50 border border-gray-200 px-2 py-1 rounded-full">
                         Saving...
                       </span>
                     )}
@@ -1487,11 +1479,10 @@ export default function CourseManagementPage() {
               {!isAddingLesson && !editingLesson && (
                 <Button
                   onClick={() => setIsAddingLesson(true)}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <Plus className="w-4 h-4 mr-1.5" />
+                  <Plus className="w-4 h-4 mr-2" />
                   Add Lesson
                 </Button>
               )}
@@ -1500,9 +1491,9 @@ export default function CourseManagementPage() {
           <CardContent>
             {/* Add/Edit Lesson Form */}
             {(isAddingLesson || editingLesson) && (
-              <div className="border border-rose-100 rounded-2xl p-5 mb-6 bg-rose-50/40">
-                <h3 className="font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
+              <div className="border border-gray-200 rounded-xl p-5 mb-6 bg-gray-50">
+                <h3 className="font-medium tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                     {editingLesson ? <Edit3 className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-white" />}
                   </div>
                   {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
@@ -1511,30 +1502,30 @@ export default function CourseManagementPage() {
                   <div>
                     {course?.status === 'published' && (
                       <div className="mb-3 flex items-start gap-2 bg-amber-50/80 border border-amber-100 rounded-xl px-3 py-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-1" />
                         <p className="text-xs text-amber-700">
                           This course is <strong>live</strong>. Saved changes appear to enrolled learners immediately.
                         </p>
                       </div>
                     )}
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Lesson Title</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Lesson Title</label>
                     <Input
                       value={lessonForm.title}
                       onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
                       placeholder="Enter lesson title"
-                      className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                      className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     />
                   </div>
 
                   {/* Module selector */}
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Module {modules.length === 0 && <span className="text-xs text-gray-500">(will auto-create)</span>}
                     </label>
                     <select
                       value={lessonForm.module_id || editingLesson?.module_id || ''}
                       onChange={(e) => setLessonForm({ ...lessonForm, module_id: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400"
+                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
                     >
                       {modules.length === 0 && <option value="">Main Content (auto-created)</option>}
                       {modules.map((m) => (
@@ -1546,11 +1537,11 @@ export default function CourseManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Content Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
                     <select
                       value={lessonForm.content_type}
                       onChange={(e) => setLessonForm({ ...lessonForm, content_type: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400"
+                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
                     >
                       <option value="text">Text</option>
                       <option value="youtube">YouTube Video</option>
@@ -1561,7 +1552,7 @@ export default function CourseManagementPage() {
 
                   {lessonForm.content_type === 'text' && (
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">Content</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
                       <RichTextEditor
                         content={lessonForm.content}
                         onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
@@ -1573,12 +1564,12 @@ export default function CourseManagementPage() {
 
                   {lessonForm.content_type === 'youtube' && (
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">YouTube URL</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">YouTube URL</label>
                       <Input
                         value={lessonForm.youtube_url}
                         onChange={(e) => setLessonForm({ ...lessonForm, youtube_url: e.target.value })}
                         placeholder="https://www.youtube.com/watch?v=..."
-                        className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                        className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                       />
                     </div>
                   )}
@@ -1604,7 +1595,7 @@ export default function CourseManagementPage() {
                   )}
 
                   <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
                     <Input
                       type="number"
                       value={lessonForm.duration_minutes}
@@ -1612,19 +1603,18 @@ export default function CourseManagementPage() {
                         setLessonForm({ ...lessonForm, duration_minutes: parseInt(e.target.value) || 0 })
                       }
                       placeholder="Estimated duration"
-                      className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                      className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-rose-100">
-                    <Button variant="outline" onClick={cancelLessonForm} className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <Button variant="outline" onClick={cancelLessonForm} className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleAddOrUpdateLesson}
-                      className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                      className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       {editingLesson ? 'Update Lesson' : 'Add Lesson'}
                     </Button>
                   </div>
@@ -1640,12 +1630,12 @@ export default function CourseManagementPage() {
                   return (
                     <div
                       key={lesson.id}
-                      className="border border-gray-100 rounded-xl p-4 bg-white hover:shadow-md transition-all group"
+                      className="border border-gray-100 rounded-xl p-4 bg-white transition-all group"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           {/* Reorder Buttons */}
-                          <div className="flex flex-col gap-0.5">
+                          <div className="flex flex-col gap-1">
                             <button
                               onClick={() => moveLesson(lesson.id, 'up')}
                               disabled={index === 0 || isSavingOrder}
@@ -1673,22 +1663,22 @@ export default function CourseManagementPage() {
                           </div>
 
                           {/* Lesson Number */}
-                          <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
-                            <span className="text-sm font-semibold text-red-500">
+                          <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                            <span className="text-sm font-medium text-red-500">
                               {index + 1}
                             </span>
                           </div>
 
                           {/* Lesson Info */}
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-900 text-sm truncate">{lesson.title}</h4>
+                            <h4 className="font-medium text-gray-900 text-sm truncate">{lesson.title}</h4>
                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
                               <span className="flex items-center gap-1">
                                 {getContentTypeIcon(lesson.content_type)}
                                 {getContentTypeLabel(lesson.content_type)}
                               </span>
                               {parentModule && (
-                                <span className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                                <span className="flex items-center gap-1 bg-gray-50 text-gray-600 px-2 py-1 rounded-full">
                                   <Layers className="w-3 h-3" />
                                   {parentModule.title}
                                 </span>
@@ -1721,7 +1711,7 @@ export default function CourseManagementPage() {
                                 module_id: lesson.module_id || '',
                               })
                             }}
-                            className="bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white rounded-full text-xs shadow-sm"
+                            className="bg-white border-gray-200 hover:border-gray-200 hover:bg-white rounded-full text-xs shadow-sm"
                           >
                             <Edit3 className="w-3 h-3 mr-1" />
                             Edit
@@ -1730,7 +1720,7 @@ export default function CourseManagementPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => router.push(`/instructor/lessons/${lesson.id}/quiz`)}
-                            className="bg-rose-50/60 border-rose-100 text-red-600 hover:bg-rose-50 hover:border-rose-200 rounded-full text-xs"
+                            className="bg-gray-50 border-gray-200 text-red-600 hover:bg-red-50 hover:border-gray-200 rounded-full text-xs"
                           >
                             Quiz
                           </Button>
@@ -1750,19 +1740,18 @@ export default function CourseManagementPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
-                  <BookOpen className="w-8 h-8 text-rose-300" />
+                <div className="w-16 h-16 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
+                  <BookOpen className="w-8 h-8 text-red-300" />
                 </div>
                 <p className="text-gray-500 text-sm mb-4">
                   No lessons yet. Add your first lesson to get started.
                 </p>
                 <Button
                   onClick={() => setIsAddingLesson(true)}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-                  <Plus className="w-4 h-4 mr-1.5" />
+                  <Plus className="w-4 h-4 mr-2" />
                   Add First Lesson
                 </Button>
               </div>

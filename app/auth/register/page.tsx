@@ -13,7 +13,6 @@ import {
   AuthShell,
   AuthCard,
   AuthDivider,
-  BtnSheen,
   authInputClass,
   authPrimaryBtnClass,
   authOutlineBtnClass,
@@ -201,26 +200,26 @@ function RegisterPageContent() {
           description={
             <>
               We&apos;ve sent a verification link to{' '}
-              <span className="font-semibold text-gray-900">{registeredEmail}</span>
+              <span className="font-medium text-gray-900">{registeredEmail}</span>
             </>
           }
           headerExtra={
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-[0_12px_24px_-8px_rgba(16,185,129,0.5)] flex items-center justify-center mb-4">
+            <div className="mx-auto w-14 h-14 rounded-xl bg-green-600 flex items-center justify-center mb-4">
               <CheckCircle className="w-7 h-7 text-white" />
             </div>
           }
         >
           <div className="space-y-5">
-            <div className="rounded-2xl bg-gradient-to-b from-rose-50/70 to-white border border-rose-100 p-4">
-              <p className="text-sm font-semibold text-gray-800 mb-3">Next steps</p>
-              <ul className="space-y-2.5 text-sm text-gray-600">
+            <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
+              <p className="text-sm font-medium text-gray-800 mb-3">Next steps</p>
+              <ul className="space-y-3 text-sm text-gray-600">
                 {[
                   'Check your inbox for the verification email',
                   'Click the verification link in the email',
                   'Sign in to start learning',
                 ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="w-[18px] h-[18px] rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="w-[18px] h-[18px] rounded-full bg-red-600 flex items-center justify-center flex-shrink-0 mt-1">
                       <CheckCircle className="w-2.5 h-2.5 text-white" />
                     </span>
                     <span>{step}</span>
@@ -235,10 +234,9 @@ function RegisterPageContent() {
 
             <Link href="/auth/login" className="block">
               <Button className={authPrimaryBtnClass}>
-                <BtnSheen />
                 <span className="flex items-center justify-center gap-2">
                   Back to Login
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 transition-transform" />
                 </span>
               </Button>
             </Link>
@@ -251,7 +249,7 @@ function RegisterPageContent() {
   // ── Gate loading shell ──
   if (gateLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Checking access..." size="lg" />
       </div>
     )
@@ -308,18 +306,17 @@ function RegisterPageContent() {
           title={copy.title}
           description={copy.desc}
           headerExtra={
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_12px_24px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-4">
+            <div className="mx-auto w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center mb-4">
               <Ticket className="w-7 h-7 text-white" />
             </div>
           }
         >
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             <Link href="/request-access" className="block">
               <Button className={authPrimaryBtnClass}>
-                <BtnSheen />
                 <span className="flex items-center justify-center gap-2">
                   Get Started
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 transition-transform" />
                 </span>
               </Button>
             </Link>
@@ -330,11 +327,11 @@ function RegisterPageContent() {
               </Button>
             </Link>
 
-            <div className="rounded-2xl bg-gradient-to-b from-rose-50/70 to-white border border-rose-100 p-4">
+            <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
               <p className="text-xs text-gray-600 leading-relaxed">
                 <strong className="text-gray-800">Have an invite link?</strong> Paste it into
                 your browser to continue. Invite links look like{' '}
-                <code className="bg-white border border-rose-100 px-1.5 py-0.5 rounded text-[11px] text-rose-600">
+                <code className="bg-white border border-gray-200 px-2 py-1 rounded text-xs text-red-600">
                   /join/&lt;token&gt;
                 </code>
                 .
@@ -401,13 +398,13 @@ function RegisterPageContent() {
     >
       {/* Invite confirmation strip (desktop shows context on left, so this is mainly for mobile clarity) */}
       {isInviteSignup && invite && (
-        <div className="mb-4 bg-white/70 backdrop-blur rounded-2xl border border-white ring-1 ring-emerald-100 shadow-[0_10px_25px_-15px_rgba(16,185,129,0.4)] p-3.5 flex items-start gap-2.5">
-          <span className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="mb-4 bg-white rounded-xl border border-gray-200 ring-green-100 p-4 flex items-start gap-3">
+          <span className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-1">
             <CheckCircle className="w-3 h-3 text-white" />
           </span>
           <div className="text-xs text-gray-700">
-            <p className="font-semibold text-gray-900">Invite verified</p>
-            <p className="mt-0.5">
+            <p className="font-medium text-gray-900">Invite verified</p>
+            <p className="mt-1">
               Joining <strong>{invite.cohort_name}</strong> at <strong>{invite.institution_name}</strong>.
             </p>
           </div>
@@ -421,14 +418,14 @@ function RegisterPageContent() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100 flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-1" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-[13px] font-medium text-gray-700">Full Name</label>
+            <label className="text-sm font-medium text-gray-700">Full Name</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
@@ -441,7 +438,7 @@ function RegisterPageContent() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[13px] font-medium text-gray-700">Email Address</label>
+            <label className="text-sm font-medium text-gray-700">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
@@ -463,12 +460,12 @@ function RegisterPageContent() {
               Invite signups are always learner. */}
           {!isInviteSignup && (
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">I want to</label>
+              <label className="text-sm font-medium text-gray-700">I want to</label>
               <div className="relative">
                 <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
                 <select
                   {...register('role')}
-                  className="w-full h-12 pl-11 pr-3 rounded-xl border border-rose-100 bg-white/70 focus:border-red-400 focus:ring-red-400 text-sm cursor-pointer"
+                  className="w-full h-12 pl-11 pr-3 rounded-xl border border-gray-200 bg-white/70 focus:border-red-400 focus:ring-red-400 text-sm cursor-pointer"
                 >
                   <option value="learner">Learn (Student)</option>
                   <option value="instructor">Teach (Instructor)</option>
@@ -483,7 +480,7 @@ function RegisterPageContent() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">Password</label>
+              <label className="text-sm font-medium text-gray-700">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
                 <Input
@@ -498,7 +495,7 @@ function RegisterPageContent() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">Confirm</label>
+              <label className="text-sm font-medium text-gray-700">Confirm</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
                 <Input
@@ -516,7 +513,6 @@ function RegisterPageContent() {
           </div>
 
           <Button type="submit" disabled={isLoading} className={`${authPrimaryBtnClass} mt-2`}>
-            <BtnSheen />
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -525,7 +521,7 @@ function RegisterPageContent() {
             ) : (
               <span className="flex items-center justify-center gap-2">
                 {isInviteSignup ? 'Join & Create Account' : 'Create Account'}
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="w-4 h-4 transition-transform" />
               </span>
             )}
           </Button>
@@ -535,7 +531,7 @@ function RegisterPageContent() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-red-500 hover:text-red-600 font-semibold">
+              <Link href="/auth/login" className="text-red-500 hover:text-red-600 font-medium">
                 Sign in
               </Link>
             </p>
@@ -550,7 +546,7 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <SabiLoader text="Loading..." size="lg" />
         </div>
       }

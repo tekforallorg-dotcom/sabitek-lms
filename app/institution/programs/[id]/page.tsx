@@ -92,7 +92,7 @@ interface AvailableCourse {
 /* ── Status configs ── */
 const statusConfig: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   draft: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', dot: 'bg-amber-400', label: 'Draft' },
-  active: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-400', label: 'Active' },
+  active: { bg: 'bg-green-50 border-green-200', text: 'text-green-700', dot: 'bg-green-400', label: 'Active' },
   completed: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', dot: 'bg-blue-400', label: 'Completed' },
   archived: { bg: 'bg-gray-50 border-gray-300', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Archived' },
   closed: { bg: 'bg-red-50 border-red-200', text: 'text-red-700', dot: 'bg-red-400', label: 'Closed' },
@@ -100,7 +100,7 @@ const statusConfig: Record<string, { bg: string; text: string; dot: string; labe
 
 const cohortStatusColors: Record<string, string> = {
   draft: 'bg-amber-100 text-amber-700',
-  active: 'bg-emerald-100 text-emerald-700',
+  active: 'bg-green-100 text-green-700',
   completed: 'bg-blue-100 text-blue-700',
   archived: 'bg-gray-100 text-gray-600',
   closed: 'bg-red-100 text-red-700',
@@ -231,10 +231,10 @@ function AddCourseModal({ isOpen, onClose, programId, existingCourseIds, onCours
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm max-w-lg w-full max-h-[80vh] overflow-hidden">
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-bold text-gray-900">Add Course to Program</h2>
+          <h2 className="text-lg font-medium text-gray-900">Add Course to Program</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -486,10 +486,10 @@ export default function ProgramDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <h2 className="text-xl font-medium text-gray-900 mb-2">
             {error === 'Program not found' ? 'Program Not Found' : 'Something Went Wrong'}
           </h2>
           <p className="text-gray-500 mb-6 text-sm">{error || 'Program not found'}</p>
@@ -509,9 +509,9 @@ export default function ProgramDetailPage() {
 
   const stats = [
     { label: 'Courses', value: program.program_courses?.length || 0, icon: BookOpen, color: 'bg-blue-50', iconColor: 'text-blue-600' },
-    { label: 'Cohorts', value: program.cohort_count || program.cohorts?.length || 0, icon: Users, color: 'bg-purple-50', iconColor: 'text-purple-600' },
-    { label: 'Visibility', value: program.visibility === 'public' ? 'Public' : 'Private', icon: program.visibility === 'public' ? Globe : Lock, color: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-    { label: 'Certificates', value: program.issue_certificate ? 'Enabled' : 'Disabled', icon: Award, color: 'bg-orange-50', iconColor: 'text-orange-600' },
+    { label: 'Cohorts', value: program.cohort_count || program.cohorts?.length || 0, icon: Users, color: 'bg-gray-50', iconColor: 'text-gray-600' },
+    { label: 'Visibility', value: program.visibility === 'public' ? 'Public' : 'Private', icon: program.visibility === 'public' ? Globe : Lock, color: 'bg-green-50', iconColor: 'text-green-600' },
+    { label: 'Certificates', value: program.issue_certificate ? 'Enabled' : 'Disabled', icon: Award, color: 'bg-amber-50', iconColor: 'text-amber-600' },
   ]
 
   return (
@@ -529,9 +529,9 @@ export default function ProgramDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-red-500" />
-              <span className="font-semibold text-gray-900 text-sm">Program Details</span>
+              <span className="font-medium text-gray-900 text-sm">Program Details</span>
             </div>
-            <nav className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500">
+            <nav className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
               <Link href="/institution/dashboard" className="hover:text-red-600 transition-colors">Dashboard</Link>
               <ChevronRight className="w-3.5 h-3.5" />
               <Link href="/institution/programs" className="hover:text-red-600 transition-colors">Programs</Link>
@@ -543,23 +543,23 @@ export default function ProgramDetailPage() {
       </div>
 
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50" />
+        <div className="absolute inset-0 bg-red-100" />
+        <div className="absolute inset-0" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${status.bg} ${status.text}`}>
+                <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${status.bg} ${status.text}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                   {status.label}
                 </span>
                 {program.allow_self_paced && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-white/80 text-gray-600 border border-gray-200">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-white/80 text-gray-600 border border-gray-200">
                     <Zap className="w-3 h-3" />Self-Paced
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2 tracking-tight">{program.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-2 tracking-tight">{program.name}</h1>
               {(program.short_description || program.description) && (
                 <p className="text-gray-600 max-w-2xl text-sm sm:text-base leading-relaxed">
                   {program.short_description || program.description}
@@ -567,7 +567,7 @@ export default function ProgramDetailPage() {
               )}
               {(program.start_date || program.end_date) && (
                 <div className="flex items-center gap-2 mt-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur-sm rounded-lg text-xs text-gray-600 border border-gray-200/60">
+                  <span className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg text-xs text-gray-600 border border-gray-200/60">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     {formatDate(program.start_date)} — {formatDate(program.end_date)}
                   </span>
@@ -576,7 +576,7 @@ export default function ProgramDetailPage() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Link href={`/institution/programs/${programId}/edit`}>
-                <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white shadow-sm gap-2">
+                <Button className="bg-red-600 hover:bg-red-700 text-white shadow-sm gap-2">
                   <Edit className="w-4 h-4" />Edit Program
                 </Button>
               </Link>
@@ -594,8 +594,8 @@ export default function ProgramDetailPage() {
                 <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
                   <Icon className={`w-5 h-5 ${stat.iconColor}`} />
                 </div>
-                <div className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-gray-500 mt-0.5">{stat.label}</div>
+                <div className="text-xl sm:text-2xl font-medium text-gray-900">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-gray-500 mt-1">{stat.label}</div>
               </div>
             )
           })}
@@ -605,28 +605,28 @@ export default function ProgramDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                     <BookOpen className="w-4 h-4 text-blue-600" />
                   </div>
-                  <h2 className="font-semibold text-gray-900">Courses</h2>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">
+                  <h2 className="font-medium text-gray-900">Courses</h2>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full font-medium">
                     {program.program_courses?.length || 0}
                   </span>
                 </div>
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setShowAddCourseModal(true)}>
+                <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={() => setShowAddCourseModal(true)}>
                   <Plus className="w-3.5 h-3.5" />Add Course
                 </Button>
               </div>
 
               {!program.program_courses || program.program_courses.length === 0 ? (
                 <div className="p-8 sm:p-12 text-center">
-                  <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Layers className="w-7 h-7 text-gray-400" />
                   </div>
-                  <p className="font-semibold text-gray-900 mb-1">No courses added yet</p>
+                  <p className="font-medium text-gray-900 mb-1">No courses added yet</p>
                   <p className="text-sm text-gray-500 mb-5 max-w-xs mx-auto">Add courses to build your program curriculum</p>
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-1.5" onClick={() => setShowAddCourseModal(true)}>
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-2" onClick={() => setShowAddCourseModal(true)}>
                     <Plus className="w-3.5 h-3.5" />Add First Course
                   </Button>
                 </div>
@@ -637,7 +637,7 @@ export default function ProgramDetailPage() {
                     const isRemoving = removingCourse === pc.course_id
                     return (
                       <div key={pc.id} className={`flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors ${isRemoving ? 'opacity-50' : ''}`}>
-                        <span className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                        <span className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-xs font-medium text-white flex-shrink-0">
                           {index + 1}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -656,7 +656,7 @@ export default function ProgramDetailPage() {
                             {isRemoving ? <Loader2 className="w-4 h-4 text-gray-400 animate-spin" /> : <MoreVertical className="w-4 h-4 text-gray-400" />}
                           </Button>
                           {openCourseMenu === pc.id && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border py-1 z-10">
+                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-sm border py-1 z-10">
                               <button onClick={() => handleRemoveCourse(pc.course_id)} className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">
                                 <Trash2 className="w-4 h-4" />Remove
                               </button>
@@ -672,7 +672,7 @@ export default function ProgramDetailPage() {
 
             {program.description && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-                <h2 className="font-semibold text-gray-900 mb-3">About This Program</h2>
+                <h2 className="font-medium text-gray-900 mb-3">About This Program</h2>
                 <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{program.description}</p>
               </div>
             )}
@@ -681,11 +681,11 @@ export default function ProgramDetailPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                    <Users className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-gray-600" />
                   </div>
-                  <h2 className="font-semibold text-gray-900">Cohorts</h2>
+                  <h2 className="font-medium text-gray-900">Cohorts</h2>
                 </div>
                 <Link href={`/institution/cohorts/create?program_id=${programId}`}>
                   <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-1 text-xs h-8">
@@ -696,13 +696,13 @@ export default function ProgramDetailPage() {
 
               {!program.cohorts || program.cohorts.length === 0 ? (
                 <div className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
                     <Users className="w-6 h-6 text-gray-400" />
                   </div>
-                  <p className="font-semibold text-gray-900 text-sm mb-1">No cohorts yet</p>
+                  <p className="font-medium text-gray-900 text-sm mb-1">No cohorts yet</p>
                   <p className="text-xs text-gray-500 mb-4">Create a cohort to start enrolling learners</p>
                   <Link href={`/institution/cohorts/create?program_id=${programId}`}>
-                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-1.5 text-xs">
+                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-2 text-xs">
                       <Plus className="w-3.5 h-3.5" />Create First Cohort
                     </Button>
                   </Link>
@@ -713,7 +713,7 @@ export default function ProgramDetailPage() {
                     <Link key={cohort.id} href={`/institution/cohorts/${cohort.id}`} className="block p-4 hover:bg-gray-50 transition-colors group">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-medium text-gray-900 text-sm group-hover:text-red-600 transition-colors">{cohort.name}</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${cohortStatusColors[cohort.status] || 'bg-gray-100 text-gray-600'}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${cohortStatusColors[cohort.status] || 'bg-gray-100 text-gray-600'}`}>
                           {cohort.status}
                         </span>
                       </div>
@@ -727,11 +727,11 @@ export default function ProgramDetailPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="flex items-center gap-2.5 p-5 border-b border-gray-100">
+              <div className="flex items-center gap-3 p-5 border-b border-gray-100">
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                   <Settings2 className="w-4 h-4 text-gray-600" />
                 </div>
-                <h2 className="font-semibold text-gray-900">Settings</h2>
+                <h2 className="font-medium text-gray-900">Settings</h2>
               </div>
               <div className="divide-y divide-gray-100">
                 <div className="flex items-center justify-between p-4">
@@ -746,7 +746,7 @@ export default function ProgramDetailPage() {
                     <Award className="w-4 h-4 text-gray-400" />
                     <span className="text-sm text-gray-600">Certificates</span>
                   </div>
-                  <span className={`text-sm font-medium ${program.issue_certificate ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  <span className={`text-sm font-medium ${program.issue_certificate ? 'text-green-600' : 'text-gray-400'}`}>
                     {program.issue_certificate ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
@@ -755,7 +755,7 @@ export default function ProgramDetailPage() {
                     <Zap className="w-4 h-4 text-gray-400" />
                     <span className="text-sm text-gray-600">Self-Paced</span>
                   </div>
-                  <span className={`text-sm font-medium ${program.allow_self_paced ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  <span className={`text-sm font-medium ${program.allow_self_paced ? 'text-green-600' : 'text-gray-400'}`}>
                     {program.allow_self_paced ? 'Allowed' : 'Scheduled'}
                   </span>
                 </div>

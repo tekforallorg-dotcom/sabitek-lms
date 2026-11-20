@@ -530,7 +530,7 @@ export const DAYS_OF_WEEK: { value: DayOfWeek; label: string }[] = [
 
 export const REQUEST_URGENCIES: { value: RequestUrgency; label: string; color: string }[] = [
   { value: 'low', label: 'No rush', color: 'text-green-600 bg-green-50' },
-  { value: 'medium', label: 'Within a week', color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'medium', label: 'Within a week', color: 'text-amber-600 bg-amber-50' },
   { value: 'high', label: 'Urgent', color: 'text-red-600 bg-red-50' },
 ]
 
@@ -550,7 +550,7 @@ export const REQUEST_STATUSES: { value: RequestStatus; label: string }[] = [
 ]
 
 export const SESSION_STATUSES: { value: SessionStatus; label: string; color: string }[] = [
-  { value: 'proposed', label: 'Proposed', color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'proposed', label: 'Proposed', color: 'text-amber-600 bg-amber-50' },
   { value: 'scheduled', label: 'Scheduled', color: 'text-blue-600 bg-blue-50' },
   { value: 'completed', label: 'Completed', color: 'text-green-600 bg-green-50' },
   { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600 bg-gray-50' },
@@ -558,7 +558,7 @@ export const SESSION_STATUSES: { value: SessionStatus; label: string; color: str
 ]
 
 export const SESSION_REQUEST_STATUSES: { value: SessionRequestStatus; label: string; color: string }[] = [
-  { value: 'pending', label: 'Pending', color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'pending', label: 'Pending', color: 'text-amber-600 bg-amber-50' },
   { value: 'accepted', label: 'Accepted', color: 'text-green-600 bg-green-50' },
   { value: 'declined', label: 'Declined', color: 'text-red-600 bg-red-50' },
   { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600 bg-gray-50' },

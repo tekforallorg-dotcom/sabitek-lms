@@ -41,22 +41,17 @@ export default function ForgotPasswordPage() {
     return (
       <div className="min-h-screen flex">
         {/* Left Side - Hero (hidden on mobile) */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-          {/* Floating elements */}
-          <div className="absolute top-20 right-[20%] w-32 h-32 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-3xl rotate-12 blur-sm" />
-          <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl -rotate-12 blur-sm" />
-          <div className="absolute top-1/2 right-[10%] w-16 h-16 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl rotate-45 blur-sm" />
-
+        <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
             {/* Logo */}
             <Link href="/" className="inline-flex items-center gap-2 mb-12">
-              <h1 className="text-3xl font-bold text-white">Sabitek</h1>
+              <h1 className="text-3xl font-medium text-white">Sabitek</h1>
               <Sparkles className="w-6 h-6 text-red-500" />
             </Link>
 
-            <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl xl:text-5xl font-medium text-white mb-6 leading-tight">
               Check Your<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
+              <span className="text-green-600">
                 Email Inbox
               </span>
             </h2>
@@ -67,8 +62,8 @@ export default function ForgotPasswordPage() {
 
             {/* Steps */}
             <div className="space-y-4 max-w-md">
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Mail className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -76,8 +71,8 @@ export default function ForgotPasswordPage() {
                   <p className="text-gray-400 text-xs">Look for an email from Sabitek</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <KeyRound className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -85,8 +80,8 @@ export default function ForgotPasswordPage() {
                   <p className="text-gray-400 text-xs">Opens our secure password page</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -101,13 +96,13 @@ export default function ForgotPasswordPage() {
         {/* Right Side - Success Message */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-gray-50">
           <div className="w-full max-w-md">
-            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-600" />
+            <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+              <div className="h-2 bg-green-600" />
               <CardHeader className="text-center space-y-4 pt-8 pb-4">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">Check Your Email</CardTitle>
+                <CardTitle className="text-2xl font-medium text-gray-900">Check Your Email</CardTitle>
                 <CardDescription className="text-gray-600">
                   We&apos;ve sent a password reset link to<br />
                   <strong className="text-gray-900">{email}</strong>
@@ -118,15 +113,15 @@ export default function ForgotPasswordPage() {
                   <p className="text-sm font-medium text-blue-800 mb-2">Next steps:</p>
                   <ul className="text-sm text-blue-700 space-y-2">
                     <li className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">1</div>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600">1</div>
                       Check your inbox for the reset email
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">2</div>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600">2</div>
                       Click the link in the email
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">3</div>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600">3</div>
                       Create a new password
                     </li>
                   </ul>
@@ -153,22 +148,17 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Hero (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-        {/* Floating elements */}
-        <div className="absolute top-20 right-[20%] w-32 h-32 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-3xl rotate-12 blur-sm" />
-        <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-2xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[10%] w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
-
+      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12">
-            <h1 className="text-3xl font-bold text-white">Sabitek</h1>
+            <h1 className="text-3xl font-medium text-white">Sabitek</h1>
             <Sparkles className="w-6 h-6 text-red-500" />
           </Link>
 
-          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+          <h2 className="text-4xl xl:text-5xl font-medium text-white mb-6 leading-tight">
             Forgot Your<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400">
+            <span className="text-red-600">
               Password?
             </span>
           </h2>
@@ -179,8 +169,8 @@ export default function ForgotPasswordPage() {
 
           {/* Features */}
           <div className="space-y-4 max-w-md">
-            <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -188,8 +178,8 @@ export default function ForgotPasswordPage() {
                 <p className="text-gray-400 text-xs">Encrypted link sent to your email</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -207,15 +197,15 @@ export default function ForgotPasswordPage() {
           {/* Mobile Logo */}
           <div className="text-center mb-8 lg:hidden">
             <Link href="/" className="inline-flex items-center gap-2 justify-center">
-              <h1 className="text-3xl font-bold text-gray-900">Sabitek</h1>
+              <h1 className="text-3xl font-medium text-gray-900">Sabitek</h1>
               <Sparkles className="w-6 h-6 text-red-500" />
             </Link>
           </div>
 
-          <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-red-500 to-pink-600" />
+          <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+            <div className="h-2 bg-red-600" />
             <CardHeader className="space-y-2 pt-8 pb-4">
-              <CardTitle className="text-2xl font-bold text-center text-gray-900">
+              <CardTitle className="text-2xl font-medium text-center text-gray-900">
                 Forgot Password?
               </CardTitle>
               <CardDescription className="text-center text-gray-600">
@@ -254,7 +244,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/20"
+                  className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl shadow-sm"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">

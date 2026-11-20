@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Failed to save survey')
         }
 
-        console.log('🚀 Generating Career Roadmap...')
+        console.log('Generating Career Roadmap...')
 
         // Get AI recommendations (includes tiered recommendations + 6-month roadmap)
         const recommendations = await getCareerRecommendations(surveyAnswers)
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Failed to save results')
         }
 
-        console.log('✅ Career Roadmap generated successfully!')
+        console.log('Career Roadmap generated successfully!')
 
         return {
           outputId: resultData.id,

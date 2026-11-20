@@ -109,11 +109,11 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
               className="flex items-center gap-2 text-gray-900 hover:text-red-600 transition-colors"
             >
               <Users className="w-5 h-5 text-red-600" />
-              <span className="font-semibold text-sm sm:text-base">SabiCommunity</span>
+              <span className="font-medium text-sm sm:text-base">SabiCommunity</span>
             </Link>
 
             {/* Nav Items */}
-            <nav className="flex items-center gap-0.5 sm:gap-1">
+            <nav className="flex items-center gap-1 sm:gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon
                 const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -131,7 +131,7 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
                     <Icon className="w-4 h-4" />
                     <span className="hidden lg:inline">{item.label}</span>
                     {item.count && item.count > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {item.count > 9 ? '9+' : item.count}
                       </span>
                     )}
@@ -152,7 +152,7 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
       <div className="fixed bottom-4 right-4 z-50">
         <Link
           href="/courses"
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-900 text-white text-xs sm:text-sm rounded-full shadow-lg hover:bg-red-600 transition-colors"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-900 text-white text-xs sm:text-sm rounded-full shadow-sm hover:bg-red-600 transition-colors"
         >
           <BookOpen className="w-4 h-4" />
           <span className="hidden sm:inline">Back to Courses</span>

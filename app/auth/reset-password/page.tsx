@@ -49,7 +49,7 @@ function ResetPasswordForm() {
               if (error) {
                 console.error('[RESET] Failed to set session from hash:', error)
               } else {
-                console.log('[RESET] ✅ Session set from hash for:', data.session?.user?.email)
+                console.log('[RESET] Session set from hash for:', data.session?.user?.email)
 
                 // Clear the hash from URL for security
                 window.history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -75,11 +75,11 @@ function ResetPasswordForm() {
 
         if (mounted) {
           if (session?.user) {
-            console.log('[RESET] ✅ Active session found for:', session.user.email)
+            console.log('[RESET] Active session found for:', session.user.email)
             setHasSession(true)
             setCheckingSession(false)
           } else {
-            console.log('[RESET] ❌ No active session')
+            console.log('[RESET] No active session')
             setHasSession(false)
 
             // Check for error messages from confirm route
@@ -156,7 +156,7 @@ function ResetPasswordForm() {
         return
       }
 
-      console.log('[RESET] ✅ Password updated successfully')
+      console.log('[RESET] Password updated successfully')
       setSuccess(true)
       setLoading(false)
 
@@ -174,7 +174,7 @@ function ResetPasswordForm() {
   // Show loading state while checking session
   if (checkingSession) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <SabiLoader text="Verifying session..." size="lg" />
         </div>
@@ -187,19 +187,16 @@ function ResetPasswordForm() {
     return (
       <div className="min-h-screen flex">
         {/* Left Side - Hero */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-          <div className="absolute top-20 right-[20%] w-32 h-32 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-3xl rotate-12 blur-sm" />
-          <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-2xl -rotate-12 blur-sm" />
-
+        <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
             <Link href="/" className="inline-flex items-center gap-2 mb-12">
-              <h1 className="text-3xl font-bold text-white">Sabitek</h1>
+              <h1 className="text-3xl font-medium text-white">Sabitek</h1>
               <Sparkles className="w-6 h-6 text-red-500" />
             </Link>
 
-            <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl xl:text-5xl font-medium text-white mb-6 leading-tight">
               Link<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400">
+              <span className="text-red-600">
                 Expired
               </span>
             </h2>
@@ -213,20 +210,20 @@ function ResetPasswordForm() {
         {/* Right Side - Error */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-gray-50">
           <div className="w-full max-w-md">
-            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-red-500 to-pink-600" />
+            <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+              <div className="h-2 bg-red-600" />
               <CardHeader className="space-y-4 pt-8 pb-4 text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                <div className="mx-auto w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center">
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">Invalid Reset Link</CardTitle>
+                <CardTitle className="text-2xl font-medium text-gray-900">Invalid Reset Link</CardTitle>
                 <CardDescription className="text-gray-600">
                   {error || 'This password reset link is invalid or has expired.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Link href="/auth/forgot-password" className="block">
-                  <Button className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl shadow-lg shadow-red-500/20">
+                  <Button className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-sm">
                     Request New Reset Link
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -249,19 +246,16 @@ function ResetPasswordForm() {
     return (
       <div className="min-h-screen flex">
         {/* Left Side - Hero */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-          <div className="absolute top-20 right-[20%] w-32 h-32 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-3xl rotate-12 blur-sm" />
-          <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl -rotate-12 blur-sm" />
-
+        <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
             <Link href="/" className="inline-flex items-center gap-2 mb-12">
-              <h1 className="text-3xl font-bold text-white">Sabitek</h1>
+              <h1 className="text-3xl font-medium text-white">Sabitek</h1>
               <Sparkles className="w-6 h-6 text-red-500" />
             </Link>
 
-            <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl xl:text-5xl font-medium text-white mb-6 leading-tight">
               Password<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
+              <span className="text-green-600">
                 Updated!
               </span>
             </h2>
@@ -275,13 +269,13 @@ function ResetPasswordForm() {
         {/* Right Side - Success */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-gray-50">
           <div className="w-full max-w-md">
-            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-600" />
+            <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+              <div className="h-2 bg-green-600" />
               <CardHeader className="space-y-4 pt-8 pb-4 text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900">Password Updated!</CardTitle>
+                <CardTitle className="text-2xl font-medium text-gray-900">Password Updated!</CardTitle>
                 <CardDescription className="text-gray-600">
                   Your password has been successfully updated.<br />
                   Redirecting to login...
@@ -303,22 +297,17 @@ function ResetPasswordForm() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Hero (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-        {/* Floating elements */}
-        <div className="absolute top-20 right-[20%] w-32 h-32 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-3xl rotate-12 blur-sm" />
-        <div className="absolute bottom-32 left-[15%] w-24 h-24 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-2xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[10%] w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
-
+      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 relative overflow-hidden">
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12">
-            <h1 className="text-3xl font-bold text-white">Sabitek</h1>
+            <h1 className="text-3xl font-medium text-white">Sabitek</h1>
             <Sparkles className="w-6 h-6 text-red-500" />
           </Link>
 
-          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+          <h2 className="text-4xl xl:text-5xl font-medium text-white mb-6 leading-tight">
             Create Your<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400">
+            <span className="text-red-600">
               New Password
             </span>
           </h2>
@@ -329,8 +318,8 @@ function ResetPasswordForm() {
 
           {/* Features */}
           <div className="space-y-4 max-w-md">
-            <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -338,8 +327,8 @@ function ResetPasswordForm() {
                 <p className="text-gray-400 text-xs">Use at least 6 characters</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <KeyRound className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -357,18 +346,18 @@ function ResetPasswordForm() {
           {/* Mobile Logo */}
           <div className="text-center mb-8 lg:hidden">
             <Link href="/" className="inline-flex items-center gap-2 justify-center">
-              <h1 className="text-3xl font-bold text-gray-900">Sabitek</h1>
+              <h1 className="text-3xl font-medium text-gray-900">Sabitek</h1>
               <Sparkles className="w-6 h-6 text-red-500" />
             </Link>
           </div>
 
-          <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-red-500 to-pink-600" />
+          <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+            <div className="h-2 bg-red-600" />
             <CardHeader className="space-y-2 pt-8 pb-4 text-center">
-              <div className="mx-auto w-14 h-14 bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl flex items-center justify-center mb-2">
+              <div className="mx-auto w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-2">
                 <KeyRound className="w-7 h-7 text-red-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Reset Your Password</CardTitle>
+              <CardTitle className="text-2xl font-medium text-gray-900">Reset Your Password</CardTitle>
               <CardDescription className="text-gray-600">
                 Enter your new password below
               </CardDescription>
@@ -438,7 +427,7 @@ function ResetPasswordForm() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/20"
+                  className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl shadow-sm"
                   disabled={loading}
                 >
                   {loading ? (
@@ -462,7 +451,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500" />
         </div>

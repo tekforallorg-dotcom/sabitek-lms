@@ -104,7 +104,7 @@ export default function QuestionAnalyticsPage() {
       </Button>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Question Analytics</h1>
+        <h1 className="text-3xl font-medium text-gray-900 mb-2">Question Analytics</h1>
         <p className="text-gray-600">Identify difficult questions and improve your quizzes</p>
       </div>
 
@@ -115,7 +115,7 @@ export default function QuestionAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Questions</p>
-                <p className="text-2xl font-bold">{analytics.length}</p>
+                <p className="text-2xl font-medium">{analytics.length}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-blue-600" />
             </div>
@@ -127,7 +127,7 @@ export default function QuestionAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Difficult Questions</p>
-                <p className="text-2xl font-bold text-red-600">{difficultQuestions.length}</p>
+                <p className="text-2xl font-medium text-red-600">{difficultQuestions.length}</p>
                 <p className="text-xs text-gray-500 mt-1">{'<50% correct rate'}</p>
               </div>
               <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -140,7 +140,7 @@ export default function QuestionAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Correct Rate</p>
-                <p className="text-2xl font-bold text-green-600">{avgCorrectRate}%</p>
+                <p className="text-2xl font-medium text-green-600">{avgCorrectRate}%</p>
               </div>
               <TrendingDown className="w-8 h-8 text-green-600" />
             </div>
@@ -204,7 +204,7 @@ export default function QuestionAnalyticsPage() {
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm text-gray-900 max-w-md">
                         <div className="flex items-start gap-2">
-                          <span className="text-gray-500 font-mono text-xs mt-0.5">Q{question.questionIndex}</span>
+                          <span className="text-gray-500 font-mono text-xs mt-1">Q{question.questionIndex}</span>
                           <span className="line-clamp-2">{question.questionText}</span>
                         </div>
                       </td>
@@ -214,9 +214,9 @@ export default function QuestionAnalyticsPage() {
                       <td className="px-4 py-3 text-center text-sm text-green-600 font-medium">{question.correctCount}</td>
                       <td className="px-4 py-3 text-center text-sm text-red-600 font-medium">{question.incorrectCount}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-semibold ${
+                        <span className={`font-medium ${
                           question.correctRate >= 80 ? 'text-green-600' :
-                          question.correctRate >= 50 ? 'text-yellow-600' :
+                          question.correctRate >= 50 ? 'text-amber-600' :
                           'text-red-600'
                         }`}>
                           {question.correctRate}%
@@ -228,7 +228,7 @@ export default function QuestionAnalyticsPage() {
                             Hard
                           </span>
                         ) : question.correctRate < 80 ? (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                          <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
                             Medium
                           </span>
                         ) : (

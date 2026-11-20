@@ -28,7 +28,7 @@ const tools = [
     color: 'text-gray-700',
     activeColor: 'text-gray-900',
     bgColor: 'bg-gray-100',
-    activeBg: 'bg-gradient-to-r from-gray-100 to-gray-50'
+    activeBg: 'bg-gray-100'
   },
   {
     id: 'cv',
@@ -38,7 +38,7 @@ const tools = [
     color: 'text-blue-600',
     activeColor: 'text-blue-700',
     bgColor: 'bg-blue-50',
-    activeBg: 'bg-gradient-to-r from-blue-100 to-blue-50'
+    activeBg: 'bg-blue-100'
   },
   {
     id: 'cover-letter',
@@ -48,27 +48,27 @@ const tools = [
     color: 'text-green-600',
     activeColor: 'text-green-700',
     bgColor: 'bg-green-50',
-    activeBg: 'bg-gradient-to-r from-green-100 to-green-50'
+    activeBg: 'bg-green-100'
   },
   {
     id: 'interview',
     title: 'Interview Prep',
     icon: MessageSquare,
     href: '/sabiadvisor/interview',
-    color: 'text-purple-600',
-    activeColor: 'text-purple-700',
-    bgColor: 'bg-purple-50',
-    activeBg: 'bg-gradient-to-r from-purple-100 to-purple-50'
+    color: 'text-gray-600',
+    activeColor: 'text-gray-700',
+    bgColor: 'bg-gray-50',
+    activeBg: 'bg-gray-100'
   },
   {
     id: 'roadmap',
     title: 'Career Roadmap',
     icon: Map,
     href: '/sabiadvisor/survey',
-    color: 'text-orange-600',
-    activeColor: 'text-orange-700',
-    bgColor: 'bg-orange-50',
-    activeBg: 'bg-gradient-to-r from-orange-100 to-orange-50'
+    color: 'text-amber-600',
+    activeColor: 'text-amber-700',
+    bgColor: 'bg-amber-50',
+    activeBg: 'bg-amber-100'
   }
 ]
 
@@ -84,9 +84,9 @@ export default function SabiAdvisorToolsLayout({
   const currentTool = tools.find(t => pathname.startsWith(t.href)) || tools[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-red-50/30 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Header - Pink Gradient - Fixed overflow */}
-      <header className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 sticky top-0 z-40 shadow-lg shadow-pink-500/10 overflow-hidden">
+      <header className="bg-red-600 sticky top-0 z-40 shadow-sm overflow-hidden">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
@@ -111,20 +111,20 @@ export default function SabiAdvisorToolsLayout({
               
               {/* Current tool */}
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30 flex-shrink-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-lg flex items-center justify-center border border-white/30 flex-shrink-0">
                   <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <span className="font-semibold text-white hidden md:inline">SabiAdvisor</span>
+                <span className="font-medium text-white hidden md:inline">SabiAdvisor</span>
                 <span className="text-white/60 hidden md:inline">/</span>
                 <span className="text-white/90 text-sm truncate max-w-[100px] sm:max-w-none">{currentTool.title}</span>
               </div>
             </div>
 
             {/* Wallet - More compact on mobile */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2 flex-shrink-0">
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-lg sm:rounded-xl border border-white/30 transition-all"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg sm:rounded-xl border border-white/30 transition-all"
               >
                 <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 <span className="text-xs sm:text-sm font-medium text-white">
@@ -133,7 +133,7 @@ export default function SabiAdvisorToolsLayout({
               </Link>
               <Link
                 href="/account/wallet"
-                className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-1.5 bg-white hover:bg-white/90 text-red-600 text-sm font-medium rounded-lg sm:rounded-xl transition-all shadow-lg shadow-black/10"
+                className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-2 sm:px-3 sm:py-2 bg-white border border-gray-200 hover:bg-white/90 text-red-600 text-sm font-medium rounded-lg sm:rounded-xl transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Top Up</span>
@@ -147,20 +147,20 @@ export default function SabiAdvisorToolsLayout({
         {/* Sidebar - Enhanced */}
         <aside className={`
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30
-          w-60 bg-white/80 backdrop-blur-md border-r border-gray-200/50 flex flex-col
-          transition-transform duration-300 ease-out
-          pt-16 lg:pt-0 shadow-xl lg:shadow-none
-        `}>
+ lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30
+ w-60 bg-white border-r border-gray-200/50 flex flex-col
+ transition-transform duration-300 ease-out
+ pt-16 lg:pt-0 shadow-sm lg:shadow-none
+ `}>
           {/* Sidebar Header */}
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg shadow-pink-500/20">
+              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-sm">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500">AI Career Tools</p>
-                <p className="text-sm font-semibold text-gray-900">SabiAdvisor</p>
+                <p className="text-sm font-medium text-gray-900">SabiAdvisor</p>
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function SabiAdvisorToolsLayout({
                   key={tool.id}
                   href={tool.href}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all duration-200 ${
                     isActive
                       ? `${tool.activeBg} ${tool.activeColor} font-medium shadow-sm`
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -194,9 +194,9 @@ export default function SabiAdvisorToolsLayout({
 
           {/* Help Section - Enhanced */}
           <div className="p-3 border-t border-gray-100">
-            <div className="bg-gradient-to-br from-pink-50 to-red-50 rounded-xl p-4 border border-pink-100">
+            <div className="bg-red-50 rounded-xl p-4 border border-gray-200">
               <div className="flex items-start gap-2 mb-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-3 h-3 text-white" />
                 </div>
                 <p className="text-xs font-medium text-gray-700">Need help?</p>
@@ -217,7 +217,7 @@ export default function SabiAdvisorToolsLayout({
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 lg:hidden transition-opacity"
+            className="fixed inset-0 bg-black/40 z-20 lg:hidden transition-opacity"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}

@@ -34,11 +34,11 @@ const SERVICE_LABELS: Record<WalletService, string> = {
 }
 
 const SERVICE_COLORS: Record<WalletService, string> = {
-  sabiwrite: 'bg-purple-100 text-purple-700',
+  sabiwrite: 'bg-gray-100 text-gray-700',
   courses: 'bg-blue-100 text-blue-700',
   community: 'bg-green-100 text-green-700',
-  advisor: 'bg-orange-100 text-orange-700',
-  quiz: 'bg-pink-100 text-pink-700',
+  advisor: 'bg-amber-100 text-amber-700',
+  quiz: 'bg-red-100 text-red-700',
   general: 'bg-gray-100 text-gray-700',
   subscription: 'bg-red-100 text-red-700'
 }
@@ -75,7 +75,7 @@ export function WalletTransactionList({
       case 'refund':
         return <RotateCcw className="w-4 h-4 text-blue-600" />
       case 'bonus':
-        return <Gift className="w-4 h-4 text-purple-600" />
+        return <Gift className="w-4 h-4 text-gray-600" />
       default:
         return <ArrowUpRight className="w-4 h-4 text-gray-600" />
     }
@@ -134,13 +134,13 @@ export function WalletTransactionList({
     <div className={`bg-white border border-gray-200 rounded-xl ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900">Transaction History</h3>
+        <h3 className="font-medium text-gray-900">Transaction History</h3>
         
         {showFilter && (
           <div className="relative">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <Filter className="w-4 h-4" />
               {selectedService ? SERVICE_LABELS[selectedService] : 'All Services'}
@@ -153,7 +153,7 @@ export function WalletTransactionList({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsFilterOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-sm z-20 py-1">
                   <button
                     onClick={() => handleServiceChange(undefined)}
                     className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
@@ -210,8 +210,8 @@ export function WalletTransactionList({
                   <p className="font-medium text-gray-900 text-sm">
                     {tx.description || tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${SERVICE_COLORS[tx.service]}`}>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs px-2 py-1 rounded ${SERVICE_COLORS[tx.service]}`}>
                       {SERVICE_LABELS[tx.service]}
                     </span>
                     <span className="text-xs text-gray-400">
@@ -222,7 +222,7 @@ export function WalletTransactionList({
               </div>
               
               <div className="text-right">
-                <p className={`font-semibold ${getTransactionColor(tx.type)}`}>
+                <p className={`font-medium ${getTransactionColor(tx.type)}`}>
                   {getTransactionSign(tx.type)}{tx.amount_formatted}
                 </p>
                 <p className="text-xs text-gray-400">

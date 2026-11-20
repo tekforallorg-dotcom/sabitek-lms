@@ -60,12 +60,12 @@ export default function ReviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 animate-in fade-in duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+      <div className="w-full sm:max-w-md bg-white border border-gray-200 rounded-t-xl sm:rounded-xl shadow-sm animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Leave a Review</h2>
+          <h2 className="text-lg font-medium text-gray-900">Leave a Review</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
@@ -97,12 +97,12 @@ export default function ReviewModal({
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   disabled={isSubmitting}
-                  className="p-1 transition-transform hover:scale-110 disabled:opacity-50"
+                  className="p-1 transition-transform disabled:opacity-50"
                 >
                   <Star
                     className={`w-10 h-10 transition-colors ${
                       star <= (hoverRating || rating)
-                        ? 'fill-yellow-400 text-yellow-400'
+                        ? 'fill-amber-400 text-amber-400'
                         : 'fill-gray-200 text-gray-200'
                     }`}
                   />
@@ -117,7 +117,7 @@ export default function ReviewModal({
           </div>
 
           <div className="mb-6">
-            <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
               Comment <span className="text-gray-400 font-normal">(optional)</span>
             </label>
             <textarea
@@ -128,7 +128,7 @@ export default function ReviewModal({
               rows={4}
               maxLength={500}
               disabled={isSubmitting}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50 resize-none"
+              className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50 resize-none"
             />
             <p className="text-xs text-gray-400 mt-1 text-right">{comment.length}/500</p>
           </div>

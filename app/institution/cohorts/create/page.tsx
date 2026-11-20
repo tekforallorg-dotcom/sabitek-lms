@@ -31,7 +31,7 @@ interface Program {
 
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -246,7 +246,7 @@ function CreateCohortForm() {
   if (fetchError) {
     return (
       <>
-        <div className="bg-white/85 backdrop-blur border-b border-rose-100">
+        <div className="bg-white border-b border-gray-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
@@ -265,19 +265,18 @@ function CreateCohortForm() {
         </div>
         <div>
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
           </div>
         </div>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
-            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <div className="w-16 h-16 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Programs</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to Load Programs</h3>
             <p className="text-gray-500 mb-6">{fetchError}</p>
-            <Button onClick={() => fetchPrograms()} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+            <Button onClick={() => fetchPrograms()} className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
               Try Again
             </Button>
           </div>
@@ -289,7 +288,7 @@ function CreateCohortForm() {
   if (programs.length === 0) {
     return (
       <>
-        <div className="bg-white/85 backdrop-blur border-b border-rose-100">
+        <div className="bg-white border-b border-gray-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
@@ -308,20 +307,19 @@ function CreateCohortForm() {
         </div>
         <div>
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
           </div>
         </div>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div className="w-16 h-16 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-amber-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No programs available</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No programs available</h3>
             <p className="text-gray-500 mb-6">You need to create a program before you can create cohorts.</p>
             <Link href="/institution/programs/create">
-              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+              <Button className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
                 <Plus className="w-4 h-4 mr-2" />Create a Program First
               </Button>
             </Link>
@@ -333,7 +331,7 @@ function CreateCohortForm() {
 
   return (
     <>
-      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -353,8 +351,8 @@ function CreateCohortForm() {
 
       <div>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">New Cohort</p>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">Create a <span className="font-serif italic text-red-600">cohort</span></h1>
           <p className="text-gray-600 mt-1">Set up a new learner group for your program</p>
         </div>
       </div>
@@ -362,24 +360,24 @@ function CreateCohortForm() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+            <div className="bg-red-50 border border-gray-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />{error}
             </div>
           )}
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Basic Information</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Basic Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Program <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Program <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <select
                     value={programId}
                     onChange={(e) => setProgramId(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/70 border border-rose-100 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/70 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
                   >
                     <option value="">Select a program</option>
                     {programs.map((program) => (
@@ -390,18 +388,18 @@ function CreateCohortForm() {
                 <p className="text-xs text-gray-500 mt-1">{programs.length} program{programs.length !== 1 ? 's' : ''} available</p>
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Cohort Name <span className="text-red-500">*</span></label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Cohort 1, January 2025 Batch" required className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cohort Name <span className="text-red-500">*</span></label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Cohort 1, January 2025 Batch" required className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Enrollment Settings</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Enrollment Settings</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-2">Enrollment Mode <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Enrollment Mode <span className="text-red-500">*</span></label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     { value: 'invite_only', label: 'Invite Only', icon: Lock, desc: 'Only invited users can join' },
@@ -412,11 +410,11 @@ function CreateCohortForm() {
                     <label
                       key={mode.value}
                       className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
-                        enrollmentMode === mode.value ? 'border-red-400 bg-rose-50 ring-1 ring-red-200' : 'border-rose-100 bg-white/70 hover:border-rose-200'
+                        enrollmentMode === mode.value ? 'border-red-400 bg-red-50 ring-1 ring-red-200' : 'border-gray-200 bg-white/70 hover:border-gray-200'
                       }`}
                     >
                       <input type="radio" name="enrollmentMode" value={mode.value} checked={enrollmentMode === mode.value} onChange={(e) => setEnrollmentMode(e.target.value)} className="sr-only" />
-                      <mode.icon className={`w-5 h-5 mt-0.5 ${enrollmentMode === mode.value ? 'text-red-500' : 'text-gray-400'}`} />
+                      <mode.icon className={`w-5 h-5 mt-1 ${enrollmentMode === mode.value ? 'text-red-500' : 'text-gray-400'}`} />
                       <div>
                         <div className={`font-medium text-sm ${enrollmentMode === mode.value ? 'text-red-700' : 'text-gray-900'}`}>{mode.label}</div>
                         <div className="text-sm text-gray-500">{mode.desc}</div>
@@ -426,38 +424,37 @@ function CreateCohortForm() {
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Seat Limit (optional)</label>
-                <Input type="number" min="1" value={seatLimit} onChange={(e) => setSeatLimit(e.target.value)} placeholder="Leave empty for unlimited" className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Seat Limit (optional)</label>
+                <Input type="number" min="1" value={seatLimit} onChange={(e) => setSeatLimit(e.target.value)} placeholder="Leave empty for unlimited" className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 <p className="text-sm text-gray-500 mt-1">Maximum number of learners who can join this cohort</p>
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Schedule (Optional)</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Schedule (Optional)</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-4">
-            <Link href="/institution/cohorts"><Button type="button" variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">Cancel</Button></Link>
-            <Button type="submit" disabled={submitting || !name || !programId} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+            <Link href="/institution/cohorts"><Button type="button" variant="outline" className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">Cancel</Button></Link>
+            <Button type="submit" disabled={submitting || !name || !programId} className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
               {submitting ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</>) : (<><Save className="w-4 h-4 mr-2" />Create Cohort</>)}
             </Button>
           </div>
@@ -469,7 +466,7 @@ function CreateCohortForm() {
 
 export default function CreateCohortPage() {
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       <Suspense fallback={<SabiBotLoader message="Loading..." />}>
         <CreateCohortForm />
       </Suspense>

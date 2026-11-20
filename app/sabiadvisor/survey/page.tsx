@@ -13,7 +13,6 @@ const QUESTIONS = [
     title: 'What are your main career goals?',
     subtitle: 'Select all that apply',
     type: 'multiple',
-    icon: '🎯',
     options: [
       'Get my first tech job',
       'Switch from non-tech to tech',
@@ -27,7 +26,6 @@ const QUESTIONS = [
     id: 'age_stage',
     title: 'What stage of life are you in?',
     type: 'single',
-    icon: '👤',
     options: [
       'Secondary school student (SS1-SS3)',
       'University student (undergraduate)',
@@ -41,7 +39,6 @@ const QUESTIONS = [
     id: 'education',
     title: 'What is your educational background?',
     type: 'single',
-    icon: '🎓',
     options: [
       'WAEC/NECO only',
       'JAMB candidate / Awaiting admission',
@@ -56,7 +53,6 @@ const QUESTIONS = [
     id: 'tech_experience',
     title: 'What is your current tech experience?',
     type: 'single',
-    icon: '💻',
     options: [
       'Complete beginner (never coded)',
       'Some HTML/CSS basics',
@@ -71,7 +67,6 @@ const QUESTIONS = [
     title: 'Which activities interest you most?',
     subtitle: 'Select all that apply',
     type: 'multiple',
-    icon: '✨',
     options: [
       'Building websites and apps',
       'Working with data and numbers',
@@ -88,7 +83,6 @@ const QUESTIONS = [
     title: 'How do you learn best?',
     subtitle: 'Select your preferred style',
     type: 'single',
-    icon: '📚',
     options: [
       'Video tutorials (YouTube, Udemy)',
       'Reading documentation and articles',
@@ -102,7 +96,6 @@ const QUESTIONS = [
     id: 'timeline',
     title: 'How soon do you need to be job-ready?',
     type: 'single',
-    icon: '⏰',
     options: [
       '3-6 months (intensive learning)',
       '6-12 months (balanced pace)',
@@ -114,7 +107,6 @@ const QUESTIONS = [
     id: 'time_commitment',
     title: 'How much time can you dedicate daily?',
     type: 'single',
-    icon: '🕐',
     options: [
       '1-2 hours (have full-time job)',
       '3-4 hours (flexible schedule)',
@@ -128,7 +120,6 @@ const QUESTIONS = [
     title: 'How committed are you to this career change?',
     subtitle: 'Be honest - this helps us give better advice',
     type: 'single',
-    icon: '💪',
     options: [
       'Absolutely committed - will do whatever it takes',
       'Very serious - ready to invest time and effort',
@@ -142,7 +133,6 @@ const QUESTIONS = [
     title: 'What are your main constraints?',
     subtitle: 'Select all that apply',
     type: 'multiple',
-    icon: '🚧',
     options: [
       'Limited budget (need free resources)',
       'Unstable power supply',
@@ -158,7 +148,6 @@ const QUESTIONS = [
     id: 'career_readiness',
     title: 'What best describes your current situation?',
     type: 'single',
-    icon: '📋',
     options: [
       'Unemployed and urgently need income',
       'Employed but looking to switch',
@@ -173,7 +162,6 @@ const QUESTIONS = [
     title: 'What motivates you most about tech?',
     subtitle: 'Select top 2-3',
     type: 'multiple',
-    icon: '🔥',
     options: [
       'High earning potential',
       'Remote work opportunities',
@@ -317,10 +305,10 @@ export default function SurveyPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50/50 via-white to-red-50/50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-3 border-pink-200"></div>
+            <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
             <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-red-500 animate-spin"></div>
           </div>
           <p className="text-sm text-gray-600">Loading...</p>
@@ -335,31 +323,31 @@ export default function SurveyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-white to-red-50/30">
+    <div className="min-h-screen bg-gray-50">
       {/* Sub Header - Matching CV/Cover Letter style */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-20">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Link 
                 href="/sabiadvisor"
-                className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Back</span>
               </Link>
               <ChevronRight className="w-4 h-4 text-gray-300" />
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center shadow-sm">
                   <Target className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="font-semibold text-gray-900">Career Assessment</span>
+                <span className="font-medium text-gray-900">Career Assessment</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
               >
                 <Wallet className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">
@@ -368,7 +356,7 @@ export default function SurveyPage() {
               </Link>
               <Link
                 href="/account/wallet"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
+                className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Top Up</span>
@@ -381,27 +369,23 @@ export default function SurveyPage() {
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Hero Card */}
-        <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-2xl p-5 mb-6 relative overflow-hidden shadow-lg shadow-pink-500/20">
+        <div className="bg-red-600 rounded-xl p-5 mb-6 relative overflow-hidden shadow-sm">
           {/* Floating shapes */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-2 right-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-            <div className="absolute bottom-0 left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-          </div>
           
           <div className="relative z-10">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shadow-lg">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center border border-white/30 shadow-sm">
                 <Briefcase className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h1 className="text-xl font-bold text-white mb-1">Find Your Perfect Tech Path</h1>
+                <h1 className="text-xl font-medium text-white mb-1">Find Your Perfect Tech Path</h1>
                 <p className="text-sm text-white/80">Answer honestly for personalized career recommendations</p>
               </div>
             </div>
             
             {/* Cost indicator */}
             {costEstimate && (
-              <div className="mt-4 inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-white/30">
+              <div className="mt-4 inline-flex items-center gap-2 bg-white/20 text-white px-3 py-2 rounded-lg text-xs font-medium border border-white/30">
                 <Wallet className="w-3.5 h-3.5" />
                 Cost: {costEstimate.costFormatted}
               </div>
@@ -410,15 +394,14 @@ export default function SurveyPage() {
         </div>
 
         {/* Progress Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-xl p-4 mb-6 border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xl">{currentQuestion.icon}</span>
               <span className="text-sm font-medium text-gray-700">
                 Question {currentStep + 1} of {QUESTIONS.length}
               </span>
             </div>
-            <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">
+            <span className="text-sm font-medium text-red-600">
               {Math.round(progress)}% Complete
             </span>
           </div>
@@ -426,13 +409,13 @@ export default function SurveyPage() {
           {/* Progress bar */}
           <div className="relative w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-3">
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-full transition-all duration-500 ease-out"
+              className="absolute inset-y-0 left-0 bg-red-600 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
           
           {/* Progress dots */}
-          <div className="flex justify-between px-0.5">
+          <div className="flex justify-between px-1">
             {QUESTIONS.map((q, idx) => (
               <button
                 key={idx}
@@ -445,9 +428,9 @@ export default function SurveyPage() {
                 disabled={idx > currentStep}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   idx < currentStep 
-                    ? 'bg-green-500 cursor-pointer hover:scale-150' 
+                    ? 'bg-green-500 cursor-pointer' 
                     : idx === currentStep 
-                      ? 'bg-gradient-to-r from-red-500 to-pink-500 scale-125 ring-2 ring-pink-200' 
+                      ? 'bg-red-600 scale-125 ring-2 ring-gray-200' 
                       : 'bg-gray-200'
                 }`}
                 title={idx < currentStep ? `Go to: ${q.title}` : ''}
@@ -461,30 +444,30 @@ export default function SurveyPage() {
           {/* Stack effect */}
           {currentStep < QUESTIONS.length - 1 && (
             <div 
-              className="absolute inset-0 bg-white/50 rounded-2xl border border-gray-100"
+              className="absolute inset-0 bg-white/50 rounded-xl border border-gray-100"
               style={{ transform: 'translateY(6px) scale(0.98)', zIndex: 1 }}
             />
           )}
           
           <div
-            className={`relative bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-gray-100 shadow-sm transition-all duration-300 ${
-              isAnimating ? (direction === 'forward' ? 'animate-slideInRight' : 'animate-slideInLeft') : ''
+            className={`relative bg-white rounded-xl p-5 border border-gray-100 shadow-sm transition-all duration-300 ${
+ isAnimating ? (direction === 'forward' ? 'animate-slideInRight' : 'animate-slideInLeft') : ''
             }`}
             style={{ zIndex: 10 }}
           >
             {/* Question Header */}
             <div className="mb-5">
               <div className="flex items-start gap-3 mb-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center text-lg shadow-md shadow-pink-500/20">
-                  {currentQuestion.icon}
+                <div className="flex-shrink-0 w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-sm font-medium text-white">
+                  {currentStep + 1}
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold text-gray-900 leading-tight mb-1">
+                  <h2 className="text-lg font-medium text-gray-900 leading-tight mb-1">
                     {currentQuestion.title}
                   </h2>
                   {currentQuestion.subtitle && (
                     <p className="text-xs text-gray-500 flex items-center gap-1">
-                      <HelpCircle className="w-3 h-3 text-pink-400" />
+                      <HelpCircle className="w-3 h-3 text-red-400" />
                       {currentQuestion.subtitle}
                     </p>
                   )}
@@ -492,9 +475,9 @@ export default function SurveyPage() {
               </div>
               
               {/* Type indicator */}
-              <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
+              <span className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full ${
                 currentQuestion.type === 'multiple' 
-                  ? 'bg-purple-50 text-purple-600 border border-purple-100' 
+                  ? 'bg-gray-50 text-gray-600 border border-gray-100' 
                   : 'bg-blue-50 text-blue-600 border border-blue-100'
               }`}>
                 <CheckCircle className="w-3 h-3" />
@@ -513,8 +496,8 @@ export default function SurveyPage() {
                     onClick={() => handleAnswer(option)}
                     className={`group w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
                       isSelected
-                        ? 'border-pink-400 bg-gradient-to-r from-pink-50 to-red-50 shadow-sm'
-                        : 'border-gray-100 bg-white hover:border-pink-200 hover:bg-pink-50/30'
+                        ? 'border-red-400 bg-red-50 shadow-sm'
+                        : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
                     }`}
                     style={{
                       animation: `fadeInUp 0.25s ease-out ${idx * 0.03}s backwards`
@@ -524,8 +507,8 @@ export default function SurveyPage() {
                       <div
                         className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                           isSelected
-                            ? 'border-pink-500 bg-gradient-to-br from-red-500 to-pink-600'
-                            : 'border-gray-300 group-hover:border-pink-300'
+                            ? 'border-red-500 bg-red-600'
+                            : 'border-gray-300 group-hover:border-red-300'
                         }`}
                       >
                         {isSelected && (
@@ -546,8 +529,8 @@ export default function SurveyPage() {
             {/* Selection Count */}
             {currentQuestion.type === 'multiple' && answers[currentQuestion.id]?.length > 0 && (
               <div className="mt-4 text-center">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-100">
-                  <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-pulse" />
+                <span className="inline-flex items-center gap-2 text-xs font-medium text-red-600 bg-red-50 px-3 py-2 rounded-full border border-gray-200">
+                  <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse" />
                   {answers[currentQuestion.id].length} selected
                 </span>
               </div>
@@ -575,7 +558,7 @@ export default function SurveyPage() {
           <button
             onClick={handleBack}
             disabled={currentStep === 0}
-            className="flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:text-gray-900 font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:bg-white rounded-xl"
+            className="flex items-center gap-2 px-4 py-3 text-gray-600 hover:text-gray-900 font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:bg-white rounded-xl"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back</span>
@@ -584,7 +567,7 @@ export default function SurveyPage() {
           <button
             onClick={handleNext}
             disabled={!isAnswered() || isSubmitting}
-            className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-pink-500/25 hover:scale-[1.02] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+            className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             {isSubmitting ? (
               <>
@@ -608,10 +591,10 @@ export default function SurveyPage() {
         {/* Motivational Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-gray-500">
-            {currentStep < 4 && "🚀 Great start! Keep going..."}
-            {currentStep >= 4 && currentStep < 8 && "💪 You're doing amazing!"}
-            {currentStep >= 8 && currentStep < 11 && "🔥 Almost there!"}
-            {currentStep >= 11 && "✨ Last question!"}
+            {currentStep < 4 && "Great start! Keep going..."}
+            {currentStep >= 4 && currentStep < 8 && "You're doing amazing!"}
+            {currentStep >= 8 && currentStep < 11 && "Almost there!"}
+            {currentStep >= 11 && "Last question!"}
           </p>
         </div>
       </div>
@@ -619,16 +602,16 @@ export default function SurveyPage() {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <>
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={() => setShowConfirmModal(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md bg-white rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowConfirmModal(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md bg-white border border-gray-200 rounded-xl shadow-sm z-50 overflow-hidden">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 px-5 py-4">
+            <div className="bg-red-600 px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Generate Your Roadmap</h3>
+                  <h3 className="text-lg font-medium text-white">Generate Your Roadmap</h3>
                   <p className="text-sm text-white/80">AI-powered career guidance</p>
                 </div>
               </div>
@@ -638,7 +621,7 @@ export default function SurveyPage() {
               <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Cost:</span>
-                  <span className="font-semibold text-gray-900">{costEstimate?.costFormatted || '₦150'}</span>
+                  <span className="font-medium text-gray-900">{costEstimate?.costFormatted || '₦150'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Your balance:</span>
@@ -647,7 +630,7 @@ export default function SurveyPage() {
                 <div className="border-t border-gray-200 pt-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">After charge:</span>
-                    <span className={`font-semibold ${
+                    <span className={`font-medium ${
                       balance && costEstimate && balance.balanceKobo >= costEstimate.costKobo 
                         ? 'text-green-600' 
                         : 'text-red-600'
@@ -660,23 +643,23 @@ export default function SurveyPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3 mb-5">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5">
                 <p className="text-xs text-amber-700">
-                  💡 <strong>Cached for 7 days:</strong> Same answers won&apos;t be charged again.
+                  <strong>Cached for 7 days:</strong> Same answers won&apos;t be charged again.
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!balance || balance.balanceKobo < (costEstimate?.costKobo || 0)}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Generate Roadmap
                 </button>
@@ -685,7 +668,7 @@ export default function SurveyPage() {
               {balance && costEstimate && balance.balanceKobo < costEstimate.costKobo && (
                 <Link
                   href="/account/wallet"
-                  className="w-full mt-4 flex items-center justify-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium"
+                  className="w-full mt-4 flex items-center justify-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   Top up wallet to continue

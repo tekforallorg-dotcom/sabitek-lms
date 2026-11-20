@@ -137,7 +137,7 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
   return (
     <Card className="border-gray-200 shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold">Upload Study Material</CardTitle>
+        <CardTitle className="text-lg font-medium">Upload Study Material</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div
@@ -193,7 +193,7 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="category" className="text-sm">Category</Label>
             <Select value={category} onValueChange={setCategory} disabled={uploading}>
               <SelectTrigger id="category" className="h-9 text-sm">
@@ -209,7 +209,7 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="level" className="text-sm">Level</Label>
             <Select value={level} onValueChange={setLevel} disabled={uploading}>
               <SelectTrigger id="level" className="h-9 text-sm">
@@ -227,7 +227,7 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
         </div>
 
         {progress && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-700 truncate max-w-[60%]">{progress.filename}</span>
               <span className="text-gray-500">
@@ -252,7 +252,7 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
             <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <p className="text-xs text-red-700">{error}</p>
           </div>

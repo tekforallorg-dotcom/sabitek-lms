@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('[CONFIRM] ✅ Token verified for user:', data.user.email)
+    console.log('[CONFIRM] Token verified for user:', data.user.email)
 
     // Build redirect URL with session tokens in hash fragment
     // This allows the client-side Supabase to pick up the session

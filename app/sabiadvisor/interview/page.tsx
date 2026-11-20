@@ -109,9 +109,6 @@ export default function InterviewPrepComingSoon() {
     <div className="min-h-screen bg-gray-950 text-white overflow-hidden">
       {/* Animated Background - Pink/Red theme */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl animate-pulse delay-500" />
         
         {/* Star particles */}
         {[...Array(20)].map((_, i) => (
@@ -129,7 +126,7 @@ export default function InterviewPrepComingSoon() {
       </div>
 
       {/* Sub Header */}
-      <div className="relative z-10 bg-gray-900/50 backdrop-blur-md border-b border-white/10">
+      <div className="relative z-10 bg-gray-900 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link 
@@ -139,9 +136,9 @@ export default function InterviewPrepComingSoon() {
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm">Back to SabiAdvisor</span>
             </Link>
-            <div className="flex items-center gap-2 px-3 py-1 bg-pink-500/20 border border-pink-500/30 rounded-full">
-              <Sparkles className="w-3 h-3 text-pink-400 animate-pulse" />
-              <span className="text-xs font-medium text-pink-300">Coming Soon</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full">
+              <Sparkles className="w-3 h-3 text-red-400 animate-pulse" />
+              <span className="text-xs font-medium text-red-300">Coming Soon</span>
             </div>
           </div>
         </div>
@@ -151,20 +148,20 @@ export default function InterviewPrepComingSoon() {
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 sm:py-10">
         <div className="text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/20 to-red-500/20 backdrop-blur-sm border border-pink-500/30 px-4 py-1.5 rounded-full mb-3">
-            <Zap className="w-3 h-3 text-pink-400" />
-            <span className="text-xs font-semibold text-pink-300">
+          <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/30 px-4 py-2 rounded-full mb-3">
+            <Zap className="w-3 h-3 text-red-400" />
+            <span className="text-xs font-medium text-red-300">
               AI-Powered Interview Coach
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl font-black mb-2">
-            <span className="bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-medium mb-2">
+            <span className="text-white">
               Master Your Next
             </span>
             {' '}
-            <span className="bg-gradient-to-r from-red-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+            <span className="text-red-600">
               Interview
             </span>
           </h1>
@@ -178,24 +175,24 @@ export default function InterviewPrepComingSoon() {
           {/* Core Tech Icons */}
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="flex flex-col items-center gap-1">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/25">
+              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-sm">
                 <Mic className="w-6 h-6 text-white" />
               </div>
-              <span className="text-[10px] text-gray-500">Voice AI</span>
+              <span className="text-xs text-gray-500">Voice AI</span>
             </div>
             <div className="text-xl text-gray-700">+</div>
             <div className="flex flex-col items-center gap-1">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/25">
+              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-sm">
                 <Video className="w-6 h-6 text-white" />
               </div>
-              <span className="text-[10px] text-gray-500">Video</span>
+              <span className="text-xs text-gray-500">Video</span>
             </div>
             <div className="text-xl text-gray-700">+</div>
             <div className="flex flex-col items-center gap-1">
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/25">
+              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-sm">
                 <Brain className="w-6 h-6 text-white" />
               </div>
-              <span className="text-[10px] text-gray-500">Feedback</span>
+              <span className="text-xs text-gray-500">Feedback</span>
             </div>
           </div>
 
@@ -208,23 +205,23 @@ export default function InterviewPrepComingSoon() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter email for early access"
-                  className="flex-1 px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50"
+                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
                   required
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-pink-500/25"
+                  className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all"
                 >
                   <Bell className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-[10px] text-gray-500 mt-2">Be the first to know when we launch</p>
+              <p className="text-xs text-gray-500 mt-2">Be the first to know when we launch</p>
             </form>
           ) : (
-            <div className="max-w-sm mx-auto bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-3">
+            <div className="max-w-sm mx-auto bg-green-500/20 border border-green-500/30 rounded-lg p-3">
               <div className="flex items-center justify-center gap-2 text-green-400">
                 <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-semibold">You&apos;re on the list!</span>
+                <span className="text-sm font-medium">You&apos;re on the list!</span>
               </div>
               <p className="text-xs text-gray-400 mt-1">We&apos;ll notify you when Interview Prep launches.</p>
             </div>
@@ -240,19 +237,19 @@ export default function InterviewPrepComingSoon() {
             return (
               <div
                 key={index}
-                className="group bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-pink-500/30 transition-all"
+                className="group bg-gray-900 border border-white/10 rounded-xl p-4 hover:border-red-500/30 transition-all"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center mb-3 shadow-lg group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center mb-3 shadow-sm transition-transform">
                   <Icon className="w-5 h-5 text-white" />
                 </div>
                 
-                <h3 className="text-sm font-bold text-white mb-1">{feature.title}</h3>
+                <h3 className="text-sm font-medium text-white mb-1">{feature.title}</h3>
                 <p className="text-xs text-gray-400 mb-3">{feature.description}</p>
                 
                 <div className="space-y-1">
                   {feature.details.map((detail, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[10px] text-gray-500">
-                      <div className="w-1 h-1 bg-pink-500 rounded-full" />
+                    <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="w-1 h-1 bg-red-600 rounded-full" />
                       {detail}
                     </div>
                   ))}
@@ -263,14 +260,14 @@ export default function InterviewPrepComingSoon() {
         </div>
 
         {/* Gamified Features Section */}
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6">
+        <div className="bg-gray-900/30 border border-white/10 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-lg">
-              <Gamepad2 className="w-4 h-4 text-pink-400" />
+            <div className="p-2 bg-red-500/20 rounded-lg">
+              <Gamepad2 className="w-4 h-4 text-red-400" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Gamified Learning</h2>
-              <p className="text-[10px] text-gray-500">Not just practice. A game.</p>
+              <h2 className="text-sm font-medium text-white">Gamified Learning</h2>
+              <p className="text-xs text-gray-500">Not just practice. A game.</p>
             </div>
           </div>
 
@@ -280,15 +277,15 @@ export default function InterviewPrepComingSoon() {
               return (
                 <div
                   key={index}
-                  className="group bg-gray-800/50 border border-white/5 rounded-lg p-3 hover:border-pink-500/20 transition-all"
+                  className="group bg-gray-800/50 border border-white/5 rounded-lg p-3 hover:border-red-500/20 transition-all"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center mb-2 shadow-lg">
+                  <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mb-2 shadow-sm">
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                   
-                  <h3 className="text-xs font-bold text-white mb-0.5">{feature.title}</h3>
-                  <p className="text-[10px] text-pink-400 mb-1">{feature.tagline}</p>
-                  <p className="text-[10px] text-gray-500 line-clamp-2">{feature.description}</p>
+                  <h3 className="text-xs font-medium text-white mb-1">{feature.title}</h3>
+                  <p className="text-xs text-red-400 mb-1">{feature.tagline}</p>
+                  <p className="text-xs text-gray-500 line-clamp-2">{feature.description}</p>
                 </div>
               )
             })}
@@ -299,28 +296,26 @@ export default function InterviewPrepComingSoon() {
         <div className="grid grid-cols-4 gap-3 mb-6">
           {techStack.map((tech, index) => (
             <div key={index} className="text-center p-3 bg-gray-900/50 border border-white/10 rounded-lg">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Zap className="w-4 h-4 text-pink-400" />
+              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Zap className="w-4 h-4 text-red-400" />
               </div>
-              <h4 className="text-[10px] font-semibold text-white mb-0.5">{tech.name}</h4>
-              <p className="text-[9px] text-gray-500">{tech.desc}</p>
+              <h4 className="text-xs font-medium text-white mb-1">{tech.name}</h4>
+              <p className="text-xs text-gray-500">{tech.desc}</p>
             </div>
           ))}
         </div>
 
         {/* Bottom CTA */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-pink-600 to-red-600 rounded-xl p-5 text-center">
+        <div className="relative overflow-hidden bg-red-600 rounded-xl p-5 text-center">
           {/* Animated circles */}
-          <div className="absolute top-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-pulse delay-500" />
           
           <div className="relative">
             <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full mb-2">
-              <Flame className="w-3 h-3 text-yellow-300 animate-pulse" />
+              <Flame className="w-3 h-3 text-amber-300 animate-pulse" />
               <span className="text-xs font-medium">Early Access: 50% Off</span>
             </div>
             
-            <h2 className="text-lg font-bold mb-2">
+            <h2 className="text-lg font-medium mb-2">
               Be Ready for Your Dream Job
             </h2>
             <p className="text-xs text-white/80 mb-4 max-w-md mx-auto">
@@ -329,7 +324,7 @@ export default function InterviewPrepComingSoon() {
             
             <Link
               href="/sabiadvisor"
-              className="inline-flex items-center gap-2 bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
             >
               <Briefcase className="w-4 h-4" />
               Explore SabiAdvisor Tools
@@ -341,7 +336,7 @@ export default function InterviewPrepComingSoon() {
 
       {/* Footer */}
       <div className="relative z-10 text-center py-6 border-t border-white/5">
-        <p className="text-[10px] text-gray-600">
+        <p className="text-xs text-gray-600">
           © 2026 Sabitek. Interview Prep is coming soon.
         </p>
       </div>

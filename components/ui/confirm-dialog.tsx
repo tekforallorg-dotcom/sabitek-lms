@@ -27,19 +27,19 @@ const iconMap = {
 }
 
 const bgMap = {
-  info: 'from-blue-500 to-blue-600',
-  success: 'from-green-500 to-emerald-600',
-  error: 'from-red-500 to-red-600',
-  warning: 'from-amber-500 to-orange-500',
-  confirm: 'from-amber-500 to-orange-500',
+  info: 'bg-blue-600',
+  success: 'bg-green-600',
+  error: 'bg-red-600',
+  warning: 'bg-amber-600',
+  confirm: 'bg-amber-600',
 }
 
 function getButtonClass(variant?: string) {
   switch (variant) {
     case 'primary':
-      return 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white'
+      return 'bg-red-600 hover:bg-red-700 text-white'
     case 'danger':
-      return 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
+      return 'bg-red-600 hover:bg-red-700 text-white'
     case 'secondary':
     default:
       return ''
@@ -51,14 +51,14 @@ export function ConfirmDialog({ isOpen, onClose, title, message, type = 'confirm
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className={`${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               {iconMap[type]}
             </div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <h3 className="text-lg font-medium text-white">{title}</h3>
           </div>
         </div>
         <div className="p-5">

@@ -224,7 +224,7 @@ async function handleBuildCV(
     inputForCache,
     inputSummary: { targetRole, level, format },
     executor: async () => {
-      console.log('🚀 Starting CV Builder v2 pipeline (BUILD)...')
+      console.log('Starting CV Builder v2 pipeline (BUILD)...')
       
       // Prepare input for new pipeline
       const pipelineInput: BuildCVInput = {
@@ -244,7 +244,7 @@ async function handleBuildCV(
         throw new Error(pipelineResult.error || 'CV generation failed')
       }
 
-      console.log(`✅ Pipeline complete! Quality: ${pipelineResult.qualityScore}, ATS: ${pipelineResult.atsScore}`)
+      console.log(`Pipeline complete! Quality: ${pipelineResult.qualityScore}, ATS: ${pipelineResult.atsScore}`)
 
       // Convert CVData to CVSections format for database storage
       const sections = convertToSections(pipelineResult.cv)
@@ -282,7 +282,7 @@ async function handleBuildCV(
 
       if (error) throw error
 
-      console.log('🎉 CV saved! ATS Score:', pipelineResult.atsScore)
+      console.log('CV saved! ATS Score:', pipelineResult.atsScore)
 
       // Return with validation info
       const validation = {
@@ -356,7 +356,7 @@ async function handleTailorCV(
     inputForCache,
     inputSummary: { targetRole, level, format },
     executor: async () => {
-      console.log('🎯 Starting CV Builder v2 pipeline (TAILOR)...')
+      console.log('Starting CV Builder v2 pipeline (TAILOR)...')
       
       // Prepare input for new pipeline
       const pipelineInput: TailorCVInput = {
@@ -376,8 +376,8 @@ async function handleTailorCV(
         throw new Error(pipelineResult.error || 'CV tailoring failed')
       }
 
-      console.log(`✅ Tailoring complete! Quality: ${pipelineResult.qualityScore}, ATS: ${pipelineResult.atsScore}`)
-      console.log(`📊 Evidence Map: ${pipelineResult.evidenceMap?.coverage_percentage || 0}% keyword coverage`)
+      console.log(`Tailoring complete! Quality: ${pipelineResult.qualityScore}, ATS: ${pipelineResult.atsScore}`)
+      console.log(`Evidence Map: ${pipelineResult.evidenceMap?.coverage_percentage || 0}% keyword coverage`)
 
       // Convert CVData to CVSections format
       const sections = convertToSections(pipelineResult.cv)
@@ -417,7 +417,7 @@ async function handleTailorCV(
 
       if (error) throw error
 
-      console.log('🎉 Tailored CV saved! ATS Score:', pipelineResult.atsScore)
+      console.log('Tailored CV saved! ATS Score:', pipelineResult.atsScore)
 
       const validation = {
         score: pipelineResult.qualityScore,

@@ -13,7 +13,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
   if (loading || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading admin..." size="lg" />
       </div>
     )

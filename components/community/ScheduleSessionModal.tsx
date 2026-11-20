@@ -94,13 +94,13 @@ export default function ScheduleSessionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 animate-in fade-in duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+      <div className="w-full sm:max-w-md bg-white border border-gray-200 rounded-t-xl sm:rounded-xl shadow-sm animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Schedule Session</h2>
+          <h2 className="text-lg font-medium text-gray-900">Schedule Session</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
@@ -125,7 +125,7 @@ export default function ScheduleSessionModal({
           <div className="space-y-4">
             {/* Date & Time */}
             <div>
-              <label htmlFor="datetime" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="datetime" className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Date & Time
               </label>
@@ -136,13 +136,13 @@ export default function ScheduleSessionModal({
                 onChange={(e) => setScheduledStart(e.target.value)}
                 min={getMinDateTime()}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
+                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
               />
             </div>
 
             {/* Duration */}
             <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
                 <Clock className="w-4 h-4 inline mr-1" />
                 Duration
               </label>
@@ -151,7 +151,7 @@ export default function ScheduleSessionModal({
                 value={duration}
                 onChange={(e) => setDuration(parseInt(e.target.value, 10))}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
+                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
               >
                 <option value={30}>30 minutes</option>
                 <option value={45}>45 minutes</option>
@@ -163,7 +163,7 @@ export default function ScheduleSessionModal({
 
             {/* Meeting Provider */}
             <div>
-              <label htmlFor="provider" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="provider" className="block text-sm font-medium text-gray-700 mb-2">
                 <Video className="w-4 h-4 inline mr-1" />
                 Meeting Platform
               </label>
@@ -172,7 +172,7 @@ export default function ScheduleSessionModal({
                 value={meetingProvider}
                 onChange={(e) => setMeetingProvider(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
+                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
               >
                 {MEETING_PROVIDERS.map((provider) => (
                   <option key={provider.value} value={provider.value}>
@@ -184,7 +184,7 @@ export default function ScheduleSessionModal({
 
             {/* Meeting URL */}
             <div>
-              <label htmlFor="meetingUrl" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="meetingUrl" className="block text-sm font-medium text-gray-700 mb-2">
                 <Link className="w-4 h-4 inline mr-1" />
                 Meeting Link <span className="text-gray-400 font-normal">(optional)</span>
               </label>
@@ -195,7 +195,7 @@ export default function ScheduleSessionModal({
                 onChange={(e) => setMeetingUrl(e.target.value)}
                 placeholder="https://meet.google.com/abc-defg-hij"
                 disabled={isSubmitting}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
+                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 disabled:opacity-50"
               />
               <p className="mt-1 text-xs text-gray-400">
                 You can add this later or share it in the chat

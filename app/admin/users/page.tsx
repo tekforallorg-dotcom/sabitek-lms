@@ -120,9 +120,9 @@ export default function UsersManagementPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full bg-[#fffcfb]">
+      <div className="flex items-center justify-center h-full bg-gray-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -134,15 +134,15 @@ export default function UsersManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">Admin &middot; Directory</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-1">Admin &middot; Directory</p>
+          <h1 className="text-3xl font-medium tracking-tight text-gray-900">
             Users <span className="font-serif italic text-red-600">Management</span>
           </h1>
           <p className="text-gray-600 mt-1">Manage all platform users and their access</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-white/70 backdrop-blur border border-rose-100 px-4 py-2 text-gray-600 shadow-sm">
+        <div className="flex items-center gap-2 rounded-full bg-white border border-gray-200 px-4 py-2 text-gray-600 shadow-sm">
           <UsersIcon className="w-5 h-5 text-red-500" />
-          <span className="font-semibold">{total} users</span>
+          <span className="font-medium">{total} users</span>
         </div>
       </div>
 
@@ -159,7 +159,7 @@ export default function UsersManagementPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50/80 backdrop-blur border border-red-100 ring-1 ring-red-100 rounded-2xl p-4 text-red-700">
+        <div className="bg-red-50/80 border border-red-100 ring-1 ring-red-100 rounded-xl p-4 text-red-700">
           {error}
         </div>
       )}
@@ -174,7 +174,7 @@ export default function UsersManagementPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] px-6 py-4">
+        <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-6 py-4">
           <div className="text-sm text-gray-600">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} users
           </div>
@@ -182,7 +182,7 @@ export default function UsersManagementPage() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
@@ -192,7 +192,7 @@ export default function UsersManagementPage() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-2 rounded-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-5 h-5 text-gray-600" />
             </button>

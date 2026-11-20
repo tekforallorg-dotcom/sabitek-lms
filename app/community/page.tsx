@@ -58,8 +58,8 @@ export default function CommunityPage() {
       title: 'My Profile',
       description: 'Set your skills and availability',
       icon: Target,
-      lightColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
+      lightColor: 'bg-gray-50',
+      textColor: 'text-gray-600',
       href: '/community/profile',
       features: ['Add teach skills', 'Add learn skills', 'Set rates'],
     },
@@ -68,8 +68,8 @@ export default function CommunityPage() {
       title: 'My Sessions',
       description: 'Manage your scheduled sessions',
       icon: Calendar,
-      lightColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
+      lightColor: 'bg-amber-50',
+      textColor: 'text-amber-600',
       href: '/community/sessions',
       features: ['View upcoming', 'Track history', 'Leave reviews'],
     },
@@ -109,18 +109,18 @@ export default function CommunityPage() {
 
       {/* Hero - Compact with Gradient */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        <div className="absolute inset-0 bg-red-100"></div>
+        <div className="absolute inset-0"></div>
         
         <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-red-200">
+            <div className="inline-flex items-center gap-2 bg-white text-red-600 px-4 py-2 rounded-full text-xs font-medium mb-3 border border-red-200">
               <Zap className="w-3 h-3" />
               AI-Powered Peer Learning
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-              Learn and <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">Earn Together</span>
+            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-2">
+              Learn and <span className="text-red-600">Earn Together</span>
             </h1>
             
             <p className="text-sm text-gray-600 max-w-xl mx-auto mb-4">
@@ -130,7 +130,7 @@ export default function CommunityPage() {
             <button
               onClick={handleGetStarted}
               disabled={isStarting}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-lg font-medium text-sm transition-all disabled:opacity-50"
             >
               {isStarting ? (
                 <>
@@ -161,7 +161,7 @@ export default function CommunityPage() {
               <div
                 key={tool.id}
                 onClick={() => handleFeatureClick(tool.href)}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all group cursor-pointer"
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-all group cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 ${tool.lightColor} rounded-lg flex-shrink-0`}>
@@ -169,16 +169,16 @@ export default function CommunityPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                      <h3 className="text-sm font-medium text-gray-900 group-hover:text-red-600 transition-colors">
                         {tool.title}
                       </h3>
-                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-all" />
                     </div>
                     <p className="text-xs text-gray-500 mb-2">{tool.description}</p>
                     
                     <div className="space-y-1">
                       {tool.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
                           <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                           {feature}
                         </div>
@@ -200,7 +200,7 @@ export default function CommunityPage() {
                 <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Icon className="w-4 h-4 text-red-500" />
                 </div>
-                <h3 className="text-sm font-bold">{stat.value}</h3>
+                <h3 className="text-sm font-medium">{stat.value}</h3>
                 <p className="text-xs text-gray-500">{stat.label}</p>
               </div>
             )
@@ -216,8 +216,8 @@ export default function CommunityPage() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Icon className="w-4 h-4 text-gray-700" />
                 </div>
-                <h3 className="text-xs font-semibold text-gray-900 mb-0.5">{benefit.title}</h3>
-                <p className="text-[10px] text-gray-500">{benefit.desc}</p>
+                <h3 className="text-xs font-medium text-gray-900 mb-1">{benefit.title}</h3>
+                <p className="text-xs text-gray-500">{benefit.desc}</p>
               </div>
             )
           })}
@@ -225,7 +225,7 @@ export default function CommunityPage() {
 
         {/* How It Works */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 text-center">How It Works</h2>
+          <h2 className="text-sm font-medium text-gray-900 mb-3 text-center">How It Works</h2>
           <div className="grid grid-cols-4 gap-3">
             {[
               { num: 1, title: 'Set Skills', desc: 'Teach & learn' },
@@ -234,11 +234,11 @@ export default function CommunityPage() {
               { num: 4, title: 'Earn', desc: 'Get credits' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg flex items-center justify-center mx-auto mb-1.5 text-sm font-bold">
+                <div className="w-8 h-8 bg-red-600 text-white rounded-lg flex items-center justify-center mx-auto mb-2 text-sm font-medium">
                   {step.num}
                 </div>
-                <h3 className="font-semibold text-gray-900 text-xs mb-0.5">{step.title}</h3>
-                <p className="text-[10px] text-gray-500">{step.desc}</p>
+                <h3 className="font-medium text-gray-900 text-xs mb-1">{step.title}</h3>
+                <p className="text-xs text-gray-500">{step.desc}</p>
               </div>
             ))}
           </div>

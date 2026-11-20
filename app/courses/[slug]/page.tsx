@@ -100,22 +100,22 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
   }
 
   const bgMap = {
-    info: 'from-blue-500 to-blue-600',
-    success: 'from-emerald-500 to-green-600',
-    error: 'from-red-500 to-rose-600',
-    warning: 'from-amber-500 to-amber-600',
+    info: 'bg-blue-600',
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    warning: 'bg-amber-600',
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-xl border border-gray-200 max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className={`${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               {iconMap[type]}
             </div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <h3 className="text-lg font-medium text-white">{title}</h3>
           </div>
         </div>
         <div className="p-5">
@@ -130,30 +130,20 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
                 variant={action.variant === 'secondary' ? 'outline' : 'default'}
                 className={
                   action.variant === 'primary'
-                    ? 'relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5'
-                    : 'bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm'
+                    ? 'relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all'
+                    : 'bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm'
                 }
                 size="sm"
               >
-                {action.variant === 'primary' && (
-                  <span
-                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                    aria-hidden="true"
-                  />
-                )}
                 {action.label}
               </Button>
             ))
           ) : (
             <Button
               onClick={onClose}
-              className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
               size="sm"
             >
-              <span
-                className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                aria-hidden="true"
-              />
               OK
             </Button>
           )}
@@ -179,10 +169,10 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
     <button
       onClick={onClick}
       title={locked ? 'Locked: finish the previous lesson first' : undefined}
-      className={`w-full flex items-center justify-between p-4 bg-white/70 border border-rose-100 rounded-xl transition-all group ${
+      className={`w-full flex items-center justify-between p-4 bg-white/70 border border-gray-200 rounded-xl transition-all group ${
         locked
           ? 'opacity-55 cursor-not-allowed'
-          : 'hover:bg-rose-50/50 hover:border-rose-200 hover:shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]'
+          : 'hover:bg-gray-50 hover:border-gray-200'
       }`}
     >
       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -191,8 +181,8 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
             locked
               ? 'bg-gray-50 border border-gray-200'
               : isCompleted
-              ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-md shadow-emerald-500/25'
-              : 'bg-white border border-rose-100 group-hover:border-rose-200'
+              ? 'bg-green-600 shadow-sm'
+              : 'bg-white border border-gray-200 group-hover:border-gray-200'
           }`}
         >
           {locked ? (
@@ -200,7 +190,7 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
           ) : isCompleted ? (
             <CheckCircle className="w-5 h-5 text-white" />
           ) : (
-            <span className="text-sm font-semibold text-gray-500 group-hover:text-red-500 transition-colors">
+            <span className="text-sm font-medium text-gray-500 group-hover:text-red-500 transition-colors">
               {totalLessonsIndex + 1}
             </span>
           )}
@@ -208,18 +198,18 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
 
         <div className="flex-1 min-w-0 text-left">
           <h3
-            className={`text-sm font-semibold transition-colors line-clamp-1 ${
+            className={`text-sm font-medium transition-colors line-clamp-1 ${
               locked ? 'text-gray-500' : 'text-gray-900 group-hover:text-red-600'
             }`}
           >
             {lesson.title}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-            {lesson.content_type === 'youtube' && <span className="uppercase tracking-wide font-medium text-rose-400">YouTube</span>}
-            {lesson.content_type === 'video' && <span className="uppercase tracking-wide font-medium text-rose-400">Video</span>}
-            {lesson.content_type === 'pdf' && <span className="uppercase tracking-wide font-medium text-rose-400">PDF</span>}
-            {lesson.content_type === 'powerpoint' && <span className="uppercase tracking-wide font-medium text-rose-400">PPT</span>}
-            {lesson.content_type === 'text' && <span className="uppercase tracking-wide font-medium text-rose-400">Text</span>}
+          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+            {lesson.content_type === 'youtube' && <span className="uppercase tracking-wide font-medium text-red-400">YouTube</span>}
+            {lesson.content_type === 'video' && <span className="uppercase tracking-wide font-medium text-red-400">Video</span>}
+            {lesson.content_type === 'pdf' && <span className="uppercase tracking-wide font-medium text-red-400">PDF</span>}
+            {lesson.content_type === 'powerpoint' && <span className="uppercase tracking-wide font-medium text-red-400">PPT</span>}
+            {lesson.content_type === 'text' && <span className="uppercase tracking-wide font-medium text-red-400">Text</span>}
             {lesson.duration_minutes && <span>• {lesson.duration_minutes}m</span>}
           </div>
         </div>
@@ -228,7 +218,7 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
       {locked ? (
         <Lock className="w-4 h-4 text-gray-300 flex-shrink-0 ml-2" />
       ) : (
-        <ArrowRight className="w-5 h-5 text-rose-200 group-hover:text-red-500 group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
+        <ArrowRight className="w-5 h-5 text-red-200 group-hover:text-red-500 transition-all flex-shrink-0 ml-2" />
       )}
     </button>
   )
@@ -557,7 +547,7 @@ export default function CourseDetailPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading course..." size="lg" />
       </div>
     )
@@ -565,20 +555,16 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
+          <div className="w-16 h-16 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
             <BookOpen className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-gray-600 mb-4">Course not found</p>
           <Button
             onClick={() => router.push('/courses')}
-            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+            className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
           >
-            <span
-              className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-              aria-hidden="true"
-            />
             Browse Courses
           </Button>
         </div>
@@ -587,7 +573,7 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Custom Modal */}
       <Modal
         isOpen={modal.isOpen}
@@ -600,31 +586,31 @@ export default function CourseDetailPage() {
 
       {/* Congratulations Modal */}
       {showCongratsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-lg w-full p-6 sm:p-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-gray-200 max-w-lg w-full p-6 sm:p-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300">
             <button
               onClick={() => setShowCongratsModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 bg-red-50 hover:bg-red-100 border border-gray-200 rounded-full flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-rose-400" />
+              <X className="w-4 h-4 text-red-400" />
             </button>
 
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+              <div className="w-20 h-20 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <PartyPopper className="w-10 h-10 text-white" />
               </div>
 
-              <h2 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2">
+              <h2 className="text-2xl font-medium tracking-tight text-gray-900 mb-2">
                 <span className="font-serif italic text-red-600">Congratulations!</span>
               </h2>
 
               <p className="text-sm text-gray-600 mb-6">
-                You&apos;ve successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
+                You&apos;ve successfully completed <span className="font-medium text-gray-900">{course.title}</span>!
               </p>
 
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
-                <Award className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-                <p className="text-sm font-medium text-emerald-800">
+              <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6">
+                <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <p className="text-sm font-medium text-green-800">
                   Your certificate has been generated and is ready to view!
                 </p>
               </div>
@@ -635,12 +621,8 @@ export default function CourseDetailPage() {
                     setShowCongratsModal(false)
                     router.push(`/certificates/${generatedCertificateId}`)
                   }}
-                  className="relative overflow-hidden w-full bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-full font-medium ring-1 ring-red-600/50 transition-all"
                 >
-                  <span
-                    className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                    aria-hidden="true"
-                  />
                   <Award className="w-4 h-4 mr-2" />
                   View Certificate
                 </Button>
@@ -651,7 +633,7 @@ export default function CourseDetailPage() {
                     router.push('/dashboard')
                   }}
                   variant="outline"
-                  className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white py-5 rounded-full shadow-sm"
+                  className="w-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white py-5 rounded-full shadow-sm"
                 >
                   Go to Dashboard
                 </Button>
@@ -662,23 +644,10 @@ export default function CourseDetailPage() {
       )}
 
       {/* Course Header */}
-      <section className="relative overflow-hidden bg-[#fffcfb]">
-        <div className="absolute -top-24 right-[5%] w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" aria-hidden="true" />
-        <div className="absolute -bottom-32 left-[0%] w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" aria-hidden="true" />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-            backgroundSize: '22px 22px',
-            maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
-          }}
-          aria-hidden="true"
-        />
-
+      <section className="relative overflow-hidden bg-gray-50">
         <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
           {course.cover_image_url && (
-            <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden mb-6 shadow-xl">
+            <div className="relative h-48 sm:h-64 rounded-xl overflow-hidden mb-6 shadow-sm">
               <Image src={course.cover_image_url} alt={course.title} fill sizes="(max-width: 1152px) 100vw, 1152px" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
@@ -687,24 +656,24 @@ export default function CourseDetailPage() {
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-semibold border border-rose-100">
+                <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-medium border border-gray-200">
                   <BookOpen className="w-3 h-3" />
                   Course
                 </div>
                 {isCohortSponsored && accessResult?.cohort && (
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+                  <div className="inline-flex items-center gap-2 bg-gray-900 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm">
                     <GraduationCap className="w-3 h-3" />
                     Sponsored via {accessResult.cohort.programName}
                   </div>
                 )}
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 mb-2">{course.title}</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium tracking-tight text-gray-900 mb-2">{course.title}</h1>
             </div>
 
             {!isEnrolled && isCohortSponsored && (
               <div className="flex-shrink-0">
-                <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25">
-                  <GraduationCap className="w-4 h-4 mr-1.5" />
+                <span className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium bg-gray-900 text-white shadow-sm">
+                  <GraduationCap className="w-4 h-4 mr-2" />
                   Sponsored
                 </span>
               </div>
@@ -712,24 +681,24 @@ export default function CourseDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-            <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full border border-gray-200 shadow-sm">
               <Users className="w-4 h-4 text-gray-500" />
               <span>{course.instructor?.full_name}</span>
             </div>
             {modules.length > 0 && (
-              <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
+              <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full border border-gray-200 shadow-sm">
                 <Layers className="w-4 h-4 text-gray-500" />
                 <span>
                   {modules.length} Module{modules.length !== 1 ? 's' : ''}
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full border border-gray-200 shadow-sm">
               <BookOpen className="w-4 h-4 text-gray-500" />
               <span>{lessons.length} Lessons</span>
             </div>
             {totalDuration > 0 && (
-              <div className="flex items-center gap-2 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-rose-100 shadow-sm">
+              <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full border border-gray-200 shadow-sm">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <span>{totalDuration} min</span>
               </div>
@@ -739,14 +708,14 @@ export default function CourseDetailPage() {
           {course.description && <p className="text-sm text-gray-600 max-w-3xl mb-4">{course.description}</p>}
 
           {isCohortSponsored && accessResult?.cohort && !isEnrolled && (
-            <div className="bg-white/85 backdrop-blur border border-purple-100 ring-1 ring-purple-100 rounded-2xl p-4 mb-4 shadow-sm">
+            <div className="bg-white border border-gray-100 ring-1 ring-gray-100 rounded-xl p-4 mb-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-purple-50 border border-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-5 h-5 text-gray-600" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-purple-900 text-sm">Institution Sponsored Access</h4>
-                  <p className="text-xs text-purple-700 mt-0.5">
+                  <h4 className="font-medium text-gray-900 text-sm">Institution Sponsored Access</h4>
+                  <p className="text-xs text-gray-700 mt-1">
                     You have access to this course through{' '}
                     <span className="font-medium">{accessResult.cohort.programName}</span>,{' '}
                     <span className="font-medium">{accessResult.cohort.name}</span>. No payment required.
@@ -757,17 +726,17 @@ export default function CourseDetailPage() {
           )}
 
           {isEnrolled && (
-            <div className="bg-white/85 backdrop-blur rounded-2xl p-4 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] mb-4">
+            <div className="bg-white rounded-xl p-4 border border-gray-200 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-700">Your Progress</span>
-                <span className="text-sm font-bold text-red-600">{progressPercentage}%</span>
+                <span className="text-sm font-medium text-gray-700">Your Progress</span>
+                <span className="text-sm font-medium text-red-600">{progressPercentage}%</span>
               </div>
-              <div className="w-full bg-rose-50 rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-red-50 rounded-full h-2.5 overflow-hidden">
                 <div
                   className={`h-2.5 rounded-full transition-all duration-500 ${
                     progressPercentage >= 100
-                      ? 'bg-gradient-to-r from-emerald-400 to-green-500'
-                      : 'bg-gradient-to-r from-red-500 to-pink-400'
+                      ? 'bg-green-600'
+                      : 'bg-red-600'
                   }`}
                   style={{ width: `${progressPercentage}%` }}
                 />
@@ -776,14 +745,14 @@ export default function CourseDetailPage() {
           )}
 
           {isSequenceLocked && (
-            <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-amber-100 ring-1 ring-amber-100 shadow-[0_12px_30px_-20px_rgba(217,119,6,0.35)] p-5 flex flex-wrap items-center gap-4">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent" aria-hidden="true" />
-              <div className="w-11 h-11 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <div className="relative overflow-hidden bg-white rounded-xl border border-amber-100 ring-1 ring-amber-100 p-5 flex flex-wrap items-center gap-4">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
+              <div className="w-11 h-11 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Lock className="w-5 h-5 text-amber-500" />
               </div>
               <div className="flex-1 min-w-[200px]">
-                <p className="font-semibold text-gray-900 text-sm">This course unlocks later in your program</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="font-medium text-gray-900 text-sm">This course unlocks later in your program</p>
+                <p className="text-xs text-gray-500 mt-1">
                   {accessResult?.blocking
                     ? `Finish "${accessResult.blocking.title}" first, then this one opens automatically.`
                     : 'Finish the previous course in your program first.'}
@@ -792,12 +761,11 @@ export default function CourseDetailPage() {
               {accessResult?.blocking && (
                 <Button
                   onClick={() => router.push(`/courses/${accessResult.blocking!.slug}`)}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                   size="sm"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   Go to {accessResult.blocking.title}
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               )}
             </div>
@@ -808,13 +776,9 @@ export default function CourseDetailPage() {
               <Button
                 onClick={handleEnroll}
                 disabled={enrolling}
-                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white px-8 py-5 rounded-full font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white px-8 py-5 rounded-full font-medium ring-1 ring-red-600/50 transition-all"
                 size="lg"
               >
-                <span
-                  className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none"
-                  aria-hidden="true"
-                />
                 {enrolling ? 'Enrolling...' : isCohortSponsored ? 'Start Learning (Sponsored)' : 'Enroll'}
                 {isCohortSponsored ? (
                   <GraduationCap className="w-4 h-4 ml-2" />
@@ -835,25 +799,25 @@ export default function CourseDetailPage() {
 
       {/* Curriculum */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+        <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
           <span
-            className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+            className="absolute top-0 inset-x-10 h-px bg-gray-200"
             aria-hidden="true"
           />
-          <div className="px-4 sm:px-6 py-4 border-b border-rose-100">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                   <PlayCircle className="w-4 h-4 text-white" />
                 </div>
-                <h2 className="font-semibold tracking-tight text-gray-900">
+                <h2 className="font-medium tracking-tight text-gray-900">
                   Course <span className="font-serif italic text-red-600">Curriculum</span>
                 </h2>
               </div>
               {isEnrolled && (
                 <div className="flex items-center gap-2">
                   {modules.length > 0 && (
-                    <span className="text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+                    <span className="text-xs font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full border border-gray-200">
                       {Object.values(completedPerModule).filter((c, idx) => {
                         const m = modules[idx]
                         return m && c === (lessonsByModule[m.id]?.length || 0) && c > 0
@@ -862,7 +826,7 @@ export default function CourseDetailPage() {
                       {modules.filter((m) => (lessonsByModule[m.id]?.length || 0) > 0).length} modules
                     </span>
                   )}
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                  <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                     {completedLessons.size} / {lessons.length} lessons
                   </span>
                 </div>
@@ -873,7 +837,7 @@ export default function CourseDetailPage() {
           <div className="p-4 sm:p-6">
             {!isEnrolled ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
+                <div className="w-16 h-16 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
                   <BookOpen className="w-8 h-8 text-red-500" />
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
@@ -885,16 +849,16 @@ export default function CourseDetailPage() {
                 {/* Preview modules list for non-enrolled users */}
                 {modules.length > 0 && (
                   <div className="mt-6 space-y-2 text-left max-w-2xl mx-auto">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                       What you&apos;ll learn
                     </p>
                     {modules.map((module, idx) => (
                       <div
                         key={module.id}
-                        className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-rose-100"
+                        className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-gray-200"
                       >
-                        <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-red-500">{idx + 1}</span>
+                        <div className="w-8 h-8 bg-red-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-medium text-red-500">{idx + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-gray-900 text-sm truncate">{module.title}</h4>
@@ -926,18 +890,18 @@ export default function CourseDetailPage() {
                     return (
                       <div
                         key={module.id}
-                        className="border border-rose-100 rounded-xl overflow-hidden bg-white/70"
+                        className="border border-gray-200 rounded-xl overflow-hidden bg-white/70"
                       >
                         <button
                           onClick={() => toggleModule(module.id)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-rose-50/50 transition-colors"
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div
                               className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                 moduleAllComplete
-                                  ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-md shadow-emerald-500/25'
-                                  : 'bg-rose-50 border border-rose-100'
+                                  ? 'bg-green-600 shadow-sm'
+                                  : 'bg-red-50 border border-gray-200'
                               }`}
                             >
                               {moduleAllComplete ? (
@@ -947,8 +911,8 @@ export default function CourseDetailPage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0 text-left">
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">{module.title}</h3>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <h3 className="text-sm font-medium text-gray-900 truncate">{module.title}</h3>
+                              <p className="text-xs text-gray-500 mt-1">
                                 {completedInModule} of {totalInModule} completed
                                 {module.description && (
                                   <span className="ml-2 hidden sm:inline">• {module.description}</span>
@@ -957,14 +921,14 @@ export default function CourseDetailPage() {
                             </div>
                           </div>
                           {isExpanded ? (
-                            <ChevronDown className="w-5 h-5 text-rose-300 flex-shrink-0 ml-2" />
+                            <ChevronDown className="w-5 h-5 text-red-300 flex-shrink-0 ml-2" />
                           ) : (
-                            <ChevronRight className="w-5 h-5 text-rose-300 flex-shrink-0 ml-2" />
+                            <ChevronRight className="w-5 h-5 text-red-300 flex-shrink-0 ml-2" />
                           )}
                         </button>
 
                         {isExpanded && (
-                          <div className="px-4 pb-4 pt-0 space-y-2 border-t border-rose-100 bg-rose-50/30">
+                          <div className="px-4 pb-4 pt-0 space-y-2 border-t border-gray-200 bg-gray-50">
                             <div className="pt-3 space-y-2">
                               {moduleLessons.map((lesson) => {
                                 const globalIndex = lessonIndexMap.get(lesson.id) ?? 0
@@ -990,8 +954,8 @@ export default function CourseDetailPage() {
 
                   {/* Unassigned lessons (shouldn't happen after backfill but guarded) */}
                   {unassignedLessons.length > 0 && (
-                    <div className="border border-rose-100 rounded-xl p-4 bg-white/70">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    <div className="border border-gray-200 rounded-xl p-4 bg-white/70">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
                         Other Lessons
                       </p>
                       <div className="space-y-2">
@@ -1016,13 +980,13 @@ export default function CourseDetailPage() {
                 </div>
 
                 {/* Finish Course Button */}
-                <div className="mt-6 pt-6 border-t border-rose-100">
+                <div className="mt-6 pt-6 border-t border-gray-200">
                   <Button
                     onClick={handleFinishCourse}
                     disabled={finishingCourse || completedLessons.size < lessons.length}
-                    className={`w-full py-6 text-base font-semibold rounded-full transition-all ${
+                    className={`w-full py-6 text-base font-medium rounded-full transition-all ${
                       completedLessons.size >= lessons.length
-                        ? 'bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/40 hover:-translate-y-0.5'
+                        ? 'bg-green-600 hover:bg-green-700 text-white ring-1 ring-green-600/40'
                         : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
                     }`}
                     size="lg"
@@ -1047,7 +1011,7 @@ export default function CourseDetailPage() {
 
                   {completedLessons.size === lessons.length && (
                     <p className="text-center text-sm text-gray-600 mt-3 flex items-center justify-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle className="w-4 h-4 text-green-500" />
                       You&apos;ve completed all lessons! Click above to get your certificate.
                     </p>
                   )}

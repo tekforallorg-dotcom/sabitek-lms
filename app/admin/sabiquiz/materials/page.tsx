@@ -113,21 +113,21 @@ export default function MaterialsAdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fffcfb]">
+      <div className="min-h-screen bg-gray-50">
         <div className="animate-pulse space-y-8 p-6 md:p-8">
           <div className="space-y-3">
-            <div className="h-3 w-36 rounded-full bg-rose-100/80" />
-            <div className="h-8 w-72 rounded-lg bg-rose-50/60" />
-            <div className="h-4 w-56 rounded-lg bg-rose-50/60" />
+            <div className="h-3 w-36 rounded-full bg-gray-50" />
+            <div className="h-8 w-72 rounded-lg bg-gray-50" />
+            <div className="h-4 w-56 rounded-lg bg-gray-50" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[0, 1, 2, 3].map(i => (
-              <div key={i} className="h-24 rounded-xl bg-rose-50/60" />
+              <div key={i} className="h-24 rounded-xl bg-gray-50" />
             ))}
           </div>
-          <div className="bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 space-y-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
             {[0, 1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="bg-rose-50/60 rounded-lg h-10" />
+              <div key={i} className="bg-gray-50 rounded-lg h-10" />
             ))}
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function MaterialsAdminPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
+      <div className="bg-red-50 border border-red-100 rounded-xl p-6">
         <p className="text-red-600">{error}</p>
       </div>
     )
@@ -146,8 +146,8 @@ export default function MaterialsAdminPage() {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">SabiQuiz admin</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-2">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">SabiQuiz admin</p>
+        <h1 className="text-3xl font-medium tracking-tight text-gray-900 mb-2">
           Materials <span className="font-serif italic text-red-600">library</span>
         </h1>
         <p className="text-gray-600">Manage all uploaded SabiQuiz materials</p>
@@ -155,21 +155,21 @@ export default function MaterialsAdminPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-rose-50 border border-rose-100 rounded-xl p-6">
+        <div className="bg-red-50 border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Materials</p>
-              <p className="text-2xl font-semibold tabular-nums text-gray-900">{materials.length}</p>
+              <p className="text-2xl font-medium tabular-nums text-gray-900">{materials.length}</p>
             </div>
             <FileText className="w-8 h-8 text-red-500" />
           </div>
         </div>
 
-        <div className="bg-rose-50 border border-rose-100 rounded-xl p-6">
+        <div className="bg-red-50 border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Questions</p>
-              <p className="text-2xl font-semibold tabular-nums text-gray-900">
+              <p className="text-2xl font-medium tabular-nums text-gray-900">
                 {materials.reduce((sum, m) => sum + m.questions_count, 0)}
               </p>
             </div>
@@ -177,11 +177,11 @@ export default function MaterialsAdminPage() {
           </div>
         </div>
 
-        <div className="bg-rose-50 border border-rose-100 rounded-xl p-6">
+        <div className="bg-red-50 border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Attempts</p>
-              <p className="text-2xl font-semibold tabular-nums text-gray-900">
+              <p className="text-2xl font-medium tabular-nums text-gray-900">
                 {materials.reduce((sum, m) => sum + m.attempts_count, 0)}
               </p>
             </div>
@@ -189,11 +189,11 @@ export default function MaterialsAdminPage() {
           </div>
         </div>
 
-        <div className="bg-rose-50 border border-rose-100 rounded-xl p-6">
+        <div className="bg-red-50 border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Unique Uploaders</p>
-              <p className="text-2xl font-semibold tabular-nums text-gray-900">
+              <p className="text-2xl font-medium tabular-nums text-gray-900">
                 {new Set(materials.map(m => m.uploaded_by)).size}
               </p>
             </div>
@@ -203,7 +203,7 @@ export default function MaterialsAdminPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 mb-6">
         <div className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -212,11 +212,11 @@ export default function MaterialsAdminPage() {
                 placeholder="Search materials or uploaders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+                className="pl-10 rounded-xl bg-white/70 border-gray-200 focus:border-red-400 focus:ring-red-400"
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full md:w-48 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400">
+              <SelectTrigger className="w-full md:w-48 rounded-xl bg-white/70 border-gray-200 focus:border-red-400 focus:ring-red-400">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -232,18 +232,18 @@ export default function MaterialsAdminPage() {
       </div>
 
       {/* Materials Table */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
         <div className="px-6 pt-6 pb-2">
-          <h2 className="text-lg font-semibold tracking-tight text-gray-900">All Materials ({filteredMaterials.length})</h2>
+          <h2 className="text-lg font-medium tracking-tight text-gray-900">All Materials ({filteredMaterials.length})</h2>
         </div>
         <div className="p-6 pt-2">
           {filteredMaterials.length === 0 ? (
             <div className="text-center py-16">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 border border-rose-100">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-red-50 border border-gray-200">
                 <FileText className="w-6 h-6 text-red-500" />
               </div>
-              <h3 className="text-lg font-semibold tracking-tight text-gray-900">
+              <h3 className="text-lg font-medium tracking-tight text-gray-900">
                 No materials <span className="font-serif italic text-red-600">found</span>
               </h3>
               <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
@@ -252,20 +252,20 @@ export default function MaterialsAdminPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-rose-100">
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Filename</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Category</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Level</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400">Uploaded By</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-400">Questions</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-400">Attempts</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-400">Date</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-gray-400">Actions</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Filename</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Category</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Level</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Uploaded By</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Questions</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Attempts</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Date</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMaterials.map((material) => (
-                    <tr key={material.id} className="border-b border-rose-50 hover:bg-rose-50/40 transition-colors">
+                    <tr key={material.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
                         {material.filename}
                       </td>

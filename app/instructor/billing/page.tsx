@@ -84,7 +84,7 @@ interface ChartData {
   sales: number
 }
 
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
+const COLORS = ['#ef4444', '#b45309', '#f59e0b', '#22c55e', '#3b82f6', '#6b7280']
 
 export default function InstructorBillingPage() {
   const router = useRouter()
@@ -379,11 +379,11 @@ export default function InstructorBillingPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-red-500/30 rounded-full animate-spin border-t-red-500 mx-auto" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-pink-500 mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-spin border-b-red-500 mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
           </div>
           <p className="mt-6 text-gray-300 font-medium">Loading your earnings...</p>
         </div>
@@ -394,12 +394,7 @@ export default function InstructorBillingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Gradient Hero Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-24 h-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-2xl rotate-12 blur-sm" />
-        <div className="absolute bottom-10 left-[10%] w-16 h-16 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-12 h-12 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-lg rotate-45 blur-sm" />
-
+      <div className="bg-gray-900 relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <Link href="/instructor" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" />
@@ -408,11 +403,11 @@ export default function InstructorBillingPage() {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-3 border border-white/10">
+              <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-3 border border-white/10">
                 <Wallet className="w-3 h-3" />
                 Instructor Earnings
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">My Earnings</h1>
+              <h1 className="text-2xl sm:text-3xl font-medium text-white mb-2">My Earnings</h1>
               <p className="text-gray-400 text-sm">Track your course sales and revenue performance</p>
             </div>
             <Button 
@@ -427,49 +422,49 @@ export default function InstructorBillingPage() {
 
           {/* Stats Cards in Hero */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <div className="bg-white/10 rounded-xl p-4 border border-white/10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-gray-400">Total Earnings</p>
-                  <p className="text-xl sm:text-2xl font-bold text-green-400 mt-1">{formatCurrency(stats.totalEarnings)}</p>
+                  <p className="text-xl sm:text-2xl font-medium text-green-400 mt-1">{formatCurrency(stats.totalEarnings)}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">₦</span>
+                <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-medium text-sm">₦</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <div className="bg-white/10 rounded-xl p-4 border border-white/10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-gray-400">This Month</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{formatCurrency(stats.earningsThisMonth)}</p>
+                  <p className="text-xl sm:text-2xl font-medium text-white mt-1">{formatCurrency(stats.earningsThisMonth)}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <div className="bg-white/10 rounded-xl p-4 border border-white/10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-gray-400">Total Sales</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{stats.totalSales}</p>
+                  <p className="text-xl sm:text-2xl font-medium text-white mt-1">{stats.totalSales}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
                   <ShoppingCart className="w-5 h-5 text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <div className="bg-white/10 rounded-xl p-4 border border-white/10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-gray-400">Students</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white mt-1">{stats.totalStudents}</p>
+                  <p className="text-xl sm:text-2xl font-medium text-white mt-1">{stats.totalStudents}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
               </div>
@@ -482,10 +477,10 @@ export default function InstructorBillingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Earnings Chart */}
-          <Card className="lg:col-span-2 border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <Card className="lg:col-span-2 border-gray-100 rounded-xl shadow-sm transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-white" />
                 </div>
                 Earnings (Last 30 Days)
@@ -503,13 +498,7 @@ export default function InstructorBillingPage() {
                         formatter={(value) => [formatCurrency((value as number) || 0), 'Earnings']} 
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                       />
-                      <Bar dataKey="earnings" fill="url(#greenGradient)" radius={[6, 6, 0, 0]} />
-                      <defs>
-                        <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#22c55e" />
-                          <stop offset="100%" stopColor="#10b981" />
-                        </linearGradient>
-                      </defs>
+                      <Bar dataKey="earnings" fill="#22c55e" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -524,10 +513,10 @@ export default function InstructorBillingPage() {
           </Card>
 
           {/* By Course */}
-          <Card className="border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-gray-100 rounded-xl shadow-sm transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
                   <BookOpen className="w-4 h-4 text-white" />
                 </div>
                 By Course
@@ -543,7 +532,7 @@ export default function InstructorBillingPage() {
                         <span className="text-sm text-gray-700 truncate">{course.title}</span>
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
-                        <p className="text-sm font-semibold text-gray-900">{formatCurrency(course.total_earnings)}</p>
+                        <p className="text-sm font-medium text-gray-900">{formatCurrency(course.total_earnings)}</p>
                         <p className="text-xs text-gray-500">{course.total_sales} sale{course.total_sales !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
@@ -560,11 +549,11 @@ export default function InstructorBillingPage() {
         </div>
 
         {/* Recent Sales Table */}
-        <Card className="border-gray-100 rounded-2xl shadow-sm">
+        <Card className="border-gray-100 rounded-xl shadow-sm">
           <CardHeader className="border-b border-gray-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center">
                   <Receipt className="w-4 h-4 text-white" />
                 </div>
                 Recent Sales
@@ -596,7 +585,7 @@ export default function InstructorBillingPage() {
 
             {filteredSales.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <ShoppingCart className="w-8 h-8 text-gray-400" />
                 </div>
                 <p className="text-sm font-medium text-gray-600">No sales yet</p>
@@ -607,11 +596,11 @@ export default function InstructorBillingPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Student</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Course</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Amount</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Date</th>
-                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 w-10"></th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Student</th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Course</th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Amount</th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Date</th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -626,8 +615,8 @@ export default function InstructorBillingPage() {
                             {sale.user?.avatar_url ? (
                               <img src={sale.user.avatar_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                             ) : (
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                <span className="text-gray-600 text-sm font-semibold">{sale.user?.full_name?.charAt(0) || '?'}</span>
+                              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-medium">{sale.user?.full_name?.charAt(0) || '?'}</span>
                               </div>
                             )}
                             <div>
@@ -640,7 +629,7 @@ export default function InstructorBillingPage() {
                           <p className="text-sm text-gray-700 truncate max-w-[200px]">{sale.course?.title}</p>
                         </td>
                         <td className="py-4">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-sm font-semibold">
+                          <span className="inline-flex items-center px-3 py-1 rounded-lg bg-green-50 text-green-700 text-sm font-medium">
                             +{formatCurrency(sale.amount)}
                           </span>
                         </td>
@@ -672,15 +661,15 @@ export default function InstructorBillingPage() {
           {selectedSale && (
             <div className="p-4 space-y-6">
               {/* Earnings Highlight */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center border border-green-100">
+              <div className="bg-green-50 rounded-xl p-6 text-center border border-green-100">
                 <p className="text-sm text-green-700 mb-1 font-medium">You Earned</p>
-                <p className="text-4xl font-bold text-green-600">{formatCurrency(selectedSale.amount)}</p>
+                <p className="text-4xl font-medium text-green-600">{formatCurrency(selectedSale.amount)}</p>
               </div>
 
               {/* Student Info */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="bg-white border border-gray-200 rounded-xl p-5">
+                <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
                     <User className="w-3 h-3 text-white" />
                   </div>
                   Student
@@ -689,26 +678,26 @@ export default function InstructorBillingPage() {
                   {selectedSale.user?.avatar_url ? (
                     <img src={selectedSale.user.avatar_url} alt="" className="w-14 h-14 rounded-xl object-cover" />
                   ) : (
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                      <span className="text-gray-600 text-xl font-semibold">{selectedSale.user?.full_name?.charAt(0) || '?'}</span>
+                    <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center">
+                      <span className="text-gray-600 text-xl font-medium">{selectedSale.user?.full_name?.charAt(0) || '?'}</span>
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-gray-900">{selectedSale.user?.full_name || 'Unknown Student'}</p>
+                    <p className="font-medium text-gray-900">{selectedSale.user?.full_name || 'Unknown Student'}</p>
                     <p className="text-sm text-gray-500">{selectedSale.user?.email || 'No email'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Course Info */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+              <div className="bg-white border border-gray-200 rounded-xl p-5">
+                <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center">
                     <BookOpen className="w-3 h-3 text-white" />
                   </div>
                   Course
                 </h3>
-                <p className="font-semibold text-gray-900 mb-3">{selectedSale.course?.title}</p>
+                <p className="font-medium text-gray-900 mb-3">{selectedSale.course?.title}</p>
                 <Link 
                   href={`/courses/${selectedSale.course?.slug}`} 
                   className="inline-flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium" 
@@ -719,9 +708,9 @@ export default function InstructorBillingPage() {
               </div>
 
               {/* Transaction Details */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center">
+              <div className="bg-white border border-gray-200 rounded-xl p-5">
+                <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gray-700 rounded-lg flex items-center justify-center">
                     <FileText className="w-3 h-3 text-white" />
                   </div>
                   Transaction Details
@@ -729,22 +718,22 @@ export default function InstructorBillingPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Amount</span>
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(selectedSale.amount)}</span>
+                    <span className="text-sm font-medium text-gray-900">{formatCurrency(selectedSale.amount)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Status</span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                       <CheckCircle className="w-3 h-3" />
                       {selectedSale.status}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-500">Currency</span>
-                    <span className="text-sm font-semibold text-gray-900">{selectedSale.currency}</span>
+                    <span className="text-sm font-medium text-gray-900">{selectedSale.currency}</span>
                   </div>
                   <div className="flex justify-between items-center py-3">
                     <span className="text-sm text-gray-500">Date</span>
-                    <span className="text-sm font-semibold text-gray-900">{formatDate(selectedSale.created_at)}</span>
+                    <span className="text-sm font-medium text-gray-900">{formatDate(selectedSale.created_at)}</span>
                   </div>
                 </div>
               </div>

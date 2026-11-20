@@ -47,13 +47,13 @@ export default function RequestSessionModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 animate-in fade-in duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+      <div className="w-full sm:max-w-md bg-white border border-gray-200 rounded-t-xl sm:rounded-xl shadow-sm animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Request Session</h2>
+          <h2 className="text-lg font-medium text-gray-900">Request Session</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
@@ -78,7 +78,7 @@ export default function RequestSessionModal({
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                 Message <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
@@ -89,7 +89,7 @@ export default function RequestSessionModal({
                 rows={4}
                 maxLength={500}
                 disabled={isSubmitting}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:opacity-50"
+                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:opacity-50"
               />
               <p className="mt-1 text-xs text-gray-400 text-right">
                 {message.length}/500

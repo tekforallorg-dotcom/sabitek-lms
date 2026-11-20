@@ -809,7 +809,7 @@ export default function RichTextEditor({
           <button
             type="button"
             onClick={restoreDraft}
-            className="font-semibold text-red-600 cursor-pointer hover:text-red-700 ml-auto"
+            className="font-medium text-red-600 cursor-pointer hover:text-red-700 ml-auto"
           >
             Restore
           </button>
@@ -867,7 +867,7 @@ export default function RichTextEditor({
                 <span className="text-xs font-medium">Font</span>
               </Button>
               {showFontFamilyPicker && (
-                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-lg min-w-[180px] max-h-[300px] overflow-y-auto">
+                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-sm min-w-[180px] max-h-[300px] overflow-y-auto">
                   {fontFamilies.map((font) => (
                     <button
                       key={font.value}
@@ -896,7 +896,7 @@ export default function RichTextEditor({
                 <Type className="h-4 w-4" />
               </Button>
               {showFontSizePicker && (
-                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-lg min-w-[140px]">
+                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-sm min-w-[140px]">
                   {fontSizes.map((size) => (
                     <button
                       key={size.value}
@@ -960,13 +960,13 @@ export default function RichTextEditor({
                 <Palette className="h-4 w-4" />
               </Button>
               {showColorPicker && (
-                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-lg">
+                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-sm">
                   <div className="grid grid-cols-5 gap-1">
                     {colors.map((color) => (
                       <button
                         key={color}
                         type="button"
-                        className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                        className="w-6 h-6 rounded border border-gray-300 transition-transform"
                         style={{ backgroundColor: color }}
                         onClick={() => {
                           editor.chain().focus().setColor(color).run()
@@ -992,11 +992,11 @@ export default function RichTextEditor({
                 <Highlighter className="h-4 w-4" />
               </Button>
               {showBgColorPicker && (
-                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-lg">
+                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-2 shadow-sm">
                   <div className="grid grid-cols-5 gap-1">
                     <button
                       type="button"
-                      className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform bg-white flex items-center justify-center text-xs"
+                      className="w-6 h-6 rounded border border-gray-300 transition-transform bg-white flex items-center justify-center text-xs"
                       onClick={() => {
                         editor.chain().focus().unsetHighlight().run()
                         setShowBgColorPicker(false)
@@ -1009,7 +1009,7 @@ export default function RichTextEditor({
                       <button
                         key={color}
                         type="button"
-                        className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                        className="w-6 h-6 rounded border border-gray-300 transition-transform"
                         style={{ backgroundColor: color }}
                         onClick={() => {
                           editor.chain().focus().toggleHighlight({ color }).run()
@@ -1165,7 +1165,7 @@ export default function RichTextEditor({
                 <LinkIcon className="h-4 w-4" />
               </Button>
               {showLinkDialog && (
-                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-3 shadow-lg">
+                <div className="absolute top-10 left-0 z-20 bg-white border rounded-lg p-3 shadow-sm">
                   <input
                     type="text"
                     placeholder="https://example.com"
@@ -1254,9 +1254,9 @@ export default function RichTextEditor({
 
           {/* Image controls (persistent attributes; only when image selected) */}
           {selectedImage && (
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-rose-100 bg-rose-50/60 px-2 py-2 rounded-b-lg">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Image</span>
-              <div className="w-px h-4 bg-rose-200 mx-1" />
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200 bg-gray-50 px-2 py-2 rounded-b-lg">
+              <span className="text-xs font-medium uppercase tracking-wider text-red-600">Image</span>
+              <div className="w-px h-4 bg-red-200 mx-1" />
               <span className="text-xs text-gray-500">Size:</span>
               {([['small', '25%'], ['medium', '50%'], ['large', '75%'], ['full', '100%']] as const).map(([key, label]) => (
                 <Button
@@ -1265,12 +1265,12 @@ export default function RichTextEditor({
                   size="sm"
                   variant="outline"
                   onClick={() => setImageSize(key)}
-                  className="text-xs px-2.5 py-1 h-7 bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white hover:text-red-600 rounded-full"
+                  className="text-xs px-3 py-1 h-7 bg-white/70 border-gray-200 hover:border-gray-200 hover:bg-white hover:text-red-600 rounded-full"
                 >
                   {label}
                 </Button>
               ))}
-              <div className="w-px h-4 bg-rose-200 mx-1" />
+              <div className="w-px h-4 bg-red-200 mx-1" />
               <span className="text-xs text-gray-500">Align:</span>
               {([['left', 'Left'], ['center', 'Center'], ['right', 'Right'], ['full', 'Full-bleed']] as const).map(([key, label]) => (
                 <Button
@@ -1279,7 +1279,7 @@ export default function RichTextEditor({
                   size="sm"
                   variant="outline"
                   onClick={() => setImageAlignment(key)}
-                  className="text-xs px-2.5 py-1 h-7 bg-white/70 border-rose-100 hover:border-rose-200 hover:bg-white hover:text-red-600 rounded-full"
+                  className="text-xs px-3 py-1 h-7 bg-white/70 border-gray-200 hover:border-gray-200 hover:bg-white hover:text-red-600 rounded-full"
                 >
                   {label}
                 </Button>
@@ -1290,20 +1290,20 @@ export default function RichTextEditor({
                   value={imageCaption}
                   onChange={(e) => setImageCaption(e.target.value)}
                   placeholder="Caption (shown under image)"
-                  className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
+                  className="h-7 px-3 text-xs rounded-full bg-white/70 border border-gray-200 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
                 />
                 <input
                   type="text"
                   value={imageAlt}
                   onChange={(e) => setImageAlt(e.target.value)}
                   placeholder="Alt text (accessibility)"
-                  className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-44"
+                  className="h-7 px-3 text-xs rounded-full bg-white/70 border border-gray-200 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-44"
                 />
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => setImageMeta(imageCaption, imageAlt)}
-                  className="text-xs px-3 py-1 h-7 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full"
+                  className="text-xs px-3 py-1 h-7 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full"
                 >
                   Apply
                 </Button>
@@ -1313,28 +1313,28 @@ export default function RichTextEditor({
 
           {/* CTA button controls (mirrors the image strip; only when a CTA node is selected) */}
           {selectedCta && (
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-rose-100 bg-rose-50/60 px-2 py-2 rounded-b-lg">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Button</span>
-              <div className="w-px h-4 bg-rose-200 mx-1" />
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200 bg-gray-50 px-2 py-2 rounded-b-lg">
+              <span className="text-xs font-medium uppercase tracking-wider text-red-600">Button</span>
+              <div className="w-px h-4 bg-red-200 mx-1" />
               <input
                 type="text"
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
                 placeholder="Button text"
-                className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-40"
+                className="h-7 px-3 text-xs rounded-full bg-white/70 border border-gray-200 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-40"
               />
               <input
                 type="text"
                 value={ctaHref}
                 onChange={(e) => setCtaHref(e.target.value)}
                 placeholder="Link URL (https://…)"
-                className="h-7 px-2.5 text-xs rounded-full bg-white/70 border border-rose-100 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
+                className="h-7 px-3 text-xs rounded-full bg-white/70 border border-gray-200 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none w-52"
               />
               <Button
                 type="button"
                 size="sm"
                 onClick={applyCta}
-                className="text-xs px-3 py-1 h-7 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full"
+                className="text-xs px-3 py-1 h-7 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full"
               >
                 Apply
               </Button>
@@ -1364,7 +1364,7 @@ export default function RichTextEditor({
         
         {showPreview && (
           <div className="p-4 bg-gray-50 min-h-[400px] overflow-auto">
-            <h3 className="text-sm font-bold text-gray-700 mb-2">Live Preview:</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Live Preview:</h3>
             <div className="lesson-content" dangerouslySetInnerHTML={{ __html: content }} />
           </div>
         )}
@@ -1373,7 +1373,7 @@ export default function RichTextEditor({
       {/* Slash command menu (hand-rolled, no @tiptap/suggestion / tippy) */}
       {editable && slashMenu.open && filteredSlashItems.length > 0 && (
         <div
-          className="fixed bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] py-1.5 w-64 z-50 max-h-72 overflow-y-auto"
+          className="fixed bg-white rounded-xl border border-gray-200 py-2 w-64 z-50 max-h-72 overflow-y-auto"
           style={{ left: slashMenu.left, top: slashMenu.top }}
         >
           {filteredSlashItems.map((item, i) => {
@@ -1386,18 +1386,18 @@ export default function RichTextEditor({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeSlashItem(item)}
                 onMouseEnter={() => setSlashMenu((p) => ({ ...p, index: i }))}
-                className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 text-left transition-colors ${
-                  i === slashMenu.index ? 'bg-rose-50/70' : 'hover:bg-rose-50/40'
+                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
+                  i === slashMenu.index ? 'bg-gray-50' : 'hover:bg-gray-50'
                 }`}
               >
-                <span className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                <span className="w-7 h-7 rounded-lg bg-red-50 border border-gray-200 flex items-center justify-center shrink-0">
                   <Icon className="w-3.5 h-3.5 text-red-500" />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-medium text-gray-800 truncate">
                     {item.label}
                   </span>
-                  <span className="block text-[11px] text-gray-400 truncate">
+                  <span className="block text-xs text-gray-400 truncate">
                     {item.description}
                   </span>
                 </span>

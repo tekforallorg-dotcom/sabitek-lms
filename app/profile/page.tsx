@@ -256,23 +256,23 @@ export default function ProfilePage() {
 
   if (loading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <SabiLoader text="Loading profile..." size="lg" />
     </div>
   )
 }
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">My account</p>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">My account</p>
+        <h1 className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
           Your <span className="font-serif italic text-red-600">profile</span>
         </h1>
 
-        <div className="relative overflow-hidden mt-6 bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+        <div className="relative overflow-hidden mt-6 bg-white rounded-xl border border-gray-200">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <div className="px-6 py-6 sm:px-8 sm:py-8">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* Avatar */}
@@ -281,17 +281,17 @@ export default function ProfilePage() {
                   <img
                     src={profileData.avatar_url}
                     alt="Profile"
-                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-white shadow"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover ring-2 ring-white shadow-sm"
                   />
                 ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow">
-                    <span className="text-4xl font-semibold text-white">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow-sm">
+                    <span className="text-4xl font-medium text-white">
                       {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 {isEditing && (
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center ring-1 ring-rose-100 shadow-sm">
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center ring-1 ring-gray-200 shadow-sm">
                     <Camera className="w-4 h-4 text-red-500" />
                   </div>
                 )}
@@ -299,15 +299,15 @@ export default function ProfilePage() {
 
               {/* User Info */}
               <div className="text-center sm:text-left flex-1">
-                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-gray-900">
                   {profileData.full_name || 'Welcome!'}
                 </h2>
                 <p className="text-gray-500 text-sm mt-1">{userProfile?.email}</p>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
                     userProfile?.role === 'instructor'
                       ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                      : 'bg-rose-50 text-red-600 border border-rose-100'
+                      : 'bg-red-50 text-red-600 border border-gray-200'
                   }`}>
                     {userProfile?.role === 'instructor' ? (
                       <GraduationCap className="w-3 h-3" />
@@ -316,7 +316,7 @@ export default function ProfilePage() {
                     )}
                     {userProfile?.role === 'instructor' ? 'Instructor' : 'Learner'}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                     <Shield className="w-3 h-3" />
                     Verified
                   </span>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                 {!isEditing ? (
                   <Button
                     onClick={() => setIsEditing(true)}
-                    className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                    className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                   >
                     <Edit3 className="w-4 h-4 mr-2" />
                     Edit Profile
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                         setIsEditing(false)
                         setError(null)
                       }}
-                      className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                      className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                     >
                       <X className="w-4 h-4 mr-2" />
                       Cancel
@@ -349,9 +349,8 @@ export default function ProfilePage() {
                     <Button
                       onClick={handleSaveProfile}
                       disabled={isSaving}
-                      className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                      className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       {isSaving ? (
                         <span className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -375,9 +374,9 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Success Message */}
         {success && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-2xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <div className="mb-6 bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <span className="font-medium">Profile updated successfully!</span>
           </div>
@@ -385,9 +384,9 @@ export default function ProfilePage() {
 
         {/* Password Success Message */}
         {passwordSuccess && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-2xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <div className="mb-6 bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <span className="font-medium">Password changed successfully!</span>
           </div>
@@ -395,8 +394,8 @@ export default function ProfilePage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-rose-50 border border-rose-100 text-red-600 px-4 py-3 rounded-2xl flex items-center gap-3">
-            <div className="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
+          <div className="mb-6 bg-red-50 border border-gray-200 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-red-600" />
             </div>
             <span>{error}</span>
@@ -406,14 +405,14 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Avatar & Upload */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="relative bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <Card className="relative bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                     <Camera className="w-5 h-5 text-white" />
                   </div>
-                  <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Profile Photo</CardTitle>
+                  <CardTitle className="text-base font-medium tracking-tight text-gray-900">Profile Photo</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -422,11 +421,11 @@ export default function ProfilePage() {
                     <img
                       src={profileData.avatar_url}
                       alt="Profile"
-                      className="w-32 h-32 rounded-2xl object-cover ring-2 ring-white shadow"
+                      className="w-32 h-32 rounded-xl object-cover ring-2 ring-white shadow-sm"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center ring-2 ring-white shadow">
-                      <span className="text-4xl font-semibold text-white">
+                    <div className="w-32 h-32 rounded-xl bg-red-600 flex items-center justify-center ring-2 ring-white shadow-sm">
+                      <span className="text-4xl font-medium text-white">
                         {profileData.full_name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>
                     </div>
@@ -445,7 +444,7 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <div className="text-center pt-4 border-t border-rose-100">
+                <div className="text-center pt-4 border-t border-gray-200">
                   <p className="text-sm font-medium text-gray-900">{userProfile?.email}</p>
                   <p className="text-xs text-gray-500 mt-1 capitalize flex items-center justify-center gap-1">
                     {userProfile?.role === 'instructor' ? (
@@ -460,15 +459,15 @@ export default function ProfilePage() {
             </Card>
 
             {/* Security Card - Change Password */}
-            <Card className="relative bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <Card className="relative bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                     <KeyRound className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Security</CardTitle>
+                    <CardTitle className="text-base font-medium tracking-tight text-gray-900">Security</CardTitle>
                     <CardDescription className="text-xs">Manage your password</CardDescription>
                   </div>
                 </div>
@@ -478,7 +477,7 @@ export default function ProfilePage() {
                   <Button
                     onClick={() => setShowPasswordSection(true)}
                     variant="outline"
-                    className="w-full h-11 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                    className="w-full h-11 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                   >
                     <Lock className="w-4 h-4 mr-2" />
                     Change Password
@@ -486,14 +485,14 @@ export default function ProfilePage() {
                 ) : (
                   <form onSubmit={handleChangePassword} className="space-y-4">
                     {passwordError && (
-                      <div className="bg-rose-50 border border-rose-100 text-red-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
+                      <div className="bg-red-50 border border-gray-200 text-red-600 px-3 py-2 rounded-xl text-sm flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
                         {passwordError}
                       </div>
                     )}
 
                     <div className="space-y-2">
-                      <label className="text-[13px] font-medium text-gray-700">Current Password</label>
+                      <label className="text-sm font-medium text-gray-700">Current Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -501,7 +500,7 @@ export default function ProfilePage() {
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           placeholder="Enter current password"
-                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                         />
                         <button
@@ -515,7 +514,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[13px] font-medium text-gray-700">New Password</label>
+                      <label className="text-sm font-medium text-gray-700">New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -523,7 +522,7 @@ export default function ProfilePage() {
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                           placeholder="Enter new password"
-                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                           minLength={6}
                         />
@@ -538,7 +537,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[13px] font-medium text-gray-700">Confirm New Password</label>
+                      <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
@@ -546,7 +545,7 @@ export default function ProfilePage() {
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                           placeholder="Confirm new password"
-                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                          className="h-11 pl-10 pr-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                           required
                           minLength={6}
                         />
@@ -573,16 +572,15 @@ export default function ProfilePage() {
                             confirmPassword: '',
                           })
                         }}
-                        className="flex-1 h-11 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+                        className="flex-1 h-11 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
                       >
                         Cancel
                       </Button>
                       <Button
                         type="submit"
                         disabled={passwordLoading}
-                        className="relative overflow-hidden flex-1 h-11 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                        className="relative overflow-hidden flex-1 h-11 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                       >
-                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                         {passwordLoading ? (
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -601,15 +599,15 @@ export default function ProfilePage() {
 
           {/* Right Column - Profile Info */}
           <div className="lg:col-span-2">
-            <Card className="relative bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <Card className="relative bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Personal Information</CardTitle>
+                    <CardTitle className="text-base font-medium tracking-tight text-gray-900">Personal Information</CardTitle>
                     <CardDescription className="text-xs">Update your personal details</CardDescription>
                   </div>
                 </div>
@@ -617,7 +615,7 @@ export default function ProfilePage() {
               <CardContent className="p-6 space-y-5">
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-400" />
                     Full Name
                   </label>
@@ -625,27 +623,27 @@ export default function ProfilePage() {
                     value={profileData.full_name}
                     onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
                     disabled={!isEditing}
-                    className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
+                    className="h-12 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-gray-50"
                   />
                 </div>
 
                 {/* Email (Read-only) */}
                 <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-gray-400" />
                     Email Address
                   </label>
                   <Input
                     value={userProfile?.email || ''}
                     disabled
-                    className="h-12 rounded-xl bg-rose-50/40 border-rose-100 text-gray-500"
+                    className="h-12 rounded-xl bg-gray-50 border-gray-200 text-gray-500"
                   />
                   <p className="text-xs text-gray-500">Email cannot be changed</p>
                 </div>
 
                 {/* Bio */}
                 <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700">
                     Bio
                   </label>
                   <textarea
@@ -653,7 +651,7 @@ export default function ProfilePage() {
                     onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                     disabled={!isEditing}
                     rows={4}
-                    className="w-full px-4 py-3 bg-white/70 border border-rose-100 rounded-xl placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40 text-sm"
+                    className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-gray-50 text-sm"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -661,7 +659,7 @@ export default function ProfilePage() {
                 {/* Phone & Location Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-400" />
                       Phone Number
                     </label>
@@ -670,12 +668,12 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                       disabled={!isEditing}
                       placeholder="+234 XXX XXX XXXX"
-                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
+                      className="h-12 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-gray-50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-400" />
                       Location
                     </label>
@@ -684,7 +682,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
                       disabled={!isEditing}
                       placeholder="Lagos, Nigeria"
-                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
+                      className="h-12 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-gray-50"
                     />
                   </div>
                 </div>
@@ -692,7 +690,7 @@ export default function ProfilePage() {
                 {/* Website (Instructors only) */}
                 {userProfile?.role === 'instructor' && (
                   <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <Globe className="w-4 h-4 text-gray-400" />
                       Website
                     </label>
@@ -701,7 +699,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
                       disabled={!isEditing}
                       placeholder="https://yourwebsite.com"
-                      className="h-12 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-rose-50/40"
+                      className="h-12 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 disabled:bg-gray-50"
                     />
                   </div>
                 )}
@@ -712,48 +710,48 @@ export default function ProfilePage() {
 
         {/* Instructor Statistics */}
         {userProfile?.role === 'instructor' && (
-          <Card className="relative mt-6 bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] overflow-hidden">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <Card className="relative mt-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-base font-semibold tracking-tight text-gray-900">Instructor Statistics</CardTitle>
+                <CardTitle className="text-base font-medium tracking-tight text-gray-900">Instructor Statistics</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-rose-50/70 p-5 rounded-2xl border border-rose-100">
+                <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                       <BookOpen className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="text-xs text-gray-600">Total Courses</p>
-                      <p className="text-2xl font-bold text-gray-900">{instructorStats.totalCourses}</p>
+                      <p className="text-2xl font-medium text-gray-900">{instructorStats.totalCourses}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100">
+                <div className="bg-amber-50/70 p-5 rounded-xl border border-amber-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center">
                       <Users className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="text-xs text-gray-600">Total Students</p>
-                      <p className="text-2xl font-bold text-gray-900">{instructorStats.totalStudents}</p>
+                      <p className="text-2xl font-medium text-gray-900">{instructorStats.totalStudents}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-100">
+                <div className="bg-green-50/70 p-5 rounded-xl border border-green-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">₦</span>
+                    <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-medium text-sm">₦</span>
                     </div>
                     <div>
                       <p className="text-xs text-gray-600">Total Revenue</p>
-                      <p className="text-2xl font-bold text-gray-900">₦{instructorStats.totalRevenue.toLocaleString()}</p>
+                      <p className="text-2xl font-medium text-gray-900">₦{instructorStats.totalRevenue.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>

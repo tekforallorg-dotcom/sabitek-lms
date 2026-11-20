@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
           console.error('Save error:', saveError)
         }
 
-        console.log(`🎉 Cover Letter saved! Quality: ${generationResult.qualityScore}`)
+        console.log(`Cover Letter saved! Quality: ${generationResult.qualityScore}`)
 
         return {
           outputId: savedLetter?.id || 'temp-id',

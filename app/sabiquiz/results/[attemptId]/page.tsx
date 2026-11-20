@@ -274,13 +274,13 @@ export default function ResultsPage() {
 
   function getScoreColor(score: number) {
     if (score >= 80) return 'text-green-400'
-    if (score >= 60) return 'text-yellow-400'
+    if (score >= 60) return 'text-amber-400'
     return 'text-red-400'
   }
 
   function getScoreColorCard(score: number) {
     if (score >= 80) return 'text-green-600'
-    if (score >= 60) return 'text-yellow-600'
+    if (score >= 60) return 'text-amber-600'
     return 'text-red-600'
   }
 
@@ -336,7 +336,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <SabiLoader text="Loading your results..." size="lg" />
         </div>
@@ -346,16 +346,16 @@ export default function ResultsPage() {
 
   if (error || !attempt) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full rounded-2xl border-0 shadow-xl">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full rounded-xl border-0 shadow-sm">
           <CardContent className="p-6 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
             <p className="text-red-600 font-medium mb-4">{error || 'Quiz results not found'}</p>
             <Button 
               onClick={() => router.push('/sabiquiz/materials')}
-              className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl h-11"
+              className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl h-11"
             >
               Back to Materials
             </Button>
@@ -381,12 +381,7 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Dark Gradient Hero Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-        {/* Floating Decorative Elements */}
-        <div className="absolute top-10 right-[15%] w-32 h-32 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-3xl rotate-12 blur-sm" />
-        <div className="absolute bottom-20 left-[10%] w-24 h-24 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-2xl -rotate-12 blur-sm" />
-        <div className="absolute top-1/2 right-[5%] w-16 h-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl rotate-45 blur-sm" />
-
+      <div className="bg-gray-900 relative overflow-hidden">
         <div className="relative max-w-4xl mx-auto px-4 py-8 sm:py-12">
           {/* Top Row: Back Button */}
           <div className="flex items-center justify-between mb-8">
@@ -400,18 +395,18 @@ export default function ResultsPage() {
             
             <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                   <HelpCircle className="w-5 h-5 text-white" />
                 </div>
-                <Sparkles className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1" />
+                <Sparkles className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
               </div>
-              <span className="font-bold text-xl text-white">SabiQuiz</span>
+              <span className="font-medium text-xl text-white">SabiQuiz</span>
             </div>
           </div>
 
           {/* Score Display */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-4 border border-white/10">
+            <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 px-3 py-1 rounded-full text-xs font-medium mb-4 border border-white/10">
               <Trophy className="w-3 h-3" />
               Quiz Complete
             </div>
@@ -419,7 +414,7 @@ export default function ResultsPage() {
             <div className="flex items-center justify-center gap-4 mb-4">
               <span className="text-6xl">{getScoreEmoji(score)}</span>
               <div>
-                <h1 className={`text-5xl sm:text-6xl font-bold ${getScoreColor(score)}`}>
+                <h1 className={`text-5xl sm:text-6xl font-medium ${getScoreColor(score)}`}>
                   {score}%
                 </h1>
                 <p className="text-gray-400 text-lg">{getScoreMessage(score)}</p>
@@ -431,27 +426,27 @@ export default function ResultsPage() {
 
           {/* Stats Grid in Hero */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-green-500/20">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
+              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-sm">
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white">{correctAnswers}</p>
+              <p className="text-2xl font-medium text-white">{correctAnswers}</p>
               <p className="text-xs text-gray-400">Correct</p>
             </div>
             
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-red-500/20">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
+              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-sm">
                 <XCircle className="w-5 h-5 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white">{totalQuestions - correctAnswers}</p>
+              <p className="text-2xl font-medium text-white">{totalQuestions - correctAnswers}</p>
               <p className="text-xs text-gray-400">Incorrect</p>
             </div>
             
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-blue-500/20">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-sm">
                 <Clock className="w-5 h-5 text-white" />
               </div>
-              <p className="text-2xl font-bold text-white">{formatTime(attempt.time_taken_seconds || 0)}</p>
+              <p className="text-2xl font-medium text-white">{formatTime(attempt.time_taken_seconds || 0)}</p>
               <p className="text-xs text-gray-400">Time</p>
             </div>
           </div>
@@ -461,21 +456,21 @@ export default function ResultsPage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Practice Options */}
-        <Card className="mb-6 rounded-2xl border-0 shadow-sm overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 pb-4">
+        <Card className="mb-6 rounded-xl border-0 shadow-sm overflow-hidden">
+          <CardHeader className="bg-blue-50 border-b border-blue-100 pb-4">
             <CardTitle className="text-lg flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                 <RotateCcw className="w-5 h-5 text-white" />
               </div>
               <div>
                 <span className="text-gray-900">Practice Options</span>
-                <p className="text-xs text-gray-500 font-normal mt-0.5">Continue improving your knowledge</p>
+                <p className="text-xs text-gray-500 font-normal mt-1">Continue improving your knowledge</p>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 space-y-3">
             {isPerfectScore ? (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
                 <p className="text-green-800 font-medium flex items-center gap-2">
                   <CheckCircle className="w-5 h-5" />
                   Perfect Score! No wrong answers to retry.
@@ -485,7 +480,7 @@ export default function ResultsPage() {
               <button
                 onClick={handleRetryWrongOnly}
                 disabled={startingRetry}
-                className="w-full flex items-center justify-between p-4 border-2 border-red-200 rounded-2xl hover:bg-red-50 hover:border-red-300 transition-all group disabled:opacity-50"
+                className="w-full flex items-center justify-between p-4 border-2 border-red-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all group disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center group-hover:bg-red-200 transition-colors">
@@ -496,7 +491,7 @@ export default function ResultsPage() {
                     <p className="text-xs text-gray-500">{wrongCount} questions to practice</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-all" />
               </button>
             )}
 
@@ -504,24 +499,24 @@ export default function ResultsPage() {
               <button
                 onClick={handleRetryWeakTopics}
                 disabled={startingRetry}
-                className="w-full flex items-center justify-between p-4 border-2 border-orange-200 rounded-2xl hover:bg-orange-50 hover:border-orange-300 transition-all group disabled:opacity-50"
+                className="w-full flex items-center justify-between p-4 border-2 border-amber-200 rounded-xl hover:bg-amber-50 hover:border-amber-300 transition-all group disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                    <Brain className="w-5 h-5 text-orange-600" />
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                    <Brain className="w-5 h-5 text-amber-600" />
                   </div>
                   <div className="text-left">
                     <p className="font-medium text-gray-900">Practice Weak Topics</p>
                     <p className="text-xs text-gray-500">{weakTopics.length} topics below 60%</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-amber-500 transition-all" />
               </button>
             )}
 
             <button
               onClick={() => router.push(`/sabiquiz/quiz/start/${attempt.material_id}`)}
-              className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-2xl hover:bg-gray-50 hover:border-gray-300 transition-all group"
+              className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
@@ -532,17 +527,17 @@ export default function ResultsPage() {
                   <p className="text-xs text-gray-500">Start fresh with all questions</p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-all" />
             </button>
           </CardContent>
         </Card>
 
         {/* Topic Performance */}
         {topicPerformance.length > 0 && (
-          <Card className="mb-6 rounded-2xl border-0 shadow-sm">
+          <Card className="mb-6 rounded-xl border-0 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
                 Performance by Topic
@@ -553,9 +548,9 @@ export default function ResultsPage() {
                 <div key={topic.topic} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium text-gray-900">{topic.topic}</span>
-                    <span className={`font-semibold ${
+                    <span className={`font-medium ${
                       topic.percentage >= 80 ? 'text-green-600' :
-                      topic.percentage >= 60 ? 'text-yellow-600' :
+                      topic.percentage >= 60 ? 'text-amber-600' :
                       'text-red-600'
                     }`}>
                       {topic.correct}/{topic.total} ({topic.percentage}%)
@@ -564,9 +559,9 @@ export default function ResultsPage() {
                   <div className="w-full bg-gray-100 rounded-full h-2.5">
                     <div
                       className={`h-2.5 rounded-full transition-all duration-500 ${
-                        topic.percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                        topic.percentage >= 60 ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
-                        'bg-gradient-to-r from-red-500 to-pink-500'
+                        topic.percentage >= 80 ? 'bg-green-600' :
+                        topic.percentage >= 60 ? 'bg-amber-600' :
+                        'bg-red-600'
                       }`}
                       style={{ width: `${topic.percentage}%` }}
                     />
@@ -579,10 +574,10 @@ export default function ResultsPage() {
 
         {/* Difficulty Performance */}
         {difficultyPerformance.length > 0 && (
-          <Card className="mb-6 rounded-2xl border-0 shadow-sm">
+          <Card className="mb-6 rounded-xl border-0 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm">
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 Performance by Difficulty
@@ -591,19 +586,19 @@ export default function ResultsPage() {
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
                 {difficultyPerformance.map((diff) => (
-                  <div key={diff.difficulty} className={`text-center p-4 rounded-2xl border-2 ${
+                  <div key={diff.difficulty} className={`text-center p-4 rounded-xl border-2 ${
                     diff.difficulty === 'easy' ? 'bg-green-50 border-green-200' :
-                    diff.difficulty === 'medium' ? 'bg-yellow-50 border-yellow-200' :
+                    diff.difficulty === 'medium' ? 'bg-amber-50 border-amber-200' :
                     'bg-red-50 border-red-200'
                   }`}>
                     <p className={`text-xs font-medium mb-1 capitalize ${
                       diff.difficulty === 'easy' ? 'text-green-700' :
-                      diff.difficulty === 'medium' ? 'text-yellow-700' :
+                      diff.difficulty === 'medium' ? 'text-amber-700' :
                       'text-red-700'
                     }`}>{diff.difficulty}</p>
-                    <p className={`text-2xl font-bold ${
+                    <p className={`text-2xl font-medium ${
                       diff.difficulty === 'easy' ? 'text-green-600' :
-                      diff.difficulty === 'medium' ? 'text-yellow-600' :
+                      diff.difficulty === 'medium' ? 'text-amber-600' :
                       'text-red-600'
                     }`}>{diff.percentage}%</p>
                     <p className="text-xs text-gray-500">{diff.correct}/{diff.total}</p>
@@ -615,15 +610,15 @@ export default function ResultsPage() {
         )}
 
         {/* Recommendations */}
-        <Card className="mb-6 rounded-2xl border-0 shadow-sm overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 pb-4">
+        <Card className="mb-6 rounded-xl border-0 shadow-sm overflow-hidden">
+          <CardHeader className="bg-amber-50 border-b border-amber-100 pb-4">
             <CardTitle className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center shadow-sm">
                 <Lightbulb className="w-5 h-5 text-white" />
               </div>
               <div>
                 <span className="text-gray-900">Recommendations</span>
-                <p className="text-xs text-gray-500 font-normal mt-0.5">Tips to improve your performance</p>
+                <p className="text-xs text-gray-500 font-normal mt-1">Tips to improve your performance</p>
               </div>
             </CardTitle>
           </CardHeader>
@@ -631,7 +626,7 @@ export default function ResultsPage() {
             <ul className="space-y-3">
               {recommendations.map((rec, index) => (
                 <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
-                  <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <Star className="w-3.5 h-3.5 text-amber-600" />
                   </div>
                   {rec}
@@ -643,7 +638,7 @@ export default function ResultsPage() {
 
         {/* Review Answers Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-gray-600" />
             Review Answers
           </h3>
@@ -653,7 +648,7 @@ export default function ResultsPage() {
               variant={showWrongOnly ? "default" : "outline"}
               size="sm"
               onClick={() => setShowWrongOnly(!showWrongOnly)}
-              className={`rounded-xl ${showWrongOnly ? "bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white" : ""}`}
+              className={`rounded-xl ${showWrongOnly ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
             >
               <Filter className="w-4 h-4 mr-2" />
               {showWrongOnly ? `Showing Wrong (${wrongCount})` : `Show Wrong Only (${wrongCount})`}
@@ -672,13 +667,13 @@ export default function ResultsPage() {
             const originalIndex = questions.findIndex(orig => orig.id === q.id)
 
             return (
-              <Card key={q.id} className={`rounded-2xl border-0 shadow-sm overflow-hidden ${
+              <Card key={q.id} className={`rounded-xl border-0 shadow-sm overflow-hidden ${
                 isCorrect ? 'ring-2 ring-green-200 ring-offset-2' : 'ring-2 ring-red-200 ring-offset-2'
               }`}>
                 <CardHeader className={`pb-3 ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-base font-medium flex-1 flex items-start gap-3">
-                      <span className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm flex-shrink-0 ${
+                      <span className={`flex items-center justify-center w-8 h-8 rounded-lg font-medium text-sm flex-shrink-0 ${
                         isCorrect 
                           ? 'bg-green-100 text-green-700' 
                           : 'bg-red-100 text-red-700'
@@ -688,12 +683,12 @@ export default function ResultsPage() {
                       <span className="text-gray-900 leading-relaxed">{q.question}</span>
                     </CardTitle>
                     {isCorrect ? (
-                      <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium bg-green-100 px-2.5 py-1 rounded-lg flex-shrink-0 ml-2">
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-100 px-3 py-1 rounded-lg flex-shrink-0 ml-2">
                         <CheckCircle className="w-4 h-4" />
                         Correct
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 text-red-600 text-sm font-medium bg-red-100 px-2.5 py-1 rounded-lg flex-shrink-0 ml-2">
+                      <div className="flex items-center gap-2 text-red-600 text-sm font-medium bg-red-100 px-3 py-1 rounded-lg flex-shrink-0 ml-2">
                         <XCircle className="w-4 h-4" />
                         Wrong
                       </div>
@@ -724,7 +719,7 @@ export default function ResultsPage() {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <span className={`font-bold text-sm ${
+                              <span className={`font-medium text-sm ${
                                 isCorrectOption ? 'text-green-600' : 
                                 isSelected && !isCorrect ? 'text-red-600' : 
                                 'text-gray-500'
@@ -748,7 +743,7 @@ export default function ResultsPage() {
                   {/* Explanation */}
                   {q.rationale && (
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-blue-900 mb-1 flex items-center gap-1.5">
+                      <p className="text-xs font-medium text-blue-900 mb-1 flex items-center gap-2">
                         <Lightbulb className="w-3.5 h-3.5" />
                         Explanation
                       </p>
@@ -759,7 +754,7 @@ export default function ResultsPage() {
                   {/* Why wrong / Why correct */}
                   {!isCorrect && (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-amber-900 mb-1 flex items-center gap-1.5">
+                      <p className="text-xs font-medium text-amber-900 mb-1 flex items-center gap-2">
                         💡 Takeaway
                       </p>
                       <p className="text-sm text-amber-800">
@@ -771,14 +766,14 @@ export default function ResultsPage() {
 
                   {q.topic && (
                     <div className="flex items-center gap-3 text-xs text-gray-500 pt-2 border-t border-gray-100">
-                      <span className="inline-flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-lg">
+                      <span className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                         <BookOpen className="w-3 h-3" />
                         {q.topic}
                       </span>
                       {q.difficulty && (
-                        <span className={`capitalize px-2.5 py-1 rounded-lg font-medium ${
+                        <span className={`capitalize px-3 py-1 rounded-lg font-medium ${
                           q.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                          q.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          q.difficulty === 'medium' ? 'bg-amber-100 text-amber-700' :
                           'bg-red-100 text-red-700'
                         }`}>
                           {q.difficulty}
@@ -796,7 +791,7 @@ export default function ResultsPage() {
         <div className="flex gap-3 mt-8 mb-6">
           <Button
             onClick={() => router.push(`/sabiquiz/quiz/start/${attempt.material_id}`)}
-            className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl h-12 shadow-lg shadow-red-500/20"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl h-12 shadow-sm"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Retake Quiz

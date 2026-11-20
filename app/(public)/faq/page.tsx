@@ -249,25 +249,25 @@ export default function FAQPage() {
   const colorClasses = {
     red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-500', hover: 'hover:bg-red-50' },
     blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-500', hover: 'hover:bg-blue-50' },
-    purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-500', hover: 'hover:bg-purple-50' },
+    purple: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-500', hover: 'hover:bg-gray-50' },
     green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-500', hover: 'hover:bg-green-50' },
-    yellow: { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-500', hover: 'hover:bg-yellow-50' },
-    indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-500', hover: 'hover:bg-indigo-50' },
+    yellow: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500', hover: 'hover:bg-amber-50' },
+    indigo: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-500', hover: 'hover:bg-gray-50' },
     gray: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-500', hover: 'hover:bg-gray-50' }
   };
 
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-red-50/50 to-white">
+      <section className="relative overflow-hidden bg-red-50/50">
         <div className="absolute inset-0 bg-grid-gray-100/50"></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-red-100 px-4 py-2 rounded-full mb-6 shadow-sm">
             <HelpCircle className="w-4 h-4 text-red-600" />
-            <span className="text-xs font-semibold text-gray-700">Frequently Asked Questions</span>
+            <span className="text-xs font-medium text-gray-700">Frequently Asked Questions</span>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-medium text-gray-900 mb-4">
             How can we help you?
           </h1>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
@@ -323,7 +323,7 @@ export default function FAQPage() {
           {filteredCategories.length === 0 ? (
             <div className="text-center py-16">
               <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No results found</h3>
               <p className="text-gray-600">Try different keywords or browse categories below</p>
             </div>
           ) : (
@@ -340,7 +340,7 @@ export default function FAQPage() {
                         <Icon className={`w-6 h-6 ${colors.text}`} />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{category.title}</h2>
+                        <h2 className="text-2xl font-medium text-gray-900">{category.title}</h2>
                         <p className="text-sm text-gray-500">{category.questions.length} questions</p>
                       </div>
                     </div>
@@ -354,7 +354,7 @@ export default function FAQPage() {
                         return (
                           <div
                             key={index}
-                            className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all"
+                            className="border border-gray-200 rounded-xl overflow-hidden transition-all"
                           >
                             <button
                               onClick={() => toggleQuestion(category.id, index)}
@@ -362,11 +362,11 @@ export default function FAQPage() {
                             >
                               <div className="flex items-start gap-3 flex-1">
                                 <ChevronRight 
-                                  className={`w-5 h-5 ${colors.text} flex-shrink-0 mt-0.5 transition-transform ${
+                                  className={`w-5 h-5 ${colors.text} flex-shrink-0 mt-1 transition-transform ${
                                     isOpen ? 'rotate-90' : ''
                                   }`}
                                 />
-                                <span className="font-semibold text-gray-900">{question.question}</span>
+                                <span className="font-medium text-gray-900">{question.question}</span>
                               </div>
                             </button>
                             
@@ -392,14 +392,14 @@ export default function FAQPage() {
       </section>
 
       {/* Still Need Help */}
-      <section className="bg-gradient-to-br from-gray-50 to-white py-16">
+      <section className="bg-gray-50 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 text-center shadow-lg">
+          <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12 text-center shadow-sm">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <MessageCircle className="w-8 h-8 text-red-600" />
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-4">
               Still need help?
             </h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
@@ -409,14 +409,14 @@ export default function FAQPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors text-sm shadow-lg"
+                className="inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors text-sm shadow-sm"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Contact Support
               </Link>
               <Link
                 href="/schools-and-tutors"
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors text-sm"
+                className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors text-sm"
               >
                 <Users className="w-4 h-4 mr-2" />
                 For Schools & Tutors
@@ -431,19 +431,19 @@ export default function FAQPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-red-600 mb-2">24/7</div>
+              <div className="text-3xl font-medium text-red-600 mb-2">24/7</div>
               <div className="text-sm text-gray-600">Support Available</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">48hrs</div>
+              <div className="text-3xl font-medium text-blue-600 mb-2">48hrs</div>
               <div className="text-sm text-gray-600">Response Time</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
+              <div className="text-3xl font-medium text-green-600 mb-2">100%</div>
               <div className="text-sm text-gray-600">Free Core Features</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">5+</div>
+              <div className="text-3xl font-medium text-gray-600 mb-2">5+</div>
               <div className="text-sm text-gray-600">Languages Supported</div>
             </div>
           </div>
