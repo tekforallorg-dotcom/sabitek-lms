@@ -1,7 +1,8 @@
 // lib/sabiquiz/question-generator.ts
 
 import { supabase } from '@/lib/supabase'
-import { generateContent, extractJSON } from './gemini-client'
+import { generateContent, extractJSON } from './ai-client'
+import { AI_MODELS } from '@/lib/ai'
 import { validateQuestions, type Question } from './validators'
 import { chunkText, saveChunks, getChunks, type ChunkRecord } from './chunker'
 import { buildContextProfile, type ContextProfile } from './context-profile'
@@ -474,7 +475,7 @@ export async function recordGenerationRun(
     await supabase.from('generation_runs').insert({
       user_id: userId,
       material_id: materialId,
-      model_used: 'gemini-2.0-flash-lite',
+      model_used: AI_MODELS.gemini,
       cost_usd: result.costEstimate,
       questions_generated: result.totalGenerated,
       questions_approved: result.passedValidation,

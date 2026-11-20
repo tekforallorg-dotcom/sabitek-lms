@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { executeAdvisorOperation, generateInputHash } from '@/lib/advisor/pricing'
+import { generateText } from '@/lib/ai'
 
 // Import new CV Builder v2 pipeline
 import {
@@ -601,11 +602,6 @@ async function rewriteSectionWithAI(
   currentContent: unknown,
   targetRole: string
 ): Promise<unknown> {
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY not configured')
-  }
-
   const prompt = `Improve this ${sectionName} section for a ${targetRole} CV.
 
 REQUIREMENTS:
@@ -620,39 +616,18 @@ ${JSON.stringify(currentContent, null, 2)}
 
 Return improved content in the same JSON structure. Output JSON only, no explanation.`
 
-  try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an elite CV writer. Output JSON only, no markdown.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-      }),
-    })
+  const { text: content } = await generateText({
+    system: 'You are an elite CV writer. Output JSON only, no markdown.',
+    prompt,
+    maxTokens: 2000,
+    temperature: 0.7,
+  })
 
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || ''
-
-    // Try to parse JSON from response
-    const jsonMatch = content.match(/[\[{][\s\S]*[\]}]/)
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
-    }
-  } catch (error) {
-    console.error('Section rewrite error:', error)
+  const jsonMatch = content.match(/[\[{][\s\S]*[\]}]/)
+  if (!jsonMatch) {
+    // Throwing fails the paid operation, which refunds the user. This used to
+    // hand back the section unchanged and keep the money.
+    throw new Error('The rewrite did not come back in a usable form')
   }
-
-  // Return original if rewrite fails
-  return currentContent
+  return JSON.parse(jsonMatch[0])
 }

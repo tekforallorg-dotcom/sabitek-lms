@@ -9,6 +9,7 @@
  * 5. Fix-pass loop (auto-repair failures)
  */
 
+import { generateText } from '@/lib/ai'
 import {
   ResumeSchema,
   JobSchema,
@@ -82,12 +83,6 @@ import {
 // ============================================
 
 const PIPELINE_CONFIG = {
-  ai: {
-    baseUrl: 'https://api.deepseek.com/v1/chat/completions',
-    model: 'deepseek-chat',
-    maxRetries: 2,
-    retryDelayMs: 1000,
-  },
   quality: {
     minScore: 70,
     maxFixPasses: 2,
@@ -169,50 +164,14 @@ async function callAI(
   maxTokens: number,
   temperature: number = 0.7
 ): Promise<{ content: string; tokens: number }> {
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY not configured')
-  }
-
-  for (let attempt = 1; attempt <= PIPELINE_CONFIG.ai.maxRetries; attempt++) {
-    try {
-      const response = await fetch(PIPELINE_CONFIG.ai.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: PIPELINE_CONFIG.ai.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          max_tokens: maxTokens,
-          temperature,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return {
-        content: data.choices?.[0]?.message?.content || '',
-        tokens: data.usage?.total_tokens || 0,
-      }
-
-    } catch (error) {
-      if (attempt < PIPELINE_CONFIG.ai.maxRetries) {
-        await new Promise(r => setTimeout(r, PIPELINE_CONFIG.ai.retryDelayMs * attempt))
-      } else {
-        throw error
-      }
-    }
-  }
-
-  throw new Error('AI call failed after retries')
+  // Retries, provider choice and usage metering live in lib/ai.
+  const result = await generateText({
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxTokens,
+    temperature,
+  })
+  return { content: result.text, tokens: result.totalTokens }
 }
 
 // ============================================

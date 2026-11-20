@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUser } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { checkAIQuota, generateText, quotaMessage } from '@/lib/ai'
 
 const supabase = supabaseAdmin
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +16,11 @@ export async function POST(request: NextRequest) {
 
     if (!messageContent) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const quota = await checkAIQuota(userId, 'sabibot_insights')
+    if (!quota.ok) {
+      return NextResponse.json({ error: quotaMessage(quota) }, { status: 429 })
     }
 
     // Use AI to extract insights from the conversation
@@ -44,30 +48,21 @@ Rules:
 - If nothing found for a category, use empty array []
 - NO explanations, ONLY the JSON`
 
-    const response = await fetch(DEEPSEEK_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: 'You are a learning insight extraction AI. Respond ONLY with valid JSON.' },
-          { role: 'user', content: extractionPrompt },
-        ],
+    let extractedText = ''
+    try {
+      const result = await generateText({
+        feature: 'sabibot_insights',
+        userId,
+        system: 'You are a learning insight extraction AI. Respond ONLY with valid JSON.',
+        prompt: extractionPrompt,
+        maxTokens: 500,
         temperature: 0.3,
-        max_tokens: 500,
-      }),
-    })
-
-    if (!response.ok) {
-      console.error('DeepSeek extraction failed:', response.status)
+      })
+      extractedText = result.text
+    } catch (error) {
+      console.error('Insight extraction failed:', error instanceof Error ? error.message : error)
       return NextResponse.json({ error: 'Extraction failed' }, { status: 500 })
     }
-
-    const data = await response.json()
-    const extractedText = data.choices?.[0]?.message?.content || ''
 
     // Parse JSON response
     let insights

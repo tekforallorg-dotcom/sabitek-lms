@@ -11,6 +11,7 @@
  * 7. Quality validation
  */
 
+import { generateText } from '@/lib/ai'
 import {
   BuildCoverLetterInput,
   TailorCoverLetterInput,
@@ -45,23 +46,6 @@ import {
   generateMissingMetricsQuestions,
   extractJSON,
 } from './prompts'
-
-// ============================================
-// CONFIGURATION
-// ============================================
-
-const PIPELINE_CONFIG = {
-  claudeApi: {
-    baseUrl: 'https://api.anthropic.com/v1/messages',
-    model: 'claude-3-haiku-20240307',
-    maxRetries: 2,
-    retryDelayMs: 1000,
-  },
-  deepseekApi: {
-    baseUrl: 'https://api.deepseek.com/v1/chat/completions',
-    model: 'deepseek-chat',
-  },
-}
 
 // ============================================
 // PIPELINE LOGGING
@@ -108,96 +92,37 @@ function failStep(ctx: PipelineContext, error: string): void {
 // AI CALL HELPERS
 // ============================================
 
+// The letter's prose is written by Claude. If Claude cannot answer (no key,
+// outage, or a declined request) DeepSeek writes it instead, so the user
+// still gets the letter they paid for.
 async function callClaude(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number = 1000
 ): Promise<{ content: string; tokens: number }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY not configured')
-  }
-
-  for (let attempt = 1; attempt <= PIPELINE_CONFIG.claudeApi.maxRetries; attempt++) {
-    try {
-      console.log(`🤖 Claude [haiku] - Attempt ${attempt}/${PIPELINE_CONFIG.claudeApi.maxRetries}`)
-      
-      const response = await fetch(PIPELINE_CONFIG.claudeApi.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: PIPELINE_CONFIG.claudeApi.model,
-          max_tokens: maxTokens,
-          messages: [{ role: 'user', content: userPrompt }],
-          system: systemPrompt,
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`Claude API error: ${response.status} - ${error}`)
-      }
-
-      const data = await response.json()
-      const content = data.content?.[0]?.text || ''
-      const tokens = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
-      
-      console.log(`✅ Claude [haiku] completed (${tokens} tokens)`)
-      return { content, tokens }
-
-    } catch (error) {
-      if (attempt < PIPELINE_CONFIG.claudeApi.maxRetries) {
-        console.log(`⚠️ Claude attempt ${attempt} failed, retrying...`)
-        await new Promise(r => setTimeout(r, PIPELINE_CONFIG.claudeApi.retryDelayMs * attempt))
-      } else {
-        throw error
-      }
-    }
-  }
-
-  throw new Error('Claude API failed after retries')
+  const result = await generateText({
+    provider: 'claude',
+    fallback: ['deepseek'],
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxTokens,
+  })
+  return { content: result.text, tokens: result.totalTokens }
 }
 
+// Extraction and analysis steps: structured output, low temperature.
 async function callDeepSeek(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number = 2000
 ): Promise<{ content: string; tokens: number }> {
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY not configured')
-  }
-
-  const response = await fetch(PIPELINE_CONFIG.deepseekApi.baseUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: PIPELINE_CONFIG.deepseekApi.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.3,
-    }),
+  const result = await generateText({
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxTokens,
+    temperature: 0.3,
   })
-
-  if (!response.ok) {
-    throw new Error(`DeepSeek API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  return {
-    content: data.choices?.[0]?.message?.content || '',
-    tokens: data.usage?.total_tokens || 0,
-  }
+  return { content: result.text, tokens: result.totalTokens }
 }
 
 // ============================================

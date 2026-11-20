@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { checkAIQuota, generateText, quotaMessage } from '@/lib/ai'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/api-auth'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
@@ -7,13 +7,6 @@ import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 // Bound the prompt so one request cannot run up an arbitrary bill.
 const MAX_QUESTION_CHARS = 1000
 const MAX_LESSON_CHARS = 12000
-
-// Ask AI runs on DeepSeek (mirrors the SabiBot pattern): the OpenAI SDK
-// pointed at DeepSeek's OpenAI-compatible endpoint.
-const openai = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: 'https://api.deepseek.com',
-})
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,6 +45,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'You do not have access to this lesson' }, { status: 403 })
     }
 
+    const quota = await checkAIQuota(auth.user.id, 'lesson_qa')
+    if (!quota.ok) {
+      return NextResponse.json({ error: quotaMessage(quota) }, { status: 429 })
+    }
+
     // Generate context-aware response
     const systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}".
     Be helpful, clear, and encouraging. Keep answers concise but comprehensive.
@@ -77,23 +75,14 @@ export async function POST(req: NextRequest) {
       Provide a helpful educational response based on common knowledge about this topic.`
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'deepseek-chat',
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: userPrompt
-        }
-      ],
-      max_tokens: 500,
+    const { text: answer } = await generateText({
+      feature: 'lesson_qa',
+      userId: auth.user.id,
+      system: systemPrompt,
+      prompt: userPrompt,
+      maxTokens: 500,
       temperature: 0.7,
     })
-
-    const answer = completion.choices[0].message.content
 
     return NextResponse.json({ answer })
   } catch (error) {

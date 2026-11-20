@@ -1,143 +1,46 @@
 /**
- * Claude AI Client
- * 
+ * Claude calls for the CV builder.
+ *
  * Hybrid approach:
- * - Claude Haiku: CV generation, fix-pass, quality scoring (better quality)
- * - DeepSeek: Extraction tasks (cheaper)
+ * - Claude: CV writing and the fix pass (better prose)
+ * - DeepSeek: extraction tasks, and the fall-back when Claude cannot answer
+ *
+ * The model id, retries and usage metering live in lib/ai; this file only
+ * keeps the shapes the CV builder expects, plus its prompts.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { generateText } from '@/lib/ai'
 
-// Model constants
-export const CLAUDE_MODELS = {
-  haiku: 'claude-3-haiku-20240307',
-  sonnet: 'claude-3-5-sonnet-20241022',
-  opus: 'claude-3-opus-20240229',
-} as const
-
-export type ClaudeModel = keyof typeof CLAUDE_MODELS
-
-// Default config
-const DEFAULT_CONFIG = {
-  model: CLAUDE_MODELS.haiku,
-  maxRetries: 2,
-  retryDelayMs: 1000,
-}
-
-// Initialize Anthropic client
-let anthropicClient: Anthropic | null = null
-
-function getClient(): Anthropic {
-  if (!anthropicClient) {
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured')
-    }
-    anthropicClient = new Anthropic({ apiKey })
-  }
-  return anthropicClient
+interface ClaudeTokens {
+  input: number
+  output: number
+  total: number
 }
 
 /**
- * Call Claude API with retry logic
+ * Ask Claude for text. Throws if Claude cannot answer, so the caller can fall
+ * back to DeepSeek.
  */
 export async function callClaude(options: {
   systemPrompt: string
   userPrompt: string
   maxTokens?: number
-  temperature?: number
-  model?: ClaudeModel
-}): Promise<{
-  content: string
-  tokens: {
-    input: number
-    output: number
-    total: number
+}): Promise<{ content: string; tokens: ClaudeTokens; model: string }> {
+  const result = await generateText({
+    provider: 'claude',
+    system: options.systemPrompt,
+    prompt: options.userPrompt,
+    maxTokens: options.maxTokens ?? 2000,
+    // The Anthropic SDK already retries temporary failures.
+    attempts: 1,
+  })
+
+  const input = result.usage.inputTokens + result.usage.cacheReadTokens
+  return {
+    content: result.text,
+    tokens: { input, output: result.usage.outputTokens, total: result.totalTokens },
+    model: result.model,
   }
-  model: string
-  stopReason: string | null
-}> {
-  const {
-    systemPrompt,
-    userPrompt,
-    maxTokens = 2000,
-    temperature = 0.7,
-    model = 'haiku',
-  } = options
-
-  const client = getClient()
-  const modelId = CLAUDE_MODELS[model]
-
-  for (let attempt = 1; attempt <= DEFAULT_CONFIG.maxRetries; attempt++) {
-    try {
-      console.log(`🤖 Claude [${model}] - Attempt ${attempt}/${DEFAULT_CONFIG.maxRetries}`)
-      const startTime = Date.now()
-
-      const response = await client.messages.create({
-        model: modelId,
-        max_tokens: maxTokens,
-        temperature,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
-      })
-
-      const duration = Date.now() - startTime
-      const content = response.content[0].type === 'text' 
-        ? response.content[0].text 
-        : ''
-
-      const tokens = {
-        input: response.usage.input_tokens,
-        output: response.usage.output_tokens,
-        total: response.usage.input_tokens + response.usage.output_tokens,
-      }
-
-      console.log(`✅ Claude [${model}] completed in ${duration}ms (${tokens.total} tokens)`)
-
-      return {
-        content,
-        tokens,
-        model: modelId,
-        stopReason: response.stop_reason,
-      }
-
-    } catch (error) {
-      const err = error as Error
-      console.error(`❌ Claude [${model}] attempt ${attempt} failed:`, err.message)
-
-      // Check for rate limit
-      if (err.message.includes('rate_limit') || err.message.includes('429')) {
-        const delay = DEFAULT_CONFIG.retryDelayMs * Math.pow(2, attempt)
-        console.log(`⏳ Rate limited, waiting ${delay}ms...`)
-        await sleep(delay)
-        continue
-      }
-
-      // Check for overloaded
-      if (err.message.includes('overloaded') || err.message.includes('529')) {
-        const delay = DEFAULT_CONFIG.retryDelayMs * Math.pow(2, attempt)
-        console.log(`⏳ API overloaded, waiting ${delay}ms...`)
-        await sleep(delay)
-        continue
-      }
-
-      // Don't retry on auth errors
-      if (err.message.includes('authentication') || err.message.includes('401')) {
-        throw new Error('Claude API authentication failed')
-      }
-
-      // Last attempt failed
-      if (attempt === DEFAULT_CONFIG.maxRetries) {
-        throw error
-      }
-
-      await sleep(DEFAULT_CONFIG.retryDelayMs * attempt)
-    }
-  }
-
-  throw new Error('Claude API call failed after retries')
 }
 
 /**
@@ -147,23 +50,17 @@ export async function callClaudeJSON<T = unknown>(options: {
   systemPrompt: string
   userPrompt: string
   maxTokens?: number
-  temperature?: number
-  model?: ClaudeModel
 }): Promise<{
   data: T | null
   raw: string
-  tokens: { input: number; output: number; total: number }
+  tokens: ClaudeTokens
   parseError?: string
 }> {
-  const result = await callClaude({
-    ...options,
-    // Lower temperature for JSON output
-    temperature: options.temperature ?? 0.3,
-  })
+  const result = await callClaude(options)
 
   // Try to extract JSON from response
   const jsonMatch = result.content.match(/[\[{][\s\S]*[\]}]/)
-  
+
   if (!jsonMatch) {
     return {
       data: null,
@@ -188,41 +85,6 @@ export async function callClaudeJSON<T = unknown>(options: {
       parseError: `JSON parse error: ${e instanceof Error ? e.message : 'Unknown'}`,
     }
   }
-}
-
-/**
- * Estimate token count (rough approximation)
- * Claude uses ~4 chars per token on average
- */
-export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4)
-}
-
-/**
- * Calculate cost estimate for Claude Haiku
- * Haiku pricing: $0.25/1M input, $1.25/1M output
- */
-export function estimateCost(inputTokens: number, outputTokens: number): {
-  inputCost: number
-  outputCost: number
-  totalCost: number
-  formatted: string
-} {
-  const inputCost = (inputTokens / 1_000_000) * 0.25
-  const outputCost = (outputTokens / 1_000_000) * 1.25
-  const totalCost = inputCost + outputCost
-
-  return {
-    inputCost,
-    outputCost,
-    totalCost,
-    formatted: `$${totalCost.toFixed(4)}`,
-  }
-}
-
-// Helper
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 // System prompts for CV generation

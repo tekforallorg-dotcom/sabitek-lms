@@ -1,6 +1,6 @@
 // lib/sabiquiz/reviewer.ts
 
-import { generateContent, extractJSON } from './gemini-client'
+import { generateContent, extractJSON } from './ai-client'
 import { buildReviewPrompt } from './prompts'
 import { 
   validateQuestion, 

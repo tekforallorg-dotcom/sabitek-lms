@@ -52,7 +52,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: placeholder-service-key
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           RESEND_API_KEY: re_placeholder
-          OPENAI_API_KEY: placeholder
           ANTHROPIC_API_KEY: placeholder
           GEMINI_API_KEY: placeholder
           DEEPSEEK_API_KEY: placeholder
