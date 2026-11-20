@@ -48,10 +48,19 @@ export async function getSanitizedLessonQuiz(
     .eq('course_id', courseId)
   const lessonIds = (lessonRows || []).map((l) => l.id)
 
-  const { data: quizRows } = await supabaseAdmin
+  // Select only columns that exist on `quizzes`. An earlier version asked for
+  // `description` and `time_limit`, which the table does not have; the query
+  // failed, its error was ignored, and no learner was ever shown a quiz.
+  const { data: quizRows, error: quizError } = await supabaseAdmin
     .from('quizzes')
-    .select('id, lesson_id, title, description, pass_percentage, time_limit, questions')
+    .select('id, lesson_id, title, pass_percentage, time_limit_minutes, questions')
     .in('lesson_id', lessonIds.length > 0 ? lessonIds : ['00000000-0000-0000-0000-000000000000'])
+
+  if (quizError) {
+    // Log loudly: without its quiz a gated lesson cannot be completed. The
+    // lesson itself still loads, so a database hiccup does not blank the page.
+    console.error('Failed to load lesson quizzes:', quizError.message)
+  }
 
   const quizLessonIds = (quizRows || [])
     .filter((q) => parseQuizQuestions(q.questions).length > 0)
@@ -66,9 +75,9 @@ export async function getSanitizedLessonQuiz(
         id: current.id,
         lesson_id: current.lesson_id,
         title: current.title,
-        description: current.description,
+        description: null, // the quizzes table has no description column
         pass_percentage: current.pass_percentage,
-        time_limit: current.time_limit,
+        time_limit: current.time_limit_minutes,
         questions: questions.map((q: any, i: number) => ({
           id: q.id || `q-${i}`,
           question: q.question,
