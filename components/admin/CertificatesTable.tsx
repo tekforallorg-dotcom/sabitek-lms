@@ -147,7 +147,7 @@ export default function CertificatesTable({ certificates, onAction, loading }: C
                     <td className="px-6 py-4">
                       {getStatusBadge(cert.revoked_at)}
                       {cert.revoked_at && cert.revoke_reason && (
-                        <p className="text-xs text-gray-500 mt-1 italic">"{cert.revoke_reason}"</p>
+                        <p className="text-xs text-gray-500 mt-1 italic">&quot;{cert.revoke_reason}&quot;</p>
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">

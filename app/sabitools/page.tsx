@@ -242,7 +242,7 @@ export default function SabiSuitePage() {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">More tools on the way</h2>
             <p className="text-sm text-gray-400 max-w-md mx-auto">
-              We're building more AI-powered tools to help learners across Africa succeed. Stay tuned!
+              We&apos;re building more AI-powered tools to help learners across Africa succeed. Stay tuned!
             </p>
           </div>
         </div>

@@ -433,7 +433,7 @@ export default function PrivacyPage() {
                 <ul className="text-sm text-yellow-800 space-y-2">
                   <li>✓ Use a strong, unique password</li>
                   <li>✓ Enable two-factor authentication</li>
-                  <li>✓ Don't share your login credentials</li>
+                  <li>✓ Don&apos;t share your login credentials</li>
                   <li>✓ Log out from shared devices</li>
                   <li>✓ Report suspicious activity immediately</li>
                 </ul>
@@ -445,7 +445,7 @@ export default function PrivacyPage() {
               <p>
                 In the unlikely event of a data breach affecting your personal information, we will 
                 notify you within 72 hours via email and provide details about the incident, affected 
-                data, and steps we're taking to address it.
+                data, and steps we&apos;re taking to address it.
               </p>
             </div>
           </div>
@@ -469,7 +469,7 @@ export default function PrivacyPage() {
               <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-blue-900 mb-3">🔍 Right to Access</h4>
                 <p className="text-sm text-blue-800">
-                  Request a copy of all personal data we hold about you. We'll provide this in a 
+                  Request a copy of all personal data we hold about you. We&apos;ll provide this in a 
                   readable format within 30 days.
                 </p>
               </div>
@@ -485,7 +485,7 @@ export default function PrivacyPage() {
               <div className="bg-purple-50 p-5 rounded-lg border border-purple-200">
                 <h4 className="font-semibold text-purple-900 mb-3">🗑️ Right to Deletion</h4>
                 <p className="text-sm text-purple-800">
-                  Request deletion of your personal data. We'll comply unless we have legal grounds 
+                  Request deletion of your personal data. We&apos;ll comply unless we have legal grounds 
                   to retain it.
                 </p>
               </div>
@@ -604,7 +604,7 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">7. Children's Privacy</h2>
+            <h2 className="text-2xl font-bold text-gray-900">7. Children&apos;s Privacy</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
@@ -618,7 +618,7 @@ export default function PrivacyPage() {
               </p>
               <ul className="text-sm text-yellow-800 space-y-2">
                 <li>• We do not knowingly collect data from children under 13 without consent</li>
-                <li>• Parents can request access to or deletion of their child's data</li>
+                <li>• Parents can request access to or deletion of their child&apos;s data</li>
                 <li>• We limit data collection for users aged 13-18</li>
                 <li>• Educational institutions must obtain proper consent before enrolling minors</li>
               </ul>

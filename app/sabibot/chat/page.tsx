@@ -75,7 +75,7 @@ const LESSON_PROMPTS = [
 function formatMarkdown(text: string): string {
   if (!text) return ''
 
-  let formatted = text
+  const formatted = text
     // Sabitek course links become tappable pills; other links stay simple
     .replace(
       /\[([^\]]+)\]\((\/courses\/[^)\s]+)\)/g,

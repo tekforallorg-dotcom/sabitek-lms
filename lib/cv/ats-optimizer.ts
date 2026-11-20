@@ -61,7 +61,7 @@ export function injectKeywordsIntoSkills(
     if (keywords.length === 0) continue
 
     // Find existing category
-    let existingCat = enhanced.find(c => 
+    const existingCat = enhanced.find(c => 
       c.label.toLowerCase().includes(category.toLowerCase()) ||
       category.toLowerCase().includes(c.label.toLowerCase())
     )

@@ -287,8 +287,8 @@ export function calculateStudentProgress(attempts: QuizAttempt[]): {
     lessonAttempts.get(key)!.push(attempt)
   })
 
-  let firstAttemptScores: number[] = []
-  let latestAttemptScores: number[] = []
+  const firstAttemptScores: number[] = []
+  const latestAttemptScores: number[] = []
 
   lessonAttempts.forEach(lessonAtts => {
     // Sort by created_at

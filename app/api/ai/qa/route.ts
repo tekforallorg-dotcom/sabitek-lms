@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate context-aware response
-    let systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}".
+    const systemPrompt = `You are an educational AI assistant helping a student understand a lesson titled "${lesson.title}".
     Be helpful, clear, and encouraging. Keep answers concise but comprehensive.
     Focus on educational value and helping the student learn.
     Respond in plain text. Never use em dashes or en dashes; use commas, periods, or the word "and" instead.`

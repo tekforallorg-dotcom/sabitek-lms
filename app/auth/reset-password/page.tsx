@@ -344,7 +344,7 @@ function ResetPasswordForm() {
               </div>
               <div>
                 <h3 className="text-white font-medium text-sm">Unique Password</h3>
-                <p className="text-gray-400 text-xs">Don't reuse passwords from other sites</p>
+                <p className="text-gray-400 text-xs">Don&apos;t reuse passwords from other sites</p>
               </div>
             </div>
           </div>

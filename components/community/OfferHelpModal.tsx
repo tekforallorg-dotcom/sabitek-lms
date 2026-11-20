@@ -71,7 +71,7 @@ export default function OfferHelpModal({
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-4">
           <p className="text-sm text-gray-600 mb-4">
-            Offer to help with: <span className="font-medium text-gray-900">"{requestTitle}"</span>
+            Offer to help with: <span className="font-medium text-gray-900">&quot;{requestTitle}&quot;</span>
           </p>
 
           {error && (

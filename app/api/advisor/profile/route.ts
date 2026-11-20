@@ -22,11 +22,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get or create profile
-    let { data: profile, error } = await supabaseAdmin
+    const existing = await supabaseAdmin
       .from('career_profiles')
       .select('*')
       .eq('user_id', user.id)
       .single()
+    let profile = existing.data
+    const error = existing.error
 
     if (error && error.code === 'PGRST116') {
       // Profile doesn't exist, create one
