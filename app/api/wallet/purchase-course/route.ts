@@ -1,163 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { debitWallet, formatNaira } from '@/lib/wallet'
+import { formatNaira } from '@/lib/wallet'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireUser } from '@/lib/api-auth'
 
+// Keep in step with FREE_TRIAL_BALANCE_KOBO in lib/wallet/index.ts: buying a
+// course can be the first thing that touches a wallet.
+const WELCOME_BONUS_KOBO = 50000
+
+type PurchaseOutcome =
+  | { outcome: 'purchased'; transaction_ref: string; amount_kobo: number; new_balance: number }
+  | { outcome: 'already_purchased' }
+  | { outcome: 'course_not_found' }
+  | { outcome: 'course_is_free' }
+  | { outcome: 'insufficient_balance'; balance_kobo: number; required_kobo: number }
 
 /**
  * POST /api/wallet/purchase-course
- * Purchase a course using wallet balance
+ * Purchase a course using wallet balance.
+ *
+ * The whole purchase is one database call (`wallet_purchase_course`): the
+ * wallet is debited, the purchase and transaction are recorded and the learner
+ * is enrolled in a single transaction, or none of it happens. Two clicks at
+ * once cannot pay twice, and a failure cannot take the money without
+ * recording the purchase.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
 
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Parse request body
     const { courseId } = await request.json()
 
-    if (!courseId) {
+    if (!courseId || typeof courseId !== 'string') {
       return NextResponse.json(
         { error: 'Course ID is required' },
         { status: 400 }
       )
     }
 
-    // Get course details
-    const { data: course, error: courseError } = await supabaseAdmin
-      .from('courses')
-      .select('id, title, price, is_free, currency, instructor_id')
-      .eq('id', courseId)
-      .single()
-
-    if (courseError || !course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      )
-    }
-
-    // Check if course is free
-    if (course.is_free || !course.price || course.price === 0) {
-      return NextResponse.json(
-        { error: 'This course is free. Please enroll directly.' },
-        { status: 400 }
-      )
-    }
-
-    // Check if already purchased
-    const { data: existingPurchase } = await supabaseAdmin
-      .from('course_purchases')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', courseId)
-      .eq('status', 'successful')
-      .single()
-
-    if (existingPurchase) {
-      return NextResponse.json(
-        { error: 'You have already purchased this course' },
-        { status: 400 }
-      )
-    }
-
-    // Convert price to kobo (price is stored in Naira)
-    const priceKobo = Math.round(course.price * 100)
-
-    // Debit wallet
-    const debitResult = await debitWallet(supabaseAdmin, {
-      userId: user.id,
-      amountKobo: priceKobo,
-      service: 'courses',
-      serviceRefId: courseId,
-      referenceType: 'course_purchase',
-      description: `Course purchase: ${course.title}`,
-      metadata: {
-        course_id: courseId,
-        course_title: course.title,
-        instructor_id: course.instructor_id
-      }
+    const { data, error } = await supabaseAdmin.rpc('wallet_purchase_course', {
+      p_user: auth.user.id,
+      p_course: courseId,
+      p_welcome_bonus_kobo: WELCOME_BONUS_KOBO,
     })
 
-    if (!debitResult.success) {
+    if (error || !data) {
+      // The function rolled back: nothing was charged.
+      console.error('Wallet purchase error:', error?.message)
       return NextResponse.json(
-        { 
-          error: debitResult.error || 'Insufficient wallet balance',
-          balance_required: priceKobo,
-          balance_required_formatted: formatNaira(priceKobo)
-        },
-        { status: 400 }
+        { error: 'Purchase failed. You have not been charged. Please try again.' },
+        { status: 500 }
       )
     }
 
-    // Create transaction reference
-    const txRef = `sabitek_wallet_course_${courseId}_${user.id}_${Date.now()}`
+    const result = data as PurchaseOutcome
 
-    // Record transaction
-    await supabaseAdmin
-      .from('transactions')
-      .insert({
-        user_id: user.id,
-        course_id: courseId,
-        amount: course.price,
-        currency: course.currency || 'NGN',
-        provider: 'wallet',
-        provider_tx_ref: txRef,
-        status: 'successful',
-        transaction_type: 'course_purchase'
-      })
+    switch (result.outcome) {
+      case 'purchased':
+        return NextResponse.json({
+          success: true,
+          message: 'Course purchased successfully!',
+          transaction_ref: result.transaction_ref,
+          amount_paid: result.amount_kobo / 100,
+          amount_paid_formatted: formatNaira(result.amount_kobo),
+          new_balance: result.new_balance,
+          new_balance_formatted: formatNaira(result.new_balance),
+        })
 
-    // Create course purchase record
-    const { error: purchaseError } = await supabaseAdmin
-      .from('course_purchases')
-      .insert({
-        user_id: user.id,
-        course_id: courseId,
-        amount: course.price,
-        currency: course.currency || 'NGN',
-        provider: 'wallet',
-        provider_tx_ref: txRef,
-        status: 'successful',
-        purchased_at: new Date().toISOString()
-      })
+      case 'already_purchased':
+        return NextResponse.json(
+          { error: 'You have already purchased this course' },
+          { status: 400 }
+        )
 
-    if (purchaseError) {
-      console.error('Purchase record error:', purchaseError)
-      // Don't fail - the wallet was debited, we can reconcile later
+      case 'course_not_found':
+        return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+
+      case 'course_is_free':
+        return NextResponse.json(
+          { error: 'This course is free. Please enroll directly.' },
+          { status: 400 }
+        )
+
+      case 'insufficient_balance':
+        return NextResponse.json(
+          {
+            error: 'Insufficient wallet balance',
+            balance_required: result.required_kobo,
+            balance_required_formatted: formatNaira(result.required_kobo),
+          },
+          { status: 400 }
+        )
     }
-
-    // Auto-enroll the user
-    const { error: enrollError } = await supabaseAdmin
-      .from('course_enrollments')
-      .insert({
-        user_id: user.id,
-        course_id: courseId,
-        progress_percentage: 0
-      })
-
-    if (enrollError && !enrollError.message.includes('duplicate')) {
-      console.error('Enrollment error:', enrollError)
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Course purchased successfully!',
-      transaction_ref: txRef,
-      amount_paid: course.price,
-      amount_paid_formatted: formatNaira(priceKobo),
-      new_balance: debitResult.newBalance,
-      new_balance_formatted: formatNaira(debitResult.newBalance)
-    })
-
   } catch (error) {
     console.error('Wallet purchase error:', error)
     return NextResponse.json(

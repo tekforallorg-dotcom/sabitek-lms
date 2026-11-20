@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { debitWallet, canAfford, formatNaira } from '@/lib/wallet'
+import { debitWallet, creditWallet, canAfford, formatNaira } from '@/lib/wallet'
 import crypto from 'crypto'
 
 // ============================================
@@ -296,9 +296,13 @@ export async function executeAdvisorOperation<T>(
   }
 
   const operationId = operation.id
+  // Set once the wallet has actually been debited, so a failure afterwards
+  // knows there is something to give back.
+  let charged = false
 
   try {
-    // Debit wallet BEFORE executing (fail fast)
+    // Debit wallet BEFORE executing (fail fast). The key ties the debit to
+    // this operation, so a retry cannot charge for it twice.
     const debitResult = await debitWallet(supabase, {
       userId,
       amountKobo: pricing.base_cost_kobo,
@@ -309,7 +313,8 @@ export async function executeAdvisorOperation<T>(
       metadata: {
         module,
         operation_type: operationType
-      }
+      },
+      idempotencyKey: `debit:advisor:${operationId}`,
     })
 
     if (!debitResult.success) {
@@ -321,6 +326,7 @@ export async function executeAdvisorOperation<T>(
 
       return { success: false, error: debitResult.error || 'Payment failed' }
     }
+    charged = true
 
     // Execute the actual operation
     const result = await executor()
@@ -332,7 +338,7 @@ export async function executeAdvisorOperation<T>(
         status: 'completed',
         output_id: result.outputId,
         output_table: result.outputTable,
-        wallet_ledger_id: operationId,
+        wallet_ledger_id: debitResult.ledgerId ?? null,
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime
       })
@@ -366,20 +372,47 @@ export async function executeAdvisorOperation<T>(
   } catch (error) {
     console.error('Operation execution error:', error)
 
-    // Update operation as failed
+    // The user paid and got nothing: give the money back. The key makes the
+    // refund safe to repeat, so it can never be paid out twice.
+    let refunded = false
+    if (charged) {
+      const refund = await creditWallet(supabase, {
+        userId,
+        amountKobo: pricing.base_cost_kobo,
+        transactionType: 'refund',
+        service: 'advisor',
+        serviceRefId: operationId,
+        referenceType: operationType,
+        description: `Refund: ${pricing.display_name}`,
+        metadata: {
+          module,
+          operation_type: operationType,
+          reason: 'operation_failed'
+        },
+        idempotencyKey: `refund:advisor:${operationId}`,
+      })
+      refunded = refund.success
+      if (!refunded) {
+        // Needs a human: the debit stands and the refund did not go through.
+        console.error('REFUND FAILED for advisor operation', operationId, refund.error)
+      }
+    }
+
     await supabase
       .from('advisor_operations')
       .update({
-        status: 'failed',
+        status: refunded ? 'refunded' : 'failed',
         error_message: String(error),
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime
       })
       .eq('id', operationId)
 
-    // TODO: Consider refunding if debit was successful but execution failed
-    // For now, we don't auto-refund - admin can handle manually
-
-    return { success: false, error: 'Operation failed. Please try again.' }
+    return {
+      success: false,
+      error: refunded
+        ? 'Operation failed. You have not been charged.'
+        : 'Operation failed. Please try again.'
+    }
   }
 }

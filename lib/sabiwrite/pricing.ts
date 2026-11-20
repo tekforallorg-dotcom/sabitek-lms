@@ -92,31 +92,6 @@ export async function getWalletBalance(userId: string): Promise<number> {
   return data.balance_kobo
 }
 
-// Create wallet if not exists
-export async function ensureWalletExists(userId: string): Promise<string> {
-  const { data: existing } = await supabase
-    .from('wallet_accounts')
-    .select('id')
-    .eq('user_id', userId)
-    .single()
-
-  if (existing) {
-    return existing.id
-  }
-
-  const { data: newWallet, error } = await supabase
-    .from('wallet_accounts')
-    .insert({ user_id: userId, balance_kobo: 0 })
-    .select('id')
-    .single()
-
-  if (error) {
-    throw new Error('Failed to create wallet')
-  }
-
-  return newWallet.id
-}
-
 // Check if user can afford operation
 export async function canAffordOperation(
   userId: string,

@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint . --max-warnings=734",
+    "lint": "eslint . --max-warnings=732",
     "test": "vitest run"
   },
   "dependencies": {
