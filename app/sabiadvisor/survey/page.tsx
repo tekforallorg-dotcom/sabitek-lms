@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import { useWallet } from '@/hooks/useWallet'
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, Target, Wallet, Plus, Briefcase, CheckCircle, HelpCircle, ChevronRight } from 'lucide-react'
 
@@ -284,11 +285,10 @@ export default function SurveyPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/sabiadvisor/recommend', {
+      const response = await authFetch('/api/sabiadvisor/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
           surveyAnswers: answers,
         }),
       })

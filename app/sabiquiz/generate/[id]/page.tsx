@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { authFetch } from '@/lib/auth-fetch'
 import { useWallet } from '@/hooks/useWallet'
 import { 
   ArrowLeft, 
@@ -151,11 +152,10 @@ export default function GeneratePage() {
         setCurrentStep(prev => Math.min(prev + 1, 3))
       }, 2000)
 
-      const response = await fetch('/api/sabiquiz/generate', {
+      const response = await authFetch('/api/sabiquiz/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
           materialId,
           materialText: material.extracted_text,
           category: material.category || 'General',

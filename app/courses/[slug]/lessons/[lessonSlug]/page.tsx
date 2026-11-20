@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { supabase } from '@/lib/supabase'
+import { authFetch } from '@/lib/auth-fetch'
 import { useAuthContext } from '@/components/providers/auth-provider'
 import LessonSummary from '@/components/ai/lesson-summary'
 import LessonQA from '@/components/ai/lesson-qa'
@@ -468,10 +469,10 @@ export default function LessonViewerPage() {
       })
 
       // Completing a lesson counts toward the daily goal + streak
-      fetch('/api/sabibot/memory', {
+      authFetch('/api/sabibot/memory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, action: 'update_streak' }),
+        body: JSON.stringify({ action: 'update_streak' }),
       }).catch(() => {})
 
       const { data: completedLessons } = await supabase

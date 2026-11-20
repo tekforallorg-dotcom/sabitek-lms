@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, X, Loader2 } from 'lucide-react'
@@ -64,14 +65,10 @@ export default function PricingPage() {
     setError(null)
 
     try {
-      const res = await fetch('/api/billing/initialize', {
+      const res = await authFetch('/api/billing/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          planCode,
-          userId: user.id,
-          email: user.email
-        }),
+        body: JSON.stringify({ planCode }),
       })
 
       const data = await res.json()

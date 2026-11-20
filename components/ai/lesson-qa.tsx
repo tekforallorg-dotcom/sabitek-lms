@@ -1,4 +1,5 @@
 'use client'
+import { authFetch } from '@/lib/auth-fetch'
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,7 +28,7 @@ export default function LessonQA({ lessonId, lessonContent, contentType }: Lesso
 
     setLoading(true)
     try {
-      const response = await fetch('/api/ai/qa', {
+      const response = await authFetch('/api/ai/qa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

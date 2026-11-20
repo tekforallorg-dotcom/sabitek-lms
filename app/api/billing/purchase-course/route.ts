@@ -1,6 +1,7 @@
 // app/api/billing/purchase-course/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -10,9 +11,15 @@ const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, courseId, email } = await request.json()
+    // The buyer is the signed-in caller; ids in the body are ignored.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
+    const email = auth.user.email
 
-    if (!userId || !courseId || !email) {
+    const { courseId } = await request.json()
+
+    if (!courseId || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }

@@ -74,6 +74,18 @@ const PROTECTED_PREFIXES = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // ── Mobile SabiWrite API: off unless explicitly enabled ──
+  // These routes identify callers by a device id from the request body, have
+  // no sign-in, and accept app-store receipts without verifying them. They
+  // stay closed until they are rebuilt with real authentication. To reopen
+  // them deliberately, set MOBILE_API_ENABLED=true.
+  if (pathname.startsWith('/api/mobile/') && process.env.MOBILE_API_ENABLED !== 'true') {
+    return NextResponse.json(
+      { error: 'The mobile API is currently unavailable.' },
+      { status: 503 }
+    )
+  }
+
   // ── API routes: rate limiting only (they auth via Bearer tokens) ──
   const rateLimitConfig = getRateLimitConfig(pathname)
 

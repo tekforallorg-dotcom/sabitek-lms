@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getCareerRecommendations } from '@/lib/gemini-advisor'
 import { executeAdvisorOperation } from '@/lib/advisor/pricing'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -9,11 +10,16 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, surveyAnswers } = await request.json()
+    // The roadmap debits a wallet, so the payer must be the signed-in caller.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
 
-    if (!userId || !surveyAnswers) {
+    const { surveyAnswers } = await request.json()
+
+    if (!surveyAnswers) {
       return NextResponse.json(
-        { error: 'Missing userId or surveyAnswers' },
+        { error: 'Missing surveyAnswers' },
         { status: 400 }
       )
     }

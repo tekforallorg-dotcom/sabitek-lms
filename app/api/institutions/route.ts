@@ -66,7 +66,16 @@ export async function GET(request: NextRequest) {
       return ApiErrors.internal('Failed to fetch institutions')
     }
 
-    return apiSuccess({ institutions: institutions || [], total: count || 0, page, limit })
+    // The creator's email is contact data: only the creator and platform
+    // admins get it. Everyone else (including signed-out visitors browsing
+    // approved institutions) sees the name only.
+    const visible = (institutions || []).map((inst) => {
+      if (isPlatformAdmin || (userId && inst.created_by === userId)) return inst
+      const creator = inst.creator ? { ...inst.creator, email: undefined } : inst.creator
+      return { ...inst, creator }
+    })
+
+    return apiSuccess({ institutions: visible, total: count || 0, page, limit })
   } catch (error) {
     console.error('Institutions GET error:', error)
     return ApiErrors.internal()

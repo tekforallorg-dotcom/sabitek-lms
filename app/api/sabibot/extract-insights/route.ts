@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -10,9 +11,13 @@ const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, messageContent, aiResponse } = await request.json()
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
 
-    if (!userId || !messageContent) {
+    const { messageContent, aiResponse } = await request.json()
+
+    if (!messageContent) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 

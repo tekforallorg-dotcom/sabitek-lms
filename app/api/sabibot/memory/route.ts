@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -14,12 +15,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { userId, userMessage, assistantMessage, action } = body
+    // The caller is whoever the access token says they are. A userId in the
+    // body is ignored: it is caller-controlled.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
+    const body = await request.json()
+    const { userMessage, assistantMessage, action } = body
 
     // Route to appropriate handler
     switch (action) {
@@ -513,14 +516,10 @@ async function getUserContext(userId: string) {
 // ============================================
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
-
-    return await getUserContext(userId)
+    return await getUserContext(auth.user.id)
   } catch (error) {
     console.error('Memory API GET error:', error)
     return NextResponse.json(

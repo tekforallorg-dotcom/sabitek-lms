@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { authFetch } from '@/lib/auth-fetch'
 import SabiLoader from '@/components/ui/SabiLoader'
 import {
   Bot,
@@ -147,7 +148,7 @@ function SabiBotChatContent() {
 
   const fetchUserMemory = async () => {
     try {
-      const res = await fetch(`/api/sabibot/memory?userId=${user?.id}`)
+      const res = await authFetch('/api/sabibot/memory')
       if (res.ok) {
         const data = await res.json()
         setUserMemory(data)
@@ -222,7 +223,7 @@ function SabiBotChatContent() {
       setMessages(prev => prev.map(m => (m.id === assistantMessage.id ? { ...m, content } : m)))
 
     try {
-      const response = await fetch('/api/sabibot', {
+      const response = await authFetch('/api/sabibot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

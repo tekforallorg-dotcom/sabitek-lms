@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyAndCreditTopup } from '@/lib/wallet/topup'
+import { requireUser } from '@/lib/api-auth'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,10 +11,15 @@ const supabaseAdmin = createClient(
 // POST - Initialize Paystack payment for wallet top-up
 export async function POST(request: NextRequest) {
   try {
-    const { amount, userId, email, callback_url } = await request.json()
+    // The wallet being topped up is the signed-in caller's.
+    const auth = await requireUser(request)
+    if ('error' in auth) return auth.error
+    const userId = auth.user.id
+    const email = auth.user.email
 
-    // Validate required fields
-    if (!userId || !email) {
+    const { amount, callback_url } = await request.json()
+
+    if (!email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -57,7 +64,12 @@ export async function POST(request: NextRequest) {
 
     if (txError) {
       console.error('Transaction insert error:', txError)
-      // Continue anyway - we can reconcile later
+      // Without this record the payment could never be credited, so stop
+      // before the user is sent to pay.
+      return NextResponse.json(
+        { error: 'Could not start the top-up. Please try again.' },
+        { status: 500 }
+      )
     }
 
     // Initialize Paystack payment
@@ -148,63 +160,29 @@ export async function GET(request: NextRequest) {
     const reference = searchParams.get('reference')
 
     if (verify === 'true' && reference) {
-      // Verify payment with Paystack
-      const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        },
+      // Same single-use, owner-checked path as /api/sabiwrite/billing/verify.
+      const result = await verifyAndCreditTopup({
+        reference,
+        userId: user.id,
+        service: 'sabiwrite',
       })
 
-      const verifyData = await verifyResponse.json()
-
-      if (verifyData.status && verifyData.data.status === 'success') {
-        const amountKobo = verifyData.data.amount
-
-        // Update transaction status
-        await supabaseAdmin
-          .from('wallet_transactions')
-          .update({ 
-            status: 'completed',
-            completed_at: new Date().toISOString()
-          })
-          .eq('reference', reference)
-
-        // Credit wallet
-        const { data: wallet } = await supabaseAdmin
-          .from('wallet_accounts')
-          .select('balance_kobo')
-          .eq('user_id', user.id)
-          .single()
-
-        if (wallet) {
-          await supabaseAdmin
-            .from('wallet_accounts')
-            .update({ 
-              balance_kobo: wallet.balance_kobo + amountKobo,
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', user.id)
-        } else {
-          // Create wallet if doesn't exist
-          await supabaseAdmin
-            .from('wallet_accounts')
-            .insert({
-              user_id: user.id,
-              balance_kobo: amountKobo,
-            })
-        }
-
+      if (result.outcome === 'credited' || result.outcome === 'already_processed') {
         return NextResponse.json({
           verified: true,
-          amount_kobo: amountKobo,
-          message: 'Payment successful! Wallet credited.'
-        })
-      } else {
-        return NextResponse.json({
-          verified: false,
-          message: 'Payment verification failed'
+          amount_kobo: result.amountKobo,
+          already_processed: result.outcome === 'already_processed',
+          message:
+            result.outcome === 'credited'
+              ? 'Payment successful! Wallet credited.'
+              : 'Payment already verified and credited.',
         })
       }
+
+      return NextResponse.json({
+        verified: false,
+        message: 'Payment verification failed',
+      })
     }
 
     const offset = (page - 1) * limit

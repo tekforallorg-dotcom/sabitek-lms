@@ -24,7 +24,7 @@ export async function GET(
     // Fetch user basic info
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
-      .select('id, full_name, email, avatar_url')
+      .select('id, full_name, avatar_url')
       .eq('id', mentorId)
       .single()
 
@@ -108,7 +108,6 @@ export async function GET(
     const mentorData = {
       user_id: user.id,
       full_name: user.full_name,
-      email: user.email,
       avatar_url: user.avatar_url,
       // Community profile fields
       username: communityProfile?.username || null,
