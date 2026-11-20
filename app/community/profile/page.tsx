@@ -431,7 +431,7 @@ export default function CommunityProfilePage() {
                   onChange={(e) => setFormData({ ...formData, is_available_to_mentor: e.target.checked })}
                   className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                 />
-                <span className="text-xs sm:text-sm text-gray-700">I'm available to mentor others</span>
+                <span className="text-xs sm:text-sm text-gray-700">I&apos;m available to mentor others</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -440,7 +440,7 @@ export default function CommunityProfilePage() {
                   onChange={(e) => setFormData({ ...formData, is_looking_to_learn: e.target.checked })}
                   className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                 />
-                <span className="text-xs sm:text-sm text-gray-700">I'm looking to learn new skills</span>
+                <span className="text-xs sm:text-sm text-gray-700">I&apos;m looking to learn new skills</span>
               </label>
             </div>
           </div>
@@ -527,7 +527,7 @@ export default function CommunityProfilePage() {
                 <BookOpen className="w-5 h-5 text-blue-500" />
                 Skills I Want to Learn
               </CardTitle>
-              <CardDescription className="text-xs">Skills you're interested in learning</CardDescription>
+              <CardDescription className="text-xs">Skills you&apos;re interested in learning</CardDescription>
             </div>
             <Button
               onClick={() => { setAddSkillType('learn'); setShowAddSkillModal(true); }}

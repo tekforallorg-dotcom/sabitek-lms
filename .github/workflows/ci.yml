@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   verify:
-    name: Type-check, test and build
+    name: Type-check, lint, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,6 +32,11 @@ jobs:
 
       - name: Type-check
         run: npx tsc --noEmit -p .
+
+      # Fails on any lint error, and if warnings exceed the baseline set in
+      # package.json (--max-warnings). The baseline may only go down.
+      - name: Lint
+        run: npm run lint
 
       - name: Unit tests
         run: npm test
@@ -54,6 +59,3 @@ jobs:
           PAYSTACK_SECRET_KEY: placeholder
           PAYSTACK_PUBLIC_KEY: placeholder
           CRON_SECRET: placeholder
-
-# Lint is intentionally not a gate yet: the codebase has several hundred
-# existing lint errors. It becomes a required step once those are cleared.

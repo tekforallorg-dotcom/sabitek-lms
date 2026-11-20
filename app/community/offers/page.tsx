@@ -283,7 +283,7 @@ export default function OffersPage() {
 
                         {/* Offer message */}
                         {offer.message && (
-                          <p className="mt-2 text-sm text-gray-600 italic">"{offer.message}"</p>
+                          <p className="mt-2 text-sm text-gray-600 italic">&quot;{offer.message}&quot;</p>
                         )}
 
                         {/* Actions */}

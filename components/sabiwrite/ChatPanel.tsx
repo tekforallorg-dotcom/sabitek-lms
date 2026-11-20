@@ -582,7 +582,7 @@ export default function ChatPanel({
               <div className="flex flex-wrap gap-2">
                 {plagiarismResult.commonPhrases.slice(0, 5).map((phrase, i) => (
                   <span key={i} className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
-                    "{phrase}"
+                    &quot;{phrase}&quot;
                   </span>
                 ))}
               </div>

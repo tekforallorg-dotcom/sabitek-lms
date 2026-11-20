@@ -403,7 +403,7 @@ export default function FAQPage() {
               Still need help?
             </h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Can't find the answer you're looking for? Our support team is here to help you with any questions about Sabitek.
+              Can&apos;t find the answer you&apos;re looking for? Our support team is here to help you with any questions about Sabitek.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

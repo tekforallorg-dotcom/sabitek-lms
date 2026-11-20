@@ -600,7 +600,7 @@ export default function InstructorBillingPage() {
                   <ShoppingCart className="w-8 h-8 text-gray-400" />
                 </div>
                 <p className="text-sm font-medium text-gray-600">No sales yet</p>
-                <p className="text-xs text-gray-400 mt-1">When students purchase your courses, they'll appear here</p>
+                <p className="text-xs text-gray-400 mt-1">When students purchase your courses, they&apos;ll appear here</p>
               </div>
             ) : (
               <div className="overflow-x-auto">

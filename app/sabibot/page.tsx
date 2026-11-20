@@ -208,7 +208,7 @@ export default function SabiBotPage() {
                   onClick={() => handleStartChat(prompt)}
                   className="text-xs bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 px-3 py-1.5 rounded-lg text-gray-700 hover:text-red-700 transition-colors"
                 >
-                  "{prompt.length > 40 ? prompt.slice(0, 40) + '...' : prompt}"
+                  &quot;{prompt.length > 40 ? prompt.slice(0, 40) + '...' : prompt}&quot;
                 </button>
               ))}
             </div>

@@ -95,7 +95,7 @@ export default function ContactPage() {
             Get in touch
           </h1>
           <p className="text-base text-gray-600 max-w-xl mx-auto">
-            Select a topic below, fill in your details, and we'll get back to you as soon as possible.
+            Select a topic below, fill in your details, and we&apos;ll get back to you as soon as possible.
           </p>
         </div>
       </section>
@@ -218,7 +218,7 @@ export default function ContactPage() {
                 <div className="flex items-center gap-2 text-green-800">
                   <CheckCircle className="w-5 h-5" />
                   <p className="text-sm font-medium">
-                    Thank you! Your message has been sent successfully. We'll get back to you within 1-2 working days.
+                    Thank you! Your message has been sent successfully. We&apos;ll get back to you within 1-2 working days.
                   </p>
                 </div>
               </div>
@@ -274,8 +274,8 @@ export default function ContactPage() {
               <h3 className="font-semibold text-gray-900 mb-3">Learners</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• How do I enrol in a course?</li>
-                <li>• I can't log in to my account</li>
-                <li>• My certificate won't download</li>
+                <li>• I can&apos;t log in to my account</li>
+                <li>• My certificate won&apos;t download</li>
               </ul>
             </div>
 

@@ -730,7 +730,7 @@ function ExplosionOverlay({ onComplete }: { onComplete: () => void }) {
           <span className="text-6xl" style={{ animation: 'alarmShake 0.2s ease-in-out infinite' }}>⏰</span>
         </div>
         <p className="text-white text-4xl font-bold mt-6 flex items-center justify-center gap-1">
-          Time's Up<span className="text-red-500">!</span>
+          Time&apos;s Up<span className="text-red-500">!</span>
         </p>
         <button
           onClick={onComplete}

@@ -84,7 +84,7 @@ export default function ActivityFeed({ activities, loading }: ActivityFeedProps)
               <span className="text-gray-600">{getActionLabel(activity.action)}</span>
             </p>
             {activity.reason && (
-              <p className="text-xs text-gray-500 mt-1 italic">"{activity.reason}"</p>
+              <p className="text-xs text-gray-500 mt-1 italic">&quot;{activity.reason}&quot;</p>
             )}
             <p className="text-xs text-gray-400 mt-1">
               {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}

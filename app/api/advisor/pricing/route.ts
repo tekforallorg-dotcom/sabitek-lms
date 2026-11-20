@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const operation = searchParams.get('operation') as AdvisorOperationType | null
-    const module = searchParams.get('module') as AdvisorModule | null
+    const moduleName = searchParams.get('module') as AdvisorModule | null
 
     if (operation) {
       // Get pricing for specific operation
@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(estimate)
     }
 
-    if (module) {
+    if (moduleName) {
       // Get all pricing for a module
-      const pricing = await getModulePricing(supabaseAdmin, module)
+      const pricing = await getModulePricing(supabaseAdmin, moduleName)
       return NextResponse.json({ pricing })
     }
 
