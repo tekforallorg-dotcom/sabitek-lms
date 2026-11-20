@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 
     const notesData = notesRes.data
     const noteText = notesData
-      ? notesData.notes || notesData.content || notesData.note_content || ''
+      ? notesData.notes || notesData.content || ''
       : ''
 
     return apiSuccess({

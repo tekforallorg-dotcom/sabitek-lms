@@ -285,7 +285,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           invited_by: user.id,
           removed_by: null,
           removed_at: null,
-          notes: null,
         })
         .eq('id', existing.id)
         .select()

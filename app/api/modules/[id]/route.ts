@@ -3,6 +3,7 @@ import { validateBody, extractBearerToken } from '@/lib/validations'
 import { updateModuleSchema } from '@/lib/validations/module'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import type { TablesUpdate } from '@/types/supabase'
 
 
 async function canManageCourse(userId: string, courseId: string): Promise<boolean> {
@@ -67,7 +68,7 @@ export async function PATCH(
 
     const { data: updated, error: updateError } = await supabaseAdmin
       .from('modules')
-      .update(updatePayload)
+      .update(updatePayload as TablesUpdate<'modules'>)
       .eq('id', id)
       .select()
       .single()

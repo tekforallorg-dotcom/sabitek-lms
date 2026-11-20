@@ -126,7 +126,6 @@ async function handleSubscriptionPurchase(
       plan_id: planId,
       status: 'active',
       provider: 'paystack',
-      provider_transaction_id: String(data.id),
       provider_customer_id: data.customer?.customer_code,
       current_period_start: periodStart.toISOString(),
       current_period_end: periodEnd.toISOString(),
@@ -199,10 +198,13 @@ async function handleCoursePurchase(
     .insert({
       user_id: userId,
       course_id: courseId,
-      transaction_id: reference,
+      provider: 'paystack',
+      provider_tx_ref: reference,
+      provider_transaction_id: String(data.id),
       amount: data.amount / 100,
       currency: data.currency || 'NGN',
       status: 'successful',
+      purchased_at: new Date().toISOString(),
     })
 
   await supabaseAdmin

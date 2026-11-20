@@ -3,6 +3,7 @@ import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 
 /* ── Zod schemas ── */
@@ -426,7 +427,7 @@ async function writeAuditLog(
       action,
       entity_type: entityType,
       entity_id: entityId,
-      new_state: newState,
+      after: toJson(newState),
     })
   } catch (err: unknown) {
     // Non-blocking: log but don't fail the request

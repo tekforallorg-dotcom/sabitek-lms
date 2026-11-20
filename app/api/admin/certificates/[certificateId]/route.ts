@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { supabase } from '@/lib/supabase'
 import { createAuditLog } from '@/lib/audit-logger'
+import type { TablesUpdate } from '@/types/supabase'
 
 export async function PATCH(
   request: NextRequest,
@@ -78,7 +79,7 @@ export async function PATCH(
     // Update certificate
     const { error: updateError } = await supabaseAdmin
       .from('certificates')
-      .update(updates)
+      .update(updates as TablesUpdate<'certificates'>)
       .eq('id', certificateId)
 
     if (updateError) {

@@ -138,7 +138,7 @@ export async function POST(
     }
 
     // ── 6. Determine member status based on cohort enrollment_mode ──
-    let memberStatus: string
+    let memberStatus: 'pending_approval' | 'active'
     let appliedAt: string | null = null
     let joinedAt: string | null = null
 

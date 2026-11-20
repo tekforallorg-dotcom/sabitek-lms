@@ -36,6 +36,7 @@ export async function computeProgramCourseStates(
       .in('course_id', courseIds)
     const lessonsByCourse = new Map<string, string[]>()
     for (const l of lessons || []) {
+      if (!l.course_id) continue
       const list = lessonsByCourse.get(l.course_id) || []
       list.push(l.id)
       lessonsByCourse.set(l.course_id, list)

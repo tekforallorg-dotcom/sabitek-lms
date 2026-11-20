@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       activeUsersSet.add(enrollment.user_id)
       
       // Check if in last 24 hours for DAU
-      const enrolledAt = new Date(enrollment.enrolled_at)
+      const enrolledAt = new Date(enrollment.enrolled_at ?? 0)
       if (enrolledAt >= oneDayAgo) {
         dauSet.add(enrollment.user_id)
       }
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       activeUsersSet.add(progress.user_id)
       
       // Check if in last 24 hours for DAU
-      const completedAt = new Date(progress.completed_at)
+      const completedAt = new Date(progress.completed_at ?? 0)
       if (completedAt >= oneDayAgo) {
         dauSet.add(progress.user_id)
       }
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
     cumulativeUsers = existingUsers || 0
 
     usersData.data?.forEach(user => {
-      const date = new Date(user.created_at).toISOString().split('T')[0]
+      const date = new Date(user.created_at ?? 0).toISOString().split('T')[0]
       userGrowthByDay[date] = (userGrowthByDay[date] || 0) + 1
     })
 
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
     // Process enrollment trends by day
     const enrollmentsByDay: Record<string, number> = {}
     enrollmentsData.data?.forEach(enrollment => {
-      const date = new Date(enrollment.enrolled_at).toISOString().split('T')[0]
+      const date = new Date(enrollment.enrolled_at ?? 0).toISOString().split('T')[0]
       enrollmentsByDay[date] = (enrollmentsByDay[date] || 0) + 1
     })
 

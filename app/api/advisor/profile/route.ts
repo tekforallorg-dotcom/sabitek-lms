@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import type { TablesUpdate } from '@/types/supabase'
 
 
 /**
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
     const { data: profile, error } = await supabaseAdmin
       .from('career_profiles')
-      .update(updateData)
+      .update(updateData as TablesUpdate<'career_profiles'>)
       .eq('user_id', user.id)
       .select('*')
       .single()

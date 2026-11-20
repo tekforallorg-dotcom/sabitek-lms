@@ -19,7 +19,8 @@
 import { NextRequest } from 'next/server';
 import { getMobilePrice, type MobileToolType } from '@/lib/sabiwrite/mobile-pricing';
 import { type ToneType, type ToolType } from '@/lib/sabiwrite/types';
-import { supabaseAdmin } from '@/lib/supabase-admin'
+// Untyped on purpose: this area is scheduled for removal or rebuild (rework phase 3).
+import { supabaseAdminUntyped as supabaseAdmin } from '@/lib/supabase-admin'
 
 
 /** Max tokens for AI output — 16384 supports ~12k words of output */

@@ -158,7 +158,6 @@ export async function POST(
             invited_by: user.id,
             removed_by: null,
             removed_at: null,
-            notes: null,
           })
           .eq('cohort_id', cohortId)
           .eq('user_id', foundUser.id)

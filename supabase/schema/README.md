@@ -33,8 +33,15 @@ import type { Tables } from '@/types/supabase'
 type Course = Tables<'courses'>
 ```
 
-The shared clients (`lib/supabase.ts`, `lib/supabase-admin.ts`) are not yet
-typed with `Database`. Turning that on surfaces about 155 type errors across
-50 files, most of them real mismatches between the code and the schema. They
-are being fixed area by area; until then, use the row types explicitly as
-above.
+The server-side client (`supabaseAdmin` in `lib/supabase-admin.ts`) is typed
+with `Database`, so a query that names a table or column that does not exist
+fails the type-check and CI instead of failing silently in production.
+
+Two deliberate gaps:
+
+- `supabaseAdminUntyped` is the same client without types. It is used only by
+  areas scheduled for removal or rebuild (SabiWrite, the mobile API, Community,
+  SabiQuiz) and by the one admin query whose table name is chosen at runtime.
+  Do not use it in new code.
+- The browser client (`lib/supabase.ts`) is not typed yet. Typing it surfaces
+  about 80 more mismatches in page components, which are being reworked.

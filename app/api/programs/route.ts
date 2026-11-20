@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       action: 'program.created',
       entity_type: 'program',
       entity_id: program.id,
-      new_state: program,
+      after: program,
     })
 
     return apiSuccess(program, 201)

@@ -7,10 +7,13 @@ import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 // Bound the prompt so one request cannot run up an arbitrary bill.
 const MAX_LESSON_CHARS = 12000
 
-// One-time generation per lesson (cached in lesson_summaries), so this
-// is a publish-time cost, not a per-learner cost. Runs on DeepSeek
-// (mirrors the SabiBot pattern): the OpenAI SDK pointed at DeepSeek's
-// OpenAI-compatible endpoint.
+const SUMMARY_MODEL = 'deepseek-chat'
+
+// One generation per lesson: the summary is cached in lesson_ai_artifacts and
+// served to every later learner, so this is a per-lesson cost, not a
+// per-learner one. Instructors clear it via /api/ai/invalidate-lesson when the
+// lesson changes. Runs on DeepSeek (mirrors the SabiBot pattern): the OpenAI
+// SDK pointed at DeepSeek's OpenAI-compatible endpoint.
 const openai = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
   baseURL: 'https://api.deepseek.com',
@@ -23,17 +26,17 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const lessonId: string | undefined = body.lessonId
-    const contentType: string | undefined = body.contentType
-    const content = typeof body.content === 'string' ? body.content.slice(0, MAX_LESSON_CHARS) : ''
 
     if (!lessonId) {
       return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
     }
 
-    // Verify the lesson exists and the caller may read it
+    // The lesson's content and type are read here, on the server. They are not
+    // taken from the request: the result is cached for everyone, so a caller
+    // must not be able to choose what gets summarised.
     const { data: lesson, error: lessonError } = await supabaseAdmin
       .from('lessons')
-      .select('id, title, course_id')
+      .select('id, title, course_id, content, content_type')
       .eq('id', lessonId)
       .single()
 
@@ -44,45 +47,48 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
+    if (!lesson.course_id || !(await canAccessCourseContent(auth.user.id, lesson.course_id))) {
       return NextResponse.json({ error: 'You do not have access to this lesson' }, { status: 403 })
     }
 
-    // Check if summary already exists
-    const { data: existingSummary } = await supabaseAdmin
-      .from('lesson_summaries')
+    // Serve the cached summary if there is one.
+    const { data: cached } = await supabaseAdmin
+      .from('lesson_ai_artifacts')
       .select('summary')
       .eq('lesson_id', lessonId)
-      .single()
+      .maybeSingle()
 
-    if (existingSummary) {
-      return NextResponse.json({ summary: existingSummary.summary })
+    if (cached?.summary) {
+      return NextResponse.json({ summary: cached.summary })
     }
+
+    const contentType = lesson.content_type || 'text'
+    const content = (lesson.content || '').slice(0, MAX_LESSON_CHARS)
 
     // Generate summary based on content type
     let prompt = ''
-    
-    if (contentType === 'text') {
-      prompt = `Summarize the following lesson content in a clear, concise manner suitable for students. 
-      Focus on key concepts, main points, and important takeaways. 
+
+    if (contentType === 'text' && content) {
+      prompt = `Summarize the following lesson content in a clear, concise manner suitable for students.
+      Focus on key concepts, main points, and important takeaways.
       Keep it under 200 words and use bullet points where appropriate.
-      
+
       Lesson content: ${content}`
     } else if (contentType === 'youtube') {
-      prompt = `This is a video lesson. Since we cannot process the video content directly, 
+      prompt = `This is a video lesson. Since we cannot process the video content directly,
       please provide a generic structure for what students should focus on when watching the video:
       - Key points to watch for
       - Suggested note-taking approach
       - How to identify important concepts
-      
+
       Video Title: ${lesson.title}`
     } else {
-      prompt = `Create a brief overview for this ${contentType} lesson titled "${lesson.title}". 
+      prompt = `Create a brief overview for this ${contentType} lesson titled "${lesson.title}".
       Include what students should focus on and how to approach this type of content.`
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'deepseek-chat',
+      model: SUMMARY_MODEL,
       max_tokens: 500,
       temperature: 0.7,
       messages: [
@@ -97,14 +103,23 @@ export async function POST(req: NextRequest) {
 
     const summary = completion.choices[0]?.message?.content || ''
 
-    // Store the summary for future use
-    await supabaseAdmin
-      .from('lesson_summaries')
-      .insert({
-        lesson_id: lessonId,
-        summary: summary,
-        generated_at: new Date().toISOString()
-      })
+    // Cache it for the next learner. A failed write only costs a regeneration.
+    if (summary) {
+      const { error: cacheError } = await supabaseAdmin
+        .from('lesson_ai_artifacts')
+        .upsert(
+          {
+            lesson_id: lessonId,
+            summary,
+            model: SUMMARY_MODEL,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'lesson_id' }
+        )
+      if (cacheError) {
+        console.error('Could not cache lesson summary:', cacheError.message)
+      }
+    }
 
     return NextResponse.json({ summary })
   } catch (error) {

@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
           joined_at: new Date().toISOString(),
           removed_by: null,
           removed_at: null,
-          notes: null,
         })
         .eq('id', existing.id)
         .select('id, cohort_id, status')

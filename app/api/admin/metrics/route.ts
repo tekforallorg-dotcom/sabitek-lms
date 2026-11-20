@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { supabaseAdmin, supabaseAdminUntyped } from '@/lib/supabase-admin'
 
 // DeepSeek + Claude Haiku pricing for the spend estimate (USD per 1M tokens)
 const PRICES: Record<string, { input: number; cached: number; output: number }> = {
@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
     monthStart.setHours(0, 0, 0, 0)
 
     const count = (table: string, filter?: (q: any) => any) => {
-      let q = supabaseAdmin.from(table).select('id', { count: 'exact', head: true })
+      // Table name is chosen at runtime, so this one query is untyped.
+      let q = supabaseAdminUntyped.from(table).select('id', { count: 'exact', head: true })
       if (filter) q = filter(q)
       return q
     }

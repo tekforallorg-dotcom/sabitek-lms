@@ -4,6 +4,7 @@ import { createInstitutionSchema, institutionQuerySchema } from '@/lib/validatio
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { getDefaultPacks, type InstitutionVerticalType } from '@/lib/vertical-packs'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { toJson } from '@/lib/db-json'
 
 
 /**
@@ -137,11 +138,11 @@ export async function POST(request: NextRequest) {
          vertical_metadata: input.vertical_metadata || {},
         status: 'pending',
         created_by: user.id,
-        terminology_pack: packs.terminology_pack,
-        kpi_pack: packs.kpi_pack,
-        onboarding_pack: packs.onboarding_pack,
-        reporting_pack: packs.reporting_pack,
-        required_fields_pack: packs.required_fields_pack,
+        terminology_pack: toJson(packs.terminology_pack),
+        kpi_pack: toJson(packs.kpi_pack),
+        onboarding_pack: toJson(packs.onboarding_pack),
+        reporting_pack: toJson(packs.reporting_pack),
+        required_fields_pack: toJson(packs.required_fields_pack),
       })
       .select()
       .single()

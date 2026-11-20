@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         })
       } else {
         const daysSinceCreated = Math.floor(
-          (Date.now() - new Date(course.created_at).getTime()) / (1000 * 60 * 60 * 24)
+          (Date.now() - new Date(course.created_at ?? 0).getTime()) / (1000 * 60 * 60 * 24)
         )
         score = Math.max(0, 10 - daysSinceCreated)
       }
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
         if (b.relevance_score !== a.relevance_score) {
           return b.relevance_score - a.relevance_score
         }
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
       })
       .slice(0, 3) // TOP 3 ONLY
 

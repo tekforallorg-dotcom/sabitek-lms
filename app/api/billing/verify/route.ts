@@ -151,14 +151,13 @@ export async function POST(request: NextRequest) {
       periodEnd.setMonth(periodEnd.getMonth() + 1)
 
       // Create/update subscription
-      await supabaseAdmin
+      const { error: subscriptionError } = await supabaseAdmin
         .from('subscriptions')
         .upsert({
           user_id: userId,
           plan_id: planId,
           status: 'active',
           provider: 'paystack',
-          provider_transaction_id: String(txData.id),
           provider_customer_id: txData.customer?.customer_code,
           current_period_start: periodStart.toISOString(),
           current_period_end: periodEnd.toISOString(),
@@ -167,6 +166,20 @@ export async function POST(request: NextRequest) {
         }, {
           onConflict: 'user_id',
         })
+
+      if (subscriptionError) {
+        // The payment is real and already claimed; say so plainly rather than
+        // reporting success with no subscription behind it.
+        console.error('Subscription activation failed after payment', {
+          reference,
+          userId,
+          error: subscriptionError.message,
+        })
+        return NextResponse.json(
+          { error: 'Payment received but the subscription could not be activated. Please contact support.' },
+          { status: 500 }
+        )
+      }
 
       // Grant entitlements for Pro plan
       if (planCode === 'pro') {

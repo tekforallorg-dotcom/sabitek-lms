@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         .eq('course_id', courseId),
       supabaseAdmin
         .from('course_enrollments')
-        .select('user_id, created_at, users(full_name, email)')
+        .select('user_id, enrolled_at, users(full_name, email)')
         .eq('course_id', courseId),
     ])
 
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
       weeks.push({ week: label, count: 0 })
     }
     for (const e of enrollments) {
-      const age = Math.floor((Date.now() - new Date(e.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000))
+      const age = Math.floor((Date.now() - new Date(e.enrolled_at ?? 0).getTime()) / (7 * 24 * 60 * 60 * 1000))
       if (age >= 0 && age < 12) weeks[11 - age].count++
     }
 

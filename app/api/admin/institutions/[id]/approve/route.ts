@@ -3,6 +3,7 @@ import { validateBody, extractBearerToken } from '@/lib/validations'
 import { approveInstitutionSchema } from '@/lib/validations/institution'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import type { TablesUpdate } from '@/types/supabase'
 
 
 async function isPlatformAdmin(userId: string): Promise<boolean> {
@@ -80,7 +81,7 @@ export async function POST(
     // 7. Update institution
     const { data: updated, error: updateError } = await supabaseAdmin
       .from('institutions')
-      .update(updateData)
+      .update(updateData as TablesUpdate<'institutions'>)
       .eq('id', id)
       .select(`
         *,

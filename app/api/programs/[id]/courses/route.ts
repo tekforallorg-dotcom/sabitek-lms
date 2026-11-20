@@ -213,7 +213,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         action: 'program.course_added',
         entity_type: 'program',
         entity_id: programId,
-        new_state: { course_id, course_title: course.title, is_required, position: finalPosition },
+        after: { course_id, course_title: course.title, is_required, position: finalPosition },
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)
@@ -297,7 +297,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         action: 'program.course_removed',
         entity_type: 'program',
         entity_id: programId,
-        old_state: { course_id },
+        before: { course_id },
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)

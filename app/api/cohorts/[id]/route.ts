@@ -109,7 +109,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         
         membersWithUsers = (members || []).map(m => ({
           ...m,
-          user: usersMap.get(memberLinkMap.get(m.id)) || null
+          user: usersMap.get(memberLinkMap.get(m.id) ?? '') || null
         }))
       } else {
         membersWithUsers = members || []
@@ -214,8 +214,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         action: 'cohort.updated',
         entity_type: 'cohort',
         entity_id: cohort.id,
-        old_state: existingCohort,
-        new_state: cohort,
+        before: existingCohort,
+        after: cohort,
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)
@@ -292,7 +292,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         action: 'cohort.archived',
         entity_type: 'cohort',
         entity_id: id,
-        old_state: existingCohort,
+        before: existingCohort,
       })
     } catch (auditErr) {
       console.log('Audit log insert failed (non-fatal):', auditErr)

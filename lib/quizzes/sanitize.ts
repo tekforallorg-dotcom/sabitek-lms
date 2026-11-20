@@ -16,6 +16,9 @@ export function parseQuizQuestions(raw: unknown): any[] {
   return Array.isArray(qs) ? qs : []
 }
 
+/** Used when a quiz row has no pass mark set. Matches check_course_completion(). */
+const DEFAULT_PASS_PERCENTAGE = 70
+
 export interface SanitizedQuiz {
   id: string
   lesson_id: string
@@ -65,6 +68,7 @@ export async function getSanitizedLessonQuiz(
   const quizLessonIds = (quizRows || [])
     .filter((q) => parseQuizQuestions(q.questions).length > 0)
     .map((q) => q.lesson_id)
+    .filter((id): id is string => !!id)
 
   const current = (quizRows || []).find((q) => q.lesson_id === lessonId) || null
   let quiz: SanitizedQuiz | null = null
@@ -73,10 +77,10 @@ export async function getSanitizedLessonQuiz(
     if (questions.length > 0) {
       quiz = {
         id: current.id,
-        lesson_id: current.lesson_id,
+        lesson_id: lessonId,
         title: current.title,
         description: null, // the quizzes table has no description column
-        pass_percentage: current.pass_percentage,
+        pass_percentage: current.pass_percentage ?? DEFAULT_PASS_PERCENTAGE,
         time_limit: current.time_limit_minutes,
         questions: questions.map((q: any, i: number) => ({
           id: q.id || `q-${i}`,
