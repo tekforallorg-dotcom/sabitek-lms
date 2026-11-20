@@ -1,11 +1,15 @@
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { creditWallet, type WalletService } from '@/lib/wallet'
+import type { WalletService } from '@/lib/wallet'
 
 const PAYSTACK_VERIFY_URL = 'https://api.paystack.co/transaction/verify/'
 
+// Keep in step with FREE_TRIAL_BALANCE_KOBO in lib/wallet/index.ts: a top-up
+// can be the first thing that touches a wallet.
+const WELCOME_BONUS_KOBO = 50000
+
 export type TopupResult =
   /** This call credited the wallet. */
-  | { outcome: 'credited'; amountKobo: number; newBalance: number }
+  | { outcome: 'credited'; amountKobo: number; newBalance: number; userId: string }
   /** The reference was credited earlier; nothing was changed. */
   | { outcome: 'already_processed'; amountKobo: number }
   /** No top-up with this reference belongs to the caller. */
@@ -19,18 +23,93 @@ export type TopupResult =
   /** Payment is good but the balance update failed; safe to retry. */
   | { outcome: 'credit_failed'; amountKobo: number; error?: string }
 
+interface PaystackPayment {
+  status: string
+  amount: number
+  currency?: string
+  channel?: string
+  paid_at?: string
+}
+
 /**
- * Verify a Paystack wallet top-up and credit it to the caller exactly once.
+ * Record a confirmed Paystack payment against its top-up and credit the wallet.
  *
- * Every wallet top-up route goes through here. A credit happens only when all
- * of these hold:
- *   1. a `wallet_transactions` row for the reference exists and belongs to the
- *      caller (so course, subscription and other users' payments are rejected);
- *   2. Paystack reports the payment as successful;
- *   3. the amount and currency paid match that row;
- *   4. this call is the one that moves the row to `completed`. That is a single
- *      UPDATE guarded on the current status, so replays and concurrent calls
- *      cannot both win.
+ * This is a single database call (`wallet_complete_topup`): the top-up is
+ * marked complete and the wallet is credited in one transaction, or neither
+ * happens. Replays and concurrent calls for the same reference credit once.
+ *
+ * `expectedUserId` restricts the top-up to that user. The Paystack webhook has
+ * no signed-in user and passes null; the owner then comes from the top-up row
+ * this app created when the payment was started.
+ */
+async function completeTopup(params: {
+  reference: string
+  payment: PaystackPayment
+  expectedUserId: string | null
+  service: WalletService
+}): Promise<TopupResult> {
+  const { reference, payment, expectedUserId, service } = params
+
+  if ((payment.currency || 'NGN') !== 'NGN') {
+    console.error('Wallet top-up in unexpected currency', { reference, currency: payment.currency })
+    return { outcome: 'mismatch' }
+  }
+
+  const { data, error } = await supabaseAdmin.rpc('wallet_complete_topup', {
+    p_reference: reference,
+    p_paid_kobo: payment.amount,
+    p_expected_user: expectedUserId ?? undefined,
+    p_service: service,
+    p_metadata: {
+      paystack_status: payment.status,
+      channel: payment.channel ?? null,
+      paid_at: payment.paid_at ?? null,
+    },
+    p_welcome_bonus_kobo: WELCOME_BONUS_KOBO,
+  })
+
+  if (error || !data) {
+    // The function rolled back: the top-up is still pending and can be retried.
+    console.error('Wallet top-up could not be completed:', error?.message)
+    return { outcome: 'credit_failed', amountKobo: payment.amount, error: 'Could not record the payment' }
+  }
+
+  const result = data as {
+    outcome: 'credited' | 'already_processed' | 'not_found' | 'mismatch'
+    amount_kobo?: number
+    new_balance?: number
+    user_id?: string
+  }
+
+  switch (result.outcome) {
+    case 'credited':
+      return {
+        outcome: 'credited',
+        amountKobo: result.amount_kobo ?? payment.amount,
+        newBalance: result.new_balance ?? 0,
+        userId: result.user_id ?? '',
+      }
+    case 'already_processed':
+      return { outcome: 'already_processed', amountKobo: result.amount_kobo ?? payment.amount }
+    case 'mismatch':
+      console.error('Wallet top-up mismatch', {
+        reference,
+        expectedKobo: result.amount_kobo,
+        paidKobo: payment.amount,
+      })
+      return { outcome: 'mismatch' }
+    default:
+      return { outcome: 'not_found' }
+  }
+}
+
+/**
+ * Verify a Paystack wallet top-up with Paystack and credit it to the signed-in
+ * caller exactly once. Used by the routes the browser returns to after paying.
+ *
+ * A credit happens only when a top-up row for the reference exists and belongs
+ * to the caller, Paystack reports the payment as successful, and the amount
+ * and currency match that row.
  */
 export async function verifyAndCreditTopup(params: {
   reference: string
@@ -39,9 +118,10 @@ export async function verifyAndCreditTopup(params: {
 }): Promise<TopupResult> {
   const { reference, userId, service = 'general' } = params
 
+  // Cheap pre-check so unknown or foreign references never reach Paystack.
   const { data: tx } = await supabaseAdmin
     .from('wallet_transactions')
-    .select('id, user_id, amount_kobo, status, type')
+    .select('user_id, amount_kobo, status, type')
     .eq('reference', reference)
     .maybeSingle()
 
@@ -62,69 +142,51 @@ export async function verifyAndCreditTopup(params: {
     return { outcome: 'unverifiable' }
   }
 
-  const payment = verifyData.data
+  const payment = verifyData.data as PaystackPayment
 
   if (payment.status !== 'success') {
     await supabaseAdmin
       .from('wallet_transactions')
       .update({ status: 'failed' })
-      .eq('id', tx.id)
+      .eq('reference', reference)
       .eq('status', 'pending')
     return { outcome: 'not_successful', paystackStatus: String(payment.status) }
   }
 
-  if (payment.amount !== tx.amount_kobo || (payment.currency || 'NGN') !== 'NGN') {
-    console.error('Wallet top-up mismatch', {
-      reference,
-      expectedKobo: tx.amount_kobo,
-      paidKobo: payment.amount,
-      paidCurrency: payment.currency,
-    })
-    return { outcome: 'mismatch' }
-  }
+  return completeTopup({ reference, payment, expectedUserId: userId, service })
+}
 
-  // Claim the top-up. Only the call whose UPDATE matches a not-yet-completed
-  // row may credit the wallet.
-  const { data: claimed, error: claimError } = await supabaseAdmin
-    .from('wallet_transactions')
-    .update({ status: 'completed', completed_at: new Date().toISOString() })
-    .eq('id', tx.id)
-    .neq('status', 'completed')
-    .select('id, status')
+/**
+ * Credit a wallet top-up from a Paystack `charge.success` webhook event.
+ *
+ * The webhook is the source of truth: it arrives even if the user closes the
+ * tab before the browser returns to the verify page. The caller must have
+ * checked the webhook signature. Returns `not_found` when the reference is not
+ * a wallet top-up (for example a subscription or course payment), so the
+ * webhook handler can fall through to its other cases.
+ */
+export async function creditTopupFromWebhook(event: {
+  reference: string
+  amount: number
+  currency?: string
+  status?: string
+  channel?: string
+  paid_at?: string
+  metadata?: { transaction_type?: string } | null
+}): Promise<TopupResult> {
+  const service: WalletService =
+    event.metadata?.transaction_type === 'sabiwrite_topup' ? 'sabiwrite' : 'general'
 
-  if (claimError) {
-    console.error('Wallet top-up claim error:', claimError)
-    return { outcome: 'credit_failed', amountKobo: tx.amount_kobo, error: 'Could not record the payment' }
-  }
-
-  if (!claimed || claimed.length === 0) {
-    return { outcome: 'already_processed', amountKobo: tx.amount_kobo }
-  }
-
-  const credit = await creditWallet(supabaseAdmin, {
-    userId,
-    amountKobo: tx.amount_kobo,
-    transactionType: 'credit',
-    service,
-    referenceType: 'paystack_topup',
-    referenceId: reference,
-    description: `Wallet top-up - ₦${(tx.amount_kobo / 100).toLocaleString()}`,
-    metadata: {
-      paystack_reference: reference,
-      paystack_status: payment.status,
-      channel: payment.channel,
-      paid_at: payment.paid_at,
+  return completeTopup({
+    reference: event.reference,
+    payment: {
+      status: event.status || 'success',
+      amount: event.amount,
+      currency: event.currency,
+      channel: event.channel,
+      paid_at: event.paid_at,
     },
+    expectedUserId: null,
+    service,
   })
-
-  if (!credit.success) {
-    // Release the claim so the user (or support) can retry the verification.
-    await supabaseAdmin
-      .from('wallet_transactions')
-      .update({ status: 'pending', completed_at: null })
-      .eq('id', tx.id)
-    return { outcome: 'credit_failed', amountKobo: tx.amount_kobo, error: credit.error }
-  }
-
-  return { outcome: 'credited', amountKobo: tx.amount_kobo, newBalance: credit.newBalance }
 }

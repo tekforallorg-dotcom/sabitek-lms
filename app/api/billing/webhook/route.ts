@@ -6,6 +6,7 @@ import {
   sendPaymentFailedEmail 
 } from '@/lib/email'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { creditTopupFromWebhook } from '@/lib/wallet/topup'
 
 
 export async function POST(request: NextRequest) {
@@ -68,6 +69,27 @@ async function handleChargeSuccess(data: any) {
   const planCode = data.metadata?.plan_code
   const transactionType = data.metadata?.transaction_type || 'subscription'
   const courseId = data.metadata?.course_id
+
+  // Wallet top-ups: credit them here, from the signed webhook, so the money
+  // arrives even if the user closes the tab before the browser gets back to
+  // the verify page. Returns not_found when this payment is not a top-up.
+  const topup = await creditTopupFromWebhook({
+    reference,
+    amount: data.amount,
+    currency: data.currency,
+    status: data.status,
+    channel: data.channel,
+    paid_at: data.paid_at,
+    metadata: data.metadata,
+  })
+  if (topup.outcome !== 'not_found') {
+    if (topup.outcome === 'credit_failed' || topup.outcome === 'mismatch') {
+      // Throwing makes the webhook answer 500, so Paystack retries it.
+      throw new Error(`Wallet top-up ${reference} was not credited: ${topup.outcome}`)
+    }
+    console.log('Wallet top-up webhook:', reference, topup.outcome)
+    return
+  }
 
   if (!userId) {
     console.error('Missing user_id in charge.success metadata')

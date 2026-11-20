@@ -5267,6 +5267,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          idempotency_key: string | null
           metadata: Json | null
           reference_id: string | null
           reference_type: string | null
@@ -5283,6 +5284,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json | null
           reference_id?: string | null
           reference_type?: string | null
@@ -5299,6 +5301,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json | null
           reference_id?: string | null
           reference_type?: string | null
@@ -5540,6 +5543,40 @@ export type Database = {
         Returns: boolean
       }
       update_study_streak: { Args: { p_user_id: string }; Returns: undefined }
+          wallet_apply: {
+        Args: {
+          p_amount_kobo: number
+          p_description: string
+          p_idempotency_key?: string
+          p_metadata?: Json
+          p_reference_type?: string
+          p_service: string
+          p_service_ref_id?: string
+          p_type: string
+          p_user: string
+          p_welcome_bonus_kobo?: number
+        }
+        Returns: Json
+      }
+      wallet_complete_topup: {
+        Args: {
+          p_expected_user?: string
+          p_metadata?: Json
+          p_paid_kobo: number
+          p_reference: string
+          p_service?: string
+          p_welcome_bonus_kobo?: number
+        }
+        Returns: Json
+      }
+      wallet_ensure: {
+        Args: { p_user: string; p_welcome_bonus_kobo?: number }
+        Returns: string
+      }
+      wallet_purchase_course: {
+        Args: { p_course: string; p_user: string; p_welcome_bonus_kobo?: number }
+        Returns: Json
+      }
     }
     Enums: {
       cohort_enrollment_mode:

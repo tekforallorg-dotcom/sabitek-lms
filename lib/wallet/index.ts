@@ -81,55 +81,36 @@ export function nairaToKobo(naira: number): number {
 // ============================================
 
 /**
- * Get or create wallet for a user
- * New users get ₦500 free trial credits
+ * Get or create wallet for a user.
+ * New users get the welcome bonus (free trial credits) exactly once: the
+ * wallet row and its bonus ledger entry are created together in the database.
  */
 export async function getOrCreateWallet(
   supabase: SupabaseClient,
   userId: string
 ): Promise<WalletAccount> {
-  // Try to get existing wallet
-  const { data: existing, error: fetchError } = await supabase
+  const { error: ensureError } = await supabase.rpc('wallet_ensure', {
+    p_user: userId,
+    p_welcome_bonus_kobo: FREE_TRIAL_BALANCE_KOBO,
+  })
+
+  if (ensureError) {
+    console.error('Wallet create error:', ensureError)
+    throw new Error('Failed to create wallet')
+  }
+
+  const { data: wallet, error: fetchError } = await supabase
     .from('wallet_accounts')
     .select('*')
     .eq('user_id', userId)
     .single()
 
-  if (existing) {
-    return existing
+  if (fetchError || !wallet) {
+    console.error('Wallet fetch error:', fetchError)
+    throw new Error('Failed to load wallet')
   }
 
-  // Create new wallet with free trial balance
-  const { data: newWallet, error: createError } = await supabase
-    .from('wallet_accounts')
-    .insert({ 
-      user_id: userId, 
-      balance_kobo: FREE_TRIAL_BALANCE_KOBO 
-    })
-    .select('*')
-    .single()
-
-  if (createError || !newWallet) {
-    console.error('Wallet create error:', createError)
-    throw new Error('Failed to create wallet')
-  }
-
-  // Log the free trial credit
-  await supabase
-    .from('wallet_ledger')
-    .insert({
-      wallet_id: newWallet.id,
-      user_id: userId,
-      transaction_type: 'bonus',
-      amount_kobo: FREE_TRIAL_BALANCE_KOBO,
-      balance_before: 0,
-      balance_after: FREE_TRIAL_BALANCE_KOBO,
-      service: 'general',
-      reference_type: 'free_trial',
-      description: 'Welcome bonus - Free trial credits'
-    })
-
-  return newWallet
+  return wallet
 }
 
 /**
@@ -150,91 +131,97 @@ export async function getWalletBalance(
   }
 }
 
+// ============================================
+// BALANCE CHANGES
+// ============================================
+//
+// Every credit, debit, refund and bonus goes through the `wallet_apply`
+// database function. It locks the user's wallet row, checks the balance,
+// updates it and writes the ledger entry in ONE transaction, so:
+//   - two requests at once cannot both spend the same money;
+//   - the balance and the ledger cannot disagree;
+//   - an operation given an idempotency key is applied at most once, however
+//     many times it is retried.
+// Never update wallet_accounts.balance_kobo from application code.
+
+export interface WalletChangeResult {
+  success: boolean
+  newBalance: number
+  error?: string
+  /** The ledger entry for this change. */
+  ledgerId?: string
+  /** True when the idempotency key had already been used: nothing changed. */
+  replayed?: boolean
+}
+
+interface WalletChangeParams {
+  userId: string
+  amountKobo: number
+  service: WalletService
+  serviceRefId?: string
+  referenceType?: string
+  referenceId?: string
+  description: string
+  metadata?: Record<string, unknown>
+  /**
+   * Makes the change safe to retry. Use a key that identifies the business
+   * event, for example `debit:advisor:<operationId>`.
+   */
+  idempotencyKey?: string
+}
+
+async function applyWalletChange(
+  supabase: SupabaseClient,
+  type: TransactionType,
+  params: WalletChangeParams
+): Promise<WalletChangeResult> {
+  const { data, error } = await supabase.rpc('wallet_apply', {
+    p_user: params.userId,
+    p_amount_kobo: params.amountKobo,
+    p_type: type,
+    p_service: params.service,
+    p_description: params.description,
+    p_reference_type: params.referenceType ?? null,
+    p_service_ref_id: params.serviceRefId ?? null,
+    p_idempotency_key: params.idempotencyKey ?? null,
+    p_metadata: {
+      ...(params.metadata || {}),
+      ...(params.referenceId ? { reference_id: params.referenceId } : {}),
+    },
+    p_welcome_bonus_kobo: FREE_TRIAL_BALANCE_KOBO,
+  })
+
+  if (error || !data) {
+    console.error('Wallet change failed:', error)
+    return { success: false, newBalance: 0, error: 'Failed to update balance' }
+  }
+
+  const result = data as {
+    success?: boolean
+    new_balance?: number
+    ledger_id?: string
+    replayed?: boolean
+    error?: string
+  }
+
+  return {
+    success: !!result.success,
+    newBalance: result.new_balance ?? 0,
+    ledgerId: result.ledger_id,
+    replayed: !!result.replayed,
+    error: result.success ? undefined : result.error || 'Failed to update balance',
+  }
+}
+
 /**
- * Debit wallet for any service
+ * Debit wallet for any service. Fails with "Insufficient balance" (and changes
+ * nothing) if the wallet cannot cover it.
  */
 export async function debitWallet(
   supabase: SupabaseClient,
-  params: {
-    userId: string
-    amountKobo: number
-    service: WalletService
-    serviceRefId?: string
-    referenceType?: string
-    referenceId?: string
-    description: string
-    metadata?: Record<string, unknown>
-  }
-): Promise<{ success: boolean; newBalance: number; error?: string }> {
-  const { 
-    userId, 
-    amountKobo, 
-    service, 
-    serviceRefId,
-    referenceType, 
-    referenceId, 
-    description,
-    metadata 
-  } = params
-
-  // Get current wallet
-  const wallet = await getOrCreateWallet(supabase, userId)
-
-  if (wallet.balance_kobo < amountKobo) {
-    return {
-      success: false,
-      newBalance: wallet.balance_kobo,
-      error: 'Insufficient balance'
-    }
-  }
-
-  const balanceBefore = wallet.balance_kobo
-  const newBalance = wallet.balance_kobo - amountKobo
-
-  // Update wallet balance
-  const { error: updateError } = await supabase
-    .from('wallet_accounts')
-    .update({ 
-      balance_kobo: newBalance, 
-      updated_at: new Date().toISOString() 
-    })
-    .eq('id', wallet.id)
-
-  if (updateError) {
-    console.error('Wallet update error:', updateError)
-    return { 
-      success: false, 
-      newBalance: wallet.balance_kobo, 
-      error: 'Failed to update balance' 
-    }
-  }
-
-  // Create ledger entry
-  const { error: ledgerError } = await supabase
-    .from('wallet_ledger')
-    .insert({
-      wallet_id: wallet.id,
-      user_id: userId,
-      transaction_type: 'debit',
-      amount_kobo: amountKobo,
-      balance_before: balanceBefore,
-      balance_after: newBalance,
-      service,
-      service_ref_id: serviceRefId || null,
-      reference_type: referenceType || null,
-      description,
-      metadata: {
-        ...metadata,
-        reference_id: referenceId // Store string reference in metadata
-      }
-    })
-
-  if (ledgerError) {
-    console.error('Ledger entry error:', ledgerError)
-    // Don't fail the transaction, just log
-  }
-
-  return { success: true, newBalance }
+  params: WalletChangeParams
+): Promise<WalletChangeResult> {
+  return applyWalletChange(supabase, 'debit', params)
 }
 
 /**
@@ -242,77 +229,10 @@ export async function debitWallet(
  */
 export async function creditWallet(
   supabase: SupabaseClient,
-  params: {
-    userId: string
-    amountKobo: number
-    transactionType: 'credit' | 'refund' | 'bonus'
-    service: WalletService
-    serviceRefId?: string
-    referenceType?: string
-    referenceId?: string
-    description: string
-    metadata?: Record<string, unknown>
-  }
-): Promise<{ success: boolean; newBalance: number; error?: string }> {
-  const { 
-    userId, 
-    amountKobo, 
-    transactionType, 
-    service,
-    serviceRefId,
-    referenceType, 
-    referenceId, 
-    description,
-    metadata 
-  } = params
-
-  const wallet = await getOrCreateWallet(supabase, userId)
-  const balanceBefore = wallet.balance_kobo
-  const newBalance = wallet.balance_kobo + amountKobo
-
-  // Update wallet balance
-  const { error: updateError } = await supabase
-    .from('wallet_accounts')
-    .update({ 
-      balance_kobo: newBalance, 
-      updated_at: new Date().toISOString() 
-    })
-    .eq('id', wallet.id)
-
-  if (updateError) {
-    console.error('Wallet update error:', updateError)
-    return { 
-      success: false, 
-      newBalance: wallet.balance_kobo, 
-      error: 'Failed to update balance' 
-    }
-  }
-
-  // Create ledger entry
-  const { error: ledgerError } = await supabase
-    .from('wallet_ledger')
-    .insert({
-      wallet_id: wallet.id,
-      user_id: userId,
-      transaction_type: transactionType,
-      amount_kobo: amountKobo,
-      balance_before: balanceBefore,
-      balance_after: newBalance,
-      service,
-      service_ref_id: serviceRefId || null,
-      reference_type: referenceType || null,
-      description,
-      metadata: {
-        ...metadata,
-        reference_id: referenceId // Store string reference in metadata
-      }
-    })
-
-  if (ledgerError) {
-    console.error('Ledger entry error:', ledgerError)
-  }
-
-  return { success: true, newBalance }
+  params: WalletChangeParams & { transactionType: 'credit' | 'refund' | 'bonus' }
+): Promise<WalletChangeResult> {
+  const { transactionType, ...rest } = params
+  return applyWalletChange(supabase, transactionType, rest)
 }
 
 /**
