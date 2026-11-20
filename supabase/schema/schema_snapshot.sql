@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Sabitek database schema snapshot (public schema + storage.objects policies)
 -- =============================================================================
--- GENERATED on 2026-11-20 (after the notifications fix) from the live project by generate_snapshot.sql.
+-- GENERATED on 2026-11-20 (after the phase 2 wallet ledger migration) from the live project by generate_snapshot.sql.
 -- Do not edit by hand; re-run the generator after schema changes.
 --
 -- Why this exists: most of this schema was created by hand in the SQL editor
@@ -1462,7 +1462,8 @@ create table public.wallet_ledger (
   metadata jsonb default '{}'::jsonb,
   created_at timestamp with time zone default now(),
   service text default 'sabiwrite'::text,
-  service_ref_id uuid
+  service_ref_id uuid,
+  idempotency_key text
 );
 
 create table public.wallet_transactions (
@@ -1908,6 +1909,8 @@ alter table public.users add constraint users_pkey PRIMARY KEY (id);
 alter table public.users add constraint users_preferred_language_check CHECK ((preferred_language = ANY (ARRAY['english'::text, 'pidgin'::text, 'yoruba'::text, 'hausa'::text, 'igbo'::text])));
 
 alter table public.waitlist_signups add constraint waitlist_signups_pkey PRIMARY KEY (id);
+
+alter table public.wallet_accounts add constraint wallet_accounts_balance_nonnegative CHECK ((balance_kobo >= 0));
 
 alter table public.wallet_accounts add constraint wallet_accounts_pkey PRIMARY KEY (id);
 
@@ -2692,6 +2695,8 @@ CREATE INDEX lesson_questions_lesson_idx ON public.lesson_questions USING btree 
 CREATE INDEX notifications_user_idx ON public.notifications USING btree (user_id, created_at DESC);
 
 CREATE UNIQUE INDEX waitlist_signups_email_unique ON public.waitlist_signups USING btree (lower(email));
+
+CREATE UNIQUE INDEX wallet_ledger_user_idempotency_key ON public.wallet_ledger USING btree (user_id, idempotency_key) WHERE (idempotency_key IS NOT NULL);
 
 CREATE INDEX xp_events_user_week_idx ON public.xp_events USING btree (user_id, created_at);
 
@@ -3636,6 +3641,280 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.wallet_apply(p_user uuid, p_amount_kobo integer, p_type text, p_service text, p_description text, p_reference_type text DEFAULT NULL::text, p_service_ref_id uuid DEFAULT NULL::uuid, p_idempotency_key text DEFAULT NULL::text, p_metadata jsonb DEFAULT '{}'::jsonb, p_welcome_bonus_kobo integer DEFAULT 0)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_wallet wallet_accounts%rowtype;
+  v_existing_id uuid;
+  v_delta integer;
+  v_ledger_id uuid;
+begin
+  if p_amount_kobo is null or p_amount_kobo <= 0 then
+    return jsonb_build_object('success', false, 'error', 'Amount must be positive');
+  end if;
+
+  if p_type not in ('credit', 'debit', 'refund', 'bonus') then
+    return jsonb_build_object('success', false, 'error', 'Unknown transaction type');
+  end if;
+
+  perform wallet_ensure(p_user, p_welcome_bonus_kobo);
+
+  select * into v_wallet from wallet_accounts where user_id = p_user for update;
+
+  if p_idempotency_key is not null then
+    select id into v_existing_id
+      from wallet_ledger
+     where user_id = p_user and idempotency_key = p_idempotency_key;
+
+    if v_existing_id is not null then
+      return jsonb_build_object(
+        'success', true,
+        'replayed', true,
+        'new_balance', v_wallet.balance_kobo,
+        'ledger_id', v_existing_id
+      );
+    end if;
+  end if;
+
+  v_delta := case when p_type = 'debit' then -p_amount_kobo else p_amount_kobo end;
+
+  if v_wallet.balance_kobo + v_delta < 0 then
+    return jsonb_build_object(
+      'success', false,
+      'error', 'Insufficient balance',
+      'new_balance', v_wallet.balance_kobo
+    );
+  end if;
+
+  update wallet_accounts
+     set balance_kobo = balance_kobo + v_delta,
+         updated_at = now()
+   where id = v_wallet.id;
+
+  insert into wallet_ledger (
+    wallet_id, user_id, transaction_type, amount_kobo, balance_before, balance_after,
+    service, service_ref_id, reference_type, description, metadata, idempotency_key
+  ) values (
+    v_wallet.id, p_user, p_type, p_amount_kobo, v_wallet.balance_kobo, v_wallet.balance_kobo + v_delta,
+    p_service, p_service_ref_id, p_reference_type, p_description, coalesce(p_metadata, '{}'::jsonb), p_idempotency_key
+  )
+  returning id into v_ledger_id;
+
+  return jsonb_build_object(
+    'success', true,
+    'replayed', false,
+    'new_balance', v_wallet.balance_kobo + v_delta,
+    'ledger_id', v_ledger_id
+  );
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.wallet_complete_topup(p_reference text, p_paid_kobo integer, p_expected_user uuid DEFAULT NULL::uuid, p_service text DEFAULT 'general'::text, p_metadata jsonb DEFAULT '{}'::jsonb, p_welcome_bonus_kobo integer DEFAULT 0)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_tx wallet_transactions%rowtype;
+  v_result jsonb;
+begin
+  select * into v_tx from wallet_transactions where reference = p_reference for update;
+
+  if not found
+     or v_tx.type <> 'credit'
+     or (p_expected_user is not null and v_tx.user_id <> p_expected_user) then
+    return jsonb_build_object('outcome', 'not_found');
+  end if;
+
+  if v_tx.status = 'completed' then
+    return jsonb_build_object(
+      'outcome', 'already_processed',
+      'amount_kobo', v_tx.amount_kobo,
+      'user_id', v_tx.user_id
+    );
+  end if;
+
+  if p_paid_kobo is distinct from v_tx.amount_kobo then
+    return jsonb_build_object(
+      'outcome', 'mismatch',
+      'amount_kobo', v_tx.amount_kobo,
+      'user_id', v_tx.user_id
+    );
+  end if;
+
+  update wallet_transactions
+     set status = 'completed',
+         completed_at = now()
+   where id = v_tx.id;
+
+  v_result := wallet_apply(
+    v_tx.user_id,
+    v_tx.amount_kobo,
+    'credit',
+    p_service,
+    'Wallet top-up',
+    'paystack_topup',
+    null,
+    'topup:' || p_reference,
+    coalesce(p_metadata, '{}'::jsonb) || jsonb_build_object('paystack_reference', p_reference),
+    p_welcome_bonus_kobo
+  );
+
+  if not coalesce((v_result->>'success')::boolean, false) then
+    raise exception 'Top-up credit failed: %', coalesce(v_result->>'error', 'unknown error');
+  end if;
+
+  return jsonb_build_object(
+    'outcome', 'credited',
+    'amount_kobo', v_tx.amount_kobo,
+    'new_balance', (v_result->>'new_balance')::integer,
+    'user_id', v_tx.user_id
+  );
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.wallet_ensure(p_user uuid, p_welcome_bonus_kobo integer DEFAULT 0)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_wallet_id uuid;
+  v_bonus integer := greatest(coalesce(p_welcome_bonus_kobo, 0), 0);
+begin
+  insert into wallet_accounts (user_id, balance_kobo)
+  values (p_user, v_bonus)
+  on conflict (user_id) do nothing
+  returning id into v_wallet_id;
+
+  if v_wallet_id is not null then
+    if v_bonus > 0 then
+      insert into wallet_ledger (
+        wallet_id, user_id, transaction_type, amount_kobo, balance_before, balance_after,
+        service, reference_type, description, idempotency_key
+      ) values (
+        v_wallet_id, p_user, 'bonus', v_bonus, 0, v_bonus,
+        'general', 'free_trial', 'Welcome bonus - Free trial credits', 'welcome_bonus'
+      );
+    end if;
+    return v_wallet_id;
+  end if;
+
+  select id into v_wallet_id from wallet_accounts where user_id = p_user;
+  return v_wallet_id;
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.wallet_purchase_course(p_user uuid, p_course uuid, p_welcome_bonus_kobo integer DEFAULT 0)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_course record;
+  v_price_kobo integer;
+  v_reference text;
+  v_result jsonb;
+begin
+  select id, title, price, is_free, currency, instructor_id
+    into v_course
+    from courses
+   where id = p_course;
+
+  if not found then
+    return jsonb_build_object('outcome', 'course_not_found');
+  end if;
+
+  if coalesce(v_course.is_free, false) or coalesce(v_course.price, 0) = 0 then
+    return jsonb_build_object('outcome', 'course_is_free');
+  end if;
+
+  v_price_kobo := round(v_course.price * 100)::integer;
+
+  perform wallet_ensure(p_user, p_welcome_bonus_kobo);
+  perform 1 from wallet_accounts where user_id = p_user for update;
+
+  if exists (
+    select 1 from course_purchases
+     where user_id = p_user and course_id = p_course and status = 'successful'
+  ) then
+    return jsonb_build_object('outcome', 'already_purchased');
+  end if;
+
+  v_reference := 'sabitek_wallet_course_' || p_course || '_' || p_user || '_'
+                 || (extract(epoch from clock_timestamp()) * 1000)::bigint;
+
+  v_result := wallet_apply(
+    p_user,
+    v_price_kobo,
+    'debit',
+    'courses',
+    'Course purchase: ' || v_course.title,
+    'course_purchase',
+    p_course,
+    null,
+    jsonb_build_object(
+      'course_id', p_course,
+      'course_title', v_course.title,
+      'instructor_id', v_course.instructor_id,
+      'transaction_ref', v_reference
+    ),
+    p_welcome_bonus_kobo
+  );
+
+  if not coalesce((v_result->>'success')::boolean, false) then
+    return jsonb_build_object(
+      'outcome', 'insufficient_balance',
+      'balance_kobo', (v_result->>'new_balance')::integer,
+      'required_kobo', v_price_kobo
+    );
+  end if;
+
+  insert into transactions (
+    user_id, course_id, amount, currency, provider, provider_tx_ref, status, transaction_type
+  ) values (
+    p_user, p_course, v_course.price, coalesce(v_course.currency, 'NGN'), 'wallet', v_reference,
+    'successful', 'course_purchase'
+  );
+
+  insert into course_purchases (
+    user_id, course_id, amount, currency, provider, provider_tx_ref, status, purchased_at
+  ) values (
+    p_user, p_course, v_course.price, coalesce(v_course.currency, 'NGN'), 'wallet', v_reference,
+    'successful', now()
+  )
+  on conflict (user_id, course_id) do update set
+    amount = excluded.amount,
+    currency = excluded.currency,
+    provider = excluded.provider,
+    provider_tx_ref = excluded.provider_tx_ref,
+    status = excluded.status,
+    purchased_at = excluded.purchased_at;
+
+  insert into course_enrollments (user_id, course_id, progress_percentage)
+  values (p_user, p_course, 0)
+  on conflict (user_id, course_id) do nothing;
+
+  return jsonb_build_object(
+    'outcome', 'purchased',
+    'transaction_ref', v_reference,
+    'amount_kobo', v_price_kobo,
+    'new_balance', (v_result->>'new_balance')::integer
+  );
+end;
 $function$
 ;
 
@@ -5431,3 +5710,11 @@ create policy avatars_update_own on storage.objects as permissive for update to 
 -- security definer is_program_member(p_user_id uuid, p_program_id uuid) executable by: anon, authenticated, service_role
 
 -- security definer update_study_streak(p_user_id uuid) executable by: service_role
+
+-- security definer wallet_apply(p_user uuid, p_amount_kobo integer, p_type text, p_service text, p_description text, p_reference_type text, p_service_ref_id uuid, p_idempotency_key text, p_metadata jsonb, p_welcome_bonus_kobo integer) executable by: service_role
+
+-- security definer wallet_complete_topup(p_reference text, p_paid_kobo integer, p_expected_user uuid, p_service text, p_metadata jsonb, p_welcome_bonus_kobo integer) executable by: service_role
+
+-- security definer wallet_ensure(p_user uuid, p_welcome_bonus_kobo integer) executable by: service_role
+
+-- security definer wallet_purchase_course(p_user uuid, p_course uuid, p_welcome_bonus_kobo integer) executable by: service_role

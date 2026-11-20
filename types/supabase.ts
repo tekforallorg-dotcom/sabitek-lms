@@ -5543,7 +5543,7 @@ export type Database = {
         Returns: boolean
       }
       update_study_streak: { Args: { p_user_id: string }; Returns: undefined }
-          wallet_apply: {
+      wallet_apply: {
         Args: {
           p_amount_kobo: number
           p_description: string
@@ -5574,7 +5574,11 @@ export type Database = {
         Returns: string
       }
       wallet_purchase_course: {
-        Args: { p_course: string; p_user: string; p_welcome_bonus_kobo?: number }
+        Args: {
+          p_course: string
+          p_user: string
+          p_welcome_bonus_kobo?: number
+        }
         Returns: Json
       }
     }
