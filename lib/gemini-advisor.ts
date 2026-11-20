@@ -1,6 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+import { generateText } from '@/lib/ai'
 
 // REQUEST CACHE - Prevent duplicate calls
 const requestCache = new Map<string, { promise: Promise<any>, timestamp: number }>()
@@ -454,11 +452,6 @@ export async function getCareerRecommendations(
   surveyAnswers: any
 ): Promise<CareerRecommendation> {
   try {
-    // Verify API key is present
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured')
-    }
-
     // Create cache key from survey answers
     const cacheKey = JSON.stringify(surveyAnswers)
     
@@ -481,18 +474,8 @@ export async function getCareerRecommendations(
     
     lastRequestTime = Date.now()
 
-    console.log('Initializing Gemini with API key:', process.env.GEMINI_API_KEY.substring(0, 10) + '...')
-
     // Create the request promise
     const requestPromise = (async () => {
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash-lite',
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-        },
-      })
-
       const prompt = `SURVEY RESPONSES:
 ${JSON.stringify(surveyAnswers, null, 2)}
 
@@ -506,13 +489,17 @@ Include 4 actionable next_steps blocks with icons.
 Return ONLY valid JSON with no markdown formatting, no backticks, no explanations.
 Keep all string values on single lines without line breaks.`
 
-      console.log('🚀 Calling Gemini API...')
-      
-      const result = await model.generateContent([SYSTEM_PROMPT, prompt])
-      const response = await result.response
-      let text = response.text()
-
-      console.log('✅ Gemini API response received')
+      // Gemini first; DeepSeek if Gemini cannot answer. Model ids, retries
+      // and usage metering live in lib/ai.
+      const result = await generateText({
+        provider: 'gemini',
+        fallback: ['deepseek'],
+        system: SYSTEM_PROMPT,
+        prompt,
+        maxTokens: 4096,
+        temperature: 0.7,
+      })
+      let text = result.text
 
       // Strip markdown code blocks if present
       text = text.replace(/```json\n?/g, '')

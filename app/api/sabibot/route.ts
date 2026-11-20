@@ -3,20 +3,24 @@ import { createHash } from 'crypto'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 import { getRequestUser } from '@/lib/api-auth'
+import {
+  AIError,
+  checkAIQuota,
+  normalizeDeepseekUsage,
+  openChatStream,
+  recordAIUsage,
+  type ChatMessage,
+} from '@/lib/ai'
 
-// Cost engine on DeepSeek (the high-volume surface): capped answers,
-// sliding history window, per-user daily quota, usage metering, and a
-// Q&A reuse cache so repeated cohort questions cost zero tokens.
-// DeepSeek auto-caches repeated prompt prefixes server-side, so the
-// stable system-prompt-first structure still pays off.
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const SABIBOT_MODEL = 'deepseek-chat'
+// Cost engine (the high-volume surface): capped answers, sliding history
+// window, per-user daily quota, usage metering, and a Q&A reuse cache so
+// repeated cohort questions cost zero tokens. The provider caches repeated
+// prompt prefixes server-side, so the stable system-prompt-first structure
+// still pays off. The model, the quota and the metering live in lib/ai.
 const MAX_ANSWER_TOKENS = 700
 const INSTRUCTOR_MAX_TOKENS = 1400
 const HISTORY_WINDOW = 8
 const LESSON_CONTEXT_CHARS = 6000
-const DAILY_LIMITS: Record<string, number> = { learner: 30, instructor: 100 }
 
 function normalizeQuestion(q: string): string {
   return q.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim()
@@ -35,42 +39,6 @@ function stripHtml(html: string): string {
     .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ')
     .trim()
-}
-
-// Every metering call is best-effort: SabiBot must keep answering even
-// if the ai_usage / qa_cache tables have not been provisioned yet.
-async function checkQuota(userId: string, role: string): Promise<{ ok: boolean; used: number; limit: number }> {
-  const limit = DAILY_LIMITS[role] ?? DAILY_LIMITS.learner
-  try {
-    const dayStart = new Date()
-    dayStart.setUTCHours(0, 0, 0, 0)
-    const { count, error } = await supabaseAdmin
-      .from('ai_usage')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('feature', 'sabibot')
-      .gte('created_at', dayStart.toISOString())
-    if (error) return { ok: true, used: 0, limit }
-    return { ok: (count ?? 0) < limit, used: count ?? 0, limit }
-  } catch {
-    return { ok: true, used: 0, limit }
-  }
-}
-
-function logUsage(userId: string | null, model: string, usage: { input_tokens?: number; cache_read_input_tokens?: number; output_tokens?: number }) {
-  supabaseAdmin
-    .from('ai_usage')
-    .insert({
-      user_id: userId,
-      feature: 'sabibot',
-      model,
-      input_tokens: usage.input_tokens ?? 0,
-      cache_read_tokens: usage.cache_read_input_tokens ?? 0,
-      output_tokens: usage.output_tokens ?? 0,
-    })
-    .then(({ error }) => {
-      if (error) console.log('ai_usage logging skipped:', error.message)
-    })
 }
 
 // Enhanced language configurations with contextual greetings and conversation flow
@@ -605,13 +573,6 @@ Remember: You are a calm maestro consultant, patient, strategic, knowledgeable. 
 
 export async function POST(request: NextRequest) {
   try {
-    if (!DEEPSEEK_API_KEY) {
-      return new Response(
-        JSON.stringify({ content: 'AI service is not configured. Please check your API key.' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Server-to-server calls must target THIS deployment, not localhost
     const appOrigin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin
 
@@ -658,7 +619,7 @@ export async function POST(request: NextRequest) {
 
     // ── Daily quota (metered per user; fails open if metering is down) ──
     if (userContext?.userId) {
-      const quota = await checkQuota(userContext.userId, userContext.userRole || 'learner')
+      const quota = await checkAIQuota(userContext.userId, 'sabibot', userContext.userRole || 'learner')
       if (!quota.ok) {
         const quotaMsg = language === 'pidgin'
           ? `You don use all your ${quota.limit} SabiBot messages for today. E go reset tomorrow — see you then!`
@@ -791,35 +752,30 @@ export async function POST(request: NextRequest) {
 
     // ── DeepSeek call: stable system prefix + sliding history window ──
     const isInstructor = userContext?.userRole === 'instructor'
-    const model = SABIBOT_MODEL
-    const windowed = messages.slice(-HISTORY_WINDOW).map((m: any) => ({
+    const windowed: ChatMessage[] = messages.slice(-HISTORY_WINDOW).map((m: any) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: String(m.content || ''),
     }))
 
-    const upstream = await fetch(DEEPSEEK_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'system', content: systemPrompt }, ...windowed],
-        temperature: 0.7,
-        max_tokens: isInstructor ? INSTRUCTOR_MAX_TOKENS : MAX_ANSWER_TOKENS,
-        stream: true,
-        stream_options: { include_usage: true },
-      }),
-    })
+    const connectionError =
+      language === 'pidgin'
+        ? 'Abeg, I no fit connect to AI service now. Try again later.'
+        : 'I apologize, but I cannot connect to the AI service right now. Please try again later.'
 
-    if (!upstream.ok) {
-      console.error('DeepSeek API error:', upstream.status, upstream.statusText)
-      const errorContent =
-        language === 'pidgin'
-          ? 'Abeg, I no fit connect to AI service now. Try again later.'
-          : 'I apologize, but I cannot connect to the AI service right now. Please try again later.'
-      return new Response(JSON.stringify({ content: errorContent }), {
+    let upstream: Response
+    let model: string
+    try {
+      const opened = await openChatStream({
+        system: systemPrompt,
+        messages: windowed,
+        maxTokens: isInstructor ? INSTRUCTOR_MAX_TOKENS : MAX_ANSWER_TOKENS,
+        temperature: 0.7,
+      })
+      upstream = opened.response
+      model = opened.model
+    } catch (error) {
+      console.error('SabiBot AI error:', error instanceof AIError ? `${error.kind}: ${error.message}` : error)
+      return new Response(JSON.stringify({ content: connectionError }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       })
@@ -839,6 +795,22 @@ export async function POST(request: NextRequest) {
         let buffer = ''
         let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number } | null =
           null
+
+        // The provider was called whether or not the stream finishes, so the
+        // call is metered either way. If the stream breaks before its last
+        // event the token counts are unknown and recorded as zero; the call
+        // still counts towards the daily limit.
+        let metered = false
+        const meter = async () => {
+          if (metered) return
+          metered = true
+          await recordAIUsage({
+            userId: userContext?.userId ?? null,
+            feature: 'sabibot',
+            model,
+            usage: normalizeDeepseekUsage(usage),
+          })
+        }
 
         try {
           while (true) {
@@ -871,11 +843,7 @@ export async function POST(request: NextRequest) {
           controller.close()
 
           // ── Post-stream background work ──
-          logUsage(userContext?.userId ?? null, model, {
-            input_tokens: usage?.prompt_tokens ?? 0,
-            cache_read_input_tokens: usage?.prompt_cache_hit_tokens ?? 0,
-            output_tokens: usage?.completion_tokens ?? 0,
-          })
+          await meter()
 
           // Seed the Q&A cache for future learners on this lesson
           if (lessonRow && isFirstTurn && lastUserMsg?.role === 'user' && lastUserMsg.content && fullContent) {
@@ -918,7 +886,13 @@ export async function POST(request: NextRequest) {
           }
         } catch (error) {
           console.error('Stream processing error:', error)
-          controller.error(error)
+          await meter()
+          // If the reader went away the controller is already closed.
+          try {
+            controller.error(error)
+          } catch {
+            // Nothing left to tell.
+          }
         }
       },
     })

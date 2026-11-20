@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, supabaseAdminUntyped } from '@/lib/supabase-admin'
-
-// DeepSeek + Claude Haiku pricing for the spend estimate (USD per 1M tokens)
-const PRICES: Record<string, { input: number; cached: number; output: number }> = {
-  'deepseek-chat': { input: 0.27, cached: 0.027, output: 1.1 },
-  'claude-haiku-4-5': { input: 1.0, cached: 0.1, output: 5.0 },
-  'claude-sonnet-4-6': { input: 3.0, cached: 0.3, output: 15.0 },
-}
+import { estimateCostUsd } from '@/lib/ai'
 
 /** Platform cockpit numbers for super admins, incl. estimated AI spend. */
 export async function GET(request: NextRequest) {
@@ -55,11 +49,11 @@ export async function GET(request: NextRequest) {
     const byModel: Record<string, { requests: number; cost: number }> = {}
     for (const r of (aiRows.data as any[]) || []) {
       aiRequests++
-      const p = PRICES[r.model] || PRICES['deepseek-chat']
-      const cost =
-        ((r.input_tokens || 0) / 1e6) * p.input +
-        ((r.cache_read_tokens || 0) / 1e6) * p.cached +
-        ((r.output_tokens || 0) / 1e6) * p.output
+      const cost = estimateCostUsd(r.model, {
+        inputTokens: r.input_tokens || 0,
+        cacheReadTokens: r.cache_read_tokens || 0,
+        outputTokens: r.output_tokens || 0,
+      })
       aiCostUsd += cost
       const m = byModel[r.model] || { requests: 0, cost: 0 }
       m.requests++

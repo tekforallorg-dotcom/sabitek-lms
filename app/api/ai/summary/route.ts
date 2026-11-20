@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { checkAIQuota, generateText, quotaMessage } from '@/lib/ai'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/api-auth'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
@@ -7,17 +7,10 @@ import { canAccessCourseContent } from '@/lib/access/course-tenancy'
 // Bound the prompt so one request cannot run up an arbitrary bill.
 const MAX_LESSON_CHARS = 12000
 
-const SUMMARY_MODEL = 'deepseek-chat'
-
 // One generation per lesson: the summary is cached in lesson_ai_artifacts and
 // served to every later learner, so this is a per-lesson cost, not a
 // per-learner one. Instructors clear it via /api/ai/invalidate-lesson when the
-// lesson changes. Runs on DeepSeek (mirrors the SabiBot pattern): the OpenAI
-// SDK pointed at DeepSeek's OpenAI-compatible endpoint.
-const openai = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: 'https://api.deepseek.com',
-})
+// lesson changes.
 
 export async function POST(req: NextRequest) {
   try {
@@ -62,6 +55,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ summary: cached.summary })
     }
 
+    // Only a fresh generation counts against the caller's daily limit, which
+    // is higher for instructors.
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('role')
+      .eq('id', auth.user.id)
+      .maybeSingle()
+    const quota = await checkAIQuota(auth.user.id, 'lesson_summary', profile?.role)
+    if (!quota.ok) {
+      return NextResponse.json({ error: quotaMessage(quota) }, { status: 429 })
+    }
+
     const contentType = lesson.content_type || 'text'
     const content = (lesson.content || '').slice(0, MAX_LESSON_CHARS)
 
@@ -87,21 +92,15 @@ export async function POST(req: NextRequest) {
       Include what students should focus on and how to approach this type of content.`
     }
 
-    const completion = await openai.chat.completions.create({
-      model: SUMMARY_MODEL,
-      max_tokens: 500,
+    const { text: summary, model: summaryModel } = await generateText({
+      feature: 'lesson_summary',
+      userId: auth.user.id,
+      system:
+        'You are an educational assistant helping students understand lesson content. Provide clear, concise summaries focused on learning objectives. Respond in plain text. Never use em dashes or en dashes; use commas, periods, or the word "and" instead.',
+      prompt,
+      maxTokens: 500,
       temperature: 0.7,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an educational assistant helping students understand lesson content. Provide clear, concise summaries focused on learning objectives. Respond in plain text. Never use em dashes or en dashes; use commas, periods, or the word "and" instead.',
-        },
-        { role: 'user', content: prompt },
-      ],
     })
-
-    const summary = completion.choices[0]?.message?.content || ''
 
     // Cache it for the next learner. A failed write only costs a regeneration.
     if (summary) {
@@ -111,7 +110,7 @@ export async function POST(req: NextRequest) {
           {
             lesson_id: lessonId,
             summary,
-            model: SUMMARY_MODEL,
+            model: summaryModel,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'lesson_id' }

@@ -8,6 +8,7 @@
  */
 
 import { JobSchema, JobSchemaZ, safeParseJobSchema } from '../schemas'
+import { generateText } from '@/lib/ai'
 import { SYSTEM_PROMPTS, buildJDExtractionPrompt, extractJSON } from '../prompts'
 
 // ============================================
@@ -15,12 +16,8 @@ import { SYSTEM_PROMPTS, buildJDExtractionPrompt, extractJSON } from '../prompts
 // ============================================
 
 const AI_CONFIG = {
-  baseUrl: 'https://api.deepseek.com/v1/chat/completions',
-  model: 'deepseek-chat',
-  maxRetries: 2,
-  retryDelayMs: 1000,
   maxTokens: 2500,
-  temperature: 0.3,
+  temperature: 0.3, // Lower temperature for extraction accuracy
 }
 
 // ============================================
@@ -32,60 +29,15 @@ async function callAI(
   userPrompt: string,
   maxTokens: number = AI_CONFIG.maxTokens
 ): Promise<string> {
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY not configured')
-  }
-
-  for (let attempt = 1; attempt <= AI_CONFIG.maxRetries; attempt++) {
-    try {
-      console.log(`📋 JD extraction - Attempt ${attempt}/${AI_CONFIG.maxRetries}`)
-      
-      const response = await fetch(AI_CONFIG.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: AI_CONFIG.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          max_tokens: maxTokens,
-          temperature: AI_CONFIG.temperature,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error(`AI API error: ${response.status}`, errorText)
-        throw new Error(`API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const content = data.choices?.[0]?.message?.content || ''
-      
-      if (!content || content.trim().length < 50) {
-        throw new Error('Empty or too short response')
-      }
-
-      console.log(`✅ JD extraction completed (${data.usage?.total_tokens || 0} tokens)`)
-      return content
-
-    } catch (error) {
-      console.error(`❌ Attempt ${attempt} failed:`, error)
-      
-      if (attempt < AI_CONFIG.maxRetries) {
-        const delay = AI_CONFIG.retryDelayMs * attempt
-        console.log(`⏳ Retrying in ${delay}ms...`)
-        await new Promise(resolve => setTimeout(resolve, delay))
-      }
-    }
-  }
-
-  throw new Error('JD extraction failed after all retries')
+  // Retries, provider choice and usage metering live in lib/ai.
+  const result = await generateText({
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxTokens,
+    temperature: AI_CONFIG.temperature,
+    minLength: 50,
+  })
+  return result.text
 }
 
 // ============================================

@@ -7,6 +7,7 @@
  * - Fallback: If Claude fails, fall back to DeepSeek
  */
 
+import { generateText } from '@/lib/ai'
 import { callClaude, callClaudeJSON, CLAUDE_CV_PROMPTS } from '@/lib/advisor/ai/claude'
 import { analyzeRoleDiff, type RoleDiff, getVerbsForLevel } from './tone'
 import type { ResumeSchema, JobSchema } from './schemas'
@@ -30,28 +31,8 @@ import {
   getBulletRequirements,
 } from './prompts-v2'
 
-// Configuration
-export const AI_CONFIG = {
-  // Which AI to use for each task
-  tasks: {
-    extraction: 'deepseek' as const,  // Cheaper for parsing
-    generation: 'claude' as const,     // Better for writing
-    scoring: 'deepseek' as const,      // Simple evaluation
-  },
-  // DeepSeek config (fallback)
-  deepseek: {
-    baseUrl: 'https://api.deepseek.com/v1/chat/completions',
-    model: 'deepseek-chat',
-  },
-  // Claude config
-  claude: {
-    model: 'haiku' as const,
-    maxRetries: 2,
-  },
-}
-
 /**
- * Call DeepSeek API (for extraction and fallback)
+ * Call DeepSeek (for extraction and as the fall-back when Claude fails)
  */
 export async function callDeepSeek(
   systemPrompt: string,
@@ -59,37 +40,13 @@ export async function callDeepSeek(
   maxTokens: number,
   temperature: number = 0.7
 ): Promise<{ content: string; tokens: number }> {
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY not configured')
-  }
-
-  const response = await fetch(AI_CONFIG.deepseek.baseUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: AI_CONFIG.deepseek.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: maxTokens,
-      temperature,
-    }),
+  const result = await generateText({
+    system: systemPrompt,
+    prompt: userPrompt,
+    maxTokens,
+    temperature,
   })
-
-  if (!response.ok) {
-    throw new Error(`DeepSeek API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  return {
-    content: data.choices?.[0]?.message?.content || '',
-    tokens: data.usage?.total_tokens || 0,
-  }
+  return { content: result.text, tokens: result.totalTokens }
 }
 
 /**
@@ -139,8 +96,6 @@ export async function generateSummary(
       systemPrompt: HAIKU_SUMMARY_SYSTEM,
       userPrompt,
       maxTokens: 400,
-      temperature: 0.6, // Slightly lower for more consistency
-      model: 'haiku',
     })
     
     // Parse JSON response
@@ -239,8 +194,6 @@ export async function generateSkills(
       systemPrompt: HAIKU_SKILLS_SYSTEM,
       userPrompt,
       maxTokens: 800,
-      temperature: 0.3,
-      model: 'haiku',
     })
 
     // Parse JSON response
@@ -403,8 +356,6 @@ export async function enhanceExperience(
         systemPrompt: HAIKU_BULLETS_SYSTEM,
         userPrompt,
         maxTokens: 1500,
-        temperature: 0.6,
-        model: 'haiku',
       })
       
       totalTokens += result.tokens.total
@@ -497,8 +448,6 @@ Return the corrected CV in the same JSON format.`
       systemPrompt: CLAUDE_CV_PROMPTS.fixPass,
       userPrompt,
       maxTokens: 3000,
-      temperature: 0.3,
-      model: 'haiku',
     })
 
     if (result.data) {

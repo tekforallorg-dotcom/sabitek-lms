@@ -1,6 +1,6 @@
 // lib/sabiquiz/objective-extractor.ts
 
-import { generateContent, extractJSON } from './gemini-client'
+import { generateContent, extractJSON } from './ai-client'
 import { buildObjectiveExtractionPrompt } from './prompts'
 import { buildContextProfile, type ContextProfile } from './context-profile'
 import type { ChunkRecord } from './chunker'

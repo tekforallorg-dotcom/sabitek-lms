@@ -5,7 +5,8 @@ import { chunkText, saveChunks, getChunks, getTotalTokens, type ChunkRecord } fr
 import { buildContextProfile, getProfileSummary, type ContextProfile, type GenerationMode } from './context-profile'
 import { extractObjectives, selectObjectivesForGeneration, type ExtractionResult } from './objective-extractor'
 import { buildQuestionGenerationPrompt, buildSimpleGenerationPrompt } from './prompts'
-import { generateContent, extractJSON } from './gemini-client'
+import { generateContent, extractJSON } from './ai-client'
+import { AI_MODELS } from '@/lib/ai'
 import { validateQuestion, normalizeQuestion, calculateQualityScore, type Question } from './validators'
 import { reviewQuestions, quickReview, checkDuplicates, checkTopicDiversity, type BatchReviewResult } from './reviewer'
 
@@ -520,7 +521,7 @@ export async function savePipelineResults(
     await db.from('generation_runs').insert({
       user_id: userId,
       material_id: materialId,
-      model_used: 'gemini-2.0-flash-lite',
+      model_used: AI_MODELS.gemini,
       cost_usd: result.stats.costEstimateUSD,
       questions_generated: result.stats.questionsGenerated,
       questions_approved: result.stats.questionsApproved + result.stats.questionsFixed,

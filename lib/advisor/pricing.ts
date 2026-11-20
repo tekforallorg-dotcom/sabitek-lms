@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { debitWallet, creditWallet, canAfford, formatNaira } from '@/lib/wallet'
 import crypto from 'crypto'
+import { checkAIQuota, quotaMessage, withAIContext } from '@/lib/ai'
 
 // ============================================
 // TYPES
@@ -153,7 +154,7 @@ export async function checkCache(
 ): Promise<{ cached: boolean; data?: unknown; outputId?: string }> {
   const { data, error } = await supabase
     .from('advisor_ai_cache')
-    .select('output_data, output_ref_id, expires_at')
+    .select('output_data, output_ref_id, expires_at, hit_count')
     .eq('operation_type', operationType)
     .eq('input_hash', inputHash)
     .single()
@@ -167,10 +168,12 @@ export async function checkCache(
     return { cached: false }
   }
 
-  // Increment hit count
+  // Count the hit. This is a statistic, not money: a lost update under
+  // concurrency does not matter. (It used to call a database function that
+  // does not exist, so the count never moved.)
   await supabase
     .from('advisor_ai_cache')
-    .update({ hit_count: supabase.rpc('increment', { x: 1 }) })
+    .update({ hit_count: (data.hit_count ?? 0) + 1 })
     .eq('operation_type', operationType)
     .eq('input_hash', inputHash)
 
@@ -266,6 +269,13 @@ export async function executeAdvisorOperation<T>(
     }
   }
 
+  // Daily AI ceiling per user. Checked before any money moves, so a user who
+  // has hit it is told so and is not charged.
+  const quota = await checkAIQuota(userId, operationType)
+  if (!quota.ok) {
+    return { success: false, error: quotaMessage(quota) }
+  }
+
   // Check if user can afford
   const affordCheck = await canAfford(supabase, userId, pricing.base_cost_kobo)
   if (!affordCheck.canAfford) {
@@ -328,8 +338,9 @@ export async function executeAdvisorOperation<T>(
     }
     charged = true
 
-    // Execute the actual operation
-    const result = await executor()
+    // Execute the actual operation. Every model call made underneath is
+    // metered against this user and this operation type.
+    const result = await withAIContext({ userId, feature: operationType }, executor)
 
     // Update operation as completed
     await supabase
