@@ -485,7 +485,7 @@ function WalletPageContent() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">How Your Wallet Works</h3>
               <p className="text-sm text-gray-600">
-                Your SabiTek wallet is used across all services. Top up once and use it for courses, SabiWrite, SabiCommunity sessions, SabiQuiz, and SabiAdvisor packages. No monthly subscriptions – pay only for what you use!
+                Your SabiTek wallet is used across all services. Top up once and use it for courses, SabiCommunity sessions, SabiQuiz, and SabiAdvisor packages. No monthly subscriptions – pay only for what you use!
               </p>
             </div>
           </div>
@@ -519,7 +519,7 @@ function WalletPageContent() {
                 className="px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               >
                 <option value="all">All Services</option>
-                <option value="sabiwrite">SabiWrite</option>
+                <option value="sabiwrite">SabiWrite (retired)</option>
                 <option value="courses">Courses</option>
                 <option value="community">SabiCommunity</option>
                 <option value="advisor">SabiAdvisor</option>

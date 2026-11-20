@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Features that were removed. Old links and bookmarks land somewhere useful
+  // instead of a 404.
+  async redirects() {
+    return [
+      { source: '/sabiwrite', destination: '/dashboard', permanent: false },
+      { source: '/sabiwrite/:path*', destination: '/dashboard', permanent: false },
+      { source: '/sabitools', destination: '/dashboard', permanent: false },
+    ]
+  },
+
   // Turbopack config (Next.js 16 defaults to Turbopack)
   turbopack: {},
   // Webpack config for PDF.js worker support
