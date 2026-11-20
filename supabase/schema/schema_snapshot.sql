@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Sabitek database schema snapshot (public schema + storage.objects policies)
 -- =============================================================================
--- GENERATED on 2026-11-20 from the live project by generate_snapshot.sql.
+-- GENERATED on 2026-11-20 (after the phase 1 migrations) from the live project by generate_snapshot.sql.
 -- Do not edit by hand; re-run the generator after schema changes.
 --
 -- Why this exists: most of this schema was created by hand in the SQL editor
@@ -2993,6 +2993,64 @@ END;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.enforce_signup_gate()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_public_open boolean;
+  v_token text;
+begin
+  -- Created by the server with the service role.
+  if new.raw_app_meta_data->>'provisioned_by' = 'server' then
+    return new;
+  end if;
+
+  -- Public sign-up switched on by a platform admin.
+  select (ps.value = 'true'::jsonb)
+    into v_public_open
+    from platform_settings ps
+   where ps.key = 'public_signup_enabled';
+
+  if coalesce(v_public_open, false) then
+    return new;
+  end if;
+
+  -- A valid invite.
+  v_token := nullif(new.raw_user_meta_data->>'invite_token', '');
+
+  if v_token is not null and (
+       exists (
+         select 1
+         from cohort_invites ci
+         where ci.token = v_token
+           and ci.status::text = 'ACTIVE'
+           and (ci.expires_at is null or ci.expires_at > now())
+           and (ci.max_uses is null or ci.use_count < ci.max_uses)
+       )
+       or exists (
+         select 1
+         from institution_invites ii
+         where ii.token = v_token
+           and ii.status::text = 'ACTIVE'
+           and (ii.expires_at is null or ii.expires_at > now())
+           and (ii.max_uses is null or ii.use_count < ii.max_uses)
+       )
+     ) then
+    -- Checked; do not keep the token in the account's metadata.
+    new.raw_user_meta_data := new.raw_user_meta_data - 'invite_token';
+    return new;
+  end if;
+
+  raise exception 'Sign up is by invite only'
+    using errcode = 'P0001',
+          hint = 'Use a valid invite link, or ask a platform admin to enable public sign-up.';
+end;
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.generate_certificate_number()
  RETURNS text
  LANGUAGE plpgsql
@@ -3141,6 +3199,24 @@ END;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.get_public_profiles(p_ids uuid[])
+ RETURNS TABLE(id uuid, full_name text, avatar_url text, profile_image_url text, bio text, role text)
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  select
+    u.id,
+    u.full_name::text,
+    u.avatar_url,
+    u.profile_image_url,
+    u.bio,
+    u.role::text
+  from users u
+  where u.id = any (p_ids[1:200]);
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.get_thread_unread_count(p_thread_id uuid, p_user_id uuid)
  RETURNS integer
  LANGUAGE plpgsql
@@ -3240,6 +3316,23 @@ end;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.has_institution_role(p_institution uuid, p_roles text[])
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  select exists (
+    select 1
+    from institution_members m
+    where m.institution_id = p_institution
+      and m.user_id = (select auth.uid())
+      and m.status = 'active'
+      and m.role::text = any (p_roles)
+  );
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.inst_apps_touch_updated_at()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -3248,6 +3341,30 @@ BEGIN
   NEW.updated_at := NOW();
   RETURN NEW;
 END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.instructor_can_view_user(p_user uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  select
+    exists (
+      select 1
+      from course_enrollments ce
+      join courses c on c.id = ce.course_id
+      where ce.user_id = p_user
+        and c.instructor_id = (select auth.uid())
+    )
+    or exists (
+      select 1
+      from quiz_attempts qa
+      join courses c on c.id = qa.course_id
+      where qa.user_id = p_user
+        and c.instructor_id = (select auth.uid())
+    );
 $function$
 ;
 
@@ -3574,6 +3691,8 @@ CREATE TRIGGER trigger_sessions_updated_at BEFORE UPDATE ON public.sessions FOR 
 CREATE TRIGGER trigger_threads_updated_at BEFORE UPDATE ON public.threads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+CREATE TRIGGER on_auth_user_signup_gate BEFORE INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION enforce_signup_gate();
 
 alter table public.advisor_ai_cache enable row level security;
 
@@ -4121,16 +4240,6 @@ create policy institution_invites_platform_admin on public.institution_invites a
    FROM users u
   WHERE ((u.id = auth.uid()) AND ((u.is_super_admin = true) OR (u.platform_role IS NOT NULL))))));
 
-create policy "Institution admins can manage members" on public.institution_members as permissive for all to public
-  using ((EXISTS ( SELECT 1
-   FROM institution_members admin_check
-  WHERE ((admin_check.institution_id = institution_members.institution_id) AND (admin_check.user_id = auth.uid()) AND (admin_check.role = 'institution_admin'::institution_role) AND (admin_check.status = 'active'::institution_member_status)))));
-
-create policy "Institution admins can view institution members" on public.institution_members as permissive for select to public
-  using ((EXISTS ( SELECT 1
-   FROM institution_members admin_check
-  WHERE ((admin_check.institution_id = institution_members.institution_id) AND (admin_check.user_id = auth.uid()) AND (admin_check.role = ANY (ARRAY['institution_admin'::institution_role, 'program_manager'::institution_role])) AND (admin_check.status = 'active'::institution_member_status)))));
-
 create policy "Platform admins can view all memberships" on public.institution_members as permissive for select to public
   using ((EXISTS ( SELECT 1
    FROM users
@@ -4141,6 +4250,13 @@ create policy "Users can accept own invitations" on public.institution_members a
 
 create policy "Users can view own memberships" on public.institution_members as permissive for select to public
   using ((user_id = auth.uid()));
+
+create policy institution_members_admin_manage on public.institution_members as permissive for all to authenticated
+  using (has_institution_role(institution_id, ARRAY['institution_admin'::text]))
+  with check (has_institution_role(institution_id, ARRAY['institution_admin'::text]));
+
+create policy institution_members_staff_select on public.institution_members as permissive for select to authenticated
+  using (has_institution_role(institution_id, ARRAY['institution_admin'::text, 'program_manager'::text]));
 
 create policy "Anyone can view approved institutions" on public.institutions as permissive for select to public
   using ((status = 'approved'::institution_status));
@@ -4813,8 +4929,8 @@ create policy user_xp_write_own on public.user_xp as permissive for all to authe
   using ((( SELECT auth.uid() AS uid) = user_id))
   with check ((( SELECT auth.uid() AS uid) = user_id));
 
-create policy users_select_signed_in on public.users as permissive for select to authenticated
-  using (true);
+create policy users_select_visible on public.users as permissive for select to authenticated
+  using (((id = ( SELECT auth.uid() AS uid)) OR is_platform_admin(( SELECT auth.uid() AS uid)) OR instructor_can_view_user(id)));
 
 create policy users_update_own_profile on public.users as permissive for update to authenticated
   using ((( SELECT auth.uid() AS uid) = id))
@@ -5286,11 +5402,19 @@ create policy avatars_update_own on storage.objects as permissive for update to 
 
 -- security definer check_course_completion(p_user_id uuid, p_course_id uuid) executable by: service_role
 
+-- security definer enforce_signup_gate() executable by: service_role
+
+-- security definer get_public_profiles(p_ids uuid[]) executable by: authenticated, service_role
+
 -- security definer get_thread_unread_count(p_thread_id uuid, p_user_id uuid) executable by: anon, authenticated, service_role
 
 -- security definer get_unread_count(p_user_id uuid) executable by: anon, authenticated, service_role
 
 -- security definer handle_new_user() executable by: service_role
+
+-- security definer has_institution_role(p_institution uuid, p_roles text[]) executable by: authenticated, service_role
+
+-- security definer instructor_can_view_user(p_user uuid) executable by: authenticated, service_role
 
 -- security definer is_blocked(user_a uuid, user_b uuid) executable by: anon, authenticated, service_role
 
