@@ -5494,11 +5494,27 @@ export type Database = {
       }
       generate_certificate_number: { Args: never; Returns: string }
       generate_slug: { Args: { name: string }; Returns: string }
+      get_public_profiles: {
+        Args: { p_ids: string[] }
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          id: string
+          profile_image_url: string
+          role: string
+        }[]
+      }
       get_thread_unread_count: {
         Args: { p_thread_id: string; p_user_id: string }
         Returns: number
       }
       get_unread_count: { Args: { p_user_id: string }; Returns: number }
+      has_institution_role: {
+        Args: { p_institution: string; p_roles: string[] }
+        Returns: boolean
+      }
+      instructor_can_view_user: { Args: { p_user: string }; Returns: boolean }
       is_blocked: { Args: { user_a: string; user_b: string }; Returns: boolean }
       is_cohort_member: {
         Args: { p_cohort_id: string; p_user_id: string }
