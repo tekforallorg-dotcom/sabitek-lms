@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { getPricingRule, calculateCostEstimate, estimateTokens, formatNaira, getWalletBalance } from '@/lib/sabiwrite/pricing'
 import { routeModel } from '@/lib/sabiwrite/model-router'
 import { ToolType, PlanTier, ToneType } from '@/lib/sabiwrite/types'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = supabaseAdmin
     
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {

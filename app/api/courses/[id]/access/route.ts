@@ -1,14 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { getProgramLockForCourse } from '@/lib/access/program-sequence'
 import { checkCourseAccess } from '@/lib/course-access'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // Light JSON access check, supabase-js only (no Node-only APIs) - edge-safe.
 export const runtime = 'edge'

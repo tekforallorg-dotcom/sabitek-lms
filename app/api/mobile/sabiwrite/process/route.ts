@@ -17,12 +17,10 @@
  * }
  */
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { getMobilePrice, type MobileToolType } from '@/lib/sabiwrite/mobile-pricing';
 import { type ToneType, type ToolType } from '@/lib/sabiwrite/types';
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 /** Max tokens for AI output — 16384 supports ~12k words of output */
 const MAX_OUTPUT_TOKENS = 16384;
@@ -78,7 +76,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = supabaseAdmin;
     const isWalletPayment = entitlementId === 'wallet';
 
     // --- Payment Verification ---

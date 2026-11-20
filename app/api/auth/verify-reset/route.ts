@@ -4,13 +4,18 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-// Server-side Supabase client with service role (can bypass RLS)
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-})
+// verifyOtp() attaches the resulting user session to the client it is called
+// on. That must never be the shared service-role client (lib/supabase-admin),
+// or later queries on it would run as that user. So this route builds a fresh,
+// throwaway client for every request.
+function createIsolatedClient() {
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
 
 /**
  * Server-side password reset token verification
@@ -40,6 +45,7 @@ export async function POST(request: NextRequest) {
     console.log('[VERIFY-RESET] Verifying password reset token...')
 
     // Use verifyOtp to validate the token and establish session
+    const supabaseAdmin = createIsolatedClient()
     const { data, error } = await supabaseAdmin.auth.verifyOtp({
       token_hash,
       type: 'recovery',

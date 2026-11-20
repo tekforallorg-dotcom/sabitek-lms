@@ -1,13 +1,9 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody, extractBearerToken } from '@/lib/validations'
 import { inviteMemberSchema } from '@/lib/validations/institution'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function GET(
   request: NextRequest,

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { executeAdvisorOperation, generateInputHash } from '@/lib/advisor/pricing'
 import {
   buildCoverLetter,
@@ -8,11 +7,8 @@ import {
   type TailorCoverLetterInput,
   type CoverLetterDocument,
 } from '@/lib/cover-letter'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // ============================================
 // GET - Fetch user's cover letters

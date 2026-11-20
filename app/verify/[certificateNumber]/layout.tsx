@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 /** Share-friendly metadata for public verify links. */
 export async function generateMetadata({
@@ -12,10 +12,7 @@ export async function generateMetadata({
   let description = 'Verify the authenticity of a Sabitek certificate.'
 
   try {
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const admin = supabaseAdmin
     const { data } = await admin
       .from('certificates')
       .select(

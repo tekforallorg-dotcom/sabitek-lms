@@ -1,14 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { validateBody, validateQuery, extractBearerToken } from '@/lib/validations'
 import { createInstitutionSchema, institutionQuerySchema } from '@/lib/validations/institution'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { getDefaultPacks, type InstitutionVerticalType } from '@/lib/vertical-packs'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 /**
  * GET /api/institutions

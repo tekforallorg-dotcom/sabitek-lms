@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { executeAdvisorOperation, generateInputHash } from '@/lib/advisor/pricing'
 
 // Import new CV Builder v2 pipeline
@@ -11,11 +10,8 @@ import {
   type TailorCVInput,
   type CVFailure,
 } from '@/lib/cv'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // CV Section structure for database storage (matches existing schema)
 interface CVSections {

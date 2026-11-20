@@ -1,15 +1,11 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { rateLimit, RATE_LIMIT_STRICT } from '@/lib/rate-limit'
 import { validateBody } from '@/lib/validations'
 import { institutionApplicationSchema } from '@/lib/validations/institution-application'
 import { isFlagEnabled } from '@/lib/feature-flags'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 /**
  * POST /api/institution-applications

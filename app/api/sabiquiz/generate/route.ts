@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { executeAdvisorOperation } from '@/lib/advisor/pricing'
 import { requireUser } from '@/lib/api-auth'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = supabaseAdmin
   
   try {
     // Generation debits a wallet, so the payer must be the signed-in caller.
@@ -136,7 +134,7 @@ export async function POST(request: NextRequest) {
 
 // GET - Check pricing
 export async function GET(request: NextRequest) {
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = supabaseAdmin
   
   try {
     const { searchParams } = new URL(request.url)
