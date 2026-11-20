@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { fetchPublicProfiles } from '@/lib/public-profiles'
 import SabiLoader from '@/components/ui/SabiLoader'
 import {
   Award,
@@ -27,6 +28,7 @@ interface Certificate {
     title: string
     description: string
     thumbnail_url?: string
+    instructor_id?: string | null
     instructor?: {
       full_name: string
     }
@@ -62,7 +64,7 @@ function CertificatesContent() {
             title,
             description,
             thumbnail_url,
-            instructor:users!courses_instructor_id_fkey(full_name)
+            instructor_id
           ),
           program:programs(
             name,
@@ -73,7 +75,19 @@ function CertificatesContent() {
         .order('issued_at', { ascending: false })
 
       if (error) throw error
-      setCertificates(data || [])
+
+      // Instructors are other users: resolve their names through the
+      // public-profile lookup rather than an embed of the users table.
+      const rows = (data || []) as Certificate[]
+      const profiles = await fetchPublicProfiles(rows.map((c) => c.course?.instructor_id))
+      for (const cert of rows) {
+        const name = cert.course?.instructor_id
+          ? profiles.get(cert.course.instructor_id)?.full_name
+          : null
+        if (cert.course && name) cert.course.instructor = { full_name: name }
+      }
+
+      setCertificates(rows)
     } catch (error) {
       console.error('Error fetching certificates:', error)
     } finally {

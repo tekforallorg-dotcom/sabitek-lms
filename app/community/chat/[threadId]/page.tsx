@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { fetchPublicProfiles } from '@/lib/public-profiles'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Send, Calendar, Video, ExternalLink, Loader2, Info } from 'lucide-react'
 import { toast } from '@/components/ui/toast'
@@ -86,15 +87,19 @@ useEffect(() => {
             // Only add if not from current user (we already have optimistic update)
             if (newMsg.sender_id !== user.id) {
               // Fetch sender info
-              const { data: sender } = await supabase
-                .from('users')
-                .select('id, full_name, avatar_url')
-                .eq('id', newMsg.sender_id)
-                .single()
-              
+              const profiles = await fetchPublicProfiles([newMsg.sender_id])
+              const profile = profiles.get(newMsg.sender_id)
+              const sender = profile
+                ? {
+                    id: profile.id,
+                    full_name: profile.full_name || '',
+                    avatar_url: profile.avatar_url,
+                  }
+                : null
+
               const messageWithSender: Message = {
                 ...newMsg,
-                sender: sender || null
+                sender
               }
               
               setMessages(prev => {
