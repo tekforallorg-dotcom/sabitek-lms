@@ -41,13 +41,54 @@ the lesson.
    for reduced motion get none.
 8. **Icons, not emojis.** Use `lucide-react`.
 
+## How a signed-in page is laid out
+
+The rules above settle what things look like. These settle where things go.
+They come with components, so following them is less work than not.
+
+1. **One shell.** Every signed-in page sits in `components/shell/AppShell.tsx`:
+   navigation grouped under short headings in a sidebar (a drawer on phones),
+   one top bar, and a command palette on Ctrl+K. The menu for each kind of
+   account is data in `lib/navigation.ts`; a page is added there, never in a
+   header of its own. `tests/navigation.test.ts` fails if a menu entry points
+   at a page that does not exist.
+2. **The work comes first.** A page opens with what the person came to do,
+   not with a greeting, a banner or a row of totals. Order sections by how
+   often they are needed, and put what is rarely needed in a `Collapsible`.
+3. **One primary action per page, named after its outcome.** "Resume lesson",
+   "Create course", not "Continue" or "Submit". It goes in the `PageHeader`,
+   or in the one card it belongs to. Everything else is an outline button or
+   a text link.
+4. **One card.** `PANEL` in `components/ui/page.tsx`: white, one gray border,
+   12px corners. A list inside a card uses divider lines, not more cards.
+5. **Counts are text, not tiles.** "2 in progress · 1 completed" under the
+   title says what four stat tiles said. Use `StatRow` only where the numbers
+   are the reason for the page.
+6. **A type scale of six sizes.** Use the components and it is applied for
+   you.
+
+   | Role | Classes | Component |
+   | --- | --- | --- |
+   | Page title | `text-2xl leading-8 font-medium tracking-tight` | `PageHeader` |
+   | Section title | `text-lg leading-7 font-medium` | `Section` |
+   | Card title | `text-base leading-6 font-medium` | |
+   | Body, and item titles in dense lists | `text-sm leading-5` | |
+   | Secondary | `text-xs leading-4 text-gray-500` | |
+   | Label | `text-xs leading-4 font-medium uppercase tracking-wider` | `StatRow` |
+   | Big number | `text-2xl leading-8 font-medium tabular-nums` | `StatRow` |
+
+   Interface headings do not grow at larger breakpoints. The serif italic
+   phrase belongs to the public site, not to signed-in pages.
+7. **Phones first.** Many learners are on one. A grid of cards becomes a list
+   of compact rows below 640px, and a primary button is full width.
+
 ## Where the theme lives
 
 - `tailwind.config.js`: the palette, the two weights and the typefaces.
 - `app/globals.css`: the colour tokens (`--primary`, `--border`, ...).
 - `app/layout.tsx`: the two typefaces, self-hosted at build time.
-- `components/ui/*`: shared button, card, input. Prefer these to restyling an
-  element by hand.
+- `components/ui/*`: shared button, card, input, and the page building blocks
+  in `page.tsx`. Prefer these to restyling an element by hand.
 
 ## Exceptions
 

@@ -10,7 +10,6 @@ import {
   Search, 
   MessageSquare, 
   User,
-  BookOpen,
   Calendar,
   HandHeart,
   FileText,
@@ -100,7 +99,7 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Community Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
@@ -129,7 +128,7 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
                     }`}
                   >
                     <Icon className="w-4 h-4" />
-                    <span className="hidden lg:inline">{item.label}</span>
+                    <span className="hidden xl:inline">{item.label}</span>
                     {item.count && item.count > 0 && (
                       <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {item.count > 9 ? '9+' : item.count}
@@ -148,16 +147,6 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
         {children}
       </main>
 
-      {/* Back to Courses Button */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <Link
-          href="/courses"
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-900 text-white text-xs sm:text-sm rounded-full shadow-sm hover:bg-red-600 transition-colors"
-        >
-          <BookOpen className="w-4 h-4" />
-          <span className="hidden sm:inline">Back to Courses</span>
-        </Link>
-      </div>
     </div>
   )
 }
