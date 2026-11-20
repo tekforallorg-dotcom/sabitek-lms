@@ -224,9 +224,9 @@ export default function InterviewPrepComingSoon() {
             <div className="max-w-sm mx-auto bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-3">
               <div className="flex items-center justify-center gap-2 text-green-400">
                 <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-semibold">You're on the list!</span>
+                <span className="text-sm font-semibold">You&apos;re on the list!</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">We'll notify you when Interview Prep launches.</p>
+              <p className="text-xs text-gray-400 mt-1">We&apos;ll notify you when Interview Prep launches.</p>
             </div>
           )}
         </div>

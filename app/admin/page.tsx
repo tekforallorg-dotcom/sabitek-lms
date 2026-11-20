@@ -152,7 +152,7 @@ export default function AdminDashboard() {
                 <span className="font-serif italic text-red-600">overview</span>
               </h1>
               <p className="text-gray-600 mt-1">
-                Here's what's happening with your platform today.
+                Here&apos;s what&apos;s happening with your platform today.
               </p>
             </div>
           </div>

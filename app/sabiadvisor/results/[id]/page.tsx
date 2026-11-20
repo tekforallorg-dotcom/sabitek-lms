@@ -467,7 +467,7 @@ export default function ResultsPage({ params }: { params: Promise<{ id: string }
                 <Lightbulb className="w-4 h-4 text-gray-600" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">Alternative Paths</h2>
-              <span className="text-xs text-gray-500">(if primary paths don't fit)</span>
+              <span className="text-xs text-gray-500">(if primary paths don&apos;t fit)</span>
             </div>
             
             <div className="space-y-3">

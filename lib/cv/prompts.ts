@@ -490,7 +490,7 @@ export function extractJSON(content: string): object | null {
     return JSON.parse(jsonMatch[0])
   } catch {
     // Try to fix common JSON issues
-    let fixed = jsonMatch[0]
+    const fixed = jsonMatch[0]
       .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
       .replace(/'/g, '"') // Replace single quotes
       .replace(/(\w+):/g, '"$1":') // Quote unquoted keys

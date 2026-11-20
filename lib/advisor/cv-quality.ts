@@ -111,7 +111,7 @@ export function validateCVOutput(
   let totalBullets = 0
   let bulletsWithMetrics = 0
   let bulletsWithActionVerbs = 0
-  let bulletLengths: number[] = []
+  const bulletLengths: number[] = []
 
   cv.experience.forEach((exp, idx) => {
     const isRecent = idx < 2
@@ -196,7 +196,7 @@ export function validateCVOutput(
   }
 
   // 4. Keyword coverage (for tailor mode)
-  let keywordCoverage = { total: 0, found: 0, missing: [] as string[] }
+  const keywordCoverage = { total: 0, found: 0, missing: [] as string[] }
   
   if (roleProfile.keywords.length > 0) {
     const cvText = JSON.stringify(cv).toLowerCase()

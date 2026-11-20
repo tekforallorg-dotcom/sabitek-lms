@@ -115,7 +115,7 @@ export default function SupportPage() {
           
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Find quick answers, explore guides, or talk directly to the Sabitek team. 
-            We're here to support your learning and teaching.
+            We&apos;re here to support your learning and teaching.
           </p>
 
           {/* Search Bar */}
@@ -274,7 +274,7 @@ export default function SupportPage() {
             </h2>
             
             <p className="text-base text-gray-600 mb-8 max-w-xl mx-auto">
-              Can't find what you're looking for? Our team reads every message and will 
+              Can&apos;t find what you&apos;re looking for? Our team reads every message and will 
               get back to you with support tailored to your situation.
             </p>
             

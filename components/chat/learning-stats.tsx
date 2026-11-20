@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import {
   X, TrendingUp, Target, Award, Brain, Flame, Calendar,
@@ -445,13 +446,13 @@ const LearningStats = memo(({ isOpen, onClose }: LearningStatsProps) => {
                             <p className="text-xs text-gray-500">Matched to your learning goals</p>
                           </div>
                         </div>
-                        <a
+                        <Link
                           href="/courses"
                           className="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center gap-1 group"
                         >
                           View All
                           <ArrowUp className="w-3.5 h-3.5 rotate-45 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                        </a>
+                        </Link>
                       </div>
 
                       <div className="space-y-2.5">

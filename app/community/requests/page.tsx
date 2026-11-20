@@ -644,7 +644,7 @@ function RequestsContent() {
           ) : (
             <div className="text-center py-12">
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-4">You haven't posted any requests yet</p>
+              <p className="text-sm text-gray-600 mb-4">You haven&apos;t posted any requests yet</p>
               <Button
                 onClick={() => setShowCreateModal(true)}
                 className="bg-red-500 hover:bg-red-600 text-white text-sm"
@@ -673,7 +673,7 @@ function RequestsContent() {
                       </h3>
                       {offer.message && (
                         <p className="text-xs text-gray-500 line-clamp-2 mb-2">
-                          Your message: "{offer.message}"
+                          Your message: &quot;{offer.message}&quot;
                         </p>
                       )}
                       {offer.proposed_rate_ngn && (
@@ -705,7 +705,7 @@ function RequestsContent() {
           ) : (
             <div className="text-center py-12">
               <HandHelping className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-4">You haven't made any offers yet</p>
+              <p className="text-sm text-gray-600 mb-4">You haven&apos;t made any offers yet</p>
               <Button
                 onClick={() => setActiveTab('browse')}
                 className="bg-red-500 hover:bg-red-600 text-white text-sm"

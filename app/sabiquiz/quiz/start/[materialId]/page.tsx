@@ -504,7 +504,7 @@ export default function QuizStartPage() {
                     ))}
                   </select>
                   <p className="text-xs text-gray-500 mt-2">
-                    If fewer questions are available, we'll use all available questions.
+                    If fewer questions are available, we&apos;ll use all available questions.
                   </p>
                 </div>
 
@@ -513,7 +513,7 @@ export default function QuizStartPage() {
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                     <p className="text-sm text-amber-800">
-                      Only {availableQuestions} questions available. You'll answer <span className="font-semibold">{finalCount}</span> questions.
+                      Only {availableQuestions} questions available. You&apos;ll answer <span className="font-semibold">{finalCount}</span> questions.
                     </p>
                   </div>
                 )}
@@ -705,7 +705,7 @@ export default function QuizStartPage() {
                     <>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                        Don't spend too long on any single question
+                        Don&apos;t spend too long on any single question
                       </li>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
@@ -729,11 +729,11 @@ export default function QuizStartPage() {
                       </li>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-                        Only answer when you're confident
+                        Only answer when you&apos;re confident
                       </li>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-                        Take your time - there's no rush
+                        Take your time - there&apos;s no rush
                       </li>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
@@ -757,7 +757,7 @@ export default function QuizStartPage() {
                       </li>
                       <li className="flex items-start gap-2 text-sm text-gray-700">
                         <ChevronRight className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                        You've got this!
+                        You&apos;ve got this!
                       </li>
                     </>
                   )}

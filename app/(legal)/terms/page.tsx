@@ -86,7 +86,7 @@ export default function TermsPage() {
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
             <p>
-              By accessing and using Sabitek ("the Platform", "we", "us", "our"), you accept and 
+              By accessing and using Sabitek (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), you accept and 
               agree to be bound by these Terms and Conditions and our Privacy Policy.
             </p>
             
@@ -278,7 +278,7 @@ export default function TermsPage() {
               <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                 <p className="font-semibold text-blue-900 mb-3">30-Day Money-Back Guarantee</p>
                 <p className="text-sm text-blue-800 mb-3">
-                  If you're not satisfied with a course, you may request a refund within 30 days 
+                  If you&apos;re not satisfied with a course, you may request a refund within 30 days 
                   of purchase, provided:
                 </p>
                 <ul className="space-y-2 text-sm text-blue-800">
@@ -334,7 +334,7 @@ export default function TermsPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">5.2 Trademarks</h3>
               <p>
-                "Sabitek," the Sabitek logo, "SabiQuiz," "SabiAdvisor," and other platform features 
+                &quot;Sabitek,&quot; the Sabitek logo, &quot;SabiQuiz,&quot; &quot;SabiAdvisor,&quot; and other platform features 
                 are trademarks of Tek4All. You may not use these marks without prior written permission.
               </p>
             </div>
@@ -466,9 +466,9 @@ export default function TermsPage() {
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">8.1 Service "As Is"</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">8.1 Service &quot;As Is&quot;</h3>
               <p>
-                Sabitek is provided "as is" and "as available" without warranties of any kind, either 
+                Sabitek is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either 
                 express or implied, including but not limited to warranties of merchantability, fitness 
                 for a particular purpose, or non-infringement.
               </p>

@@ -188,7 +188,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
               </div>
 
               <p className="text-gray-600 text-sm mb-6">
-                This could mean the certificate doesn't exist, was entered incorrectly, or has been revoked.
+                This could mean the certificate doesn&apos;t exist, was entered incorrectly, or has been revoked.
               </p>
 
               <div className="space-y-3">

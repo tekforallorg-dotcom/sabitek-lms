@@ -126,7 +126,7 @@ async function attemptRepair(
 ): Promise<ReviewResult> {
   let currentQuestion = question
   let currentScore = originalScore
-  let fixesApplied: string[] = []
+  const fixesApplied: string[] = []
 
   for (let attempt = 0; attempt < CONFIG.MAX_REPAIR_ATTEMPTS; attempt++) {
     try {

@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
             </h2>
 
             <p className="text-gray-400 text-lg mb-10 max-w-md">
-              We've sent you a secure link to reset your password. Follow the instructions in the email.
+              We&apos;ve sent you a secure link to reset your password. Follow the instructions in the email.
             </p>
 
             {/* Steps */}
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <CardTitle className="text-2xl font-bold text-gray-900">Check Your Email</CardTitle>
                 <CardDescription className="text-gray-600">
-                  We've sent a password reset link to<br />
+                  We&apos;ve sent a password reset link to<br />
                   <strong className="text-gray-900">{email}</strong>
                 </CardDescription>
               </CardHeader>
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 
                 <p className="text-sm text-gray-500 text-center">
-                  Didn't receive the email? Check your spam folder or try again.
+                  Didn&apos;t receive the email? Check your spam folder or try again.
                 </p>
 
                 <Link href="/auth/login" className="block">
@@ -174,7 +174,7 @@ export default function ForgotPasswordPage() {
           </h2>
 
           <p className="text-gray-400 text-lg mb-10 max-w-md">
-            No worries! Enter your email and we'll send you a secure link to reset your password.
+            No worries! Enter your email and we&apos;ll send you a secure link to reset your password.
           </p>
 
           {/* Features */}
@@ -219,7 +219,7 @@ export default function ForgotPasswordPage() {
                 Forgot Password?
               </CardTitle>
               <CardDescription className="text-center text-gray-600">
-                Enter your email and we'll send you a reset link
+                Enter your email and we&apos;ll send you a reset link
               </CardDescription>
             </CardHeader>
             <CardContent className="px-6 pb-8">

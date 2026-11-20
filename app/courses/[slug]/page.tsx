@@ -619,7 +619,7 @@ export default function CourseDetailPage() {
               </h2>
 
               <p className="text-sm text-gray-600 mb-6">
-                You've successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
+                You&apos;ve successfully completed <span className="font-semibold text-gray-900">{course.title}</span>!
               </p>
 
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
@@ -886,7 +886,7 @@ export default function CourseDetailPage() {
                 {modules.length > 0 && (
                   <div className="mt-6 space-y-2 text-left max-w-2xl mx-auto">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                      What you'll learn
+                      What you&apos;ll learn
                     </p>
                     {modules.map((module, idx) => (
                       <div
@@ -1048,7 +1048,7 @@ export default function CourseDetailPage() {
                   {completedLessons.size === lessons.length && (
                     <p className="text-center text-sm text-gray-600 mt-3 flex items-center justify-center gap-2">
                       <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      You've completed all lessons! Click above to get your certificate.
+                      You&apos;ve completed all lessons! Click above to get your certificate.
                     </p>
                   )}
                 </div>
