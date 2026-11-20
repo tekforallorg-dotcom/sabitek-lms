@@ -41,18 +41,18 @@ const TYPE_META: Record<
   },
   announcement: {
     icon: Megaphone,
-    tile: 'bg-rose-50 border border-rose-100',
-    icon_color: 'text-rose-500',
+    tile: 'bg-red-50 border border-gray-200',
+    icon_color: 'text-red-600',
   },
   cohort: {
     icon: Users,
-    tile: 'bg-rose-50 border border-rose-100',
-    icon_color: 'text-rose-500',
+    tile: 'bg-red-50 border border-gray-200',
+    icon_color: 'text-red-600',
   },
   completion: {
     icon: GraduationCap,
-    tile: 'bg-emerald-50 border border-emerald-100',
-    icon_color: 'text-emerald-500',
+    tile: 'bg-green-50 border border-green-100',
+    icon_color: 'text-green-500',
   },
   system: {
     icon: Info,
@@ -147,30 +147,30 @@ export default function NotificationBell() {
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 rounded-full text-gray-500 hover:text-red-600 hover:bg-rose-50 transition-colors cursor-pointer"
+        className="relative p-2 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
         aria-label="Notifications"
       >
         <Bell className="w-5 h-5" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-gradient-to-b from-red-500 to-rose-600 text-white text-[9px] font-bold flex items-center justify-center tabular-nums">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-xs font-medium flex items-center justify-center tabular-nums">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 z-50 bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 z-50 bg-white rounded-xl border border-gray-200 overflow-hidden">
           <span
-            className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+            className="absolute top-0 inset-x-8 h-px bg-gray-200"
             aria-hidden="true"
           />
 
-          <div className="flex items-center justify-between px-4 py-3 border-b border-rose-50">
-            <span className="font-semibold text-sm text-gray-900">Notifications</span>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <span className="font-medium text-sm text-gray-900">Notifications</span>
             {unread > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-red-600 font-semibold hover:text-rose-700 transition-colors cursor-pointer"
+                className="text-xs text-red-600 font-medium hover:text-red-700 transition-colors cursor-pointer"
               >
                 Mark all read
               </button>
@@ -179,8 +179,8 @@ export default function NotificationBell() {
 
           {items.length === 0 ? (
             <div className="flex flex-col items-center text-center px-6 py-10">
-              <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mb-3">
-                <Bell className="w-6 h-6 text-rose-200" />
+              <div className="w-12 h-12 rounded-full bg-red-50 border border-gray-200 flex items-center justify-center mb-3">
+                <Bell className="w-6 h-6 text-red-200" />
               </div>
               <p className="text-sm text-gray-500">Nothing yet</p>
               <p className="text-xs text-gray-400 mt-1">
@@ -201,8 +201,8 @@ export default function NotificationBell() {
                       if (isUnread) markOneRead(n.id)
                       setOpen(false)
                     }}
-                    className={`flex gap-3 px-4 py-3 border-b border-rose-50/60 last:border-0 hover:bg-rose-50/60 transition-colors ${
-                      isUnread ? 'bg-rose-50/40' : ''
+                    className={`flex gap-3 px-4 py-3 border-b border-gray-200 last:border-0 hover:bg-gray-50 transition-colors ${
+                      isUnread ? 'bg-gray-50' : ''
                     }`}
                   >
                     <div
@@ -211,7 +211,7 @@ export default function NotificationBell() {
                       <Icon className={`w-4 h-4 ${meta.icon_color}`} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         {isUnread && (
                           <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-500" aria-hidden="true" />
                         )}
@@ -224,11 +224,11 @@ export default function NotificationBell() {
                         </p>
                       </div>
                       {n.body && (
-                        <p className="text-xs text-gray-400 line-clamp-2 mt-0.5">
+                        <p className="text-xs text-gray-400 line-clamp-2 mt-1">
                           {n.body}
                         </p>
                       )}
-                      <p className="text-[11px] text-gray-400 mt-1 tabular-nums">
+                      <p className="text-xs text-gray-400 mt-1 tabular-nums">
                         {relativeTime(n.created_at)}
                       </p>
                     </div>

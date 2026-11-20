@@ -25,8 +25,8 @@ function SabiBotIcon({ className }: { className?: string }) {
 
 export default function SabiLoader({ text = 'Loading...', size = 'md' }: SabiLoaderProps) {
   const iconSize = size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-5 h-5' : 'w-6 h-6'
-  const gap = size === 'sm' ? 'gap-1' : size === 'md' ? 'gap-1.5' : 'gap-2'
-  const textSize = size === 'sm' ? 'text-[10px]' : size === 'md' ? 'text-xs' : 'text-sm'
+  const gap = size === 'sm' ? 'gap-1' : size === 'md' ? 'gap-2' : 'gap-2'
+  const textSize = size === 'sm' ? 'text-xs' : size === 'md' ? 'text-xs' : 'text-sm'
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
@@ -70,7 +70,7 @@ export default function SabiLoader({ text = 'Loading...', size = 'md' }: SabiLoa
 // Simple dots version (alternative)
 export function SabiLoaderDots({ text = 'Loading...', size = 'md' }: SabiLoaderProps) {
   const dotSize = size === 'sm' ? 'w-2 h-2' : size === 'md' ? 'w-2.5 h-2.5' : 'w-3 h-3'
-  const gap = size === 'sm' ? 'gap-1.5' : size === 'md' ? 'gap-2' : 'gap-2.5'
+  const gap = size === 'sm' ? 'gap-2' : size === 'md' ? 'gap-2' : 'gap-3'
   const textSize = size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'
 
   return (

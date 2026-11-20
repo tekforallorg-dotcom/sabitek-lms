@@ -227,16 +227,16 @@ export default function QuizPage({ params }: PageProps) {
     }
   }
 
-  const inputClasses = "rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
-  const labelClasses = "text-[13px] font-medium text-gray-700"
+  const inputClasses = "rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+  const labelClasses = "text-sm font-medium text-gray-700"
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fffcfb]">
+      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-rose-100/70 rounded-xl w-1/3"></div>
-            <div className="h-64 bg-rose-100/50 rounded-3xl"></div>
+            <div className="h-8 bg-gray-50 rounded-xl w-1/3"></div>
+            <div className="h-64 bg-gray-50 rounded-xl"></div>
           </div>
         </div>
       </div>
@@ -244,7 +244,7 @@ export default function QuizPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 sm:py-10 max-w-4xl">
         <button
           onClick={() => router.push('/instructor')}
@@ -255,8 +255,8 @@ export default function QuizPage({ params }: PageProps) {
         </button>
 
         <div className="mb-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Quiz builder</p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">Quiz builder</p>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
             {quiz.id ? 'Edit the' : 'Create a'} <span className="font-serif italic text-red-600">quiz</span> for {lessonTitle}
           </h1>
         </div>
@@ -269,10 +269,10 @@ export default function QuizPage({ params }: PageProps) {
         )}
 
         {/* Quiz Settings */}
-        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] mb-8">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-          <div className="px-5 sm:px-8 py-5 border-b border-rose-100/70">
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900">Quiz Settings</h2>
+        <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 mb-8">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
+          <div className="px-5 sm:px-8 py-5 border-b border-gray-200">
+            <h2 className="text-lg font-medium tracking-tight text-gray-900">Quiz Settings</h2>
           </div>
           <div className="px-5 sm:px-8 py-6 space-y-4">
             <div className="space-y-2">
@@ -332,15 +332,15 @@ export default function QuizPage({ params }: PageProps) {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold tracking-tight text-gray-900">Questions</h2>
-              <span className="px-2.5 py-0.5 bg-rose-50 border border-rose-100 text-red-600 rounded-full text-xs font-semibold">
+              <h2 className="text-xl font-medium tracking-tight text-gray-900">Questions</h2>
+              <span className="px-3 py-1 bg-red-50 border border-gray-200 text-red-600 rounded-full text-xs font-medium">
                 {quiz.questions.length}
               </span>
             </div>
             <Button
               onClick={addQuestion}
               variant="ghost"
-              className="hover:bg-rose-50 rounded-full text-gray-400 hover:text-red-500"
+              className="hover:bg-red-50 rounded-full text-gray-400 hover:text-red-500"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Question
@@ -348,19 +348,19 @@ export default function QuizPage({ params }: PageProps) {
           </div>
 
           {quiz.questions.map((question, qIndex) => (
-            <div key={question.id} className="border border-rose-100 rounded-xl bg-white/70 shadow-sm">
-              <div className="px-5 sm:px-6 py-4 border-b border-rose-100/70 flex justify-between items-center">
+            <div key={question.id} className="border border-gray-200 rounded-xl bg-white/70 shadow-sm">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 text-red-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-red-50 border border-gray-200 text-red-600 flex items-center justify-center text-sm font-medium flex-shrink-0">
                     {qIndex + 1}
                   </span>
-                  <h3 className="text-base font-semibold tracking-tight text-gray-900">Question {qIndex + 1}</h3>
+                  <h3 className="text-base font-medium tracking-tight text-gray-900">Question {qIndex + 1}</h3>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => removeQuestion(qIndex)}
-                  className="hover:bg-rose-50 rounded-full text-gray-400 hover:text-red-500"
+                  className="hover:bg-red-50 rounded-full text-gray-400 hover:text-red-500"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -388,14 +388,14 @@ export default function QuizPage({ params }: PageProps) {
                         key={oIndex}
                         className={`flex items-center space-x-3 px-3 py-2 rounded-xl border transition-colors ${
                           question.correct_answer === oIndex
-                            ? 'bg-emerald-50 border-emerald-100'
-                            : 'bg-white/70 border-rose-100'
+                            ? 'bg-green-50 border-green-100'
+                            : 'bg-white/70 border-gray-200'
                         }`}
                       >
                         <RadioGroupItem
                           value={oIndex.toString()}
                           id={`q${qIndex}-o${oIndex}`}
-                          className="text-red-600 focus:ring-red-500 border-rose-200"
+                          className="text-red-600 focus:ring-red-500 border-gray-200"
                         />
                         <Input
                           value={option}
@@ -404,7 +404,7 @@ export default function QuizPage({ params }: PageProps) {
                           className={`flex-1 ${inputClasses}`}
                         />
                         {question.correct_answer === oIndex && (
-                          <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full text-xs font-semibold flex-shrink-0">
+                          <span className="px-3 py-1 bg-green-50 border border-green-100 text-green-700 rounded-full text-xs font-medium flex-shrink-0">
                             Correct
                           </span>
                         )}
@@ -428,7 +428,7 @@ export default function QuizPage({ params }: PageProps) {
           ))}
 
           {quiz.questions.length === 0 && (
-            <div className="border border-dashed border-rose-200 bg-rose-50/40 rounded-2xl text-center py-10 px-4 text-sm text-gray-500">
+            <div className="border border-dashed border-gray-200 bg-gray-50 rounded-xl text-center py-10 px-4 text-sm text-gray-500">
               No questions added yet. Click &quot;Add Question&quot; to get started.
             </div>
           )}
@@ -439,9 +439,8 @@ export default function QuizPage({ params }: PageProps) {
           <Button
             onClick={saveQuiz}
             disabled={saving || quiz.questions.length === 0}
-            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+            className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-50"
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
             <span className="relative flex items-center">
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Saving...' : (quiz.id ? 'Update Quiz' : 'Save Quiz')}
@@ -450,7 +449,7 @@ export default function QuizPage({ params }: PageProps) {
           <Button
             variant="outline"
             onClick={() => router.push('/instructor')}
-            className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+            className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
           >
             Cancel
           </Button>

@@ -248,13 +248,13 @@ useEffect(() => {
                   {thread.other_user?.avatar_url ? (
                     <img src={thread.other_user.avatar_url} alt={thread.other_user.full_name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold">
+                    <div className="w-full h-full bg-red-600 flex items-center justify-center text-white font-medium">
                       {thread.other_user?.full_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">{thread.other_user?.full_name || 'Unknown'}</p>
+                  <p className="font-medium text-gray-900 text-sm">{thread.other_user?.full_name || 'Unknown'}</p>
                   {thread.session?.skill && <p className="text-xs text-gray-500">{thread.session.skill.name}</p>}
                 </div>
               </div>
@@ -267,10 +267,10 @@ useEffect(() => {
           {showInfo && thread.session && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                   thread.session.status === 'scheduled' ? 'bg-blue-100 text-blue-600' :
                   thread.session.status === 'completed' ? 'bg-green-100 text-green-600' :
-                  thread.session.status === 'proposed' ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600'
+                  thread.session.status === 'proposed' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'
                 }`}>{thread.session.status}</span>
                 <Button size="sm" variant="outline" onClick={() => router.push('/community/sessions')} className="text-xs">
                   <Calendar className="w-3.5 h-3.5 mr-1" />View Session
@@ -283,7 +283,7 @@ useEffect(() => {
                 </p>
               )}
               {thread.session.meeting_url && thread.session.status === 'scheduled' && (
-                <a href={thread.session.meeting_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors">
+                <a href={thread.session.meeting_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors">
                   <Video className="w-4 h-4" />Join Meeting<ExternalLink className="w-3 h-3" />
                 </a>
               )}
@@ -313,7 +313,7 @@ useEffect(() => {
                     )}
                     {message.content_type === 'system' ? (
                       <div className="flex justify-center">
-                        <p className="px-3 py-1.5 bg-gray-100 text-gray-500 text-xs rounded-lg max-w-xs text-center">{message.content}</p>
+                        <p className="px-3 py-2 bg-gray-100 text-gray-500 text-xs rounded-lg max-w-xs text-center">{message.content}</p>
                       </div>
                     ) : (
                       <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -323,14 +323,14 @@ useEffect(() => {
                               {message.sender?.avatar_url ? (
                                 <img src={message.sender.avatar_url} alt={message.sender.full_name} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white text-xs font-bold">
+                                <div className="w-full h-full bg-red-600 flex items-center justify-center text-white text-xs font-medium">
                                   {message.sender?.full_name?.charAt(0)?.toUpperCase() || '?'}
                                 </div>
                               )}
                             </div>
                           )}
                           <div>
-                            <div className={`px-4 py-2 rounded-2xl ${isMe ? 'bg-red-500 text-white rounded-br-md' : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'}`}>
+                            <div className={`px-4 py-2 rounded-xl ${isMe ? 'bg-red-500 text-white rounded-br-md' : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'}`}>
                               <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                             </div>
                             <p className={`text-xs text-gray-400 mt-1 ${isMe ? 'text-right' : ''}`}>{formatMessageTime(message.created_at)}</p>
@@ -362,7 +362,7 @@ useEffect(() => {
                 placeholder="Type a message..."
                 rows={1}
                 maxLength={2000}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white text-sm"
+                className="w-full px-4 py-3 bg-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white text-sm"
                 style={{ maxHeight: '120px', minHeight: '44px' }}
               />
             </div>

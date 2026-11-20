@@ -142,7 +142,7 @@ Rules:
       }
     }
 
-    // ✅ SYNC GOALS TO USER MEMORY (NEW CODE)
+    // SYNC GOALS TO USER MEMORY (NEW CODE)
     await syncGoalsToMemory(userId)
 
     return NextResponse.json({

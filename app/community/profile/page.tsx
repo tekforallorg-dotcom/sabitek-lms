@@ -253,7 +253,7 @@ export default function CommunityProfilePage() {
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">My Community Profile</h1>
+          <h1 className="text-xl sm:text-2xl font-medium text-gray-900">My Community Profile</h1>
           <p className="text-xs sm:text-sm text-gray-600">Set up your profile to connect with learners and mentors</p>
         </div>
       </div>
@@ -347,7 +347,7 @@ export default function CommunityProfilePage() {
                     ...formData, 
                     languages: toggleArrayItem(formData.languages, lang.value) 
                   })}
-                  className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                  className={`px-3 py-2 text-xs rounded-full transition-colors ${
                     formData.languages.includes(lang.value)
                       ? 'bg-red-500 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -374,7 +374,7 @@ export default function CommunityProfilePage() {
                       ...formData, 
                       preferred_session_lengths: toggleArrayItem(formData.preferred_session_lengths, len.value) 
                     })}
-                    className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                    className={`px-3 py-2 text-xs rounded-full transition-colors ${
                       formData.preferred_session_lengths.includes(len.value)
                         ? 'bg-red-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -398,7 +398,7 @@ export default function CommunityProfilePage() {
                       ...formData, 
                       preferred_meeting_methods: toggleArrayItem(formData.preferred_meeting_methods, method.value) 
                     })}
-                    className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                    className={`px-3 py-2 text-xs rounded-full transition-colors ${
                       formData.preferred_meeting_methods.includes(method.value)
                         ? 'bg-red-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -574,7 +574,7 @@ export default function CommunityProfilePage() {
           <div className="bg-white rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-medium text-gray-900">
                   Add {addSkillType === 'teach' ? 'Teaching' : 'Learning'} Skill
                 </h3>
                 <button

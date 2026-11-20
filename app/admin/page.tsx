@@ -137,17 +137,17 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-red-50 border border-gray-200 flex items-center justify-center">
               <UserCheck className="w-6 h-6 text-red-500" />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
                 Platform admin
               </p>
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+              <h1 className="text-2xl font-medium tracking-tight text-gray-900">
                 Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Admin'} — your{' '}
                 <span className="font-serif italic text-red-600">overview</span>
               </h1>
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
           <button
             onClick={fetchDashboardData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
@@ -173,44 +173,44 @@ export default function AdminDashboard() {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] p-5 animate-pulse"
+              className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse"
             >
-              <div className="w-10 h-10 bg-rose-50/60 rounded-xl mb-3"></div>
-              <div className="w-16 h-3 bg-rose-50/60 rounded-full mb-2"></div>
-              <div className="w-20 h-6 bg-rose-50/60 rounded-lg"></div>
+              <div className="w-10 h-10 bg-gray-50 rounded-xl mb-3"></div>
+              <div className="w-16 h-3 bg-gray-50 rounded-full mb-2"></div>
+              <div className="w-20 h-6 bg-gray-50 rounded-lg"></div>
             </div>
           ))}
         </div>
       ) : metrics ? (
         <section className="space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
             Platform cockpit
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total users', value: metrics.totals.users, icon: Users, from: 'from-red-500', to: 'to-rose-600' },
-              { label: 'Learners', value: metrics.totals.learners, icon: GraduationCap, from: 'from-emerald-500', to: 'to-emerald-600' },
-              { label: 'Instructors', value: metrics.totals.instructors, icon: Presentation, from: 'from-rose-500', to: 'to-rose-600' },
-              { label: 'Institutions', value: metrics.totals.institutions, icon: Building2, from: 'from-amber-500', to: 'to-amber-600' },
-              { label: 'Published courses', value: metrics.totals.published_courses, icon: BookOpen, from: 'from-red-500', to: 'to-rose-600' },
-              { label: 'Enrollments', value: metrics.totals.enrollments, icon: TrendingUp, from: 'from-rose-500', to: 'to-rose-600' },
-              { label: 'Certificates', value: metrics.totals.certificates, icon: Award, from: 'from-amber-500', to: 'to-amber-600' },
-              { label: 'Cohorts', value: metrics.totals.cohorts, icon: UsersRound, from: 'from-emerald-500', to: 'to-emerald-600' },
+              { label: 'Total users', value: metrics.totals.users, icon: Users, from: 'bg-red-600', to: 'bg-red-600' },
+              { label: 'Learners', value: metrics.totals.learners, icon: GraduationCap, from: 'bg-green-600', to: 'bg-green-600' },
+              { label: 'Instructors', value: metrics.totals.instructors, icon: Presentation, from: 'bg-red-600', to: 'bg-red-600' },
+              { label: 'Institutions', value: metrics.totals.institutions, icon: Building2, from: 'bg-amber-600', to: 'bg-amber-600' },
+              { label: 'Published courses', value: metrics.totals.published_courses, icon: BookOpen, from: 'bg-red-600', to: 'bg-red-600' },
+              { label: 'Enrollments', value: metrics.totals.enrollments, icon: TrendingUp, from: 'bg-red-600', to: 'bg-red-600' },
+              { label: 'Certificates', value: metrics.totals.certificates, icon: Award, from: 'bg-amber-600', to: 'bg-amber-600' },
+              { label: 'Cohorts', value: metrics.totals.cohorts, icon: UsersRound, from: 'bg-green-600', to: 'bg-green-600' },
             ].map((tile) => {
               const Icon = tile.icon
               return (
                 <div
                   key={tile.label}
-                  className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] p-5"
+                  className="bg-white rounded-xl border border-gray-200 p-5"
                 >
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-b ${tile.from} ${tile.to} flex items-center justify-center shadow-sm mb-3`}>
+                  <div className={`w-10 h-10 rounded-xl ${tile.from} ${tile.to} flex items-center justify-center shadow-sm mb-3`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                     {tile.label}
                   </p>
-                  <p className="text-2xl font-semibold tracking-tight text-gray-900 tabular-nums">
+                  <p className="text-2xl font-medium tracking-tight text-gray-900 tabular-nums">
                     {tile.value.toLocaleString()}
                   </p>
                 </div>
@@ -218,17 +218,17 @@ export default function AdminDashboard() {
             })}
           </div>
 
-          <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 border border-white shadow-[0_20px_45px_-20px_rgba(225,29,72,0.4)] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-b from-red-500 to-rose-600 flex items-center justify-center shadow-sm shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-red-600 flex items-center justify-center shadow-sm shrink-0">
                 <Cpu className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
                   AI spend this month
                 </p>
                 <div className="flex items-baseline gap-3 mt-1 flex-wrap">
-                  <span className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">
+                  <span className="text-3xl font-medium tracking-tight text-gray-900 tabular-nums">
                     ${metrics.ai_this_month.est_cost_usd.toFixed(2)} <span className="text-base font-normal text-gray-400">est.</span>
                   </span>
                   <span className="text-sm text-gray-500 tabular-nums">
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-red-700">
+        <div className="bg-red-50 border border-gray-200 rounded-xl p-4 text-red-700">
           {error}
         </div>
       )}
@@ -261,14 +261,14 @@ export default function AdminDashboard() {
       {loading && !stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-rose-50/60 rounded-xl"></div>
-                <div className="w-16 h-6 bg-rose-50/60 rounded-xl"></div>
+                <div className="w-12 h-12 bg-gray-50 rounded-xl"></div>
+                <div className="w-16 h-6 bg-gray-50 rounded-xl"></div>
               </div>
               <div className="space-y-2">
-                <div className="w-24 h-4 bg-rose-50/60 rounded-xl"></div>
-                <div className="w-32 h-8 bg-rose-50/60 rounded-xl"></div>
+                <div className="w-24 h-4 bg-gray-50 rounded-xl"></div>
+                <div className="w-32 h-8 bg-gray-50 rounded-xl"></div>
               </div>
             </div>
           ))}
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
             change={stats.totalUsers.change}
             trend={stats.totalUsers.trend}
             icon={Users}
-            bgColor="bg-rose-50 border border-rose-100"
+            bgColor="bg-red-50 border border-gray-200"
             iconColor="text-red-500"
             subtitle={`${stats.mau.value} active (30 days)`}
           />
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
             change={stats.activeCourses.change}
             trend={stats.activeCourses.trend}
             icon={BookOpen}
-            bgColor="bg-rose-50 border border-rose-100"
+            bgColor="bg-red-50 border border-gray-200"
             iconColor="text-red-500"
             subtitle={`${stats.activeCourses.total} total courses`}
           />
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
             change={stats.totalCertificates.change}
             trend={stats.totalCertificates.trend}
             icon={Award}
-            bgColor="bg-rose-50 border border-rose-100"
+            bgColor="bg-red-50 border border-gray-200"
             iconColor="text-red-500"
           />
           <StatCard
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
             change={stats.totalEnrollments.change}
             trend={stats.totalEnrollments.trend}
             icon={TrendingUp}
-            bgColor="bg-rose-50 border border-rose-100"
+            bgColor="bg-red-50 border border-gray-200"
             iconColor="text-red-500"
           />
         </div>
@@ -318,51 +318,51 @@ export default function AdminDashboard() {
 
       {/* Quick Actions & Activity */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-          <h3 className="font-semibold tracking-tight text-gray-900 mb-4">Quick Actions</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-medium tracking-tight text-gray-900 mb-4">Quick Actions</h3>
           <div className="space-y-3">
             <Link
               href="/admin/users"
-              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-200 hover:border-gray-200 hover:bg-gray-50 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               View All Users
             </Link>
             <Link
               href="/admin/courses"
-              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-200 hover:border-gray-200 hover:bg-gray-50 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               Manage Courses
             </Link>
             <Link
               href="/admin/certificates"
-              className="block w-full text-left px-4 py-2 rounded-xl bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50/60 text-sm font-medium text-gray-700 shadow-sm transition-colors"
+              className="block w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-200 hover:border-gray-200 hover:bg-gray-50 text-sm font-medium text-gray-700 shadow-sm transition-colors"
             >
               View Certificates
             </Link>
           </div>
         </div>
 
-        <div className="md:col-span-2 bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-          <h3 className="font-semibold tracking-tight text-gray-900 mb-4">Recent Activity</h3>
+        <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-medium tracking-tight text-gray-900 mb-4">Recent Activity</h3>
           <ActivityFeed activities={activity} loading={loading} />
         </div>
       </div>
 
       {/* System Status */}
-      <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-        <h3 className="font-semibold tracking-tight text-gray-900 mb-4">System Status</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 className="font-medium tracking-tight text-gray-900 mb-4">System Status</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <span className="text-sm text-gray-600">Database</span>
-            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Healthy</span>
+            <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 text-xs font-medium rounded-full">Healthy</span>
           </div>
-          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <span className="text-sm text-gray-600">Authentication</span>
-            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Active</span>
+            <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 text-xs font-medium rounded-full">Active</span>
           </div>
-          <div className="flex items-center justify-between p-3 bg-rose-50/40 border border-rose-100/60 rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <span className="text-sm text-gray-600">API</span>
-            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold rounded-full">Online</span>
+            <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-100 text-xs font-medium rounded-full">Online</span>
           </div>
         </div>
       </div>

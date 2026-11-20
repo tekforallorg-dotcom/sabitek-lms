@@ -159,13 +159,13 @@ function JoinCohortInner() {
       </div>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-pink-100 via-pink-50 to-red-50">
+      <div className="bg-red-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="text-center max-w-lg mx-auto">
-            <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="w-16 h-16 bg-white/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <Key className="w-8 h-8 text-red-500" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Join a Cohort</h1>
+            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900">Join a Cohort</h1>
             <p className="text-gray-600 mt-2">Enter your access code to join a learning program</p>
           </div>
         </div>
@@ -175,11 +175,11 @@ function JoinCohortInner() {
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4">
         {/* Success State */}
         {success ? (
-          <div className="bg-white rounded-2xl border shadow-sm p-8 text-center">
-            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-emerald-500" />
+          <div className="bg-white rounded-xl border shadow-sm p-8 text-center">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">You&apos;re In!</h2>
+            <h2 className="text-xl font-medium text-gray-900 mb-2">You&apos;re In!</h2>
             <p className="text-gray-600 text-sm mb-1">{success.message}</p>
             <p className="text-gray-900 font-medium mb-1">{success.cohortName}</p>
             {success.programName && (
@@ -209,11 +209,11 @@ function JoinCohortInner() {
           </div>
         ) : (
           /* Code Entry Form */
-          <div className="bg-white rounded-2xl border shadow-sm p-6">
+          <div className="bg-white rounded-xl border shadow-sm p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" />
                   <p className="text-red-700 text-sm">{error}</p>
                 </div>
               )}

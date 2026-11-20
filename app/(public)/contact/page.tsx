@@ -84,14 +84,14 @@ export default function ContactPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+      <section className="relative overflow-hidden bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-1.5 rounded-full mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full mb-6 shadow-sm">
             <Mail className="w-4 h-4 text-red-600" />
             <span className="text-xs font-medium text-gray-700">Contact Us</span>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4">
             Get in touch
           </h1>
           <p className="text-base text-gray-600 max-w-xl mx-auto">
@@ -106,7 +106,7 @@ export default function ContactPage() {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Subject Selection */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-4">
+              <label className="block text-sm font-medium text-gray-900 mb-4">
                 What can we help you with? <span className="text-red-600">*</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -118,14 +118,14 @@ export default function ContactPage() {
                     red: isSelected ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-200',
                     blue: isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200',
                     green: isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-200',
-                    purple: isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-200'
+                    purple: isSelected ? 'border-gray-500 bg-gray-50' : 'border-gray-200 hover:border-gray-200'
                   };
 
                   const iconColorClasses = {
                     red: 'text-red-600 bg-red-100',
                     blue: 'text-blue-600 bg-blue-100',
                     green: 'text-green-600 bg-green-100',
-                    purple: 'text-purple-600 bg-purple-100'
+                    purple: 'text-gray-600 bg-gray-100'
                   };
 
                   return (
@@ -144,7 +144,7 @@ export default function ContactPage() {
                           <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm text-gray-900 mb-1">
+                          <div className="font-medium text-sm text-gray-900 mb-1">
                             {subject.label}
                           </div>
                           <div className="text-xs text-gray-600 line-clamp-2">
@@ -166,7 +166,7 @@ export default function ContactPage() {
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
                 Your name <span className="text-red-600">*</span>
               </label>
               <input
@@ -182,7 +182,7 @@ export default function ContactPage() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
                 Your email <span className="text-red-600">*</span>
               </label>
               <input
@@ -198,7 +198,7 @@ export default function ContactPage() {
 
             {/* Message */}
             <div>
-              <label htmlFor="message" className="block text-sm font-semibold text-gray-900 mb-2">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-900 mb-2">
                 Message <span className="text-red-600">*</span>
               </label>
               <textarea
@@ -240,7 +240,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={formState === 'loading' || !formData.subject}
-              className="w-full px-6 py-3.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full px-6 py-4 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {formState === 'loading' ? (
                 <>
@@ -265,13 +265,13 @@ export default function ContactPage() {
       {/* Browse by Topic */}
       <section className="py-12 md:py-16 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 text-center">
+          <h2 className="text-xl font-medium text-gray-900 mb-6 text-center">
             Browse by topic
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Learners</h3>
+              <h3 className="font-medium text-gray-900 mb-3">Learners</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• How do I enrol in a course?</li>
                 <li>• I can&apos;t log in to my account</li>
@@ -280,7 +280,7 @@ export default function ContactPage() {
             </div>
 
             <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Schools & Organisations</h3>
+              <h3 className="font-medium text-gray-900 mb-3">Schools & Organisations</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• How Sabitek works for schools</li>
                 <li>• Starting a pilot programme</li>
@@ -289,7 +289,7 @@ export default function ContactPage() {
             </div>
 
             <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Tutors & Creators</h3>
+              <h3 className="font-medium text-gray-900 mb-3">Tutors & Creators</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Getting started as a tutor</li>
                 <li>• Publishing your first course</li>

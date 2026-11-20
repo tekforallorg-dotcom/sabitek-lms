@@ -25,7 +25,7 @@ export default function EmailConfirmedPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading..." size="lg" />
       </div>
     )
@@ -45,7 +45,7 @@ export default function EmailConfirmedPage() {
             <CardDescription className="mt-2">
               {user?.email && (
                 <>
-                  Your email <span className="font-semibold">{user.email}</span> has been successfully verified.
+                  Your email <span className="font-medium">{user.email}</span> has been successfully verified.
                 </>
               )}
               {!user?.email && (

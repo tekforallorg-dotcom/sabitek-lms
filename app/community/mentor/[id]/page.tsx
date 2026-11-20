@@ -123,7 +123,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
           </div>
         </div>
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="bg-white rounded-2xl p-6 animate-pulse">
+          <div className="bg-white rounded-xl p-6 animate-pulse">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full" />
               <div className="flex-1 space-y-3">
@@ -146,7 +146,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Mentor Not Found</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-2">Mentor Not Found</h2>
           <p className="text-gray-600 mb-6">{error || 'This mentor profile does not exist or is unavailable.'}</p>
           <Button onClick={() => router.push('/community/browse')} className="bg-red-500 hover:bg-red-600 text-white">
             Browse Mentors
@@ -176,11 +176,11 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-b from-red-500 to-red-600 pt-6 pb-16">
+      <div className="bg-red-600 pt-6 pb-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
             {/* Avatar */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden flex-shrink-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-sm overflow-hidden flex-shrink-0">
               {mentor.avatar_url ? (
                 <img
                   src={mentor.avatar_url}
@@ -188,7 +188,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-red-300 to-red-500 flex items-center justify-center text-white text-3xl font-bold">
+                <div className="w-full h-full bg-red-300 flex items-center justify-center text-white text-3xl font-medium">
                   {mentor.display_name?.charAt(0)?.toUpperCase() || '?'}
                 </div>
               )}
@@ -197,7 +197,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
             {/* Info */}
             <div className="flex-1">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                <h1 className="text-xl sm:text-2xl font-medium text-white">
                   {mentor.display_name}
                 </h1>
                 {mentor.is_verified && (
@@ -237,11 +237,11 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
       {/* Stats Cards */}
       <div className="max-w-4xl mx-auto px-4 -mt-10 relative z-10">
         <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          <Card className="bg-white shadow-md border-0">
+          <Card className="bg-white shadow-sm border-0">
             <CardContent className="p-3 sm:p-4 text-center">
-              <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
+              <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
                 <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                <span className="text-lg sm:text-xl font-bold text-gray-900">
+                <span className="text-lg sm:text-xl font-medium text-gray-900">
                   {mentor.avg_rating > 0 ? mentor.avg_rating.toFixed(1) : '-'}
                 </span>
               </div>
@@ -251,11 +251,11 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-md border-0">
+          <Card className="bg-white shadow-sm border-0">
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="flex items-center justify-center gap-1 text-blue-500 mb-1">
                 <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-lg sm:text-xl font-bold text-gray-900">
+                <span className="text-lg sm:text-xl font-medium text-gray-900">
                   {mentor.total_sessions}
                 </span>
               </div>
@@ -263,11 +263,11 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-md border-0">
+          <Card className="bg-white shadow-sm border-0">
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-lg sm:text-xl font-bold text-gray-900">
+                <span className="text-lg sm:text-xl font-medium text-gray-900">
                   {mentor.completion_rate}%
                 </span>
               </div>
@@ -302,7 +302,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
               <div className="space-y-6">
                 {mentor.bio && (
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">About</h3>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">About</h3>
                     <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
                       {mentor.bio}
                     </p>
@@ -310,7 +310,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                 )}
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Session Preferences</h3>
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Session Preferences</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
@@ -342,8 +342,8 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
 
                     {mentor.hourly_rate_ngn && (
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center flex-shrink-0">
-                          <Briefcase className="w-4 h-4 text-yellow-600" />
+                        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                          <Briefcase className="w-4 h-4 text-amber-600" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Hourly Rate</p>
@@ -355,8 +355,8 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                     )}
 
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
-                        <Globe className="w-4 h-4 text-purple-500" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                        <Globe className="w-4 h-4 text-gray-500" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Languages</p>
@@ -387,7 +387,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                             <span className="font-medium text-gray-900">
                               {ps.skill?.name}
                             </span>
-                            <span className={`px-2 py-0.5 text-xs rounded-full ${
+                            <span className={`px-2 py-1 text-xs rounded-full ${
                               ps.level === 'advanced'
                                 ? 'bg-green-100 text-green-700'
                                 : ps.level === 'intermediate'
@@ -439,7 +439,7 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white text-sm font-medium">
+                            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-white text-sm font-medium">
                               {review.reviewer?.full_name?.charAt(0) || '?'}
                             </div>
                           )}
@@ -449,13 +449,13 @@ export default function MentorProfilePage({ params }: MentorPageProps) {
                             <span className="font-medium text-sm text-gray-900">
                               {review.reviewer?.full_name}
                             </span>
-                            <div className="flex items-center gap-0.5">
+                            <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
                                   className={`w-3.5 h-3.5 ${
                                     i < review.rating
-                                      ? 'text-yellow-400 fill-current'
+                                      ? 'text-amber-400 fill-current'
                                       : 'text-gray-300'
                                   }`}
                                 />

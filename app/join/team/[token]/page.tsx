@@ -79,35 +79,24 @@ export default function JoinTeamPage({ params }: { params: Promise<{ token: stri
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Checking your invite..." size="lg" />
       </div>
     )
   }
 
   return (
-    <div className="relative min-h-screen bg-[#fffcfb] flex items-center justify-center px-4 py-12 overflow-hidden">
-      <div className="absolute -top-24 right-[-8%] w-[28rem] h-[28rem] bg-rose-100/70 rounded-full blur-[100px] pointer-events-none" />
-      <div
-        className="absolute inset-0 opacity-[0.3] pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-          backgroundSize: '26px 26px',
-          maskImage: 'radial-gradient(ellipse 65% 55% at 50% 40%, black, transparent)',
-          WebkitMaskImage: 'radial-gradient(ellipse 65% 55% at 50% 40%, black, transparent)',
-        }}
-      />
-
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12 overflow-hidden">
       <div className="relative max-w-md w-full">
-        <div className="relative bg-white/85 backdrop-blur-xl rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_30px_60px_-25px_rgba(225,29,72,0.35)] overflow-hidden">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+        <div className="relative bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
 
           {error ? (
             <div className="px-6 sm:px-8 py-10 text-center">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 shadow-[0_12px_24px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5">
+              <div className="mx-auto w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center mb-5">
                 <XCircle className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-3">
+              <h1 className="text-2xl font-medium tracking-tight text-gray-900 mb-3">
                 Invite not{' '}
                 <span className="font-serif italic text-red-600">available</span>
               </h1>
@@ -117,7 +106,7 @@ export default function JoinTeamPage({ params }: { params: Promise<{ token: stri
               <Link href="/">
                 <Button
                   variant="outline"
-                  className="w-full h-11 bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5"
+                  className="w-full h-11 bg-white border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 text-sm font-medium rounded-full shadow-sm transition-all"
                 >
                   Back to Home
                 </Button>
@@ -125,19 +114,19 @@ export default function JoinTeamPage({ params }: { params: Promise<{ token: stri
             </div>
           ) : preview ? (
             <div className="px-6 sm:px-8 py-10 text-center">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_12px_24px_-8px_rgba(225,29,72,0.5)] flex items-center justify-center mb-5">
+              <div className="mx-auto w-14 h-14 rounded-xl bg-red-600 flex items-center justify-center mb-5">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">
                 Team invitation
               </p>
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2">
+              <h1 className="text-2xl font-medium tracking-tight text-gray-900 mb-2">
                 Join{' '}
                 <span className="font-serif italic text-red-600">{preview.institution_name}</span>
               </h1>
               <p className="text-sm text-gray-500 mb-7">
                 You&apos;ve been invited to join as{' '}
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 border border-rose-100 text-rose-600 rounded-full text-xs font-semibold align-middle">
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 border border-gray-200 text-red-600 rounded-full text-xs font-medium align-middle">
                   <CheckCircle className="w-3 h-3" />
                   {preview.role_label}
                 </span>
@@ -147,9 +136,8 @@ export default function JoinTeamPage({ params }: { params: Promise<{ token: stri
                 <Button
                   onClick={handleAccept}
                   disabled={accepting}
-                  className="group relative overflow-hidden w-full h-12 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                  className="group relative overflow-hidden w-full h-12 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-50"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   {accepting ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -158,23 +146,22 @@ export default function JoinTeamPage({ params }: { params: Promise<{ token: stri
                   ) : (
                     <span className="flex items-center gap-2">
                       Accept Invitation
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-4 h-4 transition-transform" />
                     </span>
                   )}
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <Link href={`/auth/register?invite=${encodeURIComponent(token)}`} className="block">
-                    <Button className="group relative overflow-hidden w-full h-12 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
+                    <Button className="group relative overflow-hidden w-full h-12 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all">
                       Create Account &amp; Join
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                     </Button>
                   </Link>
                   <Link href="/auth/login" className="block">
                     <Button
                       variant="outline"
-                      className="w-full h-11 bg-white/70 backdrop-blur border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 text-sm font-semibold rounded-full shadow-sm transition-all hover:-translate-y-0.5"
+                      className="w-full h-11 bg-white border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 text-sm font-medium rounded-full shadow-sm transition-all"
                     >
                       I already have an account
                     </Button>

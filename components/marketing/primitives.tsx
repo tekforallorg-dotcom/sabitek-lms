@@ -1,10 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 
-/** Film-grain data URI shared by marketing surfaces. */
-export const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")"
-
 /** Scroll-reveal wrapper (IntersectionObserver, respects reduced motion). */
 export function Reveal({
   children,
@@ -58,18 +54,18 @@ export function SectionLabel({
   if (centered) {
     return (
       <div className="flex items-center justify-center gap-3 mb-4">
-        <span className="h-px w-10 bg-gradient-to-r from-transparent to-red-400" />
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
+        <span className="h-px w-10 bg-red-600" />
+        <span className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
           {children}
         </span>
-        <span className="h-px w-10 bg-gradient-to-l from-transparent to-red-400" />
+        <span className="h-px w-10 bg-red-600" />
       </div>
     )
   }
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="h-px w-8 bg-gradient-to-r from-red-500 to-transparent" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
+      <span className="h-px w-8 bg-red-600" />
+      <span className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
         {children}
       </span>
     </div>

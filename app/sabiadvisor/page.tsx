@@ -82,8 +82,8 @@ export default function SabiAdvisorPage() {
       title: 'Interview Prep',
       description: 'Practice with AI and get feedback on your answers',
       icon: MessageSquare,
-      lightColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
+      lightColor: 'bg-gray-50',
+      textColor: 'text-gray-600',
       href: '/sabiadvisor/interview',
       features: ['Question bank', 'Mock interviews', 'Answer grading'],
       startingPrice: pricing.interview?.[0]?.base_cost_kobo
@@ -93,8 +93,8 @@ export default function SabiAdvisorPage() {
       title: 'Career Roadmap',
       description: 'Get a personalized plan for your career growth',
       icon: Map,
-      lightColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
+      lightColor: 'bg-amber-50',
+      textColor: 'text-amber-600',
       href: '/sabiadvisor/survey',
       features: ['Personalized path', '6-month plan', 'Learning resources'],
       startingPrice: pricing.roadmap?.[0]?.base_cost_kobo
@@ -104,7 +104,7 @@ export default function SabiAdvisorPage() {
   const stats = [
     { icon: Target, value: '15+', label: 'Career Tracks', color: 'bg-blue-100', iconColor: 'text-blue-600' },
     { icon: DollarSign, value: '₦300k-2M', label: 'Salary Range', color: 'bg-green-100', iconColor: 'text-green-600' },
-    { icon: Clock, value: '6-12mo', label: 'To Job-Ready', color: 'bg-purple-100', iconColor: 'text-purple-600' },
+    { icon: Clock, value: '6-12mo', label: 'To Job-Ready', color: 'bg-gray-100', iconColor: 'text-gray-600' },
   ]
 
   return (
@@ -115,13 +115,13 @@ export default function SabiAdvisorPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-red-500" />
-              <span className="font-semibold text-gray-900">SabiAdvisor</span>
+              <span className="font-medium text-gray-900">SabiAdvisor</span>
             </div>
             {user && (
               <div className="flex items-center gap-3">
                 <Link
                   href="/account/wallet"
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
                 >
                   <Wallet className="w-4 h-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-900">
@@ -130,7 +130,7 @@ export default function SabiAdvisorPage() {
                 </Link>
                 <Link
                   href="/account/wallet"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Top Up
@@ -144,18 +144,18 @@ export default function SabiAdvisorPage() {
       {/* Hero - Matching SabiQuiz */}
       <div className="relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-pink-50 to-red-50"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-100/50 via-transparent to-pink-100/50"></div>
+        <div className="absolute inset-0 bg-red-100"></div>
+        <div className="absolute inset-0"></div>
         
         <div className="relative max-w-6xl mx-auto px-4 py-8 sm:py-10">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm text-red-600 px-4 py-1.5 rounded-full text-xs font-semibold mb-3 border border-red-200">
+            <div className="inline-flex items-center gap-2 bg-white text-red-600 px-4 py-2 rounded-full text-xs font-medium mb-3 border border-red-200">
               <Zap className="w-3 h-3" />
               AI-Powered Career Tools
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-              Build Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">Professional Profile</span>
+            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-2">
+              Build Your <span className="text-red-600">Professional Profile</span>
             </h1>
             
             <p className="text-sm text-gray-600 max-w-xl mx-auto mb-4">
@@ -165,7 +165,7 @@ export default function SabiAdvisorPage() {
             {!user ? (
               <button
                 onClick={() => router.push('/auth/login?redirect=/sabiadvisor')}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all"
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-lg font-medium text-sm transition-all"
               >
                 Login to Get Started
                 <ArrowRight className="w-4 h-4" />
@@ -173,7 +173,7 @@ export default function SabiAdvisorPage() {
             ) : (
               <Link
                 href="/sabiadvisor/profile"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:shadow-lg transition-all"
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-lg font-medium text-sm transition-all"
               >
                 Complete Your Profile
                 <ArrowRight className="w-4 h-4" />
@@ -190,7 +190,7 @@ export default function SabiAdvisorPage() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Profile Reminder */}
         {user && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-3 mb-5">
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" />
@@ -200,7 +200,7 @@ export default function SabiAdvisorPage() {
               </div>
               <Link
                 href="/sabiadvisor/profile"
-                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap"
+                className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap"
               >
                 Edit Profile
                 <ChevronRight className="w-3 h-3" />
@@ -217,7 +217,7 @@ export default function SabiAdvisorPage() {
               <Link
                 key={tool.id}
                 href={user ? tool.href : '/auth/login?redirect=/sabiadvisor'}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all group"
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-all group"
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 ${tool.lightColor} rounded-lg flex-shrink-0`}>
@@ -225,16 +225,16 @@ export default function SabiAdvisorPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                      <h3 className="text-sm font-medium text-gray-900 group-hover:text-red-600 transition-colors">
                         {tool.title}
                       </h3>
-                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-all" />
                     </div>
                     <p className="text-xs text-gray-500 mb-2 line-clamp-2">{tool.description}</p>
                     
                     <div className="space-y-1 mb-2">
                       {tool.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
                           <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                           {feature}
                         </div>
@@ -244,7 +244,7 @@ export default function SabiAdvisorPage() {
                     {tool.startingPrice && (
                       <div className="text-xs">
                         <span className="text-gray-400">From </span>
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-medium text-gray-900">
                           {formatNaira(tool.startingPrice)}
                         </span>
                       </div>
@@ -265,7 +265,7 @@ export default function SabiAdvisorPage() {
                 <div className={`w-8 h-8 ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2`}>
                   <Icon className={`w-4 h-4 ${stat.iconColor}`} />
                 </div>
-                <h3 className="text-sm font-bold">{stat.value}</h3>
+                <h3 className="text-sm font-medium">{stat.value}</h3>
                 <p className="text-xs text-gray-500">{stat.label}</p>
               </div>
             )
@@ -274,7 +274,7 @@ export default function SabiAdvisorPage() {
 
         {/* How It Works */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 text-center">How It Works</h2>
+          <h2 className="text-sm font-medium text-gray-900 mb-3 text-center">How It Works</h2>
           <div className="grid grid-cols-4 gap-3">
             {[
               { num: 1, title: 'Create Profile', desc: 'Add experience & skills' },
@@ -283,11 +283,11 @@ export default function SabiAdvisorPage() {
               { num: 4, title: 'Download', desc: 'Export PDF/DOCX' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg flex items-center justify-center mx-auto mb-1.5 text-sm font-bold">
+                <div className="w-8 h-8 bg-red-600 text-white rounded-lg flex items-center justify-center mx-auto mb-2 text-sm font-medium">
                   {step.num}
                 </div>
-                <h3 className="font-semibold text-gray-900 text-xs mb-0.5">{step.title}</h3>
-                <p className="text-[10px] text-gray-500">{step.desc}</p>
+                <h3 className="font-medium text-gray-900 text-xs mb-1">{step.title}</h3>
+                <p className="text-xs text-gray-500">{step.desc}</p>
               </div>
             ))}
           </div>

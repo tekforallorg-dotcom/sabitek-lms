@@ -116,7 +116,7 @@ export default function InstructorQuestionsPage() {
 
   if (loading || dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading questions..." size="lg" />
       </div>
     )
@@ -125,18 +125,16 @@ export default function InstructorQuestionsPage() {
   const visible = questions.filter((q) => (filter === 'unanswered' ? !q.answer : true))
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <section className="relative overflow-hidden border-b border-rose-100/80">
-        <div className="absolute -top-24 right-[-8%] w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-20 left-[-8%] w-72 h-72 bg-red-50 rounded-full blur-[80px]" />
+      <section className="relative overflow-hidden border-b border-gray-200">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">
             Questions
           </p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-1">
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900 mb-1">
             Learner{' '}
-            <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
+            <span className="font-serif italic text-red-600">
               questions
             </span>
           </h1>
@@ -145,7 +143,7 @@ export default function InstructorQuestionsPage() {
           </p>
 
           {/* Filter pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit mt-5">
+          <div className="flex items-center gap-2 p-1 bg-gray-50 border border-gray-200 rounded-full w-fit mt-5">
             {([
               { key: 'unanswered', label: 'Unanswered' },
               { key: 'all', label: 'All' },
@@ -153,9 +151,9 @@ export default function InstructorQuestionsPage() {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                   filter === f.key
-                    ? 'bg-white text-red-600 shadow-sm ring-1 ring-rose-100'
+                    ? 'bg-white text-red-600 shadow-sm ring-1 ring-gray-200'
                     : 'text-gray-500 hover:text-gray-800'
                 }`}
               >
@@ -170,10 +168,10 @@ export default function InstructorQuestionsPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8">
         {visible.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
-              <MessageCircleQuestion className="w-8 h-8 text-rose-300" />
+            <div className="w-16 h-16 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
+              <MessageCircleQuestion className="w-8 h-8 text-red-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               No questions{' '}
               <span className="font-serif italic text-red-600">yet</span>
             </h3>
@@ -186,22 +184,22 @@ export default function InstructorQuestionsPage() {
             {visible.map((q) => (
               <div
                 key={q.id}
-                className="bg-white/85 backdrop-blur-xl rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5"
+                className="bg-white rounded-xl border border-gray-200 p-5"
               >
-                <p className="text-[11px] text-gray-400">
+                <p className="text-xs text-gray-400">
                   {q.course_title} · {q.lesson_title}
                 </p>
                 <div className="flex items-center justify-between gap-3 mt-1">
-                  <p className="text-sm font-semibold text-gray-900">{q.asker_name}</p>
-                  <p className="text-[11px] text-gray-400">{formatDate(q.created_at)}</p>
+                  <p className="text-sm font-medium text-gray-900">{q.asker_name}</p>
+                  <p className="text-xs text-gray-400">{formatDate(q.created_at)}</p>
                 </div>
                 <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{q.question}</p>
 
                 {q.answer ? (
-                  <div className="border-l-2 border-emerald-200 pl-3 mt-3">
-                    <p className="text-[9px] tracking-widest text-emerald-600 font-semibold">INSTRUCTOR</p>
+                  <div className="border-l-2 border-green-200 pl-3 mt-3">
+                    <p className="text-xs tracking-widest text-green-600 font-medium">INSTRUCTOR</p>
                     <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{q.answer}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">{formatDate(q.answered_at)}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(q.answered_at)}</p>
                   </div>
                 ) : (
                   <div className="mt-3 space-y-2">
@@ -213,15 +211,14 @@ export default function InstructorQuestionsPage() {
                       placeholder="Write your answer..."
                       rows={2}
                       maxLength={3000}
-                      className="w-full resize-none text-sm bg-white/70 border border-rose-100 focus:border-rose-300 focus:ring-2 focus:ring-rose-200 focus:outline-none rounded-2xl px-3.5 py-2.5 text-gray-800 placeholder:text-gray-400"
+                      className="w-full resize-none text-sm bg-white/70 border border-gray-200 focus:border-red-300 focus:ring-2 focus:ring-gray-200 focus:outline-none rounded-xl px-4 py-3 text-gray-800 placeholder:text-gray-400"
                     />
                     <div className="flex justify-end">
                       <button
                         onClick={() => handleSend(q.id)}
                         disabled={!(drafts[q.id] || '').trim() || sendingId === q.id}
-                        className="relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full px-5 py-2 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer disabled:cursor-not-allowed"
+                        className="relative overflow-hidden inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium text-sm rounded-full px-5 py-2 ring-1 ring-red-600/50 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                       >
-                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                         <Send className="w-3.5 h-3.5" />
                         {sendingId === q.id ? 'Sending...' : 'Send answer'}
                       </button>

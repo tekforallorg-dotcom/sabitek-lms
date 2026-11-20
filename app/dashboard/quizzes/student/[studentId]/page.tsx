@@ -104,7 +104,7 @@ export default function StudentDetailPage() {
       </Button>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{studentName}</h1>
+        <h1 className="text-3xl font-medium text-gray-900 mb-2">{studentName}</h1>
         <p className="text-gray-600">
           {attempts.length > 0 ? attempts[0].student_email : ''}
         </p>
@@ -117,7 +117,7 @@ export default function StudentDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Attempts</p>
-                <p className="text-2xl font-bold">{attempts.length}</p>
+                <p className="text-2xl font-medium">{attempts.length}</p>
               </div>
               <BookOpen className="w-8 h-8 text-red-600" />
             </div>
@@ -129,7 +129,7 @@ export default function StudentDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Average Score</p>
-                <p className="text-2xl font-bold">{avgScore}%</p>
+                <p className="text-2xl font-medium">{avgScore}%</p>
               </div>
               <Target className="w-8 h-8 text-blue-600" />
             </div>
@@ -141,7 +141,7 @@ export default function StudentDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pass Rate</p>
-                <p className="text-2xl font-bold">{passRate}%</p>
+                <p className="text-2xl font-medium">{passRate}%</p>
               </div>
               <Target className="w-8 h-8 text-green-600" />
             </div>
@@ -153,9 +153,9 @@ export default function StudentDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Time</p>
-                <p className="text-2xl font-bold">{formatTime(avgTime)}</p>
+                <p className="text-2xl font-medium">{formatTime(avgTime)}</p>
               </div>
-              <Clock className="w-8 h-8 text-orange-600" />
+              <Clock className="w-8 h-8 text-amber-600" />
             </div>
           </CardContent>
         </Card>
@@ -170,16 +170,16 @@ export default function StudentDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <p className="text-sm text-gray-600 mb-1">First Attempt Average</p>
-              <p className="text-3xl font-bold">{progress.firstAttemptAvg}%</p>
+              <p className="text-3xl font-medium">{progress.firstAttemptAvg}%</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Latest Attempt Average</p>
-              <p className="text-3xl font-bold">{progress.latestAttemptAvg}%</p>
+              <p className="text-3xl font-medium">{progress.latestAttemptAvg}%</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Improvement</p>
               <div className="flex items-center gap-2">
-                <p className={`text-3xl font-bold ${
+                <p className={`text-3xl font-medium ${
                   progress.improvement >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {progress.improvement > 0 ? '+' : ''}{progress.improvement}%
@@ -226,7 +226,7 @@ export default function StudentDetailPage() {
                       <td className="px-4 py-3 text-sm text-gray-900">{attempt.course_title}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{attempt.lesson_title}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-semibold ${
+                        <span className={`font-medium ${
                           attempt.score_percentage >= 70 ? 'text-green-600' : 'text-red-600'
                         }`}>
                           {attempt.score_percentage}%

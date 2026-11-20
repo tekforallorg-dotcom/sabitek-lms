@@ -125,7 +125,7 @@ export default function InboxPage() {
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+                <h1 className="text-xl font-medium text-gray-900">Messages</h1>
                 {totalUnread > 0 && (
                   <p className="text-xs text-gray-500">{totalUnread} unread</p>
                 )}
@@ -158,8 +158,8 @@ export default function InboxPage() {
             {threads.map((thread) => (
               <Card
                 key={thread.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  thread.unread_count > 0 ? 'bg-red-50/50 border-red-100' : 'bg-white'
+                className={`cursor-pointer transition-all ${
+ thread.unread_count > 0 ? 'bg-red-50/50 border-red-100' : 'bg-white'
                 }`}
                 onClick={() => router.push(`/community/chat/${thread.id}`)}
               >
@@ -175,13 +175,13 @@ export default function InboxPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">
+                          <div className="w-full h-full bg-red-600 flex items-center justify-center text-white font-medium text-lg">
                             {thread.other_user?.full_name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                         )}
                       </div>
                       {thread.unread_count > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                           {thread.unread_count > 9 ? '9+' : thread.unread_count}
                         </span>
                       )}
@@ -190,7 +190,7 @@ export default function InboxPage() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`font-semibold truncate ${
+                        <p className={`font-medium truncate ${
                           thread.unread_count > 0 ? 'text-gray-900' : 'text-gray-700'
                         }`}>
                           {thread.other_user?.full_name || 'Unknown'}
@@ -204,7 +204,7 @@ export default function InboxPage() {
 
                       {/* Skill badge */}
                       {thread.session?.skill && (
-                        <span className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-600 text-xs rounded mb-1">
+                        <span className="inline-block px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded mb-1">
                           {thread.session.skill.name}
                         </span>
                       )}

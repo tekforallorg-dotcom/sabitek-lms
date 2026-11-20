@@ -27,20 +27,20 @@ export default function FileUploader({
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      console.log('🎯 Upload started')
+      console.log('Upload started')
       setUploading(true)
 
       if (!event.target.files || event.target.files.length === 0) {
-        console.log('❌ No file selected')
+        console.log('No file selected')
         throw new Error('You must select a file to upload.')
       }
 
       const file = event.target.files[0]
-      console.log('📁 File selected:', file.name, file.type, file.size)
+      console.log('File selected:', file.name, file.type, file.size)
       setFileName(file.name)
 
       if (file.size > 50 * 1024 * 1024) {
-        console.log('❌ File too large')
+        console.log('File too large')
         throw new Error('File size must be less than 50MB.')
       }
 
@@ -48,25 +48,25 @@ export default function FileUploader({
       const uniqueFileName = `${Math.random()}.${fileExt}`
       const filePath = `${folder}/${uniqueFileName}`
       
-      console.log('📤 Uploading to:', filePath)
+      console.log('Uploading to:', filePath)
 
       const { error: uploadError } = await supabase.storage
         .from('course-materials')
         .upload(filePath, file)
 
-      console.log('📥 Upload response, error:', uploadError)
+      console.log('Upload response, error:', uploadError)
 
       if (uploadError) {
-        console.error('❌ Upload error:', uploadError)
+        console.error('Upload error:', uploadError)
         throw uploadError
       }
 
-      console.log('🔗 Getting public URL...')
+      console.log('Getting public URL...')
       const { data: { publicUrl } } = supabase.storage
         .from('course-materials')
         .getPublicUrl(filePath)
 
-      console.log('✅ Public URL:', publicUrl)
+      console.log('Public URL:', publicUrl)
 
       setFileUrl(publicUrl)
       onUpload(publicUrl)
@@ -75,12 +75,12 @@ export default function FileUploader({
         fileInputRef.current.value = ''
       }
 
-      console.log('✅ Upload complete!')
+      console.log('Upload complete!')
     } catch (error: any) {
-      console.error('💥 Upload error:', error)
+      console.error('Upload error:', error)
       toast.error(`Error uploading file: ${error.message}`)
     } finally {
-      console.log('🏁 Setting uploading to false')
+      console.log('Setting uploading to false')
       setUploading(false)
     }
   }

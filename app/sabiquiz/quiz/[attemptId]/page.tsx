@@ -223,7 +223,7 @@ function ProgressBarWithCharacter({
       <div className="flex-1 relative">
         <div className="h-2.5 bg-white/20 rounded-full">
           <div
-            className="h-2.5 bg-gradient-to-l from-red-400 to-red-600 rounded-full transition-all duration-500 ease-out float-right"
+            className="h-2.5 bg-red-600 rounded-full transition-all duration-500 ease-out float-right"
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
@@ -305,14 +305,14 @@ function TimeAttackFuse({
           />
           {/* Burned part (dark) */}
           <div
-            className="absolute left-0 top-0 h-full bg-gradient-to-r from-gray-700 to-gray-600 rounded-l-full"
+            className="absolute left-0 top-0 h-full bg-gray-700 rounded-l-full"
             style={{ width: `${progress}%` }}
           />
         </div>
         
         {/* Spark at burn point */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400 shadow-lg shadow-orange-500/50"
+          className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-400 shadow-sm"
           style={{ 
             left: `${progress}%`,
             transform: 'translateY(-50%) translateX(-50%)',
@@ -323,7 +323,7 @@ function TimeAttackFuse({
       
       {/* Dynamite */}
       <div 
-        className={`text-2xl flex-shrink-0 relative ${isExploding ? 'animate-ping' : ''}`}
+        className={`text-2xl flex-shrink-0 relative ${isExploding ? '' : ''}`}
         style={{ 
           animation: isExploding ? 'explode 0.5s ease-out forwards' : (isCritical ? 'shake 0.1s ease-in-out infinite' : 'none')
         }}
@@ -358,14 +358,14 @@ function PerfectRunStreak({
   
   // Rank system based on progress
   const getRank = () => {
-    if (streak === total) return { icon: '👑', title: 'Perfect', color: 'text-yellow-500' }
-    if (progress >= 90) return { icon: '💎', title: 'Diamond', color: 'text-cyan-400' }
-    if (progress >= 80) return { icon: '🏆', title: 'Champion', color: 'text-yellow-500' }
-    if (progress >= 70) return { icon: '⭐', title: 'Star', color: 'text-yellow-400' }
-    if (progress >= 60) return { icon: '🔥', title: 'On Fire', color: 'text-orange-500' }
+    if (streak === total) return { icon: '👑', title: 'Perfect', color: 'text-amber-500' }
+    if (progress >= 90) return { icon: '💎', title: 'Diamond', color: 'text-blue-400' }
+    if (progress >= 80) return { icon: '🏆', title: 'Champion', color: 'text-amber-500' }
+    if (progress >= 70) return { icon: '⭐', title: 'Star', color: 'text-amber-400' }
+    if (progress >= 60) return { icon: '🔥', title: 'On Fire', color: 'text-amber-500' }
     if (progress >= 50) return { icon: '💪', title: 'Strong', color: 'text-blue-500' }
-    if (progress >= 40) return { icon: '✨', title: 'Rising', color: 'text-purple-400' }
-    if (progress >= 30) return { icon: '🌟', title: 'Shining', color: 'text-yellow-300' }
+    if (progress >= 40) return { icon: '✨', title: 'Rising', color: 'text-gray-400' }
+    if (progress >= 30) return { icon: '🌟', title: 'Shining', color: 'text-amber-300' }
     if (progress >= 20) return { icon: '🎯', title: 'Focused', color: 'text-green-500' }
     if (progress >= 10) return { icon: '🚀', title: 'Started', color: 'text-blue-400' }
     return { icon: '🎬', title: 'Begin', color: 'text-gray-400' }
@@ -418,14 +418,14 @@ function PerfectRunStreak({
               <div 
                 className={`w-2 rounded-t transition-all duration-300 ${
                   isLit 
-                    ? 'bg-gradient-to-b from-yellow-200 to-yellow-400 h-6' 
+                    ? 'bg-amber-200 h-6' 
                     : isFailed
-                      ? 'bg-gradient-to-b from-gray-400 to-gray-500 h-5'
-                      : 'bg-gradient-to-b from-gray-200 to-gray-300 h-5'
+                      ? 'bg-gray-400 h-5'
+                      : 'bg-gray-200 h-5'
                 }`}
               />
               {/* Base */}
-              <div className={`w-3 h-1 rounded-b ${isLit ? 'bg-yellow-600' : 'bg-gray-400'}`} />
+              <div className={`w-3 h-1 rounded-b ${isLit ? 'bg-amber-600' : 'bg-gray-400'}`} />
             </div>
           )
         })}
@@ -449,7 +449,7 @@ function PerfectRunStreak({
   if (failed) {
     return (
       <div 
-        className="bg-gradient-to-r from-red-100 to-red-50 border-2 border-red-300 rounded-2xl p-4"
+        className="bg-red-100 border-2 border-red-300 rounded-xl p-4"
         style={{ animation: 'failShake 0.5s ease-in-out' }}
       >
         <div className="flex items-center justify-between">
@@ -458,7 +458,7 @@ function PerfectRunStreak({
             <span className="text-3xl">💔</span>
             <div>
               <p className="text-xs text-red-600 font-medium">Run Ended</p>
-              <p className="text-xl font-bold text-red-700">{streak}/{total}</p>
+              <p className="text-xl font-medium text-red-700">{streak}/{total}</p>
             </div>
           </div>
           
@@ -479,7 +479,7 @@ function PerfectRunStreak({
 
   return (
     <div 
-      className="bg-gradient-to-r from-green-50 via-yellow-50 to-green-50 border-2 border-green-300 rounded-2xl p-4 transition-all duration-500"
+      className="bg-green-50 border-2 border-green-300 rounded-xl p-4 transition-all duration-500"
       style={{ 
         animation: streak > 0 ? 'streakPulse 2s ease-in-out infinite' : 'none',
         boxShadow: streak >= 5 ? '0 0 20px rgba(34, 197, 94, 0.3)' : 'none'
@@ -505,8 +505,8 @@ function PerfectRunStreak({
             )}
           </div>
           <div>
-            <p className={`text-xs font-semibold ${rank.color}`}>{rank.title}</p>
-            <p className="text-2xl font-bold text-green-700">{streak}/{total}</p>
+            <p className={`text-xs font-medium ${rank.color}`}>{rank.title}</p>
+            <p className="text-2xl font-medium text-green-700">{streak}/{total}</p>
           </div>
         </div>
 
@@ -531,7 +531,7 @@ function PerfectRunStreak({
           ))}
           {streak > 0 && (
             <div className="ml-2 px-2 py-1 bg-green-100 rounded-full">
-              <span className="text-xs font-bold text-green-700">
+              <span className="text-xs font-medium text-green-700">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -543,8 +543,8 @@ function PerfectRunStreak({
       <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
         <div 
           className={`h-full rounded-full transition-all duration-500 ease-out ${
-            progress >= 80 ? 'bg-gradient-to-r from-green-500 via-yellow-500 to-green-500' :
-            progress >= 50 ? 'bg-gradient-to-r from-green-500 to-lime-500' :
+            progress >= 80 ? 'bg-green-600' :
+            progress >= 50 ? 'bg-green-600' :
             'bg-green-500'
           }`}
           style={{ width: `${progress}%` }}
@@ -584,7 +584,7 @@ function BossQuizIndicator({
   const isNearEnd = progress > 75
   
   return (
-    <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-gradient-to-r from-red-900 to-red-700 border-2 border-red-500 shadow-lg shadow-red-500/30">
+    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-red-900 border-2 border-red-500 shadow-sm">
       <span 
         className="text-2xl"
         style={{ animation: 'skullFloat 1s ease-in-out infinite' }}
@@ -598,13 +598,13 @@ function BossQuizIndicator({
         </div>
         <div className="h-2 bg-red-950 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full transition-all duration-500"
+            className="h-full bg-amber-600 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
       <div className="text-right">
-        <p className="text-lg font-bold text-white">{questionsAnswered}/{total}</p>
+        <p className="text-lg font-medium text-white">{questionsAnswered}/{total}</p>
       </div>
       <span 
         className="text-xl"
@@ -655,25 +655,25 @@ function FloatingTimer({
     <div className="flex items-center gap-3">
       {/* Minute Buzzer - Pulsing dot */}
       {showMinuteBuzzer && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-xl border border-blue-300">
+        <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-xl border border-blue-300">
           <span 
             className="w-2.5 h-2.5 bg-blue-500 rounded-full"
             style={{ animation: 'pulse 0.5s ease-in-out infinite' }}
           />
-          <span className="text-xs font-semibold">{mins}m left</span>
+          <span className="text-xs font-medium">{mins}m left</span>
         </div>
       )}
 
       {/* 30 Second Buzzer - Aggressive alarm */}
       {showThirtyBuzzer && (
         <div 
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-xl border-2 border-red-400"
+          className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded-xl border-2 border-red-400"
           style={{ animation: 'aggressiveShake 0.1s ease-in-out infinite' }}
         >
           <span className="text-lg" style={{ animation: 'aggressiveShake 0.08s ease-in-out infinite' }}>
             🚨
           </span>
-          <span className="text-xs font-bold">⚠️Go faster ‼️</span>
+          <span className="text-xs font-medium">⚠️Go faster ‼️</span>
         </div>
       )}
 
@@ -683,7 +683,7 @@ function FloatingTimer({
           isUrgent 
             ? 'bg-red-600 text-white' 
             : isCritical 
-              ? 'bg-orange-500 text-white'
+              ? 'bg-amber-500 text-white'
               : 'bg-white/10 text-white border border-white/20'
         }`}
         style={{ 
@@ -706,7 +706,7 @@ function FloatingTimer({
         >
           {isUrgent ? '🚨' : showThirtyBuzzer ? '⏰' : '⏱️'}
         </span>
-        <span className="font-mono text-xl font-bold">
+        <span className="font-mono text-xl font-medium">
           {mins}:{secs.toString().padStart(2, '0')}
         </span>
         {isUrgent && (
@@ -729,12 +729,12 @@ function ExplosionOverlay({ onComplete }: { onComplete: () => void }) {
         <div className="relative inline-block">
           <span className="text-6xl" style={{ animation: 'alarmShake 0.2s ease-in-out infinite' }}>⏰</span>
         </div>
-        <p className="text-white text-4xl font-bold mt-6 flex items-center justify-center gap-1">
+        <p className="text-white text-4xl font-medium mt-6 flex items-center justify-center gap-1">
           Time&apos;s Up<span className="text-red-500">!</span>
         </p>
         <button
           onClick={onComplete}
-          className="mt-8 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/20"
+          className="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors shadow-sm"
         >
           View Result
         </button>
@@ -766,7 +766,7 @@ function PerfectRunEndOverlay({
             <div className="relative inline-block">
               <span className="text-7xl" style={{ animation: 'celebrate 0.5s ease-in-out infinite' }}>🏆</span>
             </div>
-            <p className="text-white text-3xl font-bold mt-4">PERFECT!</p>
+            <p className="text-white text-3xl font-medium mt-4">PERFECT!</p>
             <p className="text-green-400 text-xl mt-2">{streak}/{total} Correct</p>
           </>
         ) : (
@@ -774,13 +774,13 @@ function PerfectRunEndOverlay({
             <div className="relative inline-block" style={{ animation: 'failShake 0.5s ease-in-out' }}>
               <span className="text-7xl">💔</span>
             </div>
-            <p className="text-white text-3xl font-bold mt-4">Run Ended</p>
+            <p className="text-white text-3xl font-medium mt-4">Run Ended</p>
             <p className="text-red-400 text-xl mt-2">{streak}/{total} Correct</p>
           </>
         )}
         <button
           onClick={onComplete}
-          className="mt-8 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/20"
+          className="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors shadow-sm"
         >
           View Result
         </button>
@@ -1238,7 +1238,7 @@ export default function QuizPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <SabiLoader text="Loading your quiz..." size="lg" />
         </div>
@@ -1248,10 +1248,10 @@ export default function QuizPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full rounded-2xl border-0 shadow-xl">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full rounded-xl border-0 shadow-sm">
           <CardContent className="p-6 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-600" />
             </div>
             <p className="text-red-600 font-medium mb-4">{error}</p>
@@ -1294,10 +1294,10 @@ export default function QuizPage() {
       )}
       
       {/* Enhanced Sticky Header with Dark Gradient */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-lg">
+      <div className="sticky top-0 z-10 bg-gray-900 shadow-sm">
         {/* Floating Decorative Elements */}
-        <div className="absolute top-2 right-[15%] w-16 h-16 bg-gradient-to-br from-red-500/10 to-pink-500/10 rounded-2xl rotate-12 blur-sm" />
-        <div className="absolute bottom-2 left-[10%] w-12 h-12 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-xl -rotate-12 blur-sm" />
+        <div className="absolute top-2 right-[15%] w-16 h-16 bg-red-500/10 rounded-xl rotate-12 blur-sm" />
+        <div className="absolute bottom-2 left-[10%] w-12 h-12 bg-gray-900/10 rounded-xl -rotate-12 blur-sm" />
         
         <div className="relative max-w-5xl mx-auto px-4 pt-4 pb-3">
           {/* Controls and Stats */}
@@ -1325,9 +1325,9 @@ export default function QuizPage() {
             <div className="flex items-center gap-3 text-sm">
               {/* Mode Badge */}
               {quizMode !== 'normal' && (
-                <div className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${
-                  quizMode === 'time_attack' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30' :
-                  quizMode === 'perfect_run' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                <div className={`px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2 ${
+                  quizMode === 'time_attack' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                  quizMode === 'perfect_run' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
                   quizMode === 'boss_quiz' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
                   'bg-white/10 text-white/70'
                 }`}>
@@ -1339,19 +1339,19 @@ export default function QuizPage() {
               
               {/* Timer for normal mode */}
               {quizMode === 'normal' && (
-                <div className="flex items-center gap-1.5 text-white/70 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2 text-white/70 bg-white/10 px-3 py-2 rounded-xl border border-white/10">
                   <Clock className="w-4 h-4" />
                   <span className="font-mono font-medium">{formatTime(elapsedTime)}</span>
                 </div>
               )}
               
-              <div className="flex items-center gap-1.5 bg-green-500/20 text-green-300 px-3 py-1.5 rounded-xl border border-green-500/30">
+              <div className="flex items-center gap-2 bg-green-500/20 text-green-300 px-3 py-2 rounded-xl border border-green-500/30">
                 <CheckCircle className="w-4 h-4" />
                 <span className="font-medium">{answeredCount}/{totalQuestions}</span>
               </div>
               
               {bookmarkedCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-yellow-500/20 text-yellow-300 px-3 py-1.5 rounded-xl border border-yellow-500/30">
+                <div className="flex items-center gap-2 bg-amber-500/20 text-amber-300 px-3 py-2 rounded-xl border border-amber-500/30">
                   <Bookmark className="w-4 h-4" />
                   <span>{bookmarkedCount}</span>
                 </div>
@@ -1403,8 +1403,8 @@ export default function QuizPage() {
             return (
               <Card 
                 key={question.id} 
-                className={`rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 ${
-                  isBookmarked ? 'ring-2 ring-yellow-400 ring-offset-2' : ''
+                className={`rounded-xl border-0 shadow-sm transition-all duration-300 ${
+ isBookmarked ? 'ring-2 ring-amber-400 ring-offset-2' : ''
                 } ${
                   showResult && !isCorrect ? 'ring-2 ring-red-400 ring-offset-2 bg-red-50' : ''
                 } ${showResult && isCorrect ? 'ring-2 ring-green-400 ring-offset-2 bg-green-50' : ''}`}
@@ -1414,35 +1414,35 @@ export default function QuizPage() {
                   <div className="flex items-start justify-between mb-5">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold text-sm ${
+                        <span className={`flex items-center justify-center w-10 h-10 rounded-xl font-medium text-sm ${
                           quizMode === 'boss_quiz' 
-                            ? 'bg-gradient-to-br from-red-500 to-red-700 text-white shadow-lg shadow-red-500/30' 
-                            : 'bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/20'
+                            ? 'bg-red-600 text-white shadow-sm' 
+                            : 'bg-red-600 text-white shadow-sm'
                         }`}>
                           {index + 1}
                         </span>
                         {question.difficulty && (
-                          <span className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
+                          <span className={`text-xs px-3 py-2 rounded-lg font-medium ${
                             question.difficulty === 'easy' ? 'bg-green-100 text-green-700 border border-green-200' :
-                            question.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                            question.difficulty === 'medium' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                             'bg-red-100 text-red-700 border border-red-200'
                           }`}>
                             {question.difficulty}
                           </span>
                         )}
                         {isAnswered && !showResult && (
-                          <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium bg-green-50 px-2.5 py-1 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-lg">
                             <CheckCircle className="w-4 h-4" />
                             Answered
                           </div>
                         )}
                         {showResult && isCorrect && (
-                          <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium bg-green-100 px-2.5 py-1 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-100 px-3 py-1 rounded-lg">
                             <CheckCircle className="w-4 h-4" /> Correct!
                           </div>
                         )}
                         {showResult && !isCorrect && (
-                          <div className="flex items-center gap-1.5 text-red-600 text-sm font-medium bg-red-100 px-2.5 py-1 rounded-lg">
+                          <div className="flex items-center gap-2 text-red-600 text-sm font-medium bg-red-100 px-3 py-1 rounded-lg">
                             <X className="w-4 h-4" /> Wrong
                           </div>
                         )}
@@ -1455,7 +1455,7 @@ export default function QuizPage() {
                         onClick={() => toggleBookmark(question.id)}
                         variant="ghost"
                         size="sm"
-                        className={`rounded-xl h-10 w-10 p-0 ${isBookmarked ? 'text-yellow-500 bg-yellow-50 hover:bg-yellow-100' : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'}`}
+                        className={`rounded-xl h-10 w-10 p-0 ${isBookmarked ? 'text-amber-500 bg-amber-50 hover:bg-amber-100' : 'text-gray-400 hover:text-amber-500 hover:bg-amber-50'}`}
                       >
                         {isBookmarked ? <Bookmark className="w-5 h-5 fill-current" /> : <Bookmark className="w-5 h-5" />}
                       </Button>
@@ -1478,13 +1478,13 @@ export default function QuizPage() {
                           type="button"
                           onClick={() => !perfectRunFailed && handleAnswerSelect(question.id, optIndex)}
                           disabled={perfectRunFailed}
-                          className={`w-full flex items-center gap-4 p-4 sm:p-5 border-2 rounded-2xl text-left transition-all duration-200 ${
+                          className={`w-full flex items-center gap-4 p-4 sm:p-5 border-2 rounded-xl text-left transition-all duration-200 ${
                             showWrongHighlight
-                              ? 'border-red-500 bg-red-100 shadow-md'
+                              ? 'border-red-500 bg-red-100 shadow-sm'
                               : showCorrectHighlight
-                                ? 'border-green-500 bg-green-100 shadow-md'
+                                ? 'border-green-500 bg-green-100 shadow-sm'
                                 : isSelected
-                                  ? 'border-red-500 bg-red-50 shadow-md ring-2 ring-red-200'
+                                  ? 'border-red-500 bg-red-50 shadow-sm ring-2 ring-red-200'
                                   : 'border-gray-200 bg-white hover:border-red-300 hover:bg-gray-50 hover:shadow-sm'
                           } ${perfectRunFailed ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
                         >
@@ -1504,7 +1504,7 @@ export default function QuizPage() {
                           </div>
                           
                           {/* Option Label */}
-                          <span className={`font-bold text-sm ${
+                          <span className={`font-medium text-sm ${
                             isSelected ? 'text-red-600' : 
                             showCorrectHighlight ? 'text-green-600' :
                             showWrongHighlight ? 'text-red-600' :
@@ -1533,7 +1533,7 @@ export default function QuizPage() {
 
                   {question.topic && (
                     <div className="mt-5 pt-4 border-t border-gray-100">
-                      <span className="inline-flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
+                      <span className="inline-flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
                         <HelpCircle className="w-3.5 h-3.5" />
                         Topic: {question.topic}
                       </span>
@@ -1546,7 +1546,7 @@ export default function QuizPage() {
         </div>
 
         {/* Submit Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 mt-8 -mx-4 px-4 py-4 shadow-lg rounded-t-2xl">
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 mt-8 -mx-4 px-4 py-4 shadow-sm rounded-t-xl">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <div className="text-sm text-gray-600 flex-1">
               {perfectRunFailed ? (
@@ -1580,7 +1580,7 @@ export default function QuizPage() {
                   }
                 }}
                 disabled={submitting || (answeredCount === 0 && quizMode !== 'time_attack') || saving}
-                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 sm:px-8 h-12 rounded-xl shadow-lg shadow-red-500/20 transition-all"
+                className="bg-red-600 hover:bg-red-700 text-white px-6 sm:px-8 h-12 rounded-xl shadow-sm transition-all"
                 size="lg"
               >
                 {submitting ? (

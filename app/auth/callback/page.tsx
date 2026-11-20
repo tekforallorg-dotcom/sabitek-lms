@@ -87,7 +87,7 @@ function AuthCallbackHandler() {
             return
           }
 
-          console.log('[CALLBACK] ✅ Code exchanged successfully!')
+          console.log('[CALLBACK] Code exchanged successfully!')
           console.log('[CALLBACK] User:', data.session?.user?.email)
 
           if (!data.session?.user) {
@@ -159,7 +159,7 @@ function AuthCallbackHandler() {
           console.log('[CALLBACK] Auth state changed:', event)
 
           if (event === 'SIGNED_IN' && session && mounted) {
-            console.log('[CALLBACK] ✅ User signed in:', session.user.email)
+            console.log('[CALLBACK] User signed in:', session.user.email)
 
             // For signup, show success
             if (type === 'signup') {
@@ -223,23 +223,23 @@ function AuthCallbackHandler() {
   // Success state - Email confirmed!
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-1 justify-center">
-              <span className="text-4xl font-bold text-black">Sabitek</span>
-              <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-0.5 mb-6"></div>
+              <span className="text-4xl font-medium text-black">Sabitek</span>
+              <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-1 mb-6"></div>
             </Link>
           </div>
 
-          <Card className="shadow-xl border-0">
+          <Card className="shadow-sm border-0">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <CardTitle className="text-2xl font-bold text-green-600">Email Confirmed!</CardTitle>
+              <CardTitle className="text-2xl font-medium text-green-600">Email Confirmed!</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
                 Your account has been successfully verified.
               </CardDescription>
@@ -266,23 +266,23 @@ function AuthCallbackHandler() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-1 justify-center">
-              <span className="text-4xl font-bold text-black">Sabitek</span>
-              <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-0.5 mb-6"></div>
+              <span className="text-4xl font-medium text-black">Sabitek</span>
+              <div className="w-2.5 h-2.5 bg-red-500 rounded-full -ml-1 mb-6"></div>
             </Link>
           </div>
 
-          <Card className="shadow-xl border-0">
+          <Card className="shadow-sm border-0">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <CardTitle className="text-2xl font-bold text-red-600">Authentication Failed</CardTitle>
+              <CardTitle className="text-2xl font-medium text-red-600">Authentication Failed</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
                 {error}
               </CardDescription>
@@ -302,10 +302,10 @@ function AuthCallbackHandler() {
 
   // Processing state
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <Loader2 className="w-12 h-12 animate-spin text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Verifying your email...</h2>
+        <h2 className="text-xl font-medium text-gray-900 mb-2">Verifying your email...</h2>
         <p className="text-gray-600">Please wait a moment</p>
       </div>
     </div>
@@ -315,10 +315,10 @@ function AuthCallbackHandler() {
 export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-2">Loading...</h2>
         </div>
       </div>
     }>

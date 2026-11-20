@@ -123,7 +123,7 @@ export default function RouteGuard({
 
   if (loading || !user || resolvingRole || resolvingHome || resolvingMembership) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading..." size="lg" />
       </div>
     )

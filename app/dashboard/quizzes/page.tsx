@@ -26,7 +26,7 @@ import {
   getInstructorCourses,
   calculateQuizStats,
   formatTime,
-  exportToCSV, // ✅ ADD THIS
+  exportToCSV, // ADD THIS
   type QuizAttempt,
 } from '@/lib/dashboard/quiz-analytics'
 
@@ -96,7 +96,7 @@ export default function InstructorQuizzesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Quiz Results</h1>
+        <h1 className="text-3xl font-medium text-gray-900 mb-2">Quiz Results</h1>
         <p className="text-gray-600">Monitor student quiz performance across your courses</p>
       </div>
 
@@ -118,7 +118,7 @@ export default function InstructorQuizzesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Attempts</p>
-                <p className="text-2xl font-bold">{stats.totalAttempts}</p>
+                <p className="text-2xl font-medium">{stats.totalAttempts}</p>
               </div>
               <BookOpen className="w-8 h-8 text-red-600" />
             </div>
@@ -130,7 +130,7 @@ export default function InstructorQuizzesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Unique Students</p>
-                <p className="text-2xl font-bold">{stats.uniqueStudents}</p>
+                <p className="text-2xl font-medium">{stats.uniqueStudents}</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
             </div>
@@ -142,7 +142,7 @@ export default function InstructorQuizzesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Average Score</p>
-                <p className="text-2xl font-bold">{stats.averageScore}%</p>
+                <p className="text-2xl font-medium">{stats.averageScore}%</p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
             </div>
@@ -154,7 +154,7 @@ export default function InstructorQuizzesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pass Rate</p>
-                <p className="text-2xl font-bold">{stats.passRate}%</p>
+                <p className="text-2xl font-medium">{stats.passRate}%</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
@@ -166,9 +166,9 @@ export default function InstructorQuizzesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Time</p>
-                <p className="text-2xl font-bold">{formatTime(stats.averageTime)}</p>
+                <p className="text-2xl font-medium">{formatTime(stats.averageTime)}</p>
               </div>
-              <Clock className="w-8 h-8 text-orange-600" />
+              <Clock className="w-8 h-8 text-amber-600" />
             </div>
           </CardContent>
         </Card>
@@ -254,7 +254,7 @@ export default function InstructorQuizzesPage() {
                       <td className="px-4 py-3 text-sm text-gray-900">{attempt.course_title}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{attempt.lesson_title}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-semibold ${
+                        <span className={`font-medium ${
                           attempt.score_percentage >= 70 ? 'text-green-600' : 'text-red-600'
                         }`}>
                           {attempt.score_percentage}%

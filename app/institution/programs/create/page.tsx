@@ -27,24 +27,13 @@ interface Institution {
 function PageBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" />
-      <div className="absolute top-1/3 -left-40 w-80 h-80 bg-rose-100/70 rounded-full blur-[100px]" />
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at top, black, transparent 70%)',
-        }}
-      />
     </div>
   )
 }
 
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -188,9 +177,9 @@ export default function CreateProgramPage() {
 
   if (!institution) {
     return (
-      <div className="relative min-h-screen bg-[#fffcfb]">
+      <div className="relative min-h-screen bg-gray-50">
         <PageBackdrop />
-        <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
+        <div className="relative bg-white border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Layers className="w-4 h-4 text-red-500" />
@@ -200,10 +189,10 @@ export default function CreateProgramPage() {
         </div>
         <div className="relative flex items-center justify-center min-h-[60vh] p-4">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+            <h2 className="text-xl font-medium tracking-tight text-gray-900 mb-2">
               No <span className="font-serif italic text-red-600">institution</span>
             </h2>
             <p className="text-gray-600">{error || 'You need to be part of an institution to create programs.'}</p>
@@ -214,9 +203,9 @@ export default function CreateProgramPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#fffcfb]">
+    <div className="relative min-h-screen bg-gray-50">
       <PageBackdrop />
-      <div className="relative bg-white/85 backdrop-blur border-b border-rose-100">
+      <div className="relative bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -240,8 +229,8 @@ export default function CreateProgramPage() {
 
       <div className="relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">New program</p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">New program</p>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
             Create a <span className="font-serif italic text-red-600">program</span>
           </h1>
           <p className="text-gray-600 mt-1">Set up a new learning program for {institution.name}</p>
@@ -250,19 +239,19 @@ export default function CreateProgramPage() {
 
       <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {error && (
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+          <div className="bg-red-50 border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Basic Information</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Basic Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Program Name <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -270,11 +259,11 @@ export default function CreateProgramPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Digital Skills Bootcamp"
                   required
-                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Short Description
                 </label>
                 <Input
@@ -282,11 +271,11 @@ export default function CreateProgramPage() {
                   onChange={(e) => setShortDescription(e.target.value)}
                   placeholder="Brief summary (max 500 characters)"
                   maxLength={500}
-                  className="rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                  className="rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Full Description
                 </label>
                 <textarea
@@ -294,15 +283,15 @@ export default function CreateProgramPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detailed description of the program..."
                   rows={4}
-                  className="w-full px-3 py-2 rounded-xl bg-white/70 border border-rose-100 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none text-sm"
+                  className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none text-sm"
                 />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Visibility</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Visibility</h2>
             <div className="space-y-3">
               {[
                 { value: 'private', icon: Lock, label: 'Private', desc: 'Only visible to institution members' },
@@ -313,8 +302,8 @@ export default function CreateProgramPage() {
                   key={option.value}
                   className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-colors ${
                     visibility === option.value
-                      ? 'border-red-400 bg-rose-50/70 ring-1 ring-rose-200'
-                      : 'border-rose-100 bg-white/70 hover:border-rose-200'
+                      ? 'border-red-400 bg-gray-50 ring-1 ring-gray-200'
+                      : 'border-gray-200 bg-white/70 hover:border-gray-200'
                   }`}
                 >
                   <input
@@ -337,37 +326,37 @@ export default function CreateProgramPage() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Schedule (Optional)</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Schedule (Optional)</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Settings</h2>
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Settings</h2>
             <div className="space-y-4">
               <label className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   checked={issueCertificate}
                   onChange={(e) => setIssueCertificate(e.target.checked)}
-                  className="w-4 h-4 text-red-600 border-rose-200 rounded focus:ring-red-400 accent-red-600"
+                  className="w-4 h-4 text-red-600 border-gray-200 rounded focus:ring-red-400 accent-red-600"
                 />
                 <div>
                   <span className="font-medium text-gray-900">Issue Certificates</span>
@@ -379,7 +368,7 @@ export default function CreateProgramPage() {
                   type="checkbox"
                   checked={allowSelfPaced}
                   onChange={(e) => setAllowSelfPaced(e.target.checked)}
-                  className="w-4 h-4 text-red-600 border-rose-200 rounded focus:ring-red-400 accent-red-600"
+                  className="w-4 h-4 text-red-600 border-gray-200 rounded focus:ring-red-400 accent-red-600"
                 />
                 <div>
                   <span className="font-medium text-gray-900">Allow Self-Paced Learning</span>
@@ -391,10 +380,9 @@ export default function CreateProgramPage() {
 
           <div className="flex justify-end gap-4">
             <Link href="/institution/programs">
-              <Button type="button" variant="outline" className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm">Cancel</Button>
+              <Button type="button" variant="outline" className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm">Cancel</Button>
             </Link>
-            <Button type="submit" disabled={submitting || !name.trim()} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+            <Button type="submit" disabled={submitting || !name.trim()} className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
               {submitting ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -57,7 +57,7 @@ function VerifyEmailContent() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Verifying your email...</p>
@@ -68,16 +68,16 @@ function VerifyEmailContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
         <div className="max-w-md w-full">
-          <Card className="shadow-xl border-0">
+          <Card className="shadow-sm border-0">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <CardTitle className="text-2xl font-bold text-green-600">Email Verified!</CardTitle>
+              <CardTitle className="text-2xl font-medium text-green-600">Email Verified!</CardTitle>
               <CardDescription className="text-gray-600 mt-2">
                 Your email has been successfully verified.
               </CardDescription>
@@ -99,16 +99,16 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="max-w-md w-full">
-        <Card className="shadow-xl border-0">
+        <Card className="shadow-sm border-0">
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <CardTitle className="text-2xl font-bold text-red-600">Verification Failed</CardTitle>
+            <CardTitle className="text-2xl font-medium text-red-600">Verification Failed</CardTitle>
             <CardDescription className="text-gray-600 mt-2">
               {error || 'Unable to verify your email'}
             </CardDescription>
@@ -134,7 +134,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>

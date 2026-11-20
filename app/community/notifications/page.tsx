@@ -60,7 +60,7 @@ function getNotificationIcon(type: NotificationType) {
     case 'session_request_declined':
       return <XCircle className="w-5 h-5 text-red-500" />
     case 'offer':
-      return <MessageSquare className="w-5 h-5 text-purple-500" />
+      return <MessageSquare className="w-5 h-5 text-gray-500" />
     case 'offer_accepted':
       return <CheckCircle className="w-5 h-5 text-green-500" />
     case 'offer_declined':
@@ -68,11 +68,11 @@ function getNotificationIcon(type: NotificationType) {
     case 'session_scheduled':
       return <Calendar className="w-5 h-5 text-blue-500" />
     case 'session_reminder':
-      return <Clock className="w-5 h-5 text-yellow-500" />
+      return <Clock className="w-5 h-5 text-amber-500" />
     case 'message':
       return <MessageSquare className="w-5 h-5 text-blue-500" />
     case 'review_prompt':
-      return <Star className="w-5 h-5 text-yellow-500" />
+      return <Star className="w-5 h-5 text-amber-500" />
     default:
       return <Bell className="w-5 h-5 text-gray-500" />
   }
@@ -220,7 +220,7 @@ export default function NotificationsPage() {
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+                <h1 className="text-xl font-medium text-gray-900">Notifications</h1>
                 {unreadCount > 0 && (
                   <p className="text-xs text-gray-500">{unreadCount} unread</p>
                 )}
@@ -269,16 +269,16 @@ export default function NotificationsPage() {
           <div className="space-y-6">
             {groupedNotifications.map((group) => (
               <div key={group.label}>
-                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">
+                <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-1">
                   {group.label}
                 </h2>
                 <div className="space-y-2">
                   {group.notifications.map((notification) => (
                     <Card
                       key={notification.id}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        !notification.is_read
-                          ? 'bg-red-50/50 border-red-100'
+                      className={`cursor-pointer transition-all ${
+ !notification.is_read
+ ? 'bg-red-50/50 border-red-100'
                           : 'bg-white'
                       }`}
                       onClick={() => handleNotificationClick(notification)}
@@ -299,22 +299,22 @@ export default function NotificationsPage() {
                               <p
                                 className={`text-sm ${
                                   !notification.is_read
-                                    ? 'font-semibold text-gray-900'
+                                    ? 'font-medium text-gray-900'
                                     : 'text-gray-700'
                                 }`}
                               >
                                 {notification.title}
                               </p>
                               {!notification.is_read && (
-                                <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1.5" />
+                                <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-2" />
                               )}
                             </div>
                             {notification.body && (
-                              <p className="text-sm text-gray-500 line-clamp-2 mt-0.5">
+                              <p className="text-sm text-gray-500 line-clamp-2 mt-1">
                                 {notification.body}
                               </p>
                             )}
-                            <p className="text-xs text-gray-400 mt-1.5">
+                            <p className="text-xs text-gray-400 mt-2">
                               {formatTimeAgo(notification.created_at)}
                             </p>
                           </div>

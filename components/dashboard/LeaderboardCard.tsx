@@ -26,17 +26,17 @@ interface LeaderboardData {
 function rankColor(rank: number): string {
   if (rank === 1) return 'text-amber-500'
   if (rank === 2) return 'text-gray-400'
-  if (rank === 3) return 'text-orange-400/70'
+  if (rank === 3) return 'text-amber-400/70'
   return 'text-gray-300'
 }
 
 function InitialCircle({ name, isMe }: { name: string; isMe: boolean }) {
   return (
     <span
-      className={`w-[30px] h-[30px] flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+      className={`w-[30px] h-[30px] flex-shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${
         isMe
-          ? 'bg-gradient-to-br from-red-500 to-rose-500 text-white'
-          : 'bg-rose-50 border border-rose-100 text-red-600'
+          ? 'bg-red-600 text-white'
+          : 'bg-red-50 border border-gray-200 text-red-600'
       }`}
     >
       {name.charAt(0).toUpperCase()}
@@ -102,15 +102,15 @@ export default function LeaderboardCard() {
 
   if (loading || !data) {
     return (
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5">
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5">
         <span
-          className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+          className="absolute top-0 inset-x-10 h-px bg-gray-200"
           aria-hidden="true"
         />
         <div className="space-y-3" aria-hidden="true">
-          <div className="h-9 rounded-xl bg-rose-50/60 animate-pulse" />
-          <div className="h-9 rounded-xl bg-rose-50/60 animate-pulse" />
-          <div className="h-9 rounded-xl bg-rose-50/60 animate-pulse" />
+          <div className="h-9 rounded-xl bg-gray-50 animate-pulse" />
+          <div className="h-9 rounded-xl bg-gray-50 animate-pulse" />
+          <div className="h-9 rounded-xl bg-gray-50 animate-pulse" />
         </div>
       </div>
     )
@@ -122,19 +122,19 @@ export default function LeaderboardCard() {
   const showPinnedMe = data.me !== null && !meInTop
 
   return (
-    <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5">
+    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5">
       <span
-        className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+        className="absolute top-0 inset-x-10 h-px bg-gray-200"
         aria-hidden="true"
       />
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 shadow-[0_8px_18px_-6px_rgba(245,158,11,0.5)] flex items-center justify-center">
+        <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-amber-600 flex items-center justify-center">
           <Trophy className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">
-          <h2 className="font-semibold tracking-tight text-gray-900">
+          <h2 className="font-medium tracking-tight text-gray-900">
             Weekly leaderboard
           </h2>
           <p className="text-xs text-gray-400 truncate">
@@ -146,38 +146,38 @@ export default function LeaderboardCard() {
       {!hasActivity ? (
         /* Empty state */
         <div className="py-8 text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 flex items-center justify-center mb-3">
-            <Trophy className="w-8 h-8 text-rose-200" />
+          <div className="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-3">
+            <Trophy className="w-8 h-8 text-red-200" />
           </div>
           <p className="text-sm font-medium text-gray-600">No XP yet this week</p>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-400">
             Complete a lesson to score the first points
           </p>
         </div>
       ) : (
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           {entries.map((entry) => (
             <div
               key={`${entry.rank}-${entry.name}`}
               className={`flex items-center gap-3 px-2 py-2 ${
-                entry.is_me ? 'bg-rose-50/60 rounded-xl' : ''
+                entry.is_me ? 'bg-gray-50 rounded-xl' : ''
               }`}
             >
               <span
-                className={`w-6 flex-shrink-0 text-sm font-bold tabular-nums ${rankColor(entry.rank)}`}
+                className={`w-6 flex-shrink-0 text-sm font-medium tabular-nums ${rankColor(entry.rank)}`}
               >
                 {entry.rank}
               </span>
               <InitialCircle name={entry.name} isMe={entry.is_me} />
-              <span className="text-sm font-medium text-gray-800 truncate flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-medium text-gray-800 truncate flex items-center gap-2 min-w-0">
                 <span className="truncate">{entry.name}</span>
                 {entry.is_me && (
-                  <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 bg-rose-50 border border-rose-100 text-red-600 rounded-full font-semibold">
+                  <span className="flex-shrink-0 text-xs px-2 py-1 bg-red-50 border border-gray-200 text-red-600 rounded-full font-medium">
                     You
                   </span>
                 )}
               </span>
-              <span className="ml-auto flex-shrink-0 text-sm font-bold tabular-nums text-gray-900">
+              <span className="ml-auto flex-shrink-0 text-sm font-medium tabular-nums text-gray-900">
                 {entry.xp} XP
               </span>
             </div>
@@ -187,18 +187,18 @@ export default function LeaderboardCard() {
           {showPinnedMe && data.me && (
             <>
               <span
-                className="block h-px my-2 bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+                className="block h-px my-2 bg-gray-200"
                 aria-hidden="true"
               />
-              <div className="flex items-center gap-3 px-2 py-2 bg-rose-50/60 rounded-xl">
-                <span className="w-6 flex-shrink-0 text-sm font-bold tabular-nums text-gray-300">
+              <div className="flex items-center gap-3 px-2 py-2 bg-gray-50 rounded-xl">
+                <span className="w-6 flex-shrink-0 text-sm font-medium tabular-nums text-gray-300">
                   {data.me.rank ?? '–'}
                 </span>
                 <InitialCircle name="You" isMe />
-                <span className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
+                <span className="text-sm font-medium text-gray-800 flex items-center gap-2">
                   You
                 </span>
-                <span className="ml-auto flex-shrink-0 text-sm font-bold tabular-nums text-gray-900">
+                <span className="ml-auto flex-shrink-0 text-sm font-medium tabular-nums text-gray-900">
                   {data.me.xp} XP
                 </span>
               </div>

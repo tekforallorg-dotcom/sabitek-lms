@@ -61,7 +61,7 @@ interface Institution {
 
 const statusColors: Record<string, { dot: string; bg: string; text: string }> = {
   draft: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-600' },
-  active: { dot: 'bg-emerald-400', bg: 'bg-emerald-50 border-emerald-100', text: 'text-emerald-700' },
+  active: { dot: 'bg-green-400', bg: 'bg-green-50 border-green-100', text: 'text-green-700' },
   closed: { dot: 'bg-amber-400', bg: 'bg-amber-50 border-amber-100', text: 'text-amber-700' },
   archived: { dot: 'bg-gray-400', bg: 'bg-gray-50 border-gray-200', text: 'text-gray-600' },
 }
@@ -82,7 +82,7 @@ const enrollmentModeLabels: Record<string, string> = {
 
 function SabiBotLoader({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           {[0, 1, 2].map((i) => (
@@ -141,21 +141,21 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="relative overflow-hidden bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6"
+        className="relative overflow-hidden bg-white rounded-xl border border-gray-200 max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
 
         <div className="flex items-start justify-between mb-5">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-1">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-1">
               Share this cohort
             </p>
-            <h3 className="text-lg font-semibold tracking-tight text-gray-900 truncate">
+            <h3 className="text-lg font-medium tracking-tight text-gray-900 truncate">
               {cohort.name}
             </h3>
           </div>
@@ -163,7 +163,7 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-rose-50 transition-colors cursor-pointer flex-shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors cursor-pointer flex-shrink-0"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -171,17 +171,16 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
 
         {/* Join link */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Join link</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Join link</label>
           <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-rose-50/60 border border-rose-100 text-sm text-gray-700 truncate">
+            <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-sm text-gray-700 truncate">
               {joinUrl}
             </div>
             <button
               type="button"
               onClick={() => copyText(joinUrl, 'Link copied', setCopiedLink)}
-              className="relative overflow-hidden inline-flex items-center gap-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full px-4 py-2 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+              className="relative overflow-hidden inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-full px-4 py-2 ring-1 ring-red-600/50 transition-all cursor-pointer flex-shrink-0"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
               {copiedLink ? (
                 <><Check className="w-3.5 h-3.5" />Copied</>
               ) : (
@@ -194,17 +193,16 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
         {/* Mode-aware section */}
         {cohort.enrollment_mode === 'access_code' ? (
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Access code</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Access code</label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-rose-50/60 border border-rose-100 text-sm font-bold tracking-widest tabular-nums text-gray-900 truncate">
+              <div className="flex-1 min-w-0 px-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-sm font-medium tracking-widest tabular-nums text-gray-900 truncate">
                 {cohort.access_code || '—'}
               </div>
               <button
                 type="button"
                 onClick={() => copyText(cohort.access_code || '', 'Code copied', setCopiedCode)}
-                className="relative overflow-hidden inline-flex items-center gap-1.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full px-4 py-2 shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+                className="relative overflow-hidden inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-full px-4 py-2 ring-1 ring-red-600/50 transition-all cursor-pointer flex-shrink-0"
               >
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 {copiedCode ? (
                   <><Check className="w-3.5 h-3.5" />Copied</>
                 ) : (
@@ -212,13 +210,13 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-xs text-gray-500 mt-2">
               Share the link AND the code. Learners need both.
             </p>
           </div>
         ) : cohort.enrollment_mode === 'invite_only' ? (
-          <div className="mb-4 flex items-start gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
-            <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-100">
+            <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-1" />
             <p className="text-xs text-amber-700">
               This cohort is invite-only - the public page shows a notice instead of a join
               button. Use member invitations from the cohort detail page.
@@ -235,7 +233,7 @@ function ShareCohortModal({ cohort, onClose }: { cohort: Cohort; onClose: () => 
           href={joinUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer"
+          className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer"
         >
           Preview what learners see
           <ExternalLink className="w-3.5 h-3.5" />
@@ -390,15 +388,14 @@ export default function CohortsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#fffcfb] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">Something Went Wrong</h2>
+          <h2 className="text-xl font-medium tracking-tight text-gray-900 mb-2">Something Went Wrong</h2>
           <p className="text-gray-500 mb-6 text-sm">{error}</p>
-          <Button onClick={() => fetchInstitutionAndCohorts()} className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5">
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+          <Button onClick={() => fetchInstitutionAndCohorts()} className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all">
             Try Again
           </Button>
         </div>
@@ -407,9 +404,9 @@ export default function CohortsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Sub-header */}
-      <div className="bg-white/85 backdrop-blur border-b border-rose-100">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
@@ -430,13 +427,12 @@ export default function CohortsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">Learner Groups</p>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Your <span className="font-serif italic text-red-600">cohorts</span></h1>
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">Learner Groups</p>
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">Your <span className="font-serif italic text-red-600">cohorts</span></h1>
               <p className="text-gray-600 mt-1">Manage learner groups across your programs</p>
             </div>
             <Link href="/institution/cohorts/create">
-              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+              <Button className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all gap-2">
                 <Plus className="w-4 h-4" />
                 Create Cohort
               </Button>
@@ -448,7 +444,7 @@ export default function CohortsPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters */}
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4 mb-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -456,13 +452,13 @@ export default function CohortsPage() {
                 placeholder="Search cohorts..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 rounded-xl bg-white/70 border-rose-100 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
+                className="pl-10 rounded-xl bg-white/70 border-gray-200 placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
+              className="px-4 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
             >
               <option value="">All statuses</option>
               <option value="draft">Draft</option>
@@ -475,16 +471,15 @@ export default function CohortsPage() {
 
         {/* Cohorts Grid */}
         {cohorts.length === 0 ? (
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-12 text-center">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+            <div className="w-16 h-16 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No cohorts yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No cohorts yet</h3>
             <p className="text-gray-500 mb-6">Create your first cohort to start organizing learners</p>
             <Link href="/institution/cohorts/create">
-              <Button className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2">
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
+              <Button className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all gap-2">
                 <Plus className="w-4 h-4" />
                 Create First Cohort
               </Button>
@@ -495,12 +490,12 @@ export default function CohortsPage() {
             {cohorts.map((cohort) => {
               const status = statusColors[cohort.status] || statusColors.draft
               return (
-                <div key={cohort.id} className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] hover:shadow-[0_20px_40px_-20px_rgba(225,29,72,0.45)] hover:-translate-y-0.5 transition-all">
+                <div key={cohort.id} className="bg-white rounded-xl border border-gray-200 transition-all">
                   <div className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <Link href={`/institution/cohorts/${cohort.id}`} className="block group">
-                          <h3 className="font-semibold text-gray-900 truncate group-hover:text-red-600 transition-colors">
+                          <h3 className="font-medium text-gray-900 truncate group-hover:text-red-600 transition-colors">
                             {cohort.name}
                           </h3>
                         </Link>
@@ -509,7 +504,7 @@ export default function CohortsPage() {
                           {cohort.program?.name || 'No Program'}
                         </Link>
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {cohort.slug && (
                           <button
                             type="button"
@@ -517,7 +512,7 @@ export default function CohortsPage() {
                               setOpenMenu(null)
                               setShareTarget(cohort)
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/70 border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full text-xs font-semibold text-gray-700 shadow-sm transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-white/70 border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full text-xs font-medium text-gray-700 shadow-sm transition-colors cursor-pointer"
                           >
                             <Share2 className="w-3.5 h-3.5 text-red-500" />
                             Share
@@ -526,21 +521,21 @@ export default function CohortsPage() {
                         <div className="relative">
                         <button
                           onClick={() => setOpenMenu(openMenu === cohort.id ? null : cohort.id)}
-                          className="p-1.5 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                         >
                           <MoreVertical className="w-4 h-4 text-gray-400" />
                         </button>
                         {openMenu === cohort.id && (
-                          <div className="absolute right-0 mt-1 w-40 bg-white/95 backdrop-blur rounded-xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] py-1 z-10">
-                            <Link href={`/institution/cohorts/${cohort.id}`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50/40">
+                          <div className="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 py-1 z-10">
+                            <Link href={`/institution/cohorts/${cohort.id}`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                               <Eye className="w-4 h-4" />View
                             </Link>
-                            <Link href={`/institution/cohorts/${cohort.id}/edit`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50/40">
+                            <Link href={`/institution/cohorts/${cohort.id}/edit`} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                               <Edit className="w-4 h-4" />Edit
                             </Link>
                             <button
                               onClick={() => openArchiveModal(cohort.id, cohort.name)}
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-rose-50 w-full text-left cursor-pointer"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left cursor-pointer"
                             >
                               <Archive className="w-4 h-4" />
                               Archive
@@ -552,11 +547,11 @@ export default function CohortsPage() {
                     </div>
 
                     <div className="flex items-center gap-2 mb-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status.bg} ${status.text}`}>
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${status.bg} ${status.text}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                         {cohort.status.charAt(0).toUpperCase() + cohort.status.slice(1)}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-rose-50 border border-rose-100 text-gray-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-50 border border-gray-200 text-gray-600">
                         {enrollmentModeIcons[cohort.enrollment_mode]}
                         {enrollmentModeLabels[cohort.enrollment_mode]}
                       </span>
@@ -595,28 +590,28 @@ export default function CohortsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/50 transition-opacity"
             onClick={closeArchiveModal}
           />
           {/* Modal */}
           <div
-            className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
+            className="relative bg-white rounded-xl border border-gray-200 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
             onKeyDown={(e) => { if (e.key === 'Escape') closeArchiveModal() }}
             tabIndex={-1}
             ref={(el) => el?.focus()}
           >
-            <div className="flex items-center justify-center w-14 h-14 bg-rose-50 border border-rose-100 rounded-xl mx-auto mb-4">
+            <div className="flex items-center justify-center w-14 h-14 bg-red-50 border border-gray-200 rounded-xl mx-auto mb-4">
               <Archive className="w-7 h-7 text-red-500" />
             </div>
 
-            <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+            <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
               Archive Cohort
             </h3>
 
             <p className="text-sm text-gray-600 text-center mb-1">
               Are you sure you want to archive
             </p>
-            <p className="text-sm font-semibold text-gray-900 text-center mb-4">
+            <p className="text-sm font-medium text-gray-900 text-center mb-4">
               &ldquo;{archiveTarget.name}&rdquo;?
             </p>
 
@@ -632,7 +627,7 @@ export default function CohortsPage() {
                 variant="outline"
                 onClick={closeArchiveModal}
                 disabled={!!archiving}
-                className="flex-1 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                className="flex-1 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
               >
                 Cancel
               </Button>
@@ -640,9 +635,8 @@ export default function CohortsPage() {
                 type="button"
                 onClick={confirmArchive}
                 disabled={!!archiving}
-                className="flex-1 relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 gap-2"
+                className="flex-1 relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all gap-2"
               >
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
                 {archiving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />

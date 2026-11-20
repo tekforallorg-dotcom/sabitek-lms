@@ -68,12 +68,12 @@ interface Analytics {
 }
 
 const glassCard =
-  'relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]'
+  'relative overflow-hidden bg-white rounded-xl border border-gray-200'
 
 function Hairline() {
   return (
     <span
-      className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+      className="absolute top-0 inset-x-10 h-px bg-gray-200"
       aria-hidden="true"
     />
   )
@@ -203,7 +203,7 @@ export default function CourseAnalyticsPage() {
 
   if (loading || pageLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text="Loading analytics..." size="lg" />
       </div>
     )
@@ -211,15 +211,15 @@ export default function CourseAnalyticsPage() {
 
   if (errored || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className={`${glassCard} max-w-md w-full p-8 text-center`}>
           <Hairline />
-          <div className="w-14 h-14 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-4">
-            <AlertTriangle className="w-7 h-7 text-rose-400" />
+          <div className="w-14 h-14 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-4">
+            <AlertTriangle className="w-7 h-7 text-red-400" />
           </div>
-          <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-1">
+          <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-1">
             We couldn&apos;t load your{' '}
-            <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
+            <span className="font-serif italic text-red-600">
               analytics
             </span>
           </h2>
@@ -228,9 +228,8 @@ export default function CourseAnalyticsPage() {
           </p>
           <button
             onClick={loadAnalytics}
-            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full px-5 py-2.5 text-sm shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer"
+            className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full px-5 py-3 text-sm ring-1 ring-red-600/50 transition-all cursor-pointer"
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
             Try again
           </button>
         </div>
@@ -278,25 +277,23 @@ export default function CourseAnalyticsPage() {
   const hiddenRoster = roster.length - visibleRoster.length
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <section className="relative overflow-hidden border-b border-rose-100/80">
-        <div className="absolute -top-24 right-[-8%] w-96 h-96 bg-rose-100/70 rounded-full blur-[100px]" aria-hidden="true" />
-        <div className="absolute -bottom-20 left-[-8%] w-72 h-72 bg-red-50 rounded-full blur-[80px]" aria-hidden="true" />
+      <section className="relative overflow-hidden border-b border-gray-200">
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <button
             onClick={() => router.push(`/instructor/courses/${slug}`)}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition-colors mb-5 cursor-pointer"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 transition-colors mb-5 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to course
           </button>
 
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-2">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-2">
             Course Analytics
           </p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900 mb-2">
             {data.course_title}
           </h1>
           <p className="text-sm text-gray-500 max-w-2xl">
@@ -307,19 +304,19 @@ export default function CourseAnalyticsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 space-y-6">
         {/* KPI tiles */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((kpi, i) => (
             <div
               key={i}
-              className={`${glassCard} p-4 sm:p-5 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-20px_rgba(225,29,72,0.45)] transition-all`}
+              className={`${glassCard} p-4 sm:p-5 transition-all`}
             >
               <Hairline />
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] ${
-                    kpi.amber
-                      ? 'bg-gradient-to-br from-amber-400 to-orange-500'
-                      : 'bg-gradient-to-br from-red-500 to-rose-500'
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+ kpi.amber
+ ? 'bg-amber-600'
+                      : 'bg-red-600'
                   }`}
                 >
                   <kpi.icon className="w-5 h-5 text-white" />
@@ -327,7 +324,7 @@ export default function CourseAnalyticsPage() {
                 <div className="min-w-0">
                   <p className="text-xs text-gray-500 truncate">{kpi.label}</p>
                   <p
-                    className={`text-2xl font-semibold tabular-nums ${
+                    className={`text-2xl font-medium tabular-nums ${
                       kpi.amber ? 'text-amber-600' : 'text-gray-900'
                     }`}
                   >
@@ -335,7 +332,7 @@ export default function CourseAnalyticsPage() {
                   </p>
                 </div>
               </div>
-              <p className="text-[11px] text-gray-400 mt-2 truncate">{kpi.sub}</p>
+              <p className="text-xs text-gray-400 mt-2 truncate">{kpi.sub}</p>
             </div>
           ))}
         </div>
@@ -344,25 +341,25 @@ export default function CourseAnalyticsPage() {
         <div className={`${glassCard} p-5 sm:p-6`}>
           <Hairline />
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-semibold tracking-tight text-gray-900">
+              <h2 className="text-base font-medium tracking-tight text-gray-900">
                 Enrollments · last 12 weeks
               </h2>
               <p className="text-xs text-gray-500">New learners joining, week by week</p>
             </div>
           </div>
 
-          <div className="flex items-end gap-1.5 h-24">
+          <div className="flex items-end gap-2 h-24">
             {trend.map((point, i) => {
               const pct = point.count > 0 ? Math.max(4, (point.count / maxTrend) * 100) : 0
               return (
                 <div key={i} className="flex-1 h-full flex items-end" title={`${point.week}: ${point.count}`}>
                   {point.count > 0 ? (
                     <div
-                      className="w-full rounded-t bg-gradient-to-t from-red-500 to-rose-400"
+                      className="w-full rounded-t bg-red-600"
                       style={{ height: `${pct}%` }}
                     />
                   ) : (
@@ -372,9 +369,9 @@ export default function CourseAnalyticsPage() {
               )
             })}
           </div>
-          <div className="flex gap-1.5 mt-2">
+          <div className="flex gap-2 mt-2">
             {trend.map((point, i) => (
-              <div key={i} className="flex-1 text-center text-[9px] text-gray-400 tabular-nums">
+              <div key={i} className="flex-1 text-center text-xs text-gray-400 tabular-nums">
                 {i % 2 === 0 ? point.week : ''}
               </div>
             ))}
@@ -385,11 +382,11 @@ export default function CourseAnalyticsPage() {
         <div className={`${glassCard} p-5 sm:p-6`}>
           <Hairline />
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
               <Filter className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-semibold tracking-tight text-gray-900">
+              <h2 className="text-base font-medium tracking-tight text-gray-900">
                 Where learners stop
               </h2>
               <p className="text-xs text-gray-500">Completions per lesson, in order</p>
@@ -398,13 +395,13 @@ export default function CourseAnalyticsPage() {
 
           {funnel.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-3">
-                <Filter className="w-6 h-6 text-rose-300" />
+              <div className="w-12 h-12 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-3">
+                <Filter className="w-6 h-6 text-red-300" />
               </div>
               <p className="text-sm text-gray-500">No lessons to chart yet.</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {funnel.map((step, i) => {
                 const prev = i > 0 ? funnel[i - 1].completions : null
                 const bigDrop =
@@ -412,25 +409,25 @@ export default function CourseAnalyticsPage() {
                 const width = maxFunnel > 0 ? (step.completions / maxFunnel) * 100 : 0
                 return (
                   <div key={step.lesson_id} className="flex items-center gap-3">
-                    <span className="w-6 text-xs font-bold text-gray-300 tabular-nums text-right flex-shrink-0">
+                    <span className="w-6 text-xs font-medium text-gray-300 tabular-nums text-right flex-shrink-0">
                       {step.order}
                     </span>
                     <span className="text-sm text-gray-700 truncate w-40 sm:w-56 flex-shrink-0">
                       {step.title}
                     </span>
-                    <div className="flex-1 h-5 rounded-full bg-rose-50 overflow-hidden">
+                    <div className="flex-1 h-5 rounded-full bg-red-50 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-400"
+                        className="h-full rounded-full bg-red-600"
                         style={{ width: `${width}%` }}
                       />
                     </div>
                     {bigDrop && (
-                      <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100 flex-shrink-0">
+                      <span className="hidden sm:inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 flex-shrink-0">
                         big drop
                       </span>
                     )}
                     <span
-                      className={`w-10 text-sm font-semibold tabular-nums text-right flex-shrink-0 ${
+                      className={`w-10 text-sm font-medium tabular-nums text-right flex-shrink-0 ${
                         bigDrop ? 'text-amber-600' : 'text-gray-900'
                       }`}
                     >
@@ -448,11 +445,11 @@ export default function CourseAnalyticsPage() {
           <div className={`${glassCard} p-5 sm:p-6`}>
             <Hairline />
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                 <HelpCircle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-base font-semibold tracking-tight text-gray-900">Quiz insights</h2>
+                <h2 className="text-base font-medium tracking-tight text-gray-900">Quiz insights</h2>
                 <p className="text-xs text-gray-500">Which questions trip learners up</p>
               </div>
             </div>
@@ -461,17 +458,17 @@ export default function CourseAnalyticsPage() {
               {quizzes.map((quiz) => (
                 <div
                   key={quiz.lesson_id}
-                  className="rounded-2xl border border-rose-100 bg-white/70 p-4"
+                  className="rounded-xl border border-gray-200 bg-white/70 p-4"
                 >
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <h3 className="text-sm font-semibold text-gray-900 mr-1">{quiz.lesson_title}</h3>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 tabular-nums">
+                    <h3 className="text-sm font-medium text-gray-900 mr-1">{quiz.lesson_title}</h3>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 tabular-nums">
                       {quiz.attempts} attempts
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 tabular-nums">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100 tabular-nums">
                       {quiz.pass_rate ?? 0}% pass
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-100 tabular-nums">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-gray-200 tabular-nums">
                       avg {quiz.avg_score ?? 0}%
                     </span>
                   </div>
@@ -492,16 +489,16 @@ export default function CourseAnalyticsPage() {
                         const review = item.correct_rate < 50
                         return (
                           <div key={idx}>
-                            <div className="flex items-start justify-between gap-3 mb-1.5">
+                            <div className="flex items-start justify-between gap-3 mb-2">
                               <p className="text-xs text-gray-700 line-clamp-2 flex-1">{item.question}</p>
                               <div className="flex items-center gap-2 flex-shrink-0">
                                 {review && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
                                     review this question
                                   </span>
                                 )}
                                 <span
-                                  className={`text-xs font-semibold tabular-nums ${
+                                  className={`text-xs font-medium tabular-nums ${
                                     review ? 'text-amber-600' : 'text-gray-900'
                                   }`}
                                 >
@@ -509,12 +506,12 @@ export default function CourseAnalyticsPage() {
                                 </span>
                               </div>
                             </div>
-                            <div className="h-2 rounded-full bg-rose-50 overflow-hidden">
+                            <div className="h-2 rounded-full bg-red-50 overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   review
-                                    ? 'bg-gradient-to-r from-amber-400 to-orange-500'
-                                    : 'bg-gradient-to-r from-red-500 to-rose-400'
+                                    ? 'bg-amber-600'
+                                    : 'bg-red-600'
                                 }`}
                                 style={{ width: `${item.correct_rate}%` }}
                               />
@@ -534,11 +531,11 @@ export default function CourseAnalyticsPage() {
         <div className={`${glassCard} p-5 sm:p-6`}>
           <Hairline />
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
               <UsersRound className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-semibold tracking-tight text-gray-900">
+              <h2 className="text-base font-medium tracking-tight text-gray-900">
                 Learners ({roster.length})
               </h2>
               <p className="text-xs text-gray-500">Sorted by progress</p>
@@ -547,8 +544,8 @@ export default function CourseAnalyticsPage() {
 
           {roster.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 mx-auto bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-3">
-                <UsersRound className="w-6 h-6 text-rose-300" />
+              <div className="w-12 h-12 mx-auto bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mb-3">
+                <UsersRound className="w-6 h-6 text-red-300" />
               </div>
               <p className="text-sm text-gray-500">No enrolled learners yet.</p>
             </div>
@@ -558,13 +555,13 @@ export default function CourseAnalyticsPage() {
                 {visibleRoster.map((learner, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 rounded-xl border border-rose-100 bg-white/70 px-3 py-2.5"
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white/70 px-3 py-3"
                   >
                     <span
-                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 border ${
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 border ${
                         learner.at_risk
                           ? 'bg-amber-50 border-amber-100 text-amber-600'
-                          : 'bg-rose-50 border-rose-100 text-red-600'
+                          : 'bg-red-50 border-gray-200 text-red-600'
                       }`}
                     >
                       {(learner.name || '?').charAt(0).toUpperCase()}
@@ -574,25 +571,25 @@ export default function CourseAnalyticsPage() {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-900 truncate">{learner.name}</p>
                         {learner.at_risk && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100 flex-shrink-0">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 flex-shrink-0">
                             at risk
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <div className="flex-1 h-2 rounded-full bg-rose-50 overflow-hidden max-w-[220px]">
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 rounded-full bg-red-50 overflow-hidden max-w-[220px]">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-400"
+                            className="h-full rounded-full bg-red-600"
                             style={{ width: `${learner.progress_pct}%` }}
                           />
                         </div>
-                        <span className="text-[11px] text-gray-500 tabular-nums flex-shrink-0">
+                        <span className="text-xs text-gray-500 tabular-nums flex-shrink-0">
                           {learner.lessons_completed}/{learner.total_lessons}
                         </span>
                       </div>
                     </div>
 
-                    <span className="text-[11px] text-gray-400 tabular-nums flex-shrink-0 hidden sm:block">
+                    <span className="text-xs text-gray-400 tabular-nums flex-shrink-0 hidden sm:block">
                       {formatDate(learner.last_active)}
                     </span>
                   </div>
@@ -611,11 +608,11 @@ export default function CourseAnalyticsPage() {
         <div className={`${glassCard} p-5 sm:p-6`}>
           <Hairline />
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
               <Megaphone className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">
                 Message your learners
               </p>
               <p className="text-xs text-gray-500">One email to everyone enrolled</p>
@@ -628,17 +625,16 @@ export default function CourseAnalyticsPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share an update, encouragement, or a heads-up about new lessons..."
-            className="w-full rounded-2xl border border-rose-100 bg-white/70 backdrop-blur px-4 py-3 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 focus:outline-none resize-none"
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-red-400 focus:ring-red-400 focus:outline-none resize-none"
           />
           <div className="flex items-center justify-between mt-2">
-            <span className="text-[11px] text-gray-400 tabular-nums">{message.length}/2000</span>
+            <span className="text-xs text-gray-400 tabular-nums">{message.length}/2000</span>
             <button
               onClick={() => setConfirmOpen(true)}
               disabled={!message.trim() || summary.enrolled === 0}
-              className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full px-5 py-2.5 text-sm shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full px-5 py-3 text-sm ring-1 ring-red-600/50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
-              <span className="relative flex items-center gap-1.5">
+              <span className="relative flex items-center gap-2">
                 <Send className="w-4 h-4" />
                 Send to {summary.enrolled} learner{summary.enrolled === 1 ? '' : 's'}
               </span>
@@ -651,17 +647,17 @@ export default function CourseAnalyticsPage() {
       {confirmOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => !sending && setConfirmOpen(false)}
           />
-          <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="relative bg-white rounded-xl border border-gray-200 max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Megaphone className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold tracking-tight text-gray-900">Send announcement?</h3>
+                <h3 className="text-lg font-medium tracking-tight text-gray-900">Send announcement?</h3>
               </div>
               <p className="text-sm text-gray-600 mb-6">
                 This emails {summary.enrolled} enrolled learner{summary.enrolled === 1 ? '' : 's'}. Replies go
@@ -671,16 +667,15 @@ export default function CourseAnalyticsPage() {
                 <button
                   onClick={() => setConfirmOpen(false)}
                   disabled={sending}
-                  className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 font-medium rounded-full px-5 py-2.5 text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 font-medium rounded-full px-5 py-3 text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSend}
                   disabled={sending}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full px-5 py-2.5 text-sm shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed min-w-[120px] flex items-center justify-center"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full px-5 py-3 text-sm ring-1 ring-red-600/50 transition-all cursor-pointer disabled:cursor-not-allowed min-w-[120px] flex items-center justify-center"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   {sending ? (
                     <span className="relative [&>div]:!py-0">
                       <SabiLoader text="Sending..." size="sm" />

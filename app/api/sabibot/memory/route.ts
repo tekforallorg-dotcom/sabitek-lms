@@ -415,7 +415,7 @@ async function markMilestoneCelebrated(userId: string, milestoneId: string) {
 // ============================================
 async function getUserContext(userId: string) {
   try {
-    // ✅ Auto-expire insights older than 30 days
+    // Auto-expire insights older than 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 

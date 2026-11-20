@@ -88,7 +88,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8 lg:py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-gray-900 mb-3 sm:mb-4">
             Choose Your Plan
           </h1>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -108,13 +108,13 @@ export default function PricingPage() {
               key={plan.code}
               className={`relative ${
                 plan.popular
-                  ? 'border-2 border-red-500 shadow-lg'
+                  ? 'border-2 border-red-500 shadow-sm'
                   : 'border border-gray-200'
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-red-500 text-white text-xs font-medium px-3 py-1 rounded-full">
                     Most Popular
                   </span>
                 </div>
@@ -127,7 +127,7 @@ export default function PricingPage() {
 
               <CardContent className="pt-0">
                 <div className="text-center mb-6">
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-medium text-gray-900">
                     {plan.currency}{plan.price.toLocaleString()}
                   </span>
                   <span className="text-gray-500 text-sm sm:text-base">/{plan.interval}</span>

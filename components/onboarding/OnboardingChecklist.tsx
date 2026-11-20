@@ -98,14 +98,14 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
   const gradientId = `onboarding-ring-${persona}`
 
   return (
-    <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-5">
+    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5">
       <span
-        className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+        className="absolute top-0 inset-x-10 h-px bg-gray-200"
         aria-hidden="true"
       />
 
       {/* Header: ring + titles + dismiss */}
-      <div className="flex items-start gap-3.5 mb-4">
+      <div className="flex items-start gap-4 mb-4">
         <div className="relative flex-shrink-0" style={{ width: RING_SIZE, height: RING_SIZE }}>
           <svg
             width={RING_SIZE}
@@ -141,30 +141,30 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
               style={{ transition: 'stroke-dashoffset 700ms ease-out' }}
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold tabular-nums text-gray-900">
+          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium tabular-nums text-gray-900">
             {completed}/{total}
           </span>
         </div>
 
-        <div className="flex-1 min-w-0 pt-0.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600 mb-0.5">
+        <div className="flex-1 min-w-0 pt-1">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600 mb-1">
             Getting started
           </p>
-          <h2 className="font-semibold tracking-tight text-gray-900">{title}</h2>
+          <h2 className="font-medium tracking-tight text-gray-900">{title}</h2>
         </div>
 
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss getting started checklist"
-          className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-rose-50 transition-colors cursor-pointer flex-shrink-0"
+          className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-red-50 transition-colors cursor-pointer flex-shrink-0"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Steps */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {steps.map((step) => {
           const emphasized = !step.done && step.key === firstPendingKey
           return (
@@ -173,18 +173,18 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
               href={step.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors cursor-pointer ${
                 step.done
-                  ? 'hover:bg-rose-50/40'
+                  ? 'hover:bg-gray-50'
                   : emphasized
-                    ? 'bg-rose-50/50 ring-1 ring-rose-100 hover:bg-rose-50/60'
-                    : 'hover:bg-rose-50/60'
+                    ? 'bg-gray-50 ring-1 ring-gray-200 hover:bg-gray-50'
+                    : 'hover:bg-gray-50'
               }`}
             >
               {step.done ? (
-                <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <span className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                   <Check className="w-3 h-3 text-white" />
                 </span>
               ) : (
-                <span className="w-5 h-5 rounded-full border-2 border-rose-200 flex-shrink-0" aria-hidden="true" />
+                <span className="w-5 h-5 rounded-full border-2 border-gray-200 flex-shrink-0" aria-hidden="true" />
               )}
               <span className="min-w-0">
                 <span
@@ -195,11 +195,11 @@ export default function OnboardingChecklist({ persona }: { persona: Persona }) {
                   {step.label}
                 </span>
                 {!step.done && step.description && (
-                  <span className="block text-[11px] text-gray-400 truncate">{step.description}</span>
+                  <span className="block text-xs text-gray-400 truncate">{step.description}</span>
                 )}
               </span>
               {!step.done && (
-                <ChevronRight className="w-3.5 h-3.5 text-rose-300 ml-auto flex-shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-red-300 ml-auto flex-shrink-0" />
               )}
             </Link>
           )

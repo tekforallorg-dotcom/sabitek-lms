@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[VERIFY-RESET] ✅ Token verified for user:', data.user.email)
+    console.log('[VERIFY-RESET] Token verified for user:', data.user.email)
 
     // Return session tokens to client
     return NextResponse.json({

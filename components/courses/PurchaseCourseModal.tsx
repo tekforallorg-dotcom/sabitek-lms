@@ -143,12 +143,12 @@ export function PurchaseCourseModal({
   if (success) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-8 text-center">
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md mx-4 p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Purchase Successful!</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-2">Purchase Successful!</h2>
           <p className="text-gray-600 mb-4">You now have access to this course.</p>
           <p className="text-sm text-gray-500">Redirecting to course...</p>
         </div>
@@ -160,15 +160,15 @@ export function PurchaseCourseModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="relative bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Purchase Course</h2>
+          <h2 className="text-lg font-medium text-gray-900">Purchase Course</h2>
           <button
             onClick={onClose}
             disabled={isProcessing}
@@ -183,7 +183,7 @@ export function PurchaseCourseModal({
           {/* Course Info */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">{course.title}</h3>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-medium text-gray-900">
               ₦{course.price.toLocaleString()}
             </p>
           </div>
@@ -225,7 +225,7 @@ export function PurchaseCourseModal({
               
               {/* Insufficient balance warning */}
               {!canAfford && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
+                <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>Need {formatNaira(shortfall)} more. Top up first.</span>
                 </div>

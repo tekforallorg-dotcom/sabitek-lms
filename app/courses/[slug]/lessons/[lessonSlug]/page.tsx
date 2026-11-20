@@ -109,22 +109,22 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
   }
 
   const bgMap = {
-    info: 'from-blue-500 to-blue-600',
-    success: 'from-green-500 to-green-600',
-    error: 'from-red-500 to-red-600',
-    warning: 'from-amber-500 to-amber-600',
+    info: 'bg-blue-600',
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    warning: 'bg-amber-600',
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white/95 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_20px_50px_-20px_rgba(225,29,72,0.45)] max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <div className={`bg-gradient-to-r ${bgMap[type]} p-4`}>
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-xl border border-gray-200 max-w-md w-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className={`${bgMap[type]} p-4`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               {iconMap[type]}
             </div>
-            <h3 className="text-lg font-semibold tracking-tight text-white">{title}</h3>
+            <h3 className="text-lg font-medium tracking-tight text-white">{title}</h3>
           </div>
         </div>
         <div className="p-5">
@@ -139,8 +139,8 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
                 variant={action.variant === 'secondary' ? 'outline' : 'default'}
                 className={
                   action.variant === 'primary'
-                    ? 'bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5'
-                    : 'bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm'
+                    ? 'bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all'
+                    : 'bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm'
                 }
                 size="sm"
               >
@@ -150,7 +150,7 @@ function Modal({ isOpen, onClose, title, message, type = 'info', actions }: Moda
           ) : (
             <Button
               onClick={onClose}
-              className="bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
               size="sm"
             >
               OK
@@ -690,7 +690,7 @@ export default function LessonViewerPage() {
     switch (lesson.content_type) {
       case 'youtube':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-gray-200">
             {lesson.youtube_url?.includes('<iframe') ? (
               <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: lesson.youtube_url }} />
             ) : (
@@ -707,7 +707,7 @@ export default function LessonViewerPage() {
 
       case 'video':
         return (
-          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-gray-200">
             <video key={lesson.id} src={lesson.video_url} controls className="absolute inset-0 w-full h-full">
               Your browser does not support the video tag.
             </video>
@@ -717,7 +717,7 @@ export default function LessonViewerPage() {
       case 'pdf':
         return (
           <div className="w-full">
-            <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+            <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
               <iframe
                 key={lesson.id}
                 src={`${lesson.pdf_url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
@@ -731,7 +731,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.pdf_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                className="text-xs bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
               >
                 Open in New Tab
               </Button>
@@ -744,7 +744,7 @@ export default function LessonViewerPage() {
                 }}
                 variant="outline"
                 size="sm"
-                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                className="text-xs bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
               >
                 Download PDF
               </Button>
@@ -758,7 +758,7 @@ export default function LessonViewerPage() {
             {lesson.powerpoint_url?.includes('docs.google.com/presentation') ||
             lesson.powerpoint_url?.includes('onedrive.live.com') ||
             lesson.powerpoint_url?.includes('office.com') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
                 <iframe
                   key={lesson.id}
                   src={lesson.powerpoint_url.replace('/edit', '/embed').replace('/view', '/embed')}
@@ -769,7 +769,7 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : lesson.powerpoint_url?.includes('.ppt') || lesson.powerpoint_url?.includes('.pptx') ? (
-              <div className="relative aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <div className="relative aspect-video w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
                 <iframe
                   key={lesson.id}
                   src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.powerpoint_url)}`}
@@ -779,13 +779,12 @@ export default function LessonViewerPage() {
                 />
               </div>
             ) : (
-              <div className="bg-white/85 backdrop-blur rounded-2xl border-2 border-dashed border-rose-200 p-8 text-center">
+              <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
                 <p className="text-gray-600 mb-4">PowerPoint preview loading...</p>
                 <Button
                   onClick={() => window.open(lesson.powerpoint_url, '_blank')}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   Open Presentation
                 </Button>
               </div>
@@ -795,7 +794,7 @@ export default function LessonViewerPage() {
                 onClick={() => window.open(lesson.powerpoint_url, '_blank')}
                 variant="outline"
                 size="sm"
-                className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                className="text-xs bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
               >
                 Open in New Tab
               </Button>
@@ -809,7 +808,7 @@ export default function LessonViewerPage() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="text-xs bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                  className="text-xs bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
                 >
                   Download PowerPoint
                 </Button>
@@ -835,7 +834,7 @@ export default function LessonViewerPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <SabiLoader text={authLoading ? 'Checking authentication...' : 'Loading lesson...'} />
       </div>
     )
@@ -843,14 +842,14 @@ export default function LessonViewerPage() {
 
   if (programLock) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#fffcfb]">
-        <Card className="max-w-md w-full relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <Card className="max-w-md w-full relative overflow-hidden bg-white rounded-xl border border-gray-200">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <CardHeader className="text-center pb-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Lock className="w-7 h-7 text-white" />
             </div>
-            <CardTitle className="text-xl font-semibold tracking-tight">Locked for now</CardTitle>
+            <CardTitle className="text-xl font-medium tracking-tight">Locked for now</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-gray-600 text-sm mb-5">
@@ -860,9 +859,8 @@ export default function LessonViewerPage() {
             </p>
             <Button
               onClick={() => router.push(programLock.slug ? `/courses/${programLock.slug}` : '/courses')}
-              className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="w-full relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
               {programLock.title ? `Go to ${programLock.title}` : 'Browse courses'}
             </Button>
           </CardContent>
@@ -873,14 +871,14 @@ export default function LessonViewerPage() {
 
   if (!enrollmentStatus && course?.instructor_id !== user?.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#fffcfb]">
-        <Card className="max-w-md w-full relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-          <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <Card className="max-w-md w-full relative overflow-hidden bg-white rounded-xl border border-gray-200">
+          <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
           <CardHeader className="text-center pb-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Lock className="w-7 h-7 text-white" />
             </div>
-            <CardTitle className="text-xl font-semibold tracking-tight">Enrollment Required</CardTitle>
+            <CardTitle className="text-xl font-medium tracking-tight">Enrollment Required</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-gray-600 text-sm mb-5">
@@ -888,9 +886,8 @@ export default function LessonViewerPage() {
             </p>
             <Button
               onClick={() => router.push(`/courses/${params.slug}`)}
-              className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="w-full relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
               Go to Course Page
             </Button>
           </CardContent>
@@ -926,10 +923,10 @@ export default function LessonViewerPage() {
   // and in the main column on mobile without duplicating the JSX.
   const quizCard =
     quiz && quiz.questions && quiz.questions.length > 0 ? (
-              <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+              <Card className="bg-white rounded-xl border border-gray-200">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center">
                       <Award className="w-4 h-4 text-white" />
                     </div>
                     {quiz.title}
@@ -937,19 +934,19 @@ export default function LessonViewerPage() {
                   {quiz.description && <CardDescription className="text-xs">{quiz.description}</CardDescription>}
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 mb-4 text-xs bg-rose-50/60 border border-rose-100 rounded-xl p-3">
+                  <div className="space-y-2 mb-4 text-xs bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Questions:</span>
-                      <span className="font-semibold text-gray-900">{quiz.questions.length}</span>
+                      <span className="font-medium text-gray-900">{quiz.questions.length}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Pass Score:</span>
-                      <span className="font-semibold text-gray-900">{quiz.pass_percentage}%</span>
+                      <span className="font-medium text-gray-900">{quiz.pass_percentage}%</span>
                     </div>
                     {quiz.time_limit && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Time Limit:</span>
-                        <span className="font-semibold text-gray-900 flex items-center gap-1">
+                        <span className="font-medium text-gray-900 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {quiz.time_limit} min
                         </span>
@@ -958,7 +955,7 @@ export default function LessonViewerPage() {
                     {quizAttempts > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Your Attempts:</span>
-                        <span className="font-semibold text-gray-900">{quizAttempts}</span>
+                        <span className="font-medium text-gray-900">{quizAttempts}</span>
                       </div>
                     )}
                   </div>
@@ -971,7 +968,7 @@ export default function LessonViewerPage() {
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               return (
-                                <div key={questionId} className="p-3 border border-rose-100 rounded-xl bg-rose-50/40">
+                                <div key={questionId} className="p-3 border border-gray-200 rounded-xl bg-gray-50">
                                   <p className="font-medium text-sm mb-2">
                                     {index + 1}. {question.question}
                                   </p>
@@ -981,7 +978,7 @@ export default function LessonViewerPage() {
                                         key={optIndex}
                                         className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer hover:bg-white transition-colors ${
                                           selectedAnswers[questionId] === optIndex
-                                            ? 'bg-rose-50 border-rose-200 border'
+                                            ? 'bg-red-50 border-gray-200 border'
                                             : 'border border-transparent'
                                         }`}
                                       >
@@ -990,7 +987,7 @@ export default function LessonViewerPage() {
                                           name={`question-${questionId}`}
                                           checked={selectedAnswers[questionId] === optIndex}
                                           onChange={() => handleAnswerSelect(questionId, optIndex)}
-                                          className="mt-0.5 text-red-600 focus:ring-red-500"
+                                          className="mt-1 text-red-600 focus:ring-red-500"
                                         />
                                         <span className="text-sm">{option}</span>
                                       </label>
@@ -1003,7 +1000,7 @@ export default function LessonViewerPage() {
 
                           <div className="space-y-2">
                             <Button
-                              className="w-full bg-gradient-to-b from-emerald-400 to-green-500 hover:to-green-400 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(16,185,129,0.55)] ring-1 ring-green-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm rounded-full ring-1 ring-green-600/50 transition-all disabled:opacity-50"
                               onClick={submitQuiz}
                               size="sm"
                               disabled={Object.keys(selectedAnswers).length === 0}
@@ -1016,7 +1013,7 @@ export default function LessonViewerPage() {
                                 setShowQuiz(false)
                                 setSelectedAnswers({})
                               }}
-                              className="w-full text-sm bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                              className="w-full text-sm bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
                               size="sm"
                             >
                               Cancel
@@ -1028,25 +1025,25 @@ export default function LessonViewerPage() {
                           <div
                             className={`p-4 rounded-xl text-center ${
                               quizResults?.passed
-                                ? 'bg-emerald-50 border border-emerald-100'
-                                : 'bg-rose-50 border border-rose-100'
+                                ? 'bg-green-50 border border-green-100'
+                                : 'bg-red-50 border border-gray-200'
                             }`}
                           >
                             <h3
-                              className={`text-xl font-semibold tracking-tight mb-1 ${
-                                quizResults?.passed ? 'text-emerald-700' : 'text-rose-600'
+                              className={`text-xl font-medium tracking-tight mb-1 ${
+                                quizResults?.passed ? 'text-green-700' : 'text-red-600'
                               }`}
                             >
                               {quizResults?.passed ? 'Passed!' : 'Keep Learning!'}
                             </h3>
-                            <p className="text-lg font-semibold">Score: {quizResults?.score}%</p>
+                            <p className="text-lg font-medium">Score: {quizResults?.score}%</p>
                             <p className="text-xs mt-1">
                               {quizResults?.correctAnswers} out of {quizResults?.totalQuestions} correct
                             </p>
                           </div>
 
                           <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                            <h4 className="font-semibold text-sm sticky top-0 bg-white/90 backdrop-blur py-2">Review Answers:</h4>
+                            <h4 className="font-medium text-sm sticky top-0 bg-white py-2">Review Answers:</h4>
                             {quiz.questions.map((question, index) => {
                               const questionId = question.id || `q-${index}`
                               const graded = quizResults?.results?.find((r) => r.question_id === questionId)
@@ -1059,19 +1056,19 @@ export default function LessonViewerPage() {
                                 <div
                                   key={questionId}
                                   className={`p-3 border rounded-xl text-sm ${
-                                    isCorrect ? 'border-emerald-100 bg-emerald-50' : 'border-rose-100 bg-rose-50'
+                                    isCorrect ? 'border-green-100 bg-green-50' : 'border-gray-200 bg-red-50'
                                   }`}
                                 >
                                   <p className="font-medium mb-1">
                                     {index + 1}. {question.question}
                                   </p>
                                   <div className="space-y-1 text-xs">
-                                    <p className={isCorrect ? 'text-emerald-700' : 'text-rose-600'}>
+                                    <p className={isCorrect ? 'text-green-700' : 'text-red-600'}>
                                       Your: {question.options[selectedAnswer]}
                                       {isCorrect ? ' ✓' : ' ✗'}
                                     </p>
                                     {!isCorrect && typeof correctIdx === 'number' && (
-                                      <p className="text-emerald-700">
+                                      <p className="text-green-700">
                                         Correct: {question.options[correctIdx]}
                                       </p>
                                     )}
@@ -1087,7 +1084,7 @@ export default function LessonViewerPage() {
                           <div className="space-y-2">
                             {!quizResults?.passed && (
                               <Button
-                                className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                                className="w-full relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium text-sm rounded-full ring-1 ring-red-600/50 transition-all"
                                 onClick={() => {
                                   setSelectedAnswers({})
                                   setQuizSubmitted(false)
@@ -1095,7 +1092,6 @@ export default function LessonViewerPage() {
                                 }}
                                 size="sm"
                               >
-                                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                                 Try Again
                               </Button>
                             )}
@@ -1109,7 +1105,7 @@ export default function LessonViewerPage() {
                                     )}`
                                   )
                                 }
-                                className="w-full text-sm bg-rose-50/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-rose-50 text-red-600 font-semibold rounded-full shadow-sm"
+                                className="w-full text-sm bg-gray-50 border border-gray-200 hover:border-gray-200 hover:bg-red-50 text-red-600 font-medium rounded-full shadow-sm"
                                 size="sm"
                               >
                                 Ask SabiBot to explain what I missed
@@ -1118,7 +1114,7 @@ export default function LessonViewerPage() {
                             <Button
                               variant="outline"
                               onClick={resetQuiz}
-                              className="w-full text-sm bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                              className="w-full text-sm bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
                               size="sm"
                             >
                               Close
@@ -1135,10 +1131,9 @@ export default function LessonViewerPage() {
                         setQuizResults(null)
                         setSelectedAnswers({})
                       }}
-                      className="w-full relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                      className="w-full relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium text-sm rounded-full ring-1 ring-red-600/50 transition-all"
                       size="sm"
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       <PlayCircle className="w-4 h-4 mr-2" />
                       {quizAttempts > 0 ? `Retake Quiz (#${quizAttempts + 1})` : 'Start Quiz'}
                     </Button>
@@ -1148,7 +1143,7 @@ export default function LessonViewerPage() {
     ) : null
 
   return (
-    <div className="min-h-screen bg-[#fffcfb]">
+    <div className="min-h-screen bg-gray-50">
       <Modal
         isOpen={modal.isOpen}
         onClose={closeModal}
@@ -1159,8 +1154,8 @@ export default function LessonViewerPage() {
       />
 
       {/* Header */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur border-b border-rose-100 sticky top-0 z-10 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+      <div className="relative overflow-hidden bg-white border-b border-gray-200 sticky top-0 z-10">
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -1168,14 +1163,14 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => router.push(`/courses/${params.slug}`)}
                 size="sm"
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 flex-shrink-0 rounded-full shadow-sm"
+                className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 flex-shrink-0 rounded-full shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500 break-words">{course?.title}</p>
-                <h1 className="text-sm md:text-base font-semibold tracking-tight text-gray-900 break-words">
+                <h1 className="text-sm md:text-base font-medium tracking-tight text-gray-900 break-words">
                   Lesson {currentIndex + 1}: {lesson?.title}
                 </h1>
               </div>
@@ -1188,7 +1183,7 @@ export default function LessonViewerPage() {
                 </span>
               )}
               {isCompleted ? (
-                <span className="px-2 md:px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-semibold flex items-center gap-1">
+                <span className="px-2 md:px-3 py-2 bg-green-50 text-green-700 border border-green-100 rounded-full text-xs font-medium flex items-center gap-1">
                   <CheckCircle className="w-3 h-3" />
                   <span className="hidden sm:inline">Completed</span>
                 </span>
@@ -1198,9 +1193,8 @@ export default function LessonViewerPage() {
                   size="sm"
                   disabled={currentQuizPending}
                   title={currentQuizPending ? 'Pass the quiz below to complete this lesson' : undefined}
-                  className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-xs rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:shadow-none disabled:translate-y-0"
+                  className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-60 disabled:shadow-none disabled:translate-y-0"
                 >
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                   {currentQuizPending ? (
                     <>
                       <Lock className="w-3 h-3 mr-1" />
@@ -1227,7 +1221,7 @@ export default function LessonViewerPage() {
             onClick={() => setShowMobileSidebar(!showMobileSidebar)}
             variant="outline"
             size="sm"
-            className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
+            className="w-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full shadow-sm"
           >
             <Layers className="w-4 h-4 mr-2 text-red-500" />
             {showMobileSidebar ? 'Hide Lessons' : 'Show Lessons'}
@@ -1248,7 +1242,7 @@ export default function LessonViewerPage() {
                 variant="outline"
                 onClick={() => previousLesson && navigateToLesson(previousLesson)}
                 disabled={!previousLesson}
-                className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm disabled:opacity-50"
+                className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm disabled:opacity-50"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Previous
@@ -1261,11 +1255,10 @@ export default function LessonViewerPage() {
                     ? 'Complete this lesson (and pass its quiz) to continue'
                     : undefined
                 }
-                className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-50"
               >
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 {nextLesson && lockMap.get(nextLesson.id)?.locked ? (
-                  <Lock className="w-4 h-4 mr-1.5" />
+                  <Lock className="w-4 h-4 mr-2" />
                 ) : null}
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -1277,11 +1270,11 @@ export default function LessonViewerPage() {
                  ══════════════════════════════════════════════════════ */}
             {/* Quiz card on mobile: sidebar is hidden on phones, so surface it here */}
             <div className="lg:hidden">{quizCard}</div>
-            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <Card className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardContent className="p-4 sm:p-5">
                 {/* Tab bar */}
-                <div className="flex items-center gap-1.5 p-1 bg-rose-50/70 border border-rose-100 rounded-full w-fit max-w-full overflow-x-auto mb-4">
+                <div className="flex items-center gap-2 p-1 bg-gray-50 border border-gray-200 rounded-full w-fit max-w-full overflow-x-auto mb-4">
                   {(() => {
                     const tabs: { key: 'notes' | 'summary' | 'qa' | 'instructor'; label: string; icon: React.ElementType }[] = [
                       { key: 'notes', label: 'My Notes', icon: FileText },
@@ -1293,9 +1286,9 @@ export default function LessonViewerPage() {
                       <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                           activeTab === tab.key
-                            ? 'bg-white text-red-600 shadow-sm ring-1 ring-rose-100'
+                            ? 'bg-white text-red-600 shadow-sm ring-1 ring-gray-200'
                             : 'text-gray-500 hover:text-gray-800'
                         }`}
                       >
@@ -1310,9 +1303,9 @@ export default function LessonViewerPage() {
                 {activeTab === 'notes' && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-900">Notes for this lesson</p>
+                      <p className="text-sm font-medium text-gray-900">Notes for this lesson</p>
                       {notesSaved && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold flex items-center gap-1 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-green-50 text-green-700 border border-green-100 font-medium flex items-center gap-1 px-2 py-1 rounded-full">
                           <CheckCircle className="w-3 h-3" />
                           Saved
                         </span>
@@ -1323,16 +1316,15 @@ export default function LessonViewerPage() {
                       onChange={(e) => setNotesContent(e.target.value)}
                       placeholder="Take notes while learning..."
                       rows={7}
-                      className="w-full resize-none text-sm bg-white/70 border-rose-100 focus:border-rose-300 focus:ring-rose-300 rounded-xl"
+                      className="w-full resize-none text-sm bg-white/70 border-gray-200 focus:border-red-300 focus:ring-red-300 rounded-xl"
                     />
                     <div className="flex justify-end">
                       <Button
                         onClick={saveNotes}
                         disabled={savingNotes || !notesContent.trim()}
-                        className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold text-sm rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium text-sm rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-50"
                         size="sm"
                       >
-                        <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                         <Save className="w-3 h-3 mr-2" />
                         {savingNotes ? 'Saving...' : 'Save Notes'}
                       </Button>
@@ -1376,17 +1368,17 @@ export default function LessonViewerPage() {
             {/* ══════════════════════════════════════════════════════
                  COURSE NAVIGATION (Modules → Lessons)
                  ══════════════════════════════════════════════════════ */}
-            <Card className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-              <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+            <Card className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
+              <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)] rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center">
                       <Layers className="w-4 h-4 text-white" />
                     </div>
                     Course Navigation
                   </span>
-                  <span className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium text-red-600 bg-red-50 border border-gray-200 px-2 py-1 rounded-full">
                     {completedLessonIds.size}/{lessons.length}
                   </span>
                 </CardTitle>
@@ -1403,17 +1395,17 @@ export default function LessonViewerPage() {
                     const moduleAllComplete = completedInModule === moduleLessons.length && moduleLessons.length > 0
 
                     return (
-                      <div key={module.id} className="border border-rose-100 rounded-xl overflow-hidden bg-white/70">
+                      <div key={module.id} className="border border-gray-200 rounded-xl overflow-hidden bg-white/70">
                         <button
                           onClick={() => toggleModule(module.id)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-rose-50/50 transition-colors text-left"
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <div
                               className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 moduleAllComplete
-                                  ? 'bg-gradient-to-br from-emerald-400 to-green-500'
-                                  : 'bg-rose-50 border border-rose-100'
+                                  ? 'bg-green-600'
+                                  : 'bg-red-50 border border-gray-200'
                               }`}
                             >
                               {moduleAllComplete ? (
@@ -1423,7 +1415,7 @@ export default function LessonViewerPage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">{module.title}</p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{module.title}</p>
                               <p className="text-xs text-gray-500">
                                 {completedInModule}/{moduleLessons.length} lessons
                               </p>
@@ -1437,7 +1429,7 @@ export default function LessonViewerPage() {
                         </button>
 
                         {isExpanded && (
-                          <div className="px-2 pb-2 pt-0 border-t border-rose-100 bg-rose-50/30">
+                          <div className="px-2 pb-2 pt-0 border-t border-gray-200 bg-gray-50">
                             <div className="pt-2 space-y-1">
                               {moduleLessons.map((l) => {
                                 const isActive = l.id === lesson?.id
@@ -1449,19 +1441,19 @@ export default function LessonViewerPage() {
                                     key={l.id}
                                     onClick={() => navigateToLesson(l)}
                                     title={isLocked ? 'Locked: finish the previous lesson first' : undefined}
-                                    className={`w-full text-left p-2.5 rounded-lg transition-all text-sm group ${
+                                    className={`w-full text-left p-3 rounded-lg transition-all text-sm group ${
                                       isActive
-                                        ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                        ? 'bg-gray-50 border border-gray-200 text-red-600'
                                         : isLocked
                                         ? 'opacity-55 cursor-not-allowed border border-transparent'
-                                        : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
+                                        : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
                                     }`}
                                   >
                                     <div className="flex items-center justify-between gap-2">
                                       <div className="flex items-center gap-2 min-w-0 flex-1">
                                         {isLessonCompleted && !isActive ? (
-                                          <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
-                                            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                          <span className="w-5 h-5 rounded-md bg-green-50 border border-green-100 flex items-center justify-center flex-shrink-0">
+                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                                           </span>
                                         ) : isLocked ? (
                                           <span className="w-5 h-5 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
@@ -1469,7 +1461,7 @@ export default function LessonViewerPage() {
                                           </span>
                                         ) : (
                                           <span
-                                            className={`text-xs font-semibold flex-shrink-0 w-5 text-center ${
+                                            className={`text-xs font-medium flex-shrink-0 w-5 text-center ${
                                               isActive ? 'text-red-500' : 'text-gray-400'
                                             }`}
                                           >
@@ -1520,8 +1512,8 @@ export default function LessonViewerPage() {
 
                   {/* Unassigned lessons fallback */}
                   {unassignedLessons.length > 0 && (
-                    <div className="border border-rose-100 rounded-xl p-3 bg-white/70">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    <div className="border border-gray-200 rounded-xl p-3 bg-white/70">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                         Other Lessons
                       </p>
                       <div className="space-y-1">
@@ -1535,18 +1527,18 @@ export default function LessonViewerPage() {
                               key={l.id}
                               onClick={() => navigateToLesson(l)}
                               title={isLocked ? 'Locked: finish the previous lesson first' : undefined}
-                              className={`w-full text-left p-2.5 rounded-lg transition-all text-sm ${
+                              className={`w-full text-left p-3 rounded-lg transition-all text-sm ${
                                 isActive
-                                  ? 'bg-rose-50/70 border border-rose-100 text-red-600'
+                                  ? 'bg-gray-50 border border-gray-200 text-red-600'
                                   : isLocked
                                   ? 'opacity-55 cursor-not-allowed border border-transparent'
-                                  : 'hover:bg-rose-50/50 border border-transparent hover:border-rose-100'
+                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 {isLessonCompleted && !isActive ? (
-                                  <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
-                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span className="w-5 h-5 rounded-md bg-green-50 border border-green-100 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                                   </span>
                                 ) : isLocked ? (
                                   <span className="w-5 h-5 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
@@ -1554,7 +1546,7 @@ export default function LessonViewerPage() {
                                   </span>
                                 ) : (
                                   <span
-                                    className={`text-xs font-semibold w-5 text-center ${
+                                    className={`text-xs font-medium w-5 text-center ${
                                       isActive ? 'text-red-500' : 'text-gray-400'
                                     }`}
                                   >
@@ -1580,11 +1572,11 @@ export default function LessonViewerPage() {
             </Card>
 
             {/* Instructor Info */}
-            <Card className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+            <Card className="bg-white rounded-xl border border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">
+                  <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
                       {course?.instructor?.full_name?.charAt(0) || 'I'}
                     </span>
                   </div>

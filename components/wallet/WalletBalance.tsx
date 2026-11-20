@@ -46,7 +46,7 @@ export function WalletBalance({
   if (compact) {
     return (
       <div 
-        className={`flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors ${className}`}
+        className={`flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors ${className}`}
         onClick={onTopupClick}
         title="Wallet Balance - Click to top up"
       >
@@ -68,7 +68,7 @@ export function WalletBalance({
           </div>
           <div>
             <p className="text-sm text-gray-500">Wallet Balance</p>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-xl font-medium text-gray-900">
               {balance?.balanceFormatted || '₦0'}
             </p>
           </div>
@@ -77,7 +77,7 @@ export function WalletBalance({
         {showTopup && (
           <button
             onClick={onTopupClick}
-            className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Top Up
@@ -92,7 +92,7 @@ export function WalletBalance({
 export function WalletBalanceSkeleton({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-lg animate-pulse">
+      <div className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-lg animate-pulse">
         <div className="w-4 h-4 bg-gray-300 rounded" />
         <div className="w-12 h-4 bg-gray-300 rounded" />
       </div>

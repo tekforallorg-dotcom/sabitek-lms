@@ -116,31 +116,31 @@ export default function LessonReader({
   }
 
   return (
-    <div className="lesson-print-root relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+    <div className="lesson-print-root relative overflow-hidden bg-white rounded-xl border border-gray-200">
       <span
-        className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+        className="absolute top-0 inset-x-10 h-px bg-gray-200"
         aria-hidden="true"
       />
 
       {/* Progress bar */}
-      <div className="lesson-print-hide sticky top-0 z-20 h-1 bg-rose-50">
+      <div className="lesson-print-hide sticky top-0 z-20 h-1 bg-red-50">
         <div
-          className="h-full bg-gradient-to-r from-red-500 to-pink-400 transition-[width] duration-150"
+          className="h-full bg-red-600 transition-[width] duration-150"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Reader header: reading time + TOC toggle */}
       <div className="flex items-center justify-between gap-3 px-5 md:px-8 pt-4">
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400">
-          <Clock className="w-3.5 h-3.5 text-rose-400" />
+        <span className="inline-flex items-center gap-2 text-xs font-medium text-gray-400">
+          <Clock className="w-3.5 h-3.5 text-red-400" />
           {readingMinutes} min read
         </span>
         <div className="flex items-center gap-2 lesson-print-hide">
           <button
             onClick={() => window.print()}
             title="Save this lesson as a PDF for offline reading"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50/70 border border-rose-100 text-xs font-semibold text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             Save as PDF
@@ -148,7 +148,7 @@ export default function LessonReader({
         {toc.length > 1 && (
           <button
             onClick={() => setTocOpen(!tocOpen)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50/70 border border-rose-100 text-xs font-semibold text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
           >
             <List className="w-3.5 h-3.5" />
             On this page
@@ -159,7 +159,7 @@ export default function LessonReader({
 
       {/* Collapsible TOC */}
       {tocOpen && toc.length > 1 && (
-        <nav className="lesson-print-hide mx-5 md:mx-8 mt-3 rounded-xl bg-rose-50/50 border border-rose-100 p-3">
+        <nav className="lesson-print-hide mx-5 md:mx-8 mt-3 rounded-xl bg-gray-50 border border-gray-200 p-3">
           <ul className="space-y-1">
             {toc.map((item) => (
               <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 12}px` }}>
@@ -167,7 +167,7 @@ export default function LessonReader({
                   onClick={() => jumpTo(item.id)}
                   className={`text-left text-sm transition-colors cursor-pointer ${
                     activeId === item.id
-                      ? 'text-red-600 font-semibold'
+                      ? 'text-red-600 font-medium'
                       : 'text-gray-600 hover:text-red-600'
                   }`}
                 >
@@ -189,21 +189,21 @@ export default function LessonReader({
       {/* ── End-of-lesson recap: lessons end with a moment, not a scroll-stop ── */}
       {toc.length >= 2 && (
         <div className="lesson-print-hide mx-5 md:mx-8 mb-6 md:mb-8 max-w-3xl lg:mx-auto">
-          <div className="relative overflow-hidden bg-rose-50/50 border border-rose-100 rounded-2xl p-5 sm:p-6">
-            <span className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="relative overflow-hidden bg-gray-50 border border-gray-200 rounded-xl p-5 sm:p-6">
+            <span className="absolute top-0 inset-x-8 h-px bg-gray-200" aria-hidden="true" />
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-[0_10px_20px_-8px_rgba(225,29,72,0.5)]">
+              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-600">Recap</p>
-                <h3 className="font-semibold tracking-tight text-gray-900">What you covered</h3>
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">Recap</p>
+                <h3 className="font-medium tracking-tight text-gray-900">What you covered</h3>
               </div>
             </div>
             <ul className="space-y-2 mb-1">
               {toc.map((item) => (
-                <li key={item.id} className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <li key={item.id} className="flex items-start gap-3">
+                  <span className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-1">
                     <Check className="w-3 h-3 text-white" />
                   </span>
                   <span className="text-sm text-gray-700">{item.text}</span>
@@ -213,9 +213,8 @@ export default function LessonReader({
             {continueHref && (
               <a
                 href={continueHref}
-                className="relative overflow-hidden mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white text-sm font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="relative overflow-hidden mt-4 inline-flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all cursor-pointer"
               >
-                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                 Continue to next lesson
                 <ArrowRight className="w-4 h-4" />
               </a>
@@ -227,7 +226,7 @@ export default function LessonReader({
       {/* Lightbox */}
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out"
+          className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 cursor-zoom-out"
           onClick={() => setLightboxSrc(null)}
         >
           <button
@@ -240,7 +239,7 @@ export default function LessonReader({
           <img
             src={lightboxSrc}
             alt=""
-            className="max-w-full max-h-full rounded-xl shadow-2xl"
+            className="max-w-full max-h-full rounded-xl shadow-sm"
           />
         </div>
       )}

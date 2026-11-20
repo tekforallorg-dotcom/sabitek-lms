@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: 'Sabitek <certificates@sabitek.app>',
       to: email,
-      subject: `🎓 Your Certificate: ${courseName}`,
+      subject: `Your Certificate: ${courseName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
             <!-- Header -->
             <div style="text-align: center; margin-bottom: 30px;">
               <div style="display: inline-block; background: linear-gradient(135deg, #ef4444, #ec4899); padding: 12px 20px; border-radius: 12px;">
-                <span style="color: white; font-size: 24px; font-weight: bold;">🎓 Sabitek</span>
+                <span style="color: white; font-size: 24px; font-weight: bold;">Sabitek</span>
               </div>
             </div>
             
@@ -95,7 +95,6 @@ export async function POST(req: NextRequest) {
             <div style="background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
               <!-- Congratulations -->
               <div style="text-align: center; margin-bottom: 24px;">
-                <div style="font-size: 48px; margin-bottom: 8px;">🎉</div>
                 <h1 style="margin: 0; color: #111827; font-size: 24px; font-weight: 700;">
                   Congratulations, ${userName}!
                 </h1>
@@ -131,7 +130,7 @@ export async function POST(req: NextRequest) {
               <!-- Attachment Note -->
               <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px;">
                 <p style="margin: 0; color: #065f46; font-size: 13px;">
-                  📎 Your certificate PDF is attached to this email. Download and save it for your records.
+                  Your certificate PDF is attached to this email. Download and save it for your records.
                 </p>
               </div>
               

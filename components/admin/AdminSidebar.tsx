@@ -84,7 +84,7 @@ export default function AdminSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-white/85 backdrop-blur-xl border border-rose-100 text-gray-700 shadow-sm hover:bg-white hover:text-red-600 transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-white hover:text-red-600 transition-colors"
       >
         {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -92,7 +92,7 @@ export default function AdminSidebar() {
       {/* Mobile Backdrop */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
+          className="lg:hidden fixed inset-0 bg-black/40 z-30"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -100,18 +100,18 @@ export default function AdminSidebar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-white/85 backdrop-blur-xl border-r border-rose-100
-          transform transition-transform duration-300 ease-in-out
-          lg:translate-x-0
-          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+ fixed lg:static inset-y-0 left-0 z-40
+ w-64 bg-white border-r border-gray-200
+ transform transition-transform duration-300 ease-in-out
+ lg:translate-x-0
+ ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           flex flex-col
         `}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-rose-100">
+        <div className="p-6 border-b border-gray-200">
           <Link href="/admin" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-gray-900">Sabitek</span>
+            <span className="text-2xl font-medium text-gray-900">Sabitek</span>
             <Sparkles className="w-5 h-5 text-red-500" />
           </Link>
           <p className="text-xs text-gray-500 mt-1">Admin Panel</p>
@@ -134,7 +134,7 @@ export default function AdminSidebar() {
                       w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl
                       text-sm font-medium transition-colors
                       border border-transparent
-                      text-gray-600 hover:bg-rose-50/60 hover:text-red-600
+                      text-gray-600 hover:bg-gray-50 hover:text-red-600
                     `}
                   >
                     <div className="flex items-center gap-3">
@@ -149,7 +149,7 @@ export default function AdminSidebar() {
                   </button>
 
                   {isSubmenuOpen && (
-                    <div className="mt-1 ml-4 pl-3 border-l border-rose-100 space-y-1">
+                    <div className="mt-1 ml-4 pl-3 border-l border-gray-200 space-y-1">
                       {item.children?.map((child) => {
                         const ChildIcon = child.icon
                         const childActive = child.href ? isActive(child.href) : false
@@ -163,8 +163,8 @@ export default function AdminSidebar() {
                               flex items-center gap-3 px-3 py-2 rounded-xl text-sm
                               transition-colors
                               ${childActive
-                                ? 'bg-rose-50/70 border border-rose-100 text-red-600 font-semibold'
-                                : 'border border-transparent text-gray-600 font-medium hover:bg-rose-50/60 hover:text-red-600'
+                                ? 'bg-gray-50 border border-gray-200 text-red-600 font-medium'
+                                : 'border border-transparent text-gray-600 font-medium hover:bg-gray-50 hover:text-red-600'
                               }
                             `}
                           >
@@ -188,8 +188,8 @@ export default function AdminSidebar() {
                   flex items-center gap-3 px-3 py-2 rounded-xl text-sm
                   transition-colors
                   ${active
-                    ? 'bg-rose-50/70 border border-rose-100 text-red-600 font-semibold'
-                    : 'border border-transparent text-gray-600 font-medium hover:bg-rose-50/60 hover:text-red-600'
+                    ? 'bg-gray-50 border border-gray-200 text-red-600 font-medium'
+                    : 'border border-transparent text-gray-600 font-medium hover:bg-gray-50 hover:text-red-600'
                   }
                 `}
               >
@@ -201,10 +201,10 @@ export default function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-rose-100 space-y-2">
+        <div className="p-4 border-t border-gray-200 space-y-2">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-rose-50/60 hover:text-red-600 rounded-xl transition-colors"
+            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 rounded-xl transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Site</span>
@@ -212,7 +212,7 @@ export default function AdminSidebar() {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 hover:bg-rose-50/60 hover:text-red-700 rounded-xl transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 hover:bg-gray-50 hover:text-red-700 rounded-xl transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>

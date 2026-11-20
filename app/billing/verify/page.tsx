@@ -47,11 +47,11 @@ function VerifyContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-6 sm:py-8 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8 text-center">
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8 text-center">
         {status === 'loading' && (
           <>
             <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 animate-spin mx-auto mb-4" />
-            <h1 className="text-lg sm:text-xl font-bold text-black mb-2">Verifying Payment</h1>
+            <h1 className="text-lg sm:text-xl font-medium text-black mb-2">Verifying Payment</h1>
             <p className="text-xs sm:text-sm text-gray-600">Please wait...</p>
           </>
         )}
@@ -59,7 +59,7 @@ function VerifyContent() {
         {status === 'success' && (
           <>
             <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-lg sm:text-xl font-bold text-black mb-2">Payment Successful!</h1>
+            <h1 className="text-lg sm:text-xl font-medium text-black mb-2">Payment Successful!</h1>
             <p className="text-xs sm:text-sm text-gray-600 mb-6">{message}</p>
             <Button
               onClick={() => router.push('/dashboard')}
@@ -73,7 +73,7 @@ function VerifyContent() {
         {status === 'failed' && (
           <>
             <XCircle className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-lg sm:text-xl font-bold text-black mb-2">Payment Failed</h1>
+            <h1 className="text-lg sm:text-xl font-medium text-black mb-2">Payment Failed</h1>
             <p className="text-xs sm:text-sm text-gray-600 mb-6">{message}</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button

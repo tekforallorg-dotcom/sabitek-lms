@@ -101,7 +101,7 @@ function CertificatesContent() {
 
   if (loading || certificatesLoading) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <SabiLoader text="Loading certificates..." size="lg" />
     </div>
   )
@@ -115,20 +115,9 @@ function CertificatesContent() {
     : 0
 
   return (
-    <div className="min-h-screen bg-[#fffcfb] relative">
+    <div className="min-h-screen bg-gray-50 relative">
       {/* Backdrop washes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-32 -left-32 w-[28rem] h-[28rem] bg-rose-100/70 rounded-full blur-[100px]" />
-        <div className="absolute top-40 -right-32 w-[24rem] h-[24rem] bg-rose-100/70 rounded-full blur-[100px]" />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #fecdd3 1px, transparent 1px)',
-            backgroundSize: '22px 22px',
-            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent)'
-          }}
-        />
       </div>
 
       {/* Header */}
@@ -137,18 +126,18 @@ function CertificatesContent() {
           {/* Breadcrumb */}
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-900 text-sm mb-5 transition-colors"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm mb-5 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
           </Link>
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-b from-red-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-[0_12px_24px_-8px_rgba(225,29,72,0.5)] ring-1 ring-red-600/40">
+            <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center ring-1 ring-red-600/40">
               <Award className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
                 My <span className="font-serif italic text-red-600">certificates</span>
               </h1>
               <p className="text-gray-500 text-sm">
@@ -162,49 +151,49 @@ function CertificatesContent() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="relative overflow-hidden bg-white rounded-xl p-5 border border-gray-200">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-gradient-to-b from-red-500 to-rose-500 rounded-xl flex items-center justify-center shadow-[0_12px_24px_-8px_rgba(225,29,72,0.5)]">
+              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                 <Award className="w-5 h-5 text-white" />
               </div>
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <TrendingUp className="w-4 h-4 text-green-500" />
             </div>
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Certificates</p>
-            <p className="text-3xl font-semibold tracking-tight text-gray-900">{certificates.length}</p>
+            <p className="text-3xl font-medium tracking-tight text-gray-900">{certificates.length}</p>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="relative overflow-hidden bg-white rounded-xl p-5 border border-gray-200">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-gradient-to-b from-gray-700 to-gray-900 rounded-xl flex items-center justify-center shadow-[0_12px_24px_-8px_rgba(17,24,39,0.4)]">
+              <div className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
             </div>
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Latest Certificate</p>
-            <p className="text-xl font-semibold tracking-tight text-gray-900">{latestCertDate}</p>
+            <p className="text-xl font-medium tracking-tight text-gray-900">{latestCertDate}</p>
           </div>
 
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl p-5 border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
+          <div className="relative overflow-hidden bg-white rounded-xl p-5 border border-gray-200">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 bg-gradient-to-b from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-[0_12px_24px_-8px_rgba(16,185,129,0.5)]">
+              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
             </div>
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Average Grade</p>
-            <p className="text-3xl font-semibold tracking-tight text-emerald-600">{averageGrade}%</p>
+            <p className="text-3xl font-medium tracking-tight text-green-600">{averageGrade}%</p>
           </div>
         </div>
 
         {/* Certificates Grid */}
         {certificates.length === 0 ? (
-          <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 p-12 text-center shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
-            <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true" />
-            <div className="w-20 h-20 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Award className="w-10 h-10 text-rose-300" />
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
+            <div className="w-20 h-20 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Award className="w-10 h-10 text-red-300" />
             </div>
-            <h3 className="text-xl font-semibold tracking-tight text-gray-900 mb-2">
+            <h3 className="text-xl font-medium tracking-tight text-gray-900 mb-2">
               No certificates <span className="font-serif italic text-red-600">yet</span>
             </h3>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -212,9 +201,8 @@ function CertificatesContent() {
             </p>
             <Link
               href="/courses"
-              className="relative overflow-hidden inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+              className="relative overflow-hidden inline-flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-medium ring-1 ring-red-600/50 transition-all"
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
               <BookOpen className="w-4 h-4" />
               Browse Courses
             </Link>
@@ -224,37 +212,36 @@ function CertificatesContent() {
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="relative bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 overflow-hidden shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] hover:shadow-[0_20px_40px_-20px_rgba(225,29,72,0.45)] hover:-translate-y-0.5 transition-all group"
+                className="relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all group"
               >
-                <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent z-10" aria-hidden="true" />
+                <span className="absolute top-0 inset-x-10 h-px bg-gray-200 z-10" aria-hidden="true" />
                 {/* Certificate Preview */}
-                <div className="relative h-44 bg-gradient-to-br from-rose-50/60 to-white p-5 flex flex-col items-center justify-center border-b border-rose-100">
+                <div className="relative h-44 bg-gray-50 p-5 flex flex-col items-center justify-center border-b border-gray-200">
                   {/* Decorative border effect */}
-                  <div className="absolute inset-3 border-2 border-rose-100 rounded-lg pointer-events-none"></div>
-                  <div className="absolute top-3 left-3 right-3 h-1 bg-gradient-to-r from-red-500 to-rose-500 rounded-t-lg"></div>
+                  <div className="absolute top-3 left-3 right-3 h-1 bg-red-600 rounded-t-lg"></div>
 
-                  <Award className="w-12 h-12 text-gray-800 mb-2 group-hover:scale-110 transition-transform relative z-10" strokeWidth={1.5} />
+                  <Award className="w-12 h-12 text-gray-800 mb-2 transition-transform relative z-10" strokeWidth={1.5} />
                   <div className="text-center relative z-10">
-                    <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-[0.2em]">
+                    <p className="text-xs text-gray-400 mb-1 uppercase tracking-[0.2em]">
                       {cert.kind === 'program' ? 'Program Certificate' : 'Certificate of Completion'}
                     </p>
-                    <p className="text-sm font-semibold text-gray-900 line-clamp-2 px-4">
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2 px-4">
                       {cert.kind === 'program' ? cert.program?.name || 'Program' : cert.course?.title || 'Course'}
                     </p>
                     {cert.kind === 'program' && cert.program?.institution?.name && (
-                      <p className="text-[10px] text-gray-400 mt-0.5">by {cert.program.institution.name}</p>
+                      <p className="text-xs text-gray-400 mt-1">by {cert.program.institution.name}</p>
                     )}
                   </div>
 
                   {/* Grade badge */}
                   {cert.kind !== 'program' && (
                   <div className="absolute top-5 right-5 z-10">
-                    <span className={`px-2.5 py-1 text-xs rounded-full font-semibold border ${
+                    <span className={`px-3 py-1 text-xs rounded-full font-medium border ${
                       cert.grade_percentage >= 90
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                        ? 'bg-green-50 text-green-700 border-green-100'
                         : cert.grade_percentage >= 70
                         ? 'bg-amber-50 text-amber-700 border-amber-100'
-                        : 'bg-rose-50 text-rose-700 border-rose-100'
+                        : 'bg-red-50 text-red-700 border-gray-200'
                     }`}>
                       {cert.grade_percentage}%
                     </span>
@@ -267,7 +254,7 @@ function CertificatesContent() {
                   <div className="space-y-2 mb-4 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-xs">Certificate ID</span>
-                      <span className="font-mono text-xs text-gray-900 bg-rose-50/70 border border-rose-100 px-2 py-0.5 rounded-full">
+                      <span className="font-mono text-xs text-gray-900 bg-gray-50 border border-gray-200 px-2 py-1 rounded-full">
                         {cert.certificate_number}
                       </span>
                     </div>
@@ -295,16 +282,15 @@ function CertificatesContent() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleView(cert.id)}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white text-gray-700 rounded-full text-sm font-medium shadow-sm transition-all"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 rounded-full text-sm font-medium shadow-sm transition-all"
                     >
                       <Eye className="w-4 h-4" />
                       View
                     </button>
                     <Link
                       href={`/certificates/${cert.id}?download=true`}
-                      className="relative overflow-hidden flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white rounded-full text-sm font-semibold shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+                      className="relative overflow-hidden flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-medium ring-1 ring-red-600/50 transition-all"
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true" />
                       <Download className="w-4 h-4" />
                       Download
                     </Link>
@@ -323,7 +309,7 @@ function CertificatesContent() {
 export default function CertificatesPage() {
   return (
     <Suspense fallback={
-  <div className="min-h-screen flex items-center justify-center bg-[#fffcfb]">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <SabiLoader text="Loading certificates..." size="lg" />
   </div>
 }>

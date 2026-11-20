@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <AdminGuard>
-        <div className="flex h-screen bg-[#fffcfb] overflow-hidden">
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
           {/* Sidebar */}
           <AdminSidebar />
 

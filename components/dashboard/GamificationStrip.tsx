@@ -116,7 +116,7 @@ export default function GamificationStrip() {
   if (loading || !data) {
     return (
       <div
-        className="h-[104px] rounded-2xl bg-rose-50/60 animate-pulse"
+        className="h-[104px] rounded-xl bg-gray-50 animate-pulse"
         aria-hidden="true"
       />
     )
@@ -147,15 +147,15 @@ export default function GamificationStrip() {
 
   return (
     <>
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)]">
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
         <span
-          className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"
+          className="absolute top-0 inset-x-10 h-px bg-gray-200"
           aria-hidden="true"
         />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-4 p-5">
           {/* ── Zone 1 — Daily goal ring ── */}
-          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
               <svg width={size} height={size} className="-rotate-90">
                 <defs>
@@ -194,21 +194,21 @@ export default function GamificationStrip() {
               </span>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400">
                 Daily goal
               </p>
               {today.goal_met ? (
-                <p className="mt-0.5 text-sm font-semibold text-emerald-600">
+                <p className="mt-1 text-sm font-medium text-green-600">
                   Done for today!
                 </p>
               ) : (
                 <>
-                  <p className="mt-0.5 text-sm font-semibold text-gray-900">
+                  <p className="mt-1 text-sm font-medium text-gray-900">
                     1 lesson or quiz to go
                   </p>
                   <Link
                     href="/courses"
-                    className="text-xs text-red-600 font-semibold cursor-pointer hover:text-red-700 transition-colors"
+                    className="text-xs text-red-600 font-medium cursor-pointer hover:text-red-700 transition-colors"
                   >
                     Continue learning &rarr;
                   </Link>
@@ -218,27 +218,27 @@ export default function GamificationStrip() {
           </div>
 
           {/* Divider */}
-          <span className="hidden sm:block w-px self-stretch bg-rose-100/80" aria-hidden="true" />
+          <span className="hidden sm:block w-px self-stretch bg-gray-50" aria-hidden="true" />
 
           {/* ── Zone 2 — Streak flame ── */}
-          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <div
-              className={`w-11 h-11 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-[0_10px_20px_-8px_rgba(251,146,60,0.6)] flex items-center justify-center transition-all ${
-                hasStreak ? '' : 'grayscale opacity-60'
+              className={`w-11 h-11 flex-shrink-0 rounded-xl bg-amber-600 flex items-center justify-center transition-all ${
+ hasStreak ? '' : 'grayscale opacity-60'
               }`}
             >
               <Flame className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="text-3xl font-bold tabular-nums text-gray-900 leading-none">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-3xl font-medium tabular-nums text-gray-900 leading-none">
                   {streak.current}
                 </span>
                 <span className="text-xs text-gray-500 font-medium">day streak</span>
                 {(streak.freezes ?? 0) > 0 && (
                   <span
                     title="If you miss one day, a freeze saves your streak automatically"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 border border-sky-100 text-sky-600 text-[10px] font-semibold"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium"
                   >
                     <Snowflake className="w-3 h-3" />
                     {streak.freezes} freeze
@@ -247,20 +247,20 @@ export default function GamificationStrip() {
               </div>
               {hasStreak ? (
                 <>
-                  <div className="mt-2 h-1.5 rounded-full bg-orange-50 overflow-hidden">
+                  <div className="mt-2 h-1.5 rounded-full bg-amber-50 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-orange-400 to-red-500 transition-all duration-500"
+                      className="h-full rounded-full bg-amber-600 transition-all duration-500"
                       style={{ width: `${Math.max(milestonePct, 4)}%` }}
                     />
                   </div>
-                  <p className="mt-1 text-[11px] text-gray-400">
+                  <p className="mt-1 text-xs text-gray-400">
                     {daysToNext > 0
                       ? `${daysToNext} day${daysToNext > 1 ? 's' : ''} to ${next}`
                       : `Longest streak: ${streak.longest}`}
                   </p>
                 </>
               ) : (
-                <p className="mt-1.5 text-[11px] text-gray-400">
+                <p className="mt-2 text-xs text-gray-400">
                   Complete a lesson to light the flame
                 </p>
               )}
@@ -268,11 +268,11 @@ export default function GamificationStrip() {
           </div>
 
           {/* Divider */}
-          <span className="hidden sm:block w-px self-stretch bg-rose-100/80" aria-hidden="true" />
+          <span className="hidden sm:block w-px self-stretch bg-gray-50" aria-hidden="true" />
 
           {/* ── Zone 3 — Badges ── */}
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-2">
+            <p className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-2">
               Badges
             </p>
             <div className="flex items-center gap-3">
@@ -282,8 +282,8 @@ export default function GamificationStrip() {
                     <div
                       key={badge.key}
                       title={badge.name}
-                      className={`w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-500 ring-2 ring-white shadow flex items-center justify-center ${
-                        i === 0 ? 'ml-0' : '-ml-2'
+                      className={`w-9 h-9 rounded-full bg-red-600 ring-2 ring-white shadow flex items-center justify-center ${
+ i === 0 ? 'ml-0' : '-ml-2'
                       }`}
                     >
                       <Medal className="w-4 h-4 text-white" />
@@ -291,24 +291,24 @@ export default function GamificationStrip() {
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="w-9 h-9 rounded-full border-2 border-dashed border-rose-200"
+                      className="w-9 h-9 rounded-full border-2 border-dashed border-gray-200"
                       aria-hidden="true"
                     />
                   ))}
                 </div>
               )}
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-sm font-semibold text-gray-900 tabular-nums">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-sm font-medium text-gray-900 tabular-nums">
                   {earnedBadges.length} of {badges.length}
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowBadges(true)}
-                  className="text-xs rounded-full bg-rose-50/70 border border-rose-100 text-red-600 font-semibold px-3 py-1.5 hover:border-rose-200 cursor-pointer transition-all"
+                  className="text-xs rounded-full bg-gray-50 border border-gray-200 text-red-600 font-medium px-3 py-2 hover:border-gray-200 cursor-pointer transition-all"
                 >
                   View all
                 </button>
@@ -317,22 +317,22 @@ export default function GamificationStrip() {
           </div>
 
           {/* Divider */}
-          <span className="hidden sm:block w-px self-stretch bg-rose-100/80" aria-hidden="true" />
+          <span className="hidden sm:block w-px self-stretch bg-gray-50" aria-hidden="true" />
 
           {/* ── Zone 4 — Weekly XP ── */}
           <div className="flex items-center gap-3 sm:flex-none sm:pr-1">
-            <div className="w-8 h-8 flex-shrink-0 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+            <div className="w-8 h-8 flex-shrink-0 rounded-xl bg-red-50 border border-gray-200 flex items-center justify-center">
               <Zap className="w-4 h-4 text-red-500" />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400">
                 This week
               </p>
-              <p className="mt-0.5 leading-none">
-                <span className="text-2xl font-bold tabular-nums text-gray-900">
+              <p className="mt-1 leading-none">
+                <span className="text-2xl font-medium tabular-nums text-gray-900">
                   {weeklyXp}
                 </span>{' '}
-                <span className="text-xs text-rose-400 font-semibold">XP</span>
+                <span className="text-xs text-red-400 font-medium">XP</span>
               </p>
             </div>
           </div>
@@ -348,23 +348,23 @@ export default function GamificationStrip() {
           aria-label="Your badges"
         >
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setShowBadges(false)}
             aria-hidden="true"
           />
-          <div className="relative bg-white/95 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_30px_70px_-25px_rgba(225,29,72,0.5)] max-w-lg w-full max-h-[80vh] overflow-y-auto p-6">
+          <div className="relative bg-white rounded-xl border border-gray-200 max-w-lg w-full max-h-[80vh] overflow-y-auto p-6">
             <button
               type="button"
               onClick={() => setShowBadges(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-rose-50/70 border border-rose-100 text-gray-500 hover:text-red-600 hover:border-rose-200 flex items-center justify-center cursor-pointer transition-all"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 border border-gray-200 text-gray-500 hover:text-red-600 hover:border-gray-200 flex items-center justify-center cursor-pointer transition-all"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <h2 className="text-lg font-semibold text-gray-900 mb-1 pr-10">
+            <h2 className="text-lg font-medium text-gray-900 mb-1 pr-10">
               Your{' '}
-              <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-500">
+              <span className="font-serif italic text-red-600">
                 badges
               </span>
             </h2>
@@ -376,14 +376,14 @@ export default function GamificationStrip() {
               {badges.map((badge) => (
                 <div
                   key={badge.key}
-                  className={`rounded-2xl p-3 text-center ${
+                  className={`rounded-xl p-3 text-center ${
                     badge.earned
-                      ? 'bg-rose-50/70 border border-rose-100'
+                      ? 'bg-gray-50 border border-gray-200'
                       : 'bg-gray-50 border border-gray-100 opacity-70'
                   }`}
                 >
                   {badge.earned ? (
-                    <div className="w-11 h-11 mx-auto rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(225,29,72,0.5)]">
+                    <div className="w-11 h-11 mx-auto rounded-full bg-red-600 flex items-center justify-center">
                       <Medal className="w-5 h-5 text-white" />
                     </div>
                   ) : (
@@ -392,7 +392,7 @@ export default function GamificationStrip() {
                     </div>
                   )}
                   <p
-                    className={`mt-2 text-xs font-semibold ${
+                    className={`mt-2 text-xs font-medium ${
                       badge.earned ? 'text-gray-900' : 'text-gray-400'
                     }`}
                   >
@@ -400,17 +400,17 @@ export default function GamificationStrip() {
                   </p>
                   {badge.earned ? (
                     <>
-                      <p className="mt-0.5 text-[10px] text-gray-500 leading-snug">
+                      <p className="mt-1 text-xs text-gray-500 leading-snug">
                         {badge.description}
                       </p>
                       {badge.earned_at && (
-                        <p className="mt-1 text-[9px] text-gray-400">
+                        <p className="mt-1 text-xs text-gray-400">
                           {new Date(badge.earned_at).toLocaleDateString()}
                         </p>
                       )}
                     </>
                   ) : (
-                    <p className="mt-0.5 text-[10px] text-gray-400 leading-snug">
+                    <p className="mt-1 text-xs text-gray-400 leading-snug">
                       How: {badge.hint}
                     </p>
                   )}

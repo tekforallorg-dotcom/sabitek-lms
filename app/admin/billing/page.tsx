@@ -483,8 +483,8 @@ export default function AdminBillingPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'successful': return 'bg-emerald-50 text-emerald-700 border-emerald-100'
-      case 'pending': return 'bg-rose-50 text-rose-600 border-rose-100'
+      case 'successful': return 'bg-green-50 text-green-700 border-green-100'
+      case 'pending': return 'bg-red-50 text-red-600 border-gray-200'
       case 'refunded': return 'bg-gray-100 text-gray-600 border-gray-200'
       default: return 'bg-red-100 text-red-700 border-red-200'
     }
@@ -510,12 +510,12 @@ export default function AdminBillingPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="space-y-6 bg-[#fffcfb] rounded-3xl">
+      <div className="space-y-6 bg-gray-50 rounded-xl">
         {/* Header skeleton */}
         <div className="space-y-2 animate-pulse">
-          <div className="h-3 w-28 bg-rose-50/60 rounded-lg"></div>
-          <div className="h-8 w-64 bg-rose-50/60 rounded-lg"></div>
-          <div className="h-3 w-80 bg-rose-50/60 rounded-lg"></div>
+          <div className="h-3 w-28 bg-gray-50 rounded-lg"></div>
+          <div className="h-8 w-64 bg-gray-50 rounded-lg"></div>
+          <div className="h-3 w-80 bg-gray-50 rounded-lg"></div>
         </div>
 
         {/* Stat card skeletons */}
@@ -523,19 +523,19 @@ export default function AdminBillingPage() {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 p-4 animate-pulse"
+              className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse"
             >
-              <div className="h-3 w-16 bg-rose-50/60 rounded-lg mb-3"></div>
-              <div className="h-6 w-24 bg-rose-50/60 rounded-lg"></div>
+              <div className="h-3 w-16 bg-gray-50 rounded-lg mb-3"></div>
+              <div className="h-6 w-24 bg-gray-50 rounded-lg"></div>
             </div>
           ))}
         </div>
 
         {/* Table skeleton */}
-        <div className="bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 p-6 space-y-3 animate-pulse">
-          <div className="h-4 w-40 bg-rose-50/60 rounded-lg mb-4"></div>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3 animate-pulse">
+          <div className="h-4 w-40 bg-gray-50 rounded-lg mb-4"></div>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="animate-pulse bg-rose-50/60 rounded-lg h-10"></div>
+            <div key={i} className="animate-pulse bg-gray-50 rounded-lg h-10"></div>
           ))}
         </div>
       </div>
@@ -547,8 +547,8 @@ export default function AdminBillingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-600">Admin · Billing</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mt-1">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-600">Admin · Billing</p>
+          <h1 className="text-2xl font-medium tracking-tight text-gray-900 mt-1">
             Billing <span className="font-serif italic text-red-600">dashboard</span>
           </h1>
           <p className="text-sm text-gray-500 mt-1">Monitor revenue, transactions, and subscriptions</p>
@@ -558,7 +558,7 @@ export default function AdminBillingPage() {
           disabled={refreshing}
           variant="outline"
           size="sm"
-          className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+          className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -567,57 +567,57 @@ export default function AdminBillingPage() {
 
       {/* KPI Cards - Row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Today</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {formatCurrency(stats.revenueToday)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Last 7 Days</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {formatCurrency(stats.revenue7Days)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">This Month</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {formatCurrency(stats.revenueThisMonth)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Calendar className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">MRR</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {formatCurrency(stats.mrr)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Crown className="w-5 h-5 text-red-500" />
             </div>
           </div>
@@ -626,57 +626,57 @@ export default function AdminBillingPage() {
 
       {/* KPI Cards - Row 2 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Total Revenue</p>
-              <p className="text-xl font-semibold tabular-nums text-emerald-600 mt-1">
+              <p className="text-xl font-medium tabular-nums text-green-600 mt-1">
                 {formatCurrency(stats.totalRevenue)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <ArrowUpRight className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Active Pro</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {stats.activeSubscriptions}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Users className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Transactions</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {stats.totalTransactions}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Receipt className="w-5 h-5 text-red-500" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur rounded-2xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500">Course Sales</p>
-              <p className="text-xl font-semibold tabular-nums text-gray-900 mt-1">
+              <p className="text-xl font-medium tabular-nums text-gray-900 mt-1">
                 {stats.coursePurchases}
               </p>
             </div>
-            <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <ShoppingCart className="w-5 h-5 text-red-500" />
             </div>
           </div>
@@ -684,9 +684,9 @@ export default function AdminBillingPage() {
       </div>
 
       {/* Revenue Chart */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
-        <h2 className="text-lg font-semibold tracking-tight text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h2>
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
+        <h2 className="text-lg font-medium tracking-tight text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h2>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
@@ -713,13 +713,13 @@ export default function AdminBillingPage() {
       </div>
 
       {/* Grant Pro Access */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
             <Gift className="w-4 h-4 text-red-500" />
           </div>
-          <h2 className="text-lg font-semibold tracking-tight text-gray-900">Grant Pro Access</h2>
+          <h2 className="text-lg font-medium tracking-tight text-gray-900">Grant Pro Access</h2>
         </div>
         <p className="text-sm text-gray-500 mt-1 mb-4">
           Manually grant Pro subscription to a user for 1 year
@@ -730,14 +730,13 @@ export default function AdminBillingPage() {
             placeholder="Enter user email..."
             value={grantEmail}
             onChange={(e) => setGrantEmail(e.target.value)}
-            className="flex-1 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+            className="flex-1 rounded-xl bg-white/70 border-gray-200 focus:border-red-400 focus:ring-red-400"
           />
           <Button
             onClick={handleGrantPro}
             disabled={granting || !grantEmail.trim()}
-            className="relative overflow-hidden bg-gradient-to-b from-red-500 to-rose-600 hover:to-rose-500 text-white font-semibold rounded-full shadow-[0_14px_30px_-10px_rgba(225,29,72,0.55)] ring-1 ring-red-600/50 transition-all hover:-translate-y-0.5"
+            className="relative overflow-hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-full ring-1 ring-red-600/50 transition-all"
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full pointer-events-none" aria-hidden="true"/>
             {granting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -754,21 +753,21 @@ export default function AdminBillingPage() {
       </div>
 
       {/* Transactions Table */}
-      <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl border border-white ring-1 ring-rose-100 shadow-[0_12px_30px_-20px_rgba(225,29,72,0.35)] p-6">
-        <span className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent" aria-hidden="true"/>
+      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-6">
+        <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true"/>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Receipt className="w-4 h-4 text-red-500" />
             </div>
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900">Transactions</h2>
+            <h2 className="text-lg font-medium tracking-tight text-gray-900">Transactions</h2>
           </div>
           <Button
             onClick={handleExportCSV}
             disabled={exporting || filteredTransactions.length === 0}
             variant="outline"
             size="sm"
-            className="bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+            className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
           >
             <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-pulse' : ''}`} />
             Export CSV
@@ -783,13 +782,13 @@ export default function AdminBillingPage() {
               placeholder="Search by email or reference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-xl bg-white/70 border-rose-100 focus:border-red-400 focus:ring-red-400"
+              className="pl-9 rounded-xl bg-white/70 border-gray-200 focus:border-red-400 focus:ring-red-400"
             />
           </div>
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
+            className="px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
           >
             {DATE_FILTERS.map(f => (
               <option key={f.value} value={f.value}>{f.label}</option>
@@ -798,7 +797,7 @@ export default function AdminBillingPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-white/70 border border-rose-100 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
+            className="px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400 focus:outline-none"
           >
             {STATUS_FILTERS.map(f => (
               <option key={f.value} value={f.value}>{f.label}</option>
@@ -808,8 +807,8 @@ export default function AdminBillingPage() {
 
         {/* Table */}
         {filteredTransactions.length === 0 ? (
-          <div className="text-center py-12 bg-[#fffcfb] rounded-2xl border border-rose-100/70">
-            <div className="w-12 h-12 mx-auto mb-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center">
+          <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
+            <div className="w-12 h-12 mx-auto mb-3 bg-red-50 border border-gray-200 rounded-xl flex items-center justify-center">
               <Receipt className="w-6 h-6 text-red-500" />
             </div>
             <p className="text-sm text-gray-500">No transactions found</p>
@@ -818,21 +817,21 @@ export default function AdminBillingPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-rose-100">
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">User</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden sm:table-cell">Type</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">Amount</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3">Status</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden lg:table-cell">Reference</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 hidden md:table-cell">Date</th>
-                  <th className="text-left text-[11px] uppercase tracking-wider text-gray-400 font-medium pb-3 w-10"></th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3">User</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3 hidden sm:table-cell">Type</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3">Amount</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3">Status</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3 hidden lg:table-cell">Reference</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3 hidden md:table-cell">Date</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-gray-400 font-medium pb-3 w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTransactions.map((tx) => (
                   <tr
                     key={tx.id}
-                    className="border-b border-rose-50 hover:bg-rose-50/40 cursor-pointer"
+                    className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleViewTransaction(tx)}
                   >
                     <td className="py-3">
@@ -857,14 +856,14 @@ export default function AdminBillingPage() {
                       </p>
                     </td>
                     <td className="py-3">
-                      <p className="text-sm font-semibold tabular-nums text-gray-900">
+                      <p className="text-sm font-medium tabular-nums text-gray-900">
                         {formatCurrency(tx.amount)}
                       </p>
                     </td>
                     <td className="py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                        tx.status === 'successful' ? 'bg-emerald-50 text-emerald-700' :
-                        tx.status === 'pending' ? 'bg-rose-50 text-rose-600' :
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                        tx.status === 'successful' ? 'bg-green-50 text-green-700' :
+                        tx.status === 'pending' ? 'bg-red-50 text-red-600' :
                         tx.status === 'refunded' ? 'bg-gray-100 text-gray-600' :
                         'bg-red-100 text-red-700'
                       }`}>
@@ -889,7 +888,7 @@ export default function AdminBillingPage() {
                       </p>
                     </td>
                     <td className="py-3">
-                      <Eye className="w-4 h-4 text-rose-300" />
+                      <Eye className="w-4 h-4 text-red-300" />
                     </td>
                   </tr>
                 ))}
@@ -914,7 +913,7 @@ export default function AdminBillingPage() {
           <div className="p-4 space-y-6">
             {/* Status Badge */}
             <div className="flex items-center justify-between">
-              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${getStatusColor(selectedTransaction.status)}`}>
+              <span className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${getStatusColor(selectedTransaction.status)}`}>
                 {selectedTransaction.status === 'successful' ? (
                   <CheckCircle className="w-4 h-4" />
                 ) : selectedTransaction.status === 'pending' ? (
@@ -930,9 +929,9 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Amount */}
-            <div className="bg-rose-50/60 border border-rose-100 rounded-2xl p-4 text-center">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
               <p className="text-sm text-gray-500 mb-1">Amount</p>
-              <p className="text-3xl font-semibold tabular-nums text-gray-900">
+              <p className="text-3xl font-medium tabular-nums text-gray-900">
                 {formatCurrency(selectedTransaction.amount)}
               </p>
               <p className="text-xs text-gray-500 mt-1">
@@ -941,8 +940,8 @@ export default function AdminBillingPage() {
             </div>
 
             {/* User Info */}
-            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl ring-1 ring-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <User className="w-4 h-4 text-red-500" />
                 Customer
               </h3>
@@ -955,8 +954,8 @@ export default function AdminBillingPage() {
                       className="w-10 h-10 rounded-full"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
-                      <span className="text-red-600 font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-red-50 border border-gray-200 flex items-center justify-center">
+                      <span className="text-red-600 font-medium">
                         {selectedTransaction.user?.full_name?.charAt(0) || '?'}
                       </span>
                     </div>
@@ -983,20 +982,20 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Transaction Details */}
-            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl ring-1 ring-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-red-500" />
                 Details
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm text-gray-500">Type</span>
                   <span className="text-sm font-medium text-gray-900 capitalize">
                     {selectedTransaction.transaction_type?.replace('_', ' ')}
                   </span>
                 </div>
                 {selectedTransaction.plan && (
-                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-sm text-gray-500">Plan</span>
                     <span className="text-sm font-medium text-gray-900">
                       {selectedTransaction.plan.name}
@@ -1004,27 +1003,27 @@ export default function AdminBillingPage() {
                   </div>
                 )}
                 {selectedTransaction.course && (
-                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-sm text-gray-500">Course</span>
                     <span className="text-sm font-medium text-gray-900">
                       {selectedTransaction.course.title}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm text-gray-500">Currency</span>
                   <span className="text-sm font-medium text-gray-900">
                     {selectedTransaction.currency}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm text-gray-500">Created</span>
                   <span className="text-sm font-medium text-gray-900">
                     {formatDate(selectedTransaction.created_at)}
                   </span>
                 </div>
                 {selectedTransaction.updated_at && (
-                  <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-sm text-gray-500">Updated</span>
                     <span className="text-sm font-medium text-gray-900">
                       {formatDate(selectedTransaction.updated_at)}
@@ -1035,20 +1034,20 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Payment Info */}
-            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl ring-1 ring-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <CardIcon className="w-4 h-4 text-red-500" />
                 Payment Info
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-rose-50">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm text-gray-500">Provider</span>
                   <span className="text-sm font-medium text-gray-900 capitalize">
                     Paystack
                   </span>
                 </div>
                 {selectedTransaction.provider_tx_ref && (
-                  <div className="flex justify-between items-start py-2 border-b border-rose-50">
+                  <div className="flex justify-between items-start py-2 border-b border-gray-200">
                     <span className="text-sm text-gray-500">Reference</span>
                     <span className="text-xs font-mono text-gray-900 text-right max-w-[200px] break-all">
                       {selectedTransaction.provider_tx_ref}
@@ -1056,7 +1055,7 @@ export default function AdminBillingPage() {
                   </div>
                 )}
                 {selectedTransaction.provider_transaction_id && (
-                  <div className="flex justify-between items-start py-2 border-b border-rose-50">
+                  <div className="flex justify-between items-start py-2 border-b border-gray-200">
                     <span className="text-sm text-gray-500">Transaction ID</span>
                     <span className="text-xs font-mono text-gray-900">
                       {selectedTransaction.provider_transaction_id}
@@ -1067,16 +1066,16 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Timeline */}
-            <div className="bg-white/95 backdrop-blur rounded-2xl ring-1 ring-rose-100 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl ring-1 ring-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-red-500" />
                 Timeline
               </h3>
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <div className="w-0.5 h-full bg-rose-100"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div className="w-0.5 h-full bg-red-100"></div>
                   </div>
                   <div className="pb-4">
                     <p className="text-sm font-medium text-gray-900">Transaction Created</p>
@@ -1086,7 +1085,7 @@ export default function AdminBillingPage() {
                 {selectedTransaction.status === 'successful' && (
                   <div className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Payment Completed</p>
@@ -1097,7 +1096,7 @@ export default function AdminBillingPage() {
                 {selectedTransaction.status === 'failed' && (
                   <div className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-red-600"></div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Payment Failed</p>
@@ -1120,10 +1119,10 @@ export default function AdminBillingPage() {
             </div>
 
             {/* Actions */}
-            <div className="pt-4 border-t border-rose-100">
+            <div className="pt-4 border-t border-gray-200">
               <Button
                 variant="outline"
-                className="w-full bg-white/70 backdrop-blur border border-rose-100 hover:border-rose-200 hover:bg-white rounded-full shadow-sm"
+                className="w-full bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm"
                 onClick={closeDrawer}
               >
                 Close

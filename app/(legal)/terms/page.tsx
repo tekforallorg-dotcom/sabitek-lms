@@ -8,14 +8,14 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white">
+      <div className="bg-red-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex items-center gap-4 mb-6">
             <Scale className="w-12 h-12" />
             <div>
-              <h1 className="text-4xl font-bold">Terms and Conditions</h1>
+              <h1 className="text-4xl font-medium">Terms and Conditions</h1>
               <p className="text-red-100 mt-2">Last updated: November 16, 2025</p>
             </div>
           </div>
@@ -65,7 +65,7 @@ export default function TermsPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-blue-900 mb-2">Important Notice</h3>
+              <h3 className="font-medium text-blue-900 mb-2">Important Notice</h3>
               <p className="text-blue-800 text-sm leading-relaxed">
                 These Terms and Conditions constitute a legally binding agreement between you and 
                 Sabitek (operated by Tek4All Digital Inclusion Initiative). By using our platform, 
@@ -81,7 +81,7 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">1. Acceptance of Terms</h2>
+            <h2 className="text-2xl font-medium text-gray-900">1. Acceptance of Terms</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
@@ -91,7 +91,7 @@ export default function TermsPage() {
             </p>
             
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-              <h4 className="font-semibold text-gray-900 mb-3">You agree that:</h4>
+              <h4 className="font-medium text-gray-900 mb-3">You agree that:</h4>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-red-600 mt-1">•</span>
@@ -120,12 +120,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <Users className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">2. User Accounts and Responsibilities</h2>
+            <h2 className="text-2xl font-medium text-gray-900">2. User Accounts and Responsibilities</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.1 Account Registration</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.1 Account Registration</h3>
               <p>
                 To access certain features, you must create an account. You are responsible for:
               </p>
@@ -138,23 +138,23 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.2 Account Types</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.2 Account Types</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-900 mb-2">Learner Account</h4>
+                  <h4 className="font-medium text-green-900 mb-2">Learner Account</h4>
                   <p className="text-sm text-green-800">
                     Access courses, track progress, earn certificates, and participate in quizzes.
                   </p>
                 </div>
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-2">Instructor Account</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">Instructor Account</h4>
                   <p className="text-sm text-blue-800">
                     Create courses, upload content, manage students, and earn revenue.
                   </p>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-2">Admin Account</h4>
-                  <p className="text-sm text-purple-800">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-2">Admin Account</h4>
+                  <p className="text-sm text-gray-800">
                     Platform management, user oversight, and content moderation.
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.3 Account Security</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.3 Account Security</h3>
               <p>
                 You must not share your account with others. Sabitek reserves the right to suspend 
                 or terminate accounts that violate security policies or show signs of unauthorized access.
@@ -177,12 +177,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <BookOpen className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">3. Content and Usage Rights</h2>
+            <h2 className="text-2xl font-medium text-gray-900">3. Content and Usage Rights</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.1 User-Generated Content</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.1 User-Generated Content</h3>
               <p className="mb-4">
                 When you upload, submit, or create content on Sabitek (courses, lessons, quizzes, comments), 
                 you grant us a worldwide, non-exclusive, royalty-free license to:
@@ -193,14 +193,14 @@ export default function TermsPage() {
                 <li>Modify or adapt content for technical requirements</li>
                 <li>Use your content for promotional purposes (with attribution)</li>
               </ul>
-              <p className="mt-4 text-sm bg-yellow-50 p-4 rounded border border-yellow-200">
-                <strong className="text-yellow-900">Important:</strong> You retain ownership of your content. 
+              <p className="mt-4 text-sm bg-amber-50 p-4 rounded border border-amber-200">
+                <strong className="text-amber-900">Important:</strong> You retain ownership of your content. 
                 This license is solely for platform operation and does not transfer ownership to Sabitek.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.2 Instructor Content Rights</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.2 Instructor Content Rights</h3>
               <p>As an instructor, you represent and warrant that:</p>
               <ul className="list-disc list-inside space-y-2 ml-4 mt-2">
                 <li>You own or have necessary rights to all content you upload</li>
@@ -211,9 +211,9 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.3 Prohibited Content</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.3 Prohibited Content</h3>
               <div className="bg-red-50 p-6 rounded-lg border border-red-200">
-                <p className="font-semibold text-red-900 mb-3">You may not upload content that:</p>
+                <p className="font-medium text-red-900 mb-3">You may not upload content that:</p>
                 <ul className="space-y-2 text-sm text-red-800">
                   <li className="flex items-start gap-2">
                     <span className="text-red-600 mt-1">✗</span>
@@ -251,12 +251,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <FileText className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">4. Payments, Pricing, and Refunds</h2>
+            <h2 className="text-2xl font-medium text-gray-900">4. Payments, Pricing, and Refunds</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.1 Course Pricing</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.1 Course Pricing</h3>
               <p>
                 Sabitek offers both free and paid courses. Instructors set the prices for their courses, 
                 subject to platform guidelines. All prices are displayed in Nigerian Naira (NGN) or US Dollars (USD).
@@ -264,7 +264,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.2 Payment Processing</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.2 Payment Processing</h3>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Payments are processed securely through our payment partners</li>
                 <li>You authorize us to charge your selected payment method</li>
@@ -274,9 +274,9 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.3 Refund Policy</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.3 Refund Policy</h3>
               <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                <p className="font-semibold text-blue-900 mb-3">30-Day Money-Back Guarantee</p>
+                <p className="font-medium text-blue-900 mb-3">30-Day Money-Back Guarantee</p>
                 <p className="text-sm text-blue-800 mb-3">
                   If you&apos;re not satisfied with a course, you may request a refund within 30 days 
                   of purchase, provided:
@@ -302,7 +302,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.4 Instructor Payouts</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.4 Instructor Payouts</h3>
               <p>
                 Instructors earn revenue from paid course enrollments. Sabitek retains a platform fee 
                 (typically 20-30%) to cover hosting, payment processing, and platform maintenance. 
@@ -318,12 +318,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <Shield className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">5. Intellectual Property Rights</h2>
+            <h2 className="text-2xl font-medium text-gray-900">5. Intellectual Property Rights</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">5.1 Platform Ownership</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">5.1 Platform Ownership</h3>
               <p>
                 The Sabitek platform, including its design, logo, branding, code, and original content, 
                 is owned by Tek4All Digital Inclusion Initiative and protected by international copyright, 
@@ -332,7 +332,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">5.2 Trademarks</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">5.2 Trademarks</h3>
               <p>
                 &quot;Sabitek,&quot; the Sabitek logo, &quot;SabiQuiz,&quot; &quot;SabiAdvisor,&quot; and other platform features 
                 are trademarks of Tek4All. You may not use these marks without prior written permission.
@@ -340,7 +340,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">5.3 Copyright Infringement</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">5.3 Copyright Infringement</h3>
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
                 <p className="mb-3">
                   If you believe content on Sabitek infringes your copyright, contact us at:
@@ -364,15 +364,15 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">6. Prohibited Uses and Conduct</h2>
+            <h2 className="text-2xl font-medium text-gray-900">6. Prohibited Uses and Conduct</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
-            <p className="font-semibold">You agree not to:</p>
+            <p className="font-medium">You agree not to:</p>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                <h4 className="font-semibold text-red-900 mb-2">Platform Misuse</h4>
+                <h4 className="font-medium text-red-900 mb-2">Platform Misuse</h4>
                 <ul className="text-sm text-red-800 space-y-1">
                   <li>• Attempt to hack or breach security</li>
                   <li>• Use automated tools (bots, scrapers)</li>
@@ -382,7 +382,7 @@ export default function TermsPage() {
               </div>
 
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                <h4 className="font-semibold text-red-900 mb-2">Content Violations</h4>
+                <h4 className="font-medium text-red-900 mb-2">Content Violations</h4>
                 <ul className="text-sm text-red-800 space-y-1">
                   <li>• Share pirated or illegal content</li>
                   <li>• Impersonate others or create fake accounts</li>
@@ -392,7 +392,7 @@ export default function TermsPage() {
               </div>
 
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                <h4 className="font-semibold text-red-900 mb-2">Commercial Misuse</h4>
+                <h4 className="font-medium text-red-900 mb-2">Commercial Misuse</h4>
                 <ul className="text-sm text-red-800 space-y-1">
                   <li>• Resell or redistribute course content</li>
                   <li>• Use platform for competitor analysis</li>
@@ -402,7 +402,7 @@ export default function TermsPage() {
               </div>
 
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                <h4 className="font-semibold text-red-900 mb-2">Legal Violations</h4>
+                <h4 className="font-medium text-red-900 mb-2">Legal Violations</h4>
                 <ul className="text-sm text-red-800 space-y-1">
                   <li>• Violate any applicable laws</li>
                   <li>• Infringe intellectual property rights</li>
@@ -420,12 +420,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">7. Account Termination</h2>
+            <h2 className="text-2xl font-medium text-gray-900">7. Account Termination</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">7.1 Termination by You</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">7.1 Termination by You</h3>
               <p>
                 You may close your account at any time through your account settings. Upon termination:
               </p>
@@ -438,7 +438,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">7.2 Termination by Sabitek</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">7.2 Termination by Sabitek</h3>
               <p className="mb-3">We may suspend or terminate your account if:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>You violate these Terms and Conditions</li>
@@ -447,7 +447,7 @@ export default function TermsPage() {
                 <li>We are required to do so by law or court order</li>
                 <li>Your account has been inactive for more than 2 years</li>
               </ul>
-              <p className="mt-4 text-sm bg-yellow-50 p-4 rounded border border-yellow-200">
+              <p className="mt-4 text-sm bg-amber-50 p-4 rounded border border-amber-200">
                 We will provide notice before termination except in cases of legal requirement or 
                 serious violations.
               </p>
@@ -461,12 +461,12 @@ export default function TermsPage() {
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <Shield className="w-6 h-6 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">8. Disclaimers and Limitation of Liability</h2>
+            <h2 className="text-2xl font-medium text-gray-900">8. Disclaimers and Limitation of Liability</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">8.1 Service &quot;As Is&quot;</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">8.1 Service &quot;As Is&quot;</h3>
               <p>
                 Sabitek is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either 
                 express or implied, including but not limited to warranties of merchantability, fitness 
@@ -475,7 +475,7 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">8.2 No Guarantee of Results</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">8.2 No Guarantee of Results</h3>
               <p>
                 While we strive to provide high-quality educational content, we do not guarantee:
               </p>
@@ -488,9 +488,9 @@ export default function TermsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">8.3 Limitation of Liability</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">8.3 Limitation of Liability</h3>
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <p className="font-semibold mb-3">
+                <p className="font-medium mb-3">
                   To the fullest extent permitted by law, Sabitek and its affiliates shall not be liable for:
                 </p>
                 <ul className="text-sm space-y-2">
@@ -512,7 +512,7 @@ export default function TermsPage() {
         {/* Additional Sections */}
         <section className="mb-12 space-y-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Dispute Resolution</h2>
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">9. Dispute Resolution</h2>
             <div className="prose prose-gray max-w-none text-gray-700">
               <p>
                 Any disputes arising from these Terms shall be resolved through:
@@ -530,7 +530,7 @@ export default function TermsPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Changes to Terms</h2>
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">10. Changes to Terms</h2>
             <div className="prose prose-gray max-w-none text-gray-700">
               <p>
                 We may update these Terms periodically. Changes will be effective upon posting, with 
@@ -541,9 +541,9 @@ export default function TermsPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Contact Information</h2>
-            <div className="bg-gradient-to-r from-red-50 to-red-100 p-6 rounded-lg border border-red-200">
-              <p className="font-semibold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">11. Contact Information</h2>
+            <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+              <p className="font-medium text-gray-900 mb-4">
                 Questions about these Terms? Contact us:
               </p>
               <div className="space-y-2 text-gray-700">

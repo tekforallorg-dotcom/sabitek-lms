@@ -7,15 +7,15 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
      {/* Hero Section */}
-<div className="bg-gradient-to-r from-red-600 to-red-700 text-white">
+<div className="bg-red-600 text-white">
   <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div className="flex items-center gap-4 mb-6">
       <Shield className="w-12 h-12" />
       <div>
-        <h1 className="text-4xl font-bold">Privacy Policy</h1>
+        <h1 className="text-4xl font-medium">Privacy Policy</h1>
         <p className="text-red-100 mt-2">Last updated: November 16, 2025</p>
       </div>
     </div>
@@ -29,24 +29,24 @@ export default function PrivacyPage() {
       {/* Quick Stats */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-green-500">
+          <div className="bg-white rounded-lg shadow-sm p-4 text-center border-t-4 border-green-500">
             <Lock className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">256-bit</p>
+            <p className="text-2xl font-medium text-gray-900">256-bit</p>
             <p className="text-sm text-gray-600">Encryption</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-blue-500">
+          <div className="bg-white rounded-lg shadow-sm p-4 text-center border-t-4 border-blue-500">
             <Database className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">GDPR</p>
+            <p className="text-2xl font-medium text-gray-900">GDPR</p>
             <p className="text-sm text-gray-600">Compliant</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-purple-500">
-            <Eye className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">Zero</p>
+          <div className="bg-white rounded-lg shadow-sm p-4 text-center border-t-4 border-gray-500">
+            <Eye className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+            <p className="text-2xl font-medium text-gray-900">Zero</p>
             <p className="text-sm text-gray-600">Data Selling</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-red-500">
+          <div className="bg-white rounded-lg shadow-sm p-4 text-center border-t-4 border-red-500">
             <Shield className="w-8 h-8 text-red-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">Full</p>
+            <p className="text-2xl font-medium text-gray-900">Full</p>
             <p className="text-sm text-gray-600">Control</p>
           </div>
         </div>
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-blue-900 mb-2">Our Commitment to Your Privacy</h3>
+              <h3 className="font-medium text-blue-900 mb-2">Our Commitment to Your Privacy</h3>
               <p className="text-blue-800 text-sm leading-relaxed">
                 Sabitek (operated by Tek4All Digital Inclusion Initiative) is committed to protecting 
                 your personal information. We collect only what we need, use it responsibly, and give 
@@ -107,16 +107,16 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Database className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">1. Information We Collect</h2>
+            <h2 className="text-2xl font-medium text-gray-900">1. Information We Collect</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">1.1 Information You Provide</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">1.1 Information You Provide</h3>
               
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-green-50 p-5 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-900 mb-3">Account Information</h4>
+                  <h4 className="font-medium text-green-900 mb-3">Account Information</h4>
                   <ul className="text-sm text-green-800 space-y-1">
                     <li>• Full name</li>
                     <li>• Email address</li>
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3">Educational Data</h4>
+                  <h4 className="font-medium text-blue-900 mb-3">Educational Data</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Course enrollments</li>
                     <li>• Progress and completion data</li>
@@ -137,9 +137,9 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
 
-                <div className="bg-purple-50 p-5 rounded-lg border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-3">Content You Create</h4>
-                  <ul className="text-sm text-purple-800 space-y-1">
+                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-3">Content You Create</h4>
+                  <ul className="text-sm text-gray-800 space-y-1">
                     <li>• Course materials (instructors)</li>
                     <li>• Comments and discussions</li>
                     <li>• Reviews and ratings</li>
@@ -147,9 +147,9 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
 
-                <div className="bg-orange-50 p-5 rounded-lg border border-orange-200">
-                  <h4 className="font-semibold text-orange-900 mb-3">Payment Information</h4>
-                  <ul className="text-sm text-orange-800 space-y-1">
+                <div className="bg-amber-50 p-5 rounded-lg border border-amber-200">
+                  <h4 className="font-medium text-amber-900 mb-3">Payment Information</h4>
+                  <ul className="text-sm text-amber-800 space-y-1">
                     <li>• Billing address</li>
                     <li>• Transaction history</li>
                     <li>• Payment method (via secure processor)</li>
@@ -160,10 +160,10 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">1.2 Automatically Collected Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">1.2 Automatically Collected Information</h3>
               
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                <h4 className="font-semibold text-gray-900 mb-3">Technical Data</h4>
+                <h4 className="font-medium text-gray-900 mb-3">Technical Data</h4>
                 <ul className="grid md:grid-cols-2 gap-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 mt-1">•</span>
@@ -194,26 +194,26 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">1.3 AI-Enhanced Features</h3>
-              <div className="bg-purple-50 p-6 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-900 mb-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">1.3 AI-Enhanced Features</h3>
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-900 mb-3">
                   Our AI features (SabiQuiz, SabiAdvisor) may process:
                 </p>
-                <ul className="text-sm text-purple-800 space-y-2">
+                <ul className="text-sm text-gray-800 space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-600">•</span>
+                    <span className="text-gray-600">•</span>
                     <span>Course content for quiz generation</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-600">•</span>
+                    <span className="text-gray-600">•</span>
                     <span>Your queries to our AI career advisor</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-600">•</span>
+                    <span className="text-gray-600">•</span>
                     <span>Learning patterns for personalized recommendations</span>
                   </li>
                 </ul>
-                <p className="text-sm text-purple-800 mt-3">
+                <p className="text-sm text-gray-800 mt-3">
                   <strong>Note:</strong> AI processing is done securely and your data is not used to 
                   train external AI models without consent.
                 </p>
@@ -228,12 +228,12 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Eye className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">2. How We Use Your Information</h2>
+            <h2 className="text-2xl font-medium text-gray-900">2. How We Use Your Information</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.1 Platform Operations</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.1 Platform Operations</h3>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Provide access to courses and learning materials</li>
                 <li>Track your progress and issue certificates</li>
@@ -244,7 +244,7 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.2 Personalization and Improvement</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.2 Personalization and Improvement</h3>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Recommend courses based on your interests</li>
                 <li>Customize your learning experience</li>
@@ -255,22 +255,22 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.3 Communication</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.3 Communication</h3>
               <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-900 mb-3">We may contact you for:</p>
                 <ul className="text-sm text-blue-800 space-y-2">
-                  <li>✉️ Account updates and security alerts</li>
-                  <li>📚 New courses and learning opportunities</li>
-                  <li>🎓 Certificate availability notifications</li>
-                  <li>💬 Responses to your support inquiries</li>
-                  <li>📊 Platform updates and feature announcements</li>
-                  <li>🎯 Promotional offers (you can opt-out)</li>
+                  <li>Account updates and security alerts</li>
+                  <li>New courses and learning opportunities</li>
+                  <li>Certificate availability notifications</li>
+                  <li>Responses to your support inquiries</li>
+                  <li>Platform updates and feature announcements</li>
+                  <li>Promotional offers (you can opt-out)</li>
                 </ul>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">2.4 Legal and Safety</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">2.4 Legal and Safety</h3>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Comply with legal obligations and court orders</li>
                 <li>Enforce our Terms and Conditions</li>
@@ -288,13 +288,13 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Globe className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">3. How We Share Your Information</h2>
+            <h2 className="text-2xl font-medium text-gray-900">3. How We Share Your Information</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div className="bg-red-50 p-6 rounded-lg border-l-4 border-red-600">
-              <p className="font-semibold text-red-900 text-lg mb-2">
-                🚫 We Never Sell Your Personal Data
+              <p className="font-medium text-red-900 text-lg mb-2">
+                We Never Sell Your Personal Data
               </p>
               <p className="text-sm text-red-800">
                 Your personal information is not for sale. We do not sell, rent, or trade your data 
@@ -303,36 +303,36 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.1 Service Providers</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.1 Service Providers</h3>
               <p className="mb-3">We share data with trusted service providers who help us operate the platform:</p>
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Supabase</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">Supabase</h4>
                   <p className="text-sm text-gray-700">Database hosting and authentication</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">AI Services</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">AI Services</h4>
                   <p className="text-sm text-gray-700">OpenAI, Gemini, DeepSeek for AI features</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Payment Processors</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">Payment Processors</h4>
                   <p className="text-sm text-gray-700">Secure payment handling (PCI DSS compliant)</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Email Services</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">Email Services</h4>
                   <p className="text-sm text-gray-700">Resend for transactional emails</p>
                 </div>
               </div>
 
-              <p className="text-sm mt-4 bg-yellow-50 p-4 rounded border border-yellow-200">
+              <p className="text-sm mt-4 bg-amber-50 p-4 rounded border border-amber-200">
                 <strong>Note:</strong> All service providers are contractually bound to protect your 
                 data and use it only for specified purposes.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.2 Public Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.2 Public Information</h3>
               <p className="mb-3">Certain information is publicly visible:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Your profile name and photo (if provided)</li>
@@ -344,7 +344,7 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">3.3 Legal Requirements</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">3.3 Legal Requirements</h3>
               <p>We may disclose information when required by law or to:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Comply with legal process or government requests</li>
@@ -362,16 +362,16 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Lock className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">4. Data Security</h2>
+            <h2 className="text-2xl font-medium text-gray-900">4. Data Security</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.1 Security Measures</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.1 Security Measures</h3>
               
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-green-50 p-5 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                  <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
                     <Lock className="w-5 h-5" />
                     Encryption
                   </h4>
@@ -384,7 +384,7 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
                     <Shield className="w-5 h-5" />
                     Access Controls
                   </h4>
@@ -396,12 +396,12 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
 
-                <div className="bg-purple-50 p-5 rounded-lg border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                     <Database className="w-5 h-5" />
                     Data Protection
                   </h4>
-                  <ul className="text-sm text-purple-800 space-y-1">
+                  <ul className="text-sm text-gray-800 space-y-1">
                     <li>• Regular backups</li>
                     <li>• Redundant storage systems</li>
                     <li>• Data loss prevention</li>
@@ -409,12 +409,12 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
 
-                <div className="bg-orange-50 p-5 rounded-lg border border-orange-200">
-                  <h4 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                <div className="bg-amber-50 p-5 rounded-lg border border-amber-200">
+                  <h4 className="font-medium text-amber-900 mb-3 flex items-center gap-2">
                     <Eye className="w-5 h-5" />
                     Monitoring
                   </h4>
-                  <ul className="text-sm text-orange-800 space-y-1">
+                  <ul className="text-sm text-amber-800 space-y-1">
                     <li>• 24/7 security monitoring</li>
                     <li>• Intrusion detection systems</li>
                     <li>• Anomaly detection</li>
@@ -425,12 +425,12 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.2 Your Responsibility</h3>
-              <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
-                <p className="text-sm text-yellow-900 mb-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.2 Your Responsibility</h3>
+              <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+                <p className="text-sm text-amber-900 mb-3">
                   While we implement strong security measures, you also play a role in protecting your account:
                 </p>
-                <ul className="text-sm text-yellow-800 space-y-2">
+                <ul className="text-sm text-amber-800 space-y-2">
                   <li>✓ Use a strong, unique password</li>
                   <li>✓ Enable two-factor authentication</li>
                   <li>✓ Don&apos;t share your login credentials</li>
@@ -441,7 +441,7 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">4.3 Data Breach Notification</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">4.3 Data Breach Notification</h3>
               <p>
                 In the unlikely event of a data breach affecting your personal information, we will 
                 notify you within 72 hours via email and provide details about the incident, affected 
@@ -457,7 +457,7 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Shield className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">5. Your Privacy Rights</h2>
+            <h2 className="text-2xl font-medium text-gray-900">5. Your Privacy Rights</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
@@ -467,7 +467,7 @@ export default function PrivacyPage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-3">🔍 Right to Access</h4>
+                <h4 className="font-medium text-blue-900 mb-3">Right to Access</h4>
                 <p className="text-sm text-blue-800">
                   Request a copy of all personal data we hold about you. We&apos;ll provide this in a 
                   readable format within 30 days.
@@ -475,40 +475,40 @@ export default function PrivacyPage() {
               </div>
 
               <div className="bg-green-50 p-5 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-900 mb-3">✏️ Right to Rectification</h4>
+                <h4 className="font-medium text-green-900 mb-3">✏️ Right to Rectification</h4>
                 <p className="text-sm text-green-800">
                   Correct any inaccurate or incomplete personal information in your account settings 
                   or by contacting us.
                 </p>
               </div>
 
-              <div className="bg-purple-50 p-5 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-purple-900 mb-3">🗑️ Right to Deletion</h4>
-                <p className="text-sm text-purple-800">
+              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-3">Right to Deletion</h4>
+                <p className="text-sm text-gray-800">
                   Request deletion of your personal data. We&apos;ll comply unless we have legal grounds 
                   to retain it.
                 </p>
               </div>
 
-              <div className="bg-orange-50 p-5 rounded-lg border border-orange-200">
-                <h4 className="font-semibold text-orange-900 mb-3">📦 Right to Data Portability</h4>
-                <p className="text-sm text-orange-800">
+              <div className="bg-amber-50 p-5 rounded-lg border border-amber-200">
+                <h4 className="font-medium text-amber-900 mb-3">Right to Data Portability</h4>
+                <p className="text-sm text-amber-800">
                   Receive your data in a structured, commonly used format and transfer it to another 
                   service.
                 </p>
               </div>
 
               <div className="bg-red-50 p-5 rounded-lg border border-red-200">
-                <h4 className="font-semibold text-red-900 mb-3">⛔ Right to Object</h4>
+                <h4 className="font-medium text-red-900 mb-3">⛔ Right to Object</h4>
                 <p className="text-sm text-red-800">
                   Object to processing of your data for marketing purposes or based on legitimate 
                   interests.
                 </p>
               </div>
 
-              <div className="bg-yellow-50 p-5 rounded-lg border border-yellow-200">
-                <h4 className="font-semibold text-yellow-900 mb-3">⏸️ Right to Restrict</h4>
-                <p className="text-sm text-yellow-800">
+              <div className="bg-amber-50 p-5 rounded-lg border border-amber-200">
+                <h4 className="font-medium text-amber-900 mb-3">⏸️ Right to Restrict</h4>
+                <p className="text-sm text-amber-800">
                   Request that we limit how we use your data while you dispute its accuracy or 
                   lawfulness.
                 </p>
@@ -516,9 +516,9 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">5.1 How to Exercise Your Rights</h3>
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-                <p className="font-semibold text-gray-900 mb-4">Contact us to exercise your rights:</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">5.1 How to Exercise Your Rights</h3>
+              <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <p className="font-medium text-gray-900 mb-4">Contact us to exercise your rights:</p>
                 <div className="space-y-2 text-sm">
                   <p><strong>Email:</strong> impact@tekforall.org</p>
                   <p><strong>Subject:</strong> Privacy Rights Request</p>
@@ -539,7 +539,7 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Cookie className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">6. Cookies and Tracking</h2>
+            <h2 className="text-2xl font-medium text-gray-900">6. Cookies and Tracking</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
@@ -549,11 +549,11 @@ export default function PrivacyPage() {
             </p>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">6.1 Types of Cookies</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">6.1 Types of Cookies</h3>
               
               <div className="space-y-4">
                 <div className="bg-green-50 p-5 rounded-lg border-l-4 border-green-600">
-                  <h4 className="font-semibold text-green-900 mb-2">Essential Cookies (Required)</h4>
+                  <h4 className="font-medium text-green-900 mb-2">Essential Cookies (Required)</h4>
                   <p className="text-sm text-green-800">
                     Necessary for platform functionality: authentication, security, and basic features. 
                     These cannot be disabled.
@@ -561,24 +561,24 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="bg-blue-50 p-5 rounded-lg border-l-4 border-blue-600">
-                  <h4 className="font-semibold text-blue-900 mb-2">Functional Cookies (Optional)</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">Functional Cookies (Optional)</h4>
                   <p className="text-sm text-blue-800">
                     Remember your preferences, language settings, and customizations to enhance 
                     your experience.
                   </p>
                 </div>
 
-                <div className="bg-purple-50 p-5 rounded-lg border-l-4 border-purple-600">
-                  <h4 className="font-semibold text-purple-900 mb-2">Analytics Cookies (Optional)</h4>
-                  <p className="text-sm text-purple-800">
+                <div className="bg-gray-50 p-5 rounded-lg border-l-4 border-gray-600">
+                  <h4 className="font-medium text-gray-900 mb-2">Analytics Cookies (Optional)</h4>
+                  <p className="text-sm text-gray-800">
                     Help us understand how you use the platform so we can improve it. We use anonymized 
                     data where possible.
                   </p>
                 </div>
 
-                <div className="bg-orange-50 p-5 rounded-lg border-l-4 border-orange-600">
-                  <h4 className="font-semibold text-orange-900 mb-2">Marketing Cookies (Optional)</h4>
-                  <p className="text-sm text-orange-800">
+                <div className="bg-amber-50 p-5 rounded-lg border-l-4 border-amber-600">
+                  <h4 className="font-medium text-amber-900 mb-2">Marketing Cookies (Optional)</h4>
+                  <p className="text-sm text-amber-800">
                     Used to deliver relevant course recommendations and promotional content. You can 
                     opt-out anytime.
                   </p>
@@ -587,7 +587,7 @@ export default function PrivacyPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">6.2 Managing Cookies</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">6.2 Managing Cookies</h3>
               <p className="mb-3">You can control cookies through:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Our cookie preferences center (accessible from your account settings)</li>
@@ -604,19 +604,19 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">7. Children&apos;s Privacy</h2>
+            <h2 className="text-2xl font-medium text-gray-900">7. Children&apos;s Privacy</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
-            <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
-              <p className="font-semibold text-yellow-900 mb-3">
+            <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <p className="font-medium text-amber-900 mb-3">
                 Age Requirement: 13 Years or Older
               </p>
-              <p className="text-sm text-yellow-800 mb-3">
+              <p className="text-sm text-amber-800 mb-3">
                 Sabitek is intended for users aged 13 and above. Users under 13 require parental or 
                 guardian consent and supervision.
               </p>
-              <ul className="text-sm text-yellow-800 space-y-2">
+              <ul className="text-sm text-amber-800 space-y-2">
                 <li>• We do not knowingly collect data from children under 13 without consent</li>
                 <li>• Parents can request access to or deletion of their child&apos;s data</li>
                 <li>• We limit data collection for users aged 13-18</li>
@@ -638,7 +638,7 @@ export default function PrivacyPage() {
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Globe className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">8. International Data Transfers</h2>
+            <h2 className="text-2xl font-medium text-gray-900">8. International Data Transfers</h2>
           </div>
           
           <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
@@ -648,7 +648,7 @@ export default function PrivacyPage() {
             </p>
 
             <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-900 mb-3">Data Protection Safeguards</h4>
+              <h4 className="font-medium text-blue-900 mb-3">Data Protection Safeguards</h4>
               <ul className="text-sm text-blue-800 space-y-2">
                 <li>• We use EU-approved Standard Contractual Clauses for data transfers</li>
                 <li>• Service providers are required to maintain GDPR-equivalent protections</li>
@@ -667,7 +667,7 @@ export default function PrivacyPage() {
         {/* Additional Sections */}
         <section className="mb-12 space-y-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Data Retention</h2>
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">9. Data Retention</h2>
             <div className="prose prose-gray max-w-none text-gray-700">
               <p className="mb-3">We retain your data for as long as necessary to:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
@@ -678,7 +678,7 @@ export default function PrivacyPage() {
               </ul>
               
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-4">
-                <h4 className="font-semibold text-gray-900 mb-3">Retention Periods:</h4>
+                <h4 className="font-medium text-gray-900 mb-3">Retention Periods:</h4>
                 <ul className="text-sm space-y-2">
                   <li>• <strong>Active accounts:</strong> Retained while account is active</li>
                   <li>• <strong>Closed accounts:</strong> Deleted within 90 days (some data retained for legal compliance)</li>
@@ -691,7 +691,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Third-Party Links</h2>
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">10. Third-Party Links</h2>
             <div className="prose prose-gray max-w-none text-gray-700">
               <p>
                 Our platform may contain links to third-party websites, including course resources and 
@@ -702,7 +702,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Changes to This Policy</h2>
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">11. Changes to This Policy</h2>
             <div className="prose prose-gray max-w-none text-gray-700">
               <p>
                 We may update this Privacy Policy periodically to reflect changes in our practices or 
@@ -716,9 +716,9 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Contact Us</h2>
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-              <p className="font-semibold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-4">12. Contact Us</h2>
+            <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+              <p className="font-medium text-gray-900 mb-4">
                 Questions or concerns about your privacy?
               </p>
               <div className="space-y-2 text-gray-700">

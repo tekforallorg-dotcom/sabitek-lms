@@ -140,7 +140,7 @@ export default function CommunityHeader() {
               onClick={() => router.push('/community')}
             >
               <Users className="w-6 h-6 text-red-500" />
-              <span className="font-bold text-gray-900">SabiCommunity</span>
+              <span className="font-medium text-gray-900">SabiCommunity</span>
             </div>
 
             {/* Desktop Nav */}
@@ -153,7 +153,7 @@ export default function CommunityHeader() {
                   <button
                     key={item.href}
                     onClick={() => router.push(item.href)}
-                    className={`relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`relative flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       active 
                         ? 'bg-red-50 text-red-600' 
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -162,7 +162,7 @@ export default function CommunityHeader() {
                     <Icon className="w-4 h-4" />
                     <span className="hidden lg:inline">{item.label}</span>
                     {item.count && item.count > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {item.count > 9 ? '9+' : item.count}
                       </span>
                     )}
@@ -200,7 +200,7 @@ export default function CommunityHeader() {
                       router.push(item.href)
                       setMobileMenuOpen(false)
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    className={`w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                       active 
                         ? 'bg-red-50 text-red-600' 
                         : 'text-gray-600 hover:bg-gray-100'
@@ -211,7 +211,7 @@ export default function CommunityHeader() {
                       <span>{item.label}</span>
                     </div>
                     {item.count && item.count > 0 && (
-                      <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">
+                      <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full font-medium">
                         {item.count}
                       </span>
                     )}
@@ -234,14 +234,14 @@ export default function CommunityHeader() {
               <button
                 key={item.href}
                 onClick={() => router.push(item.href)}
-                className={`relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
+                className={`relative flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${
                   active ? 'text-red-600' : 'text-gray-500'
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-xs font-medium">{item.label}</span>
                 {item.count && item.count > 0 && (
-                  <span className="absolute -top-0.5 right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                  <span className="absolute -top-0.5 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                     {item.count > 9 ? '9+' : item.count}
                   </span>
                 )}

@@ -245,7 +245,7 @@ export default function InviteLearnersPanel({
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <Info className="w-6 h-6 text-gray-400" />
         </div>
-        <h3 className="text-base font-semibold text-gray-900 mb-1">
+        <h3 className="text-base font-medium text-gray-900 mb-1">
           Cohort is archived
         </h3>
         <p className="text-sm text-gray-500">
@@ -261,7 +261,7 @@ export default function InviteLearnersPanel({
     <div className="space-y-6">
       {/* Enrollment mode explainer */}
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
         <div className="text-sm text-blue-900">{explainer}</div>
       </div>
 
@@ -294,7 +294,7 @@ export default function InviteLearnersPanel({
       {/* Error banner */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 text-sm text-red-700">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-1" />
           <span>{error}</span>
         </div>
       )}
@@ -306,7 +306,7 @@ export default function InviteLearnersPanel({
           <div className="bg-white rounded-xl shadow-sm border p-5">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                <h3 className="font-medium text-gray-900 mb-1 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-red-500" />
                   Generate a shareable invite link
                 </h3>
@@ -337,7 +337,7 @@ export default function InviteLearnersPanel({
           {/* Existing invites list */}
           <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             <div className="px-5 py-3 border-b bg-gray-50">
-              <h4 className="text-sm font-semibold text-gray-900">
+              <h4 className="text-sm font-medium text-gray-900">
                 Active Invite Links
               </h4>
             </div>
@@ -383,7 +383,7 @@ export default function InviteLearnersPanel({
                               {formatUses(invite.use_count, invite.max_uses)}
                             </span>
                             {!invite.is_usable && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                                 Not usable
                               </span>
                             )}
@@ -398,12 +398,12 @@ export default function InviteLearnersPanel({
                           >
                             {copied ? (
                               <>
-                                <CheckCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                                <CheckCircle className="w-3.5 h-3.5 mr-2 text-green-600" />
                                 Copied
                               </>
                             ) : (
                               <>
-                                <Copy className="w-3.5 h-3.5 mr-1.5" />
+                                <Copy className="w-3.5 h-3.5 mr-2" />
                                 Copy
                               </>
                             )}
@@ -527,7 +527,7 @@ export default function InviteLearnersPanel({
                       className="h-9 flex-shrink-0"
                     >
                       {copiedId === selectedInvite.id ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <CheckCircle className="w-4 h-4 text-green-600" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
@@ -537,15 +537,15 @@ export default function InviteLearnersPanel({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-0.5">Expiry</div>
-                    <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                    <div className="text-xs text-gray-500 mb-1">Expiry</div>
+                    <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-gray-400" />
                       {formatExpiry(selectedInvite.expires_at).replace('Expires ', '')}
                     </div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-0.5">Usage</div>
-                    <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                    <div className="text-xs text-gray-500 mb-1">Usage</div>
+                    <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
                       <Users className="w-3.5 h-3.5 text-gray-400" />
                       {formatUses(selectedInvite.use_count, selectedInvite.max_uses)}
                     </div>

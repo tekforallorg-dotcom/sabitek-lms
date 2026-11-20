@@ -534,15 +534,15 @@ const [profileLoading, setProfileLoading] = useState(true)
   return (
     <div className="h-full flex flex-col lg:flex-row">
       {/* Left Panel - Form */}
-      <div className="w-full lg:w-96 bg-white/80 backdrop-blur-sm border-b lg:border-b-0 lg:border-r border-gray-200/50 flex flex-col lg:h-screen lg:sticky lg:top-0">
+      <div className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-gray-200/50 flex flex-col lg:h-screen lg:sticky lg:top-0">
         {/* Header */}
-        <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-blue-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">CV Builder</h1>
+              <h1 className="text-lg font-medium text-gray-900">CV Builder</h1>
               <p className="text-xs text-gray-500">Create ATS-optimized CVs</p>
             </div>
           </div>
@@ -552,14 +552,14 @@ const [profileLoading, setProfileLoading] = useState(true)
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Profile Status */}
           {!profileLoading && !profileComplete && (
-  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3">
+  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
     <div className="flex items-start gap-2">
                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <AlertCircle className="w-4 h-4 text-amber-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-amber-800">Profile Incomplete</p>
-                  <p className="text-xs text-amber-600 mt-0.5">
+                  <p className="text-xs text-amber-600 mt-1">
                     {profileCompleteness}% complete. Need at least 30%.
                   </p>
                   <a 
@@ -581,23 +581,23 @@ const [profileLoading, setProfileLoading] = useState(true)
                 onClick={() => setAction('build')}
                 className={`p-3 rounded-xl border-2 text-left transition-all ${
                   action === 'build'
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-sm font-medium">Build CV</span>
-                <p className="text-xs text-gray-500 mt-0.5">From your profile</p>
+                <p className="text-xs text-gray-500 mt-1">From your profile</p>
               </button>
               <button
                 onClick={() => setAction('tailor')}
                 className={`p-3 rounded-xl border-2 text-left transition-all ${
                   action === 'tailor'
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 <span className="text-sm font-medium">Tailor CV</span>
-                <p className="text-xs text-gray-500 mt-0.5">To a job description</p>
+                <p className="text-xs text-gray-500 mt-1">To a job description</p>
               </button>
             </div>
           </div>
@@ -610,7 +610,7 @@ const [profileLoading, setProfileLoading] = useState(true)
               value={targetRole}
               onChange={(e) => setTargetRole(e.target.value)}
               placeholder="e.g., Systems Analyst, Frontend Developer"
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
+              className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             />
           </div>
 
@@ -620,7 +620,7 @@ const [profileLoading, setProfileLoading] = useState(true)
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
+              className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             >
               <option value="entry">Entry Level</option>
               <option value="mid">Mid Level</option>
@@ -635,13 +635,13 @@ const [profileLoading, setProfileLoading] = useState(true)
             <select
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
+              className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors"
             >
               <option value="ATS-1page">ATS-Friendly Resume (1 Page)</option>
               <option value="ATS-2page">ATS-Friendly Resume (2 Pages)</option>
               <option value="REMOTE_OPTIMISED_ATS">Remote Optimised Resume (ATS + Remote-Ready)</option>
             </select>
-            <p className="text-xs text-gray-500 mt-1.5 px-1">
+            <p className="text-xs text-gray-500 mt-2 px-1">
               {format === 'ATS-1page' && 'Best for strict ATS + quick applications'}
               {format === 'ATS-2page' && 'Best for experienced candidates'}
               {format === 'REMOTE_OPTIMISED_ATS' && 'Best for remote/hybrid jobs'}
@@ -658,14 +658,14 @@ const [profileLoading, setProfileLoading] = useState(true)
             </p>
             
             {uploadedCV ? (
-              <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                   <File className="w-4 h-4 text-green-600" />
                 </div>
                 <span className="text-sm text-green-700 flex-1 truncate">{uploadedCV.name}</span>
                 <button
                   onClick={removeUploadedCV}
-                  className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-green-100 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4 text-green-600" />
                 </button>
@@ -711,14 +711,14 @@ const [profileLoading, setProfileLoading] = useState(true)
               </p>
               
               {uploadedJD ? (
-                <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl mb-2">
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl mb-2">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                     <File className="w-4 h-4 text-blue-600" />
                   </div>
                   <span className="text-sm text-blue-700 flex-1 truncate">{uploadedJD.name}</span>
                   <button
                     onClick={removeUploadedJD}
-                    className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4 text-blue-600" />
                   </button>
@@ -763,7 +763,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                 onChange={(e) => setJobDescription(e.target.value)}
                 placeholder="Paste the job description here..."
                 rows={5}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
+                className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
               />
             </div>
           )}
@@ -779,14 +779,14 @@ const [profileLoading, setProfileLoading] = useState(true)
                 onChange={(e) => setExtraInstructions(e.target.value)}
                 placeholder="e.g., 'Emphasize leadership experience' or 'Focus on cloud technologies'"
                 rows={3}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
+                className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white hover:border-gray-300 transition-colors resize-none"
               />
             </div>
           )}
 
           {/* Status indicator */}
           {action === 'tailor' && (uploadedJDText.trim() || jobDescription.trim()) && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <p className="text-xs text-green-700 font-medium">
@@ -801,9 +801,9 @@ const [profileLoading, setProfileLoading] = useState(true)
 
           {/* Error */}
           {error && (
-            <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-3">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
               <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 text-red-500 mt-1 flex-shrink-0" />
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             </div>
@@ -811,10 +811,10 @@ const [profileLoading, setProfileLoading] = useState(true)
 
           {/* Cost Estimate */}
           {costEstimate && (
-            <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-3">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Estimated cost:</span>
-                <span className="text-sm font-semibold text-gray-900">{costEstimate.costFormatted}</span>
+                <span className="text-sm font-medium text-gray-900">{costEstimate.costFormatted}</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 Same inputs within 24h are free (cached)
@@ -824,7 +824,7 @@ const [profileLoading, setProfileLoading] = useState(true)
 
           {/* Generation Progress */}
           {generating && generationStatus && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                 <span className="text-sm text-blue-700">{generationStatus}</span>
@@ -834,7 +834,7 @@ const [profileLoading, setProfileLoading] = useState(true)
 
           {/* Success Message */}
           {chargedAmount && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-green-700">
@@ -846,11 +846,11 @@ const [profileLoading, setProfileLoading] = useState(true)
         </div>
 
         {/* Generate Button - Fixed */}
-        <div className="p-4 border-t border-gray-100 flex-shrink-0 bg-white/80 backdrop-blur-sm">
+        <div className="p-4 border-t border-gray-100 flex-shrink-0 bg-white">
           <button
             onClick={handleGenerate}
             disabled={generating || !profileComplete}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {generating ? (
               <>
@@ -868,13 +868,13 @@ const [profileLoading, setProfileLoading] = useState(true)
       </div>
 
       {/* Right Panel - Preview */}
-      <div className="flex-1 bg-gradient-to-br from-gray-50 to-slate-100 overflow-auto">
+      <div className="flex-1 bg-gray-50 overflow-auto">
         {currentCV ? (
           <div className="p-4 lg:p-6">
             {/* Preview Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">{currentCV.target_role} CV</h2>
+                <h2 className="text-lg font-medium text-gray-900">{currentCV.target_role} CV</h2>
                 <p className="text-sm text-gray-500">
                   {currentCV.level} • {currentCV.format}
                   {currentCV.ats_score && (
@@ -888,7 +888,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                 <button 
                   onClick={handleExportPDF}
                   disabled={exporting !== null}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
                 >
                   {exporting === 'pdf' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -900,7 +900,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                 <button 
                   onClick={handleExportDOCX}
                   disabled={exporting !== null}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all shadow-sm"
                 >
                   {exporting === 'docx' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -914,9 +914,9 @@ const [profileLoading, setProfileLoading] = useState(true)
 
             {/* ATS Insights Panel */}
             {(currentCV?.ats || cvExtras) && (
-              <div className="mb-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-200/50 p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="mb-4 bg-blue-50 rounded-xl border border-blue-200/50 p-4 shadow-sm">
+                <h3 className="text-sm font-medium text-blue-800 mb-3 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
                     <Sparkles className="w-3 h-3 text-white" />
                   </div>
                   ATS Insights
@@ -924,27 +924,27 @@ const [profileLoading, setProfileLoading] = useState(true)
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {(currentCV?.ats?.score != null || currentCV?.ats_score != null) && (
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-blue-100">
+                    <div className="bg-white rounded-xl p-3 border border-blue-100">
                       <div className="text-xs text-gray-500 mb-1">ATS Score</div>
-                      <div className="text-2xl font-bold text-blue-600">
+                      <div className="text-2xl font-medium text-blue-600">
                         {currentCV?.ats?.score || currentCV?.ats_score}%
                       </div>
                     </div>
                   )}
                   
                   {currentCV?.ats?.keyword_coverage_pct != null && (
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-green-100">
+                    <div className="bg-white rounded-xl p-3 border border-green-100">
                       <div className="text-xs text-gray-500 mb-1">Keyword Coverage</div>
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-2xl font-medium text-green-600">
                         {currentCV.ats.keyword_coverage_pct}%
                       </div>
                     </div>
                   )}
                   
                   {cvExtras?.roleDiff && (
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-purple-100">
+                    <div className="bg-white rounded-xl p-3 border border-gray-100">
                       <div className="text-xs text-gray-500 mb-1">Role Match</div>
-                      <div className="text-2xl font-bold text-purple-600">
+                      <div className="text-2xl font-medium text-gray-600">
                         {Math.min(Math.round(cvExtras.roleDiff.compatibilityScore * 100) + 50, 100)}%
                       </div>
                       {cvExtras.roleDiff.toneShift !== 'same' && (
@@ -959,13 +959,13 @@ const [profileLoading, setProfileLoading] = useState(true)
                 {currentCV?.ats?.missing_keywords && currentCV.ats.missing_keywords.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-blue-100/50">
                     <div className="text-xs font-medium text-amber-700 mb-2">
-                      💡 Consider adding these keywords:
+                      Consider adding these keywords:
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {currentCV.ats.missing_keywords.slice(0, 8).map((kw, i) => (
                         <span 
                           key={i}
-                          className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-lg text-xs"
+                          className="px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs"
                         >
                           {kw}
                         </span>
@@ -982,7 +982,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                 {cvExtras?.missingMetricsQuestions && cvExtras.missingMetricsQuestions.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-blue-100/50">
                     <div className="text-xs font-medium text-blue-700 mb-2">
-                      📊 Add metrics to strengthen your CV:
+                      Add metrics to strengthen your CV:
                     </div>
                     <ul className="space-y-1">
                       {cvExtras.missingMetricsQuestions.map((q, i) => (
@@ -998,7 +998,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                 {cvExtras?.aiProvider && (
                   <div className="mt-3 pt-3 border-t border-blue-100/50 flex items-center justify-between">
                     <span className="text-xs text-gray-400">
-                      Generated by 🤖 SabiBot
+                      Generated by SabiBot
                     </span>
                   </div>
                 )}
@@ -1006,10 +1006,10 @@ const [profileLoading, setProfileLoading] = useState(true)
             )}
 
             {/* CV Preview */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 lg:p-8 max-w-3xl mx-auto">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 lg:p-8 max-w-3xl mx-auto">
               {/* Header */}
               <div className="text-center mb-6 pb-4 border-b border-gray-200">
-                <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide mb-1">
+                <h1 className="text-xl font-medium text-gray-900 uppercase tracking-wide mb-1">
                   {profileData?.full_name || 'Your Name'}
                 </h1>
                 <p className="text-sm text-gray-600">
@@ -1020,7 +1020,7 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Summary */}
               {currentCV.sections.summary && (
                 <section className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
                     Professional Summary
                   </h3>
                   <p className="text-sm text-gray-700 leading-relaxed">
@@ -1032,7 +1032,7 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Skills */}
               {currentCV.sections.skills && currentCV.sections.skills.length > 0 && (
                 <section className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
                     Skills
                   </h3>
                   <p className="text-sm text-gray-700">
@@ -1044,7 +1044,7 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Experience */}
               {currentCV.sections.experience && currentCV.sections.experience.length > 0 && (
                 <section className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-3 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-3 border-b border-gray-100 pb-1">
                     Work Experience
                   </h3>
                   <div className="space-y-4">
@@ -1052,7 +1052,7 @@ const [profileLoading, setProfileLoading] = useState(true)
                       <div key={i}>
                         <div className="flex justify-between items-start mb-1">
                           <div>
-                            <h4 className="font-semibold text-gray-900">{exp.title}</h4>
+                            <h4 className="font-medium text-gray-900">{exp.title}</h4>
                             <p className="text-sm text-gray-600 italic">{exp.company}</p>
                           </div>
                           <span className="text-sm text-gray-500">{exp.duration}</span>
@@ -1071,14 +1071,14 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Education */}
               {currentCV.sections.education && currentCV.sections.education.length > 0 && (
                 <section className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
                     Education
                   </h3>
                   <div className="space-y-2">
                     {currentCV.sections.education.map((edu, i) => (
                       <div key={i} className="flex justify-between">
                         <div>
-                          <p className="font-semibold text-gray-900">{edu.degree}</p>
+                          <p className="font-medium text-gray-900">{edu.degree}</p>
                           <p className="text-sm text-gray-600">{edu.institution}</p>
                         </div>
                         <span className="text-sm text-gray-500">{edu.year}</span>
@@ -1091,13 +1091,13 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Projects */}
               {currentCV.sections.projects && currentCV.sections.projects.length > 0 && (
                 <section className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
                     Projects
                   </h3>
                   <div className="space-y-3">
                     {currentCV.sections.projects.map((project, i) => (
                       <div key={i}>
-                        <p className="font-semibold text-gray-900">{project.name}</p>
+                        <p className="font-medium text-gray-900">{project.name}</p>
                         {project.description && (
                           <p className="text-sm text-gray-700">{project.description}</p>
                         )}
@@ -1115,7 +1115,7 @@ const [profileLoading, setProfileLoading] = useState(true)
               {/* Certifications */}
               {currentCV.sections.certifications && currentCV.sections.certifications.length > 0 && (
                 <section>
-                  <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
+                  <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2 border-b border-gray-100 pb-1">
                     Certifications
                   </h3>
                   <div className="space-y-1">
@@ -1132,10 +1132,10 @@ const [profileLoading, setProfileLoading] = useState(true)
         ) : (
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-inner">
                 <FileText className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No CV Generated Yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No CV Generated Yet</h3>
               <p className="text-sm text-gray-500">
                 Fill in your target role and click &quot;Generate CV&quot; to create an ATS-optimized CV from your profile.
               </p>
@@ -1147,17 +1147,17 @@ const [profileLoading, setProfileLoading] = useState(true)
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <>
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={() => setShowConfirmModal(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white rounded-2xl shadow-2xl z-50 p-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowConfirmModal(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm bg-white border border-gray-200 rounded-xl shadow-sm z-50 p-6">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">Confirm Generation</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2 text-center">Confirm Generation</h3>
             <p className="text-sm text-gray-600 mb-4 text-center">
               This will cost <strong className="text-blue-600">{costEstimate?.costFormatted || '...'}</strong> from your wallet.
             </p>
             
-            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 mb-4 border border-gray-100">
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Your balance:</span>
                 <span className="font-medium">{balance?.balanceFormatted || '₦0'}</span>
@@ -1175,13 +1175,13 @@ const [profileLoading, setProfileLoading] = useState(true)
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmGenerate}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/20"
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm"
               >
                 Proceed
               </button>

@@ -152,11 +152,11 @@ export default function OffersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+        return <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">Pending</span>
       case 'accepted':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Accepted</span>
+        return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Accepted</span>
       case 'declined':
-        return <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">Declined</span>
+        return <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Declined</span>
       default:
         return null
     }
@@ -176,7 +176,7 @@ export default function OffersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Help Offers</h1>
+          <h1 className="text-2xl font-medium text-gray-900">Help Offers</h1>
           <p className="text-sm text-gray-600 mt-1">Manage offers to help with learning requests</p>
         </div>
 
@@ -192,7 +192,7 @@ export default function OffersPage() {
           >
             Received
             {activeTab === 'received' && receivedCount > 0 && (
-              <span className="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+              <span className="ml-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">
                 {receivedCount}
               </span>
             )}
@@ -251,7 +251,7 @@ export default function OffersPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold">
+                          <div className="w-full h-full bg-red-600 flex items-center justify-center text-white font-medium">
                             {otherUser.full_name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                         )}
@@ -260,7 +260,7 @@ export default function OffersPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="font-semibold text-gray-900">{otherUser.full_name}</p>
+                            <p className="font-medium text-gray-900">{otherUser.full_name}</p>
                             <p className="text-xs text-gray-500">
                               {activeTab === 'received' ? 'offered to help' : 'on your request'}
                             </p>
@@ -275,7 +275,7 @@ export default function OffersPage() {
                         <div className="mt-2 p-2 bg-gray-50 rounded-lg">
                           <p className="text-sm font-medium text-gray-700">{offer.request.title}</p>
                           {offer.request.skill && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full">
+                            <span className="inline-block mt-1 px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">
                               {offer.request.skill.name}
                             </span>
                           )}
