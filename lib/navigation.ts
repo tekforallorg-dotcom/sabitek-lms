@@ -3,23 +3,17 @@ import {
   Award,
   BarChart3,
   BookOpen,
-  Bot,
-  Briefcase,
   Building2,
   FileText,
   GraduationCap,
-  History,
   Home,
   Layers,
   LifeBuoy,
   Library,
-  ListChecks,
   MessageSquare,
-  PenLine,
   PlusCircle,
   Settings,
   ShieldCheck,
-  Sparkles,
   User,
   Users,
 } from 'lucide-react'
@@ -30,6 +24,27 @@ import {
  * three or from none. tests/navigation.test.ts checks every link here points
  * at a page that exists.
  */
+
+/**
+ * Areas that stay out of every menu and out of the command palette.
+ *
+ * SabiQuiz, SabiAdvisor, SabiBot and Community lost their menu links on
+ * purpose in July 2026 ("Removed all SabiSuite navigation links", d7357a3).
+ * Their pages still open by address, and SabiBot keeps its chat button, but
+ * nothing here may point at them until the owner decides to show them again.
+ *
+ * The wallet, the learner plan page and instructor earnings were hidden the
+ * same month (2fbec63).
+ */
+export const HIDDEN_AREAS = [
+  '/sabiquiz',
+  '/sabiadvisor',
+  '/sabibot',
+  '/community',
+  '/account/wallet',
+  '/account/billing',
+  '/instructor/billing',
+]
 
 export type Persona = 'learner' | 'instructor' | 'institution' | 'viewer' | 'admin'
 
@@ -70,22 +85,6 @@ export const HOME_ROUTE: Record<Persona, string> = {
   admin: '/admin',
 }
 
-const PRACTISE: NavGroup = {
-  heading: 'Practise',
-  items: [
-    { label: 'SabiQuiz', href: '/sabiquiz', icon: ListChecks, keywords: 'quiz test practice questions exam' },
-    { label: 'SabiAdvisor', href: '/sabiadvisor', icon: Briefcase, keywords: 'career cv resume cover letter interview jobs' },
-    { label: 'SabiBot', href: '/sabibot', icon: Bot, keywords: 'ask ai chat tutor help' },
-  ],
-}
-
-const CONNECT: NavGroup = {
-  heading: 'Connect',
-  items: [
-    { label: 'Community', href: '/community', icon: Users, keywords: 'mentor mentors sessions messages peers' },
-  ],
-}
-
 const COURSES: NavItem = {
   label: 'Courses',
   href: '/courses',
@@ -103,8 +102,6 @@ const NAV: Record<Persona, NavGroup[]> = {
         { label: 'Certificates', href: '/certificates', icon: Award, keywords: 'credentials download verify' },
       ],
     },
-    PRACTISE,
-    CONNECT,
   ],
   instructor: [
     { items: [{ label: 'Home', href: '/instructor', icon: Home, exact: true, keywords: 'dashboard my courses' }] },
@@ -116,8 +113,6 @@ const NAV: Record<Persona, NavGroup[]> = {
       ],
     },
     { heading: 'Learn', items: [COURSES] },
-    PRACTISE,
-    CONNECT,
   ],
   institution: [
     {
@@ -137,7 +132,6 @@ const NAV: Record<Persona, NavGroup[]> = {
     // No link to /instructor: an institution admin whose own role is learner
     // is turned away from it (lib/route-access.ts).
     { heading: 'Learn', items: [COURSES] },
-    CONNECT,
     {
       heading: 'Organisation',
       items: [{ label: 'Settings', href: '/institution/settings', icon: Settings, keywords: 'branding team members' }],
@@ -150,13 +144,10 @@ const NAV: Record<Persona, NavGroup[]> = {
       ],
     },
     { heading: 'Learn', items: [COURSES] },
-    CONNECT,
   ],
   admin: [
     { items: [{ label: 'Admin panel', href: '/admin', icon: ShieldCheck, exact: true, keywords: 'users institutions billing' }] },
     { heading: 'Learn', items: [COURSES] },
-    PRACTISE,
-    CONNECT,
   ],
 }
 
@@ -168,8 +159,7 @@ export function navFor(persona: Persona): NavGroup[] {
  * Personal pages. They sit in the account menu, not the sidebar.
  *
  * The wallet, the learner plan page and instructor earnings are left out on
- * purpose: their links were hidden before this map existed, and the paid tools
- * still link to the wallet where a balance is needed.
+ * purpose (see HIDDEN_AREAS).
  */
 export const ACCOUNT_ITEMS: NavItem[] = [
   { label: 'Profile', href: '/profile', icon: User, keywords: 'account name photo password settings' },
@@ -183,23 +173,12 @@ export const ACCOUNT_ITEMS: NavItem[] = [
  */
 const SHORTCUTS: Record<Persona, NavItem[]> = {
   learner: [
-    { label: 'Start a practice quiz', href: '/sabiquiz/materials', icon: ListChecks, keywords: 'sabiquiz generate test' },
-    { label: 'See past quiz results', href: '/sabiquiz/history', icon: History, keywords: 'sabiquiz attempts scores' },
-    { label: 'Build a CV', href: '/sabiadvisor/cv', icon: FileText, keywords: 'resume sabiadvisor' },
-    { label: 'Write a cover letter', href: '/sabiadvisor/cover-letter', icon: PenLine, keywords: 'application sabiadvisor' },
-    { label: 'Ask SabiBot a question', href: '/sabibot/chat', icon: Sparkles, keywords: 'chat ai tutor' },
     { label: 'Join a cohort with a code', href: '/cohorts/join', icon: GraduationCap, keywords: 'program invite code' },
-    { label: 'Find a mentor', href: '/community/browse', icon: Users, keywords: 'community browse' },
-    { label: 'Read messages', href: '/community/inbox', icon: MessageSquare, keywords: 'community inbox chat' },
   ],
-  instructor: [
-    { label: 'Ask SabiBot a question', href: '/sabibot/chat', icon: Sparkles, keywords: 'chat ai' },
-    { label: 'Read messages', href: '/community/inbox', icon: MessageSquare, keywords: 'community inbox chat' },
-  ],
+  instructor: [],
   viewer: [],
   institution: [
     { label: 'Create a cohort', href: '/institution/cohorts/create', icon: PlusCircle, keywords: 'new class group' },
-    { label: 'Read messages', href: '/community/inbox', icon: MessageSquare, keywords: 'community inbox chat' },
   ],
   admin: [
     { label: 'Manage users', href: '/admin/users', icon: Users, keywords: 'accounts roles' },
@@ -236,7 +215,11 @@ export function isActive(item: Pick<NavItem, 'href' | 'exact'>, pathname: string
 /** Areas only a signed-in person can open, so the app shell can be assumed. */
 const SIGNED_IN_ONLY = ['/dashboard', '/instructor', '/institution', '/courses', '/certificates', '/account', '/profile']
 
-/** Areas with a public landing page for visitors and the shell once signed in. */
+/**
+ * Areas with a public landing page for visitors and the shell once signed in.
+ * Some are in HIDDEN_AREAS: no menu points at them, but a signed-in person who
+ * opens one by address still gets the same frame as the rest of the app.
+ */
 const SIGNED_IN_OR_PUBLIC = ['/sabiquiz', '/sabiadvisor', '/sabibot', '/community', '/cohorts', '/billing']
 
 /**

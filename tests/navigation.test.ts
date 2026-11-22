@@ -3,6 +3,7 @@ import { join, relative, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   ACCOUNT_ITEMS,
+  HIDDEN_AREAS,
   HOME_ROUTE,
   allNavHrefs,
   commandsFor,
@@ -53,11 +54,16 @@ describe('navigation map', () => {
     }
   })
 
-  it('keeps the deliberately hidden pages out of every menu', () => {
-    const hrefs = allNavHrefs()
-    for (const hidden of ['/account/wallet', '/account/billing', '/instructor/billing']) {
-      expect(hrefs).not.toContain(hidden)
-    }
+  it('keeps the deliberately hidden areas out of every menu and the command palette', () => {
+    // The owner removed these links on purpose (SabiSuite and the wallet,
+    // July 2026). Showing one again is their decision: take it out of
+    // HIDDEN_AREAS in lib/navigation.ts first, then add the link.
+    expect(HIDDEN_AREAS).toEqual(
+      expect.arrayContaining(['/sabiquiz', '/sabiadvisor', '/sabibot', '/community', '/account/wallet']),
+    )
+    const inHiddenArea = (href: string) =>
+      HIDDEN_AREAS.some((area) => href === area || href.startsWith(`${area}/`))
+    expect(allNavHrefs().filter(inHiddenArea)).toEqual([])
     expect(ACCOUNT_ITEMS.map((item) => item.href)).toEqual(['/profile', '/support'])
   })
 })
