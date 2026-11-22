@@ -15,6 +15,7 @@ import LessonQuestions from '@/components/lessons/LessonQuestions'
 import SabiLoader from '@/components/ui/SabiLoader'
 import { toast } from '@/components/ui/toast'
 import { buildLessonSequence, computeLockMap, type LockInfo } from '@/lib/lesson-gating'
+import { isModuleQuiz } from '@/lib/lessons/module-quiz'
 import {
   Save,
   BookOpen,
@@ -32,6 +33,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Layers,
+  ListChecks,
 } from 'lucide-react'
 
 interface Lesson {
@@ -39,7 +41,7 @@ interface Lesson {
   title: string
   slug: string
   content: string
-  content_type: 'text' | 'video' | 'pdf' | 'powerpoint' | 'youtube'
+  content_type: 'text' | 'video' | 'pdf' | 'powerpoint' | 'youtube' | 'quiz'
   youtube_url?: string
   pdf_url?: string
   powerpoint_url?: string
@@ -430,9 +432,15 @@ export default function LessonViewerPage() {
     !gatingBase.passedIds.includes(lesson.id)
   )
 
-  const markAsComplete = async () => {
+  // A module quiz: an item whose only content is its quiz.
+  const isQuizLesson = isModuleQuiz(lesson)
+
+  const markAsComplete = async (options?: { quizJustPassed?: boolean }) => {
     if (!lesson || !user) return
-    if (currentQuizPending) {
+    // After a pass, this still sees the state from before the quiz was graded,
+    // so the caller says so. Without that, passing a quiz ended in a warning
+    // and the learner had to find the complete button themselves.
+    if (currentQuizPending && !options?.quizJustPassed) {
       toast.warning('Pass this lesson\'s quiz to mark it complete.')
       return
     }
@@ -641,7 +649,7 @@ export default function LessonViewerPage() {
       }
 
       if (passed && !isCompleted) {
-        await markAsComplete()
+        await markAsComplete({ quizJustPassed: true })
       }
     } catch (error) {
       console.error('Error submitting quiz:', error)
@@ -688,6 +696,19 @@ export default function LessonViewerPage() {
     if (!lesson) return null
 
     switch (lesson.content_type) {
+      case 'quiz':
+        // The quiz is the whole item, so it takes the place of the content.
+        return (
+          quizCard || (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+              <p className="text-sm font-medium text-gray-900">This quiz has no questions yet</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Your instructor is still preparing it. You can mark it complete and carry on.
+              </p>
+            </div>
+          )
+        )
+
       case 'youtube':
         return (
           <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-gray-200">
@@ -1189,7 +1210,7 @@ export default function LessonViewerPage() {
                 </span>
               ) : (
                 <Button
-                  onClick={markAsComplete}
+                  onClick={() => markAsComplete()}
                   size="sm"
                   disabled={currentQuizPending}
                   title={currentQuizPending ? 'Pass the quiz below to complete this lesson' : undefined}
@@ -1269,7 +1290,8 @@ export default function LessonViewerPage() {
                  LESSON WORKSPACE - Notes / AI Summary / Ask AI / Practice
                  ══════════════════════════════════════════════════════ */}
             {/* Quiz card on mobile: sidebar is hidden on phones, so surface it here */}
-            <div className="lg:hidden">{quizCard}</div>
+            {!isQuizLesson && <div className="lg:hidden">{quizCard}</div>}
+            {!isQuizLesson && (
             <Card className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
               <span className="absolute top-0 inset-x-10 h-px bg-gray-200" aria-hidden="true" />
               <CardContent className="p-4 sm:p-5">
@@ -1358,12 +1380,13 @@ export default function LessonViewerPage() {
                 {/* Practice quiz tab (only when the lesson has no instructor quiz) */}
               </CardContent>
             </Card>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className={`${showMobileSidebar ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-4`}>
             {/* Instructor Quiz Card (shared with the mobile main column) */}
-            {quizCard}
+            {!isQuizLesson && quizCard}
 
             {/* ══════════════════════════════════════════════════════
                  COURSE NAVIGATION (Modules → Lessons)
@@ -1477,6 +1500,11 @@ export default function LessonViewerPage() {
                                         </p>
                                       </div>
                                       <div className="flex items-center gap-1 flex-shrink-0">
+                                        {l.content_type === 'quiz' && (
+                                          <ListChecks
+                                            className={`w-3.5 h-3.5 ${isActive ? 'text-red-400' : 'text-gray-400'}`}
+                                          />
+                                        )}
                                         {(l.content_type === 'youtube' || l.content_type === 'video') && (
                                           <PlayCircle
                                             className={`w-3.5 h-3.5 ${isActive ? 'text-red-400' : 'text-gray-400'}`}

@@ -210,6 +210,7 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
             {lesson.content_type === 'pdf' && <span className="uppercase tracking-wide font-medium text-red-400">PDF</span>}
             {lesson.content_type === 'powerpoint' && <span className="uppercase tracking-wide font-medium text-red-400">PPT</span>}
             {lesson.content_type === 'text' && <span className="uppercase tracking-wide font-medium text-red-400">Text</span>}
+            {lesson.content_type === 'quiz' && <span className="uppercase tracking-wide font-medium text-red-400">Quiz</span>}
             {lesson.duration_minutes && <span>• {lesson.duration_minutes}m</span>}
           </div>
         </div>
