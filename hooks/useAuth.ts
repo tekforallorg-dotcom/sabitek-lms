@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -22,6 +22,54 @@ interface AuthReturn {
 // Cache to prevent repeated fetches
 let profileCache: { [key: string]: UserProfile } = {}
 
+interface RouteInfo {
+  route: string
+  displayRole: string | null
+  institutionName: string | null
+}
+
+/**
+ * Where an account's home is, asked of the server once and shared by every
+ * caller of this hook. Each caller used to ask separately on every page, and
+ * /api/auth allows five requests a minute; a refused request made an
+ * institution admin look like a learner.
+ */
+let routeLookup: { userId: string; at: number; promise: Promise<RouteInfo | null> } | null = null
+const ROUTE_LOOKUP_TTL_MS = 60_000
+
+function lookupRoute(userId: string, accessToken: string): Promise<RouteInfo | null> {
+  if (routeLookup && routeLookup.userId === userId && Date.now() - routeLookup.at < ROUTE_LOOKUP_TTL_MS) {
+    return routeLookup.promise
+  }
+
+  const promise = (async (): Promise<RouteInfo | null> => {
+    try {
+      const res = await fetch('/api/auth/resolve-route', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      const payload = json.data || json
+      return {
+        route: payload.route || '/dashboard',
+        displayRole: payload.display_role || null,
+        institutionName: payload.institution_name || null,
+      }
+    } catch (err) {
+      console.error('Error resolving post-login route:', err)
+      return null
+    }
+  })()
+
+  const entry = { userId, at: Date.now(), promise }
+  routeLookup = entry
+  // Do not remember a failure; the next caller should try again.
+  promise.then((info) => {
+    if (!info && routeLookup === entry) routeLookup = null
+  })
+  return promise
+}
+
 export function useAuth(): AuthReturn {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -32,7 +80,19 @@ export function useAuth(): AuthReturn {
   // Resolved home route (from /api/auth/resolve-route): institution admins ->
   // /institution/dashboard, instructors -> /instructor, super admins -> /admin.
   const [homeRoute, setHomeRoute] = useState<string | null>(null)
+  // Whose home `homeRoute` holds. A caller that outlives a sign-in (the app
+  // shell does) must not keep the answer worked out for whoever was here before.
+  const resolvedFor = useRef<string | null>(null)
   const router = useRouter()
+
+  /** Store a lookup's answer. A failed lookup falls back to the learner home. */
+  const applyRoute = useCallback((info: RouteInfo | null): string => {
+    if (info?.displayRole) setDisplayRole(info.displayRole)
+    if (info?.institutionName) setInstitutionName(info.institutionName)
+    const route = info?.route ?? '/dashboard'
+    setHomeRoute(route)
+    return route
+  }, [])
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     // Check cache first
@@ -64,42 +124,15 @@ export function useAuth(): AuthReturn {
    * Ask the server for the correct post-login route and display role.
    * Server uses service role (bypasses RLS on institution_members).
    */
-  const resolvePostLoginRoute = async (): Promise<string> => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        setHomeRoute('/dashboard')
-        return '/dashboard'
-      }
-
-      const res = await fetch('/api/auth/resolve-route', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      })
-
-      if (!res.ok) {
-        setHomeRoute('/dashboard')
-        return '/dashboard'
-      }
-
-      const json = await res.json()
-      const payload = json.data || json
-
-      // Store display role and institution name for the header
-      if (payload.display_role) {
-        setDisplayRole(payload.display_role)
-      }
-      if (payload.institution_name) {
-        setInstitutionName(payload.institution_name)
-      }
-      setHomeRoute(payload.route || '/dashboard')
-
-      return payload.route || '/dashboard'
-    } catch (err) {
-      console.error('Error resolving post-login route:', err)
+  const resolvePostLoginRoute = useCallback(async (): Promise<string> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token || !session.user) {
       setHomeRoute('/dashboard')
       return '/dashboard'
     }
-  }
+    resolvedFor.current = session.user.id
+    return applyRoute(await lookupRoute(session.user.id, session.access_token))
+  }, [applyRoute])
 
   useEffect(() => {
     let mounted = true
@@ -114,24 +147,9 @@ export function useAuth(): AuthReturn {
           setUser(session.user)
           await fetchUserProfile(session.user.id)
           // Also resolve role on page refresh / returning session
-          const res = await fetch('/api/auth/resolve-route', {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          })
-          if (res.ok) {
-            const json = await res.json()
-            const payload = json.data || json
-            if (mounted && payload.display_role) {
-              setDisplayRole(payload.display_role)
-            }
-            if (mounted && payload.institution_name) {
-              setInstitutionName(payload.institution_name)
-            }
-            if (mounted) {
-              setHomeRoute(payload.route || '/dashboard')
-            }
-          } else if (mounted) {
-            setHomeRoute('/dashboard')
-          }
+          resolvedFor.current = session.user.id
+          const info = await lookupRoute(session.user.id, session.access_token)
+          if (mounted) applyRoute(info)
         } else {
           setUser(null)
           setUserProfile(null)
@@ -163,8 +181,21 @@ export function useAuth(): AuthReturn {
         setUser(session.user)
         await fetchUserProfile(session.user.id)
         setLoading(false)
+        // This event also fires when a tab regains focus. Only a different
+        // account needs its home worked out again.
+        if (resolvedFor.current !== session.user.id) {
+          resolvedFor.current = session.user.id
+          setHomeRoute(null)
+          setDisplayRole(null)
+          setInstitutionName(null)
+          const info = await lookupRoute(session.user.id, session.access_token)
+          if (mounted && resolvedFor.current === session.user.id) applyRoute(info)
+        }
       } else if (event === 'SIGNED_OUT') {
         profileCache = {}
+        routeLookup = null
+        resolvedFor.current = null
+        setHomeRoute('/dashboard')
         setUser(null)
         setUserProfile(null)
         setDisplayRole(null)
@@ -177,7 +208,7 @@ export function useAuth(): AuthReturn {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [fetchUserProfile])
+  }, [fetchUserProfile, applyRoute])
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -270,6 +301,7 @@ export function useAuth(): AuthReturn {
     try {
       setLoading(true)
       profileCache = {}
+      routeLookup = null
       await supabase.auth.signOut()
       setUser(null)
       setUserProfile(null)
