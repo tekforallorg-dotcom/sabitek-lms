@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { canDoCourseWork } from '@/lib/access/course-entitlement'
 
 /**
  * Server-side certificate issuance.
@@ -43,6 +44,13 @@ export async function POST(request: NextRequest) {
 
   if (courseError || !course || course.status !== 'published') {
     return NextResponse.json({ code: 'course_not_found' }, { status: 404 })
+  }
+
+  // Only someone who was let into the course can earn its certificate.
+  // Progress rows alone are not proof of that: the database lets any signed-in
+  // person write progress for a public course.
+  if (!(await canDoCourseWork(user.id, course.id))) {
+    return NextResponse.json({ code: 'not_enrolled' }, { status: 403 })
   }
 
   // Already issued?

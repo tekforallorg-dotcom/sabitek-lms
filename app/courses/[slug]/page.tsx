@@ -210,6 +210,7 @@ function LessonRow({ lesson, totalLessonsIndex, isCompleted, locked, onClick }: 
             {lesson.content_type === 'pdf' && <span className="uppercase tracking-wide font-medium text-red-400">PDF</span>}
             {lesson.content_type === 'powerpoint' && <span className="uppercase tracking-wide font-medium text-red-400">PPT</span>}
             {lesson.content_type === 'text' && <span className="uppercase tracking-wide font-medium text-red-400">Text</span>}
+            {lesson.content_type === 'quiz' && <span className="uppercase tracking-wide font-medium text-red-400">Quiz</span>}
             {lesson.duration_minutes && <span>• {lesson.duration_minutes}m</span>}
           </div>
         </div>
@@ -466,6 +467,9 @@ export default function CourseDetailPage() {
             `Please complete all lessons first.\n\nYou've completed ${result.completed} out of ${result.total} lessons.`,
             'warning'
           )
+          return
+        case 'not_enrolled':
+          showModal('Enrol first', 'You need to be enrolled in this course to earn its certificate.', 'warning')
           return
         case 'quizzes_required':
           showModal('Quizzes Required', 'Please pass all quizzes with at least 70% to earn your certificate.', 'warning')

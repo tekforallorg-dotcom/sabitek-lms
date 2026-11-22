@@ -27,6 +27,7 @@ import {
   FolderPlus,
   Check,
   BarChart3,
+  ListChecks,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/components/ui/toast'
@@ -35,6 +36,15 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { generateSlug } from '@/lib/utils'
+import {
+  MODULE_QUIZ_TYPE,
+  findModuleQuiz,
+  isModuleQuiz,
+  moduleQuizTitle,
+  orderAfterAll,
+  quizOrderAfterNewLesson,
+  uniqueSlug,
+} from '@/lib/lessons/module-quiz'
 import FileUploader from '@/components/upload/file-uploader'
 import dynamic from 'next/dynamic'
 import SabiLoader from '@/components/ui/SabiLoader'
@@ -220,6 +230,7 @@ export default function CourseManagementPage() {
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [isAddingLesson, setIsAddingLesson] = useState(false)
   const [addingLessonToModuleId, setAddingLessonToModuleId] = useState<string | null>(null)
+  const [creatingQuizForModuleId, setCreatingQuizForModuleId] = useState<string | null>(null)
   const [lessonForm, setLessonForm] = useState({
     title: '',
     content: '',
@@ -598,18 +609,43 @@ export default function CourseManagementPage() {
         course_id: course.id,
         module_id: moduleIdToUse,
         title: lessonForm.title,
-        slug: generateSlug(lessonForm.title),
+        // Keep the address a lesson already has unless its title changed, and
+        // never reuse another lesson's address in this course: the lesson page
+        // finds lessons by address and would open the wrong one.
+        slug:
+          editingLesson && editingLesson.title === lessonForm.title
+            ? editingLesson.slug
+            : uniqueSlug(
+                generateSlug(lessonForm.title),
+                lessons.filter((l) => l.id !== editingLesson?.id).map((l) => l.slug)
+              ),
         content: lessonForm.content,
         content_type: lessonForm.content_type,
         youtube_url: lessonForm.youtube_url || null,
         pdf_url: lessonForm.pdf_url || null,
         powerpoint_url: lessonForm.powerpoint_url || null,
         duration_minutes: lessonForm.duration_minutes || null,
-        lesson_order: editingLesson ? editingLesson.lesson_order : (lessons.length + 1) * 10,
+        // Highest order in the course plus 10. Counting lessons instead gave a
+        // new lesson the same order as an existing one after a deletion, and
+        // two lessons with one order can lock a learner out.
+        lesson_order: editingLesson ? editingLesson.lesson_order : orderAfterAll(lessons),
       }
 
       if (editingLesson) {
         const { error } = await supabase.from('lessons').update(lessonData).eq('id', editingLesson.id)
+        if (error) throw error
+
+        // A lesson moved into a module that ends in a quiz goes in front of the quiz.
+        if (!error && !isModuleQuiz(editingLesson)) {
+          const moved = quizOrderAfterNewLesson(
+            lessons.filter((l) => l.id !== editingLesson.id),
+            moduleIdToUse,
+            lessonData.lesson_order
+          )
+          if (moved) {
+            await supabase.from('lessons').update({ lesson_order: moved.lesson_order }).eq('id', moved.id)
+          }
+        }
 
         // Edited content invalidates AI caches built from the old version
         if (!error) {
@@ -632,8 +668,14 @@ export default function CourseManagementPage() {
         }
       } else {
         const { error } = await supabase.from('lessons').insert(lessonData)
+        if (error) throw error
 
         if (!error) {
+          // The module's quiz stays last: move it behind the lesson just added.
+          const moved = quizOrderAfterNewLesson(lessons, moduleIdToUse, lessonData.lesson_order)
+          if (moved) {
+            await supabase.from('lessons').update({ lesson_order: moved.lesson_order }).eq('id', moved.id)
+          }
           toast.success('Lesson added successfully!')
           setIsAddingLesson(false)
           setAddingLessonToModuleId(null)
@@ -653,7 +695,53 @@ export default function CourseManagementPage() {
       fetchCourseData()
     } catch (error) {
       console.error('Error saving lesson:', error)
-      toast.error('Failed to save lesson')
+      toast.error('The lesson was not saved. Check your connection and try again.')
+    }
+  }
+
+  // A module quiz is a quiz-only lesson at the end of the module. It reuses
+  // the quiz editor, grading and unlock rules that lesson quizzes already have.
+  const openModuleQuiz = async (module: Module) => {
+    if (!course) return
+
+    const existing = findModuleQuiz(lessons, module.id)
+    if (existing) {
+      router.push(`/instructor/lessons/${existing.id}/quiz`)
+      return
+    }
+
+    setCreatingQuizForModuleId(module.id)
+    try {
+      const title = moduleQuizTitle(module.title)
+      const { data, error } = await supabase
+        .from('lessons')
+        .insert({
+          course_id: course.id,
+          module_id: module.id,
+          title,
+          slug: uniqueSlug(
+            generateSlug(title),
+            lessons.map((l) => l.slug)
+          ),
+          content: '',
+          content_type: MODULE_QUIZ_TYPE,
+          lesson_order: orderAfterAll(lessons),
+        })
+        .select('id')
+        .single()
+
+      if (error || !data) {
+        console.error('Error creating module quiz:', error)
+        toast.error('Could not add the quiz. Please try again.')
+        return
+      }
+
+      router.push(`/instructor/lessons/${data.id}/quiz`)
+    } catch (error) {
+      console.error('Error creating module quiz:', error)
+      toast.error('Could not add the quiz. Please try again.')
+    } finally {
+      setCreatingQuizForModuleId(null)
     }
   }
 
@@ -669,12 +757,17 @@ export default function CourseManagementPage() {
           onClick: async () => {
             closeModal()
             try {
-              const { error } = await supabase.from('lessons').delete().eq('id', lessonId)
+              const { data: deleted, error } = await supabase
+                .from('lessons')
+                .delete()
+                .eq('id', lessonId)
+                .select('id')
 
-              if (!error) {
-                showModal('Success', 'Lesson deleted successfully!', 'success')
-                fetchCourseData()
+              if (error || !deleted || deleted.length === 0) {
+                throw error ?? new Error('The lesson was not deleted')
               }
+              showModal('Success', 'Lesson deleted successfully!', 'success')
+              fetchCourseData()
             } catch (error) {
               console.error('Error deleting lesson:', error)
               showModal('Error', 'Failed to delete lesson', 'error')
@@ -717,7 +810,8 @@ export default function CourseManagementPage() {
         .update({ status: 'published', published_at: new Date().toISOString() })
         .eq('id', course.id)
 
-      if (!error) {
+      if (error) throw error
+      {
         if (course.institution_id) {
           toast.success('Published to your institution\'s Course Library. Your admin has been notified.')
           // Fire-and-forget: bell + email for the institution admins.
@@ -745,7 +839,8 @@ export default function CourseManagementPage() {
     try {
       const { error } = await supabase.from('courses').update({ status: 'draft' }).eq('id', course.id)
 
-      if (!error) {
+      if (error) throw error
+      {
         toast.success('Course unpublished. It is now hidden from learners.')
         setCourse({ ...course, status: 'draft' })
       }
@@ -761,6 +856,18 @@ export default function CourseManagementPage() {
 
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
     if (targetIndex < 0 || targetIndex >= lessons.length) return
+
+    // A module quiz stays at the end of its module, so it never swaps places
+    // with a lesson of the same module.
+    const moving = lessons[currentIndex]
+    const neighbour = lessons[targetIndex]
+    if (
+      (isModuleQuiz(moving) || isModuleQuiz(neighbour)) &&
+      (moving.module_id || null) === (neighbour.module_id || null)
+    ) {
+      toast.warning('A module quiz stays at the end of its module.')
+      return
+    }
 
     const newLessons = [...lessons]
     const temp = newLessons[currentIndex]
@@ -805,6 +912,8 @@ export default function CourseManagementPage() {
         return <FileText className="w-4 h-4" />
       case 'powerpoint':
         return <Presentation className="w-4 h-4" />
+      case MODULE_QUIZ_TYPE:
+        return <ListChecks className="w-4 h-4" />
       default:
         return <FileText className="w-4 h-4" />
     }
@@ -818,6 +927,8 @@ export default function CourseManagementPage() {
         return 'PDF'
       case 'powerpoint':
         return 'PowerPoint'
+      case MODULE_QUIZ_TYPE:
+        return 'Module quiz'
       default:
         return 'Text'
     }
@@ -1402,6 +1513,17 @@ export default function CourseManagementPage() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => openModuleQuiz(module)}
+                          disabled={creatingQuizForModuleId === module.id}
+                          title="A quiz learners take at the end of this module"
+                          className="bg-white border border-gray-200 hover:border-gray-200 hover:bg-white rounded-full shadow-sm text-xs"
+                        >
+                          <ListChecks className="w-3 h-3 mr-1" />
+                          {findModuleQuiz(lessons, module.id) ? 'Edit quiz' : 'Add quiz'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => {
                             setEditingModule(module)
                             setModuleForm({
@@ -1496,7 +1618,7 @@ export default function CourseManagementPage() {
                   <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                     {editingLesson ? <Edit3 className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-white" />}
                   </div>
-                  {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
+                  {editingLesson ? (isModuleQuiz(editingLesson) ? 'Edit module quiz' : 'Edit Lesson') : 'Add New Lesson'}
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -1536,19 +1658,25 @@ export default function CourseManagementPage() {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
-                    <select
-                      value={lessonForm.content_type}
-                      onChange={(e) => setLessonForm({ ...lessonForm, content_type: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
-                    >
-                      <option value="text">Text</option>
-                      <option value="youtube">YouTube Video</option>
-                      <option value="pdf">PDF Document</option>
-                      <option value="powerpoint">PowerPoint</option>
-                    </select>
-                  </div>
+                  {lessonForm.content_type === MODULE_QUIZ_TYPE ? (
+                    <p className="text-xs text-gray-500">
+                      This item holds only a quiz. Change its questions with the Questions button in the list below.
+                    </p>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                      <select
+                        value={lessonForm.content_type}
+                        onChange={(e) => setLessonForm({ ...lessonForm, content_type: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm focus:border-red-400 focus:ring-red-400"
+                      >
+                        <option value="text">Text</option>
+                        <option value="youtube">YouTube Video</option>
+                        <option value="pdf">PDF Document</option>
+                        <option value="powerpoint">PowerPoint</option>
+                      </select>
+                    </div>
+                  )}
 
                   {lessonForm.content_type === 'text' && (
                     <div>
@@ -1722,7 +1850,7 @@ export default function CourseManagementPage() {
                             onClick={() => router.push(`/instructor/lessons/${lesson.id}/quiz`)}
                             className="bg-gray-50 border-gray-200 text-red-600 hover:bg-red-50 hover:border-gray-200 rounded-full text-xs"
                           >
-                            Quiz
+                            {isModuleQuiz(lesson) ? 'Questions' : 'Quiz'}
                           </Button>
                           <Button
                             size="sm"

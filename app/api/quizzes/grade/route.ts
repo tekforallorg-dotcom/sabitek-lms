@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { XP_VALUES } from '@/lib/gamification/xp'
 import { canAccessCourseContent } from '@/lib/access/course-tenancy'
+import { canDoCourseWork } from '@/lib/access/course-entitlement'
 
 function parseQuestions(raw: unknown): any[] {
   let qs = raw
@@ -51,6 +52,11 @@ export async function POST(request: NextRequest) {
     const courseId = lesson.course_id
     if (!(await canAccessCourseContent(userId, courseId))) {
       return NextResponse.json({ error: 'No access to this course' }, { status: 403 })
+    }
+    // A graded attempt feeds lesson unlocking and the certificate, so it is
+    // only recorded for people the lesson page would let in.
+    if (!(await canDoCourseWork(userId, courseId))) {
+      return NextResponse.json({ error: 'Enrol in this course to take its quizzes' }, { status: 403 })
     }
 
     const { data: quizRow } = await supabaseAdmin

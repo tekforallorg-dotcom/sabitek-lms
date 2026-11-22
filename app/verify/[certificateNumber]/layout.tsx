@@ -1,14 +1,20 @@
 import type { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-/** Share-friendly metadata for public verify links. */
+/**
+ * Share-friendly metadata for public verify links.
+ *
+ * The title only says "Verified" when the certificate exists and has not been
+ * revoked. A link to a made-up or revoked certificate must not preview as
+ * verified in a chat app or a search result.
+ */
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ certificateNumber: string }>
 }): Promise<Metadata> {
   const { certificateNumber } = await params
-  let title = 'Verified certificate | Sabitek'
+  let title = 'Certificate verification | Sabitek'
   let description = 'Verify the authenticity of a Sabitek certificate.'
 
   try {
@@ -16,7 +22,7 @@ export async function generateMetadata({
     const { data } = await admin
       .from('certificates')
       .select(
-        'kind, user:users!certificates_user_id_fkey(full_name), course:courses(title), program:programs(name)'
+        'kind, revoked_at, user:users!certificates_user_id_fkey(full_name), course:courses(title), program:programs(name)'
       )
       .eq('certificate_number', certificateNumber)
       .single()
@@ -25,9 +31,14 @@ export async function generateMetadata({
       const course: any = Array.isArray(data.course) ? data.course[0] : data.course
       const program: any = Array.isArray(data.program) ? data.program[0] : data.program
       const what = (data as any).kind === 'program' ? program?.name : course?.title
-      if (user?.full_name && what) {
+      if (data.revoked_at) {
+        title = 'Revoked certificate | Sabitek'
+        description = 'This Sabitek certificate has been revoked and is no longer valid.'
+      } else if (user?.full_name && what) {
         title = `${user.full_name} - ${what} | Verified on Sabitek`
         description = `This certificate is authentic. ${user.full_name} completed ${what} on Sabitek.`
+      } else {
+        title = 'Verified certificate | Sabitek'
       }
     }
   } catch {

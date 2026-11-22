@@ -206,6 +206,70 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ ce
     )
   }
 
+  // Revoked state: the certificate was real, and is no longer valid.
+  if (certificate?.revoked_at) {
+    const revokedDate = new Date(certificate.revoked_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    return (
+      <div className="min-h-screen bg-gray-50 relative">
+        <div className="relative bg-white border-b border-gray-200">
+          <div className="max-w-2xl mx-auto px-4 py-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Sabitek</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative max-w-2xl mx-auto px-4 py-12">
+          <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200">
+            <div className="relative overflow-hidden bg-red-600 px-6 py-8 text-center">
+              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-white/30">
+                <XCircle className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-2xl font-medium tracking-tight text-white mb-1">Certificate revoked</h1>
+              <p className="text-red-100 text-sm">This certificate is no longer valid</p>
+            </div>
+
+            <div className="p-6 text-center">
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                <p className="text-red-800 text-sm">
+                  Certificate <strong className="font-mono">{certificate.certificate_number}</strong> was
+                  issued by Sabitek and revoked on {revokedDate}.
+                </p>
+              </div>
+
+              <p className="text-gray-600 text-sm mb-6">
+                It should not be accepted as proof of completion. If you believe this is an error, please
+                contact support.
+              </p>
+
+              <Link
+                href="/"
+                className="relative overflow-hidden block w-full px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium ring-1 ring-red-600/50 transition-all"
+              >
+                Go to Sabitek
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
+              <Shield className="w-4 h-4" />
+              <span>Sabitek Certificate Verification</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Verified state
   return (
     <div className="min-h-screen bg-gray-50 relative">

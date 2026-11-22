@@ -15,6 +15,12 @@ async function getUser(request: NextRequest) {
 // GET /api/community/reviews - Get reviews for a user
 export async function GET(request: NextRequest) {
   try {
+    // Reviews carry reviewer names and ids; they are for signed-in members.
+    const viewer = await getUser(request)
+    if (!viewer) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('user_id')
     const sessionId = searchParams.get('session_id')

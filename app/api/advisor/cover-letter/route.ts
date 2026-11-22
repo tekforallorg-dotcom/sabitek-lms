@@ -225,8 +225,12 @@ export async function POST(request: NextRequest) {
           .select()
           .single()
 
-        if (saveError) {
+        if (saveError || !savedLetter) {
+          // Throwing sends this down the same path as a failed generation, so
+          // the person is not charged for a letter that is not in their
+          // documents (the CV builder already does this).
           console.error('Save error:', saveError)
+          throw new Error('The cover letter could not be saved')
         }
 
         console.log(`Cover Letter saved! Quality: ${generationResult.qualityScore}`)

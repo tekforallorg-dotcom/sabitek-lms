@@ -22,11 +22,13 @@ export default function LessonQA({ lessonId, lessonContent, contentType }: Lesso
   const [loading, setLoading] = useState(false)
   const [qaHistory, setQaHistory] = useState<QAPair[]>([])
   const [isExpanded, setIsExpanded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const askQuestion = async () => {
     if (!question.trim()) return
 
     setLoading(true)
+    setError(null)
     try {
       const response = await authFetch('/api/ai/qa', {
         method: 'POST',
@@ -41,8 +43,11 @@ export default function LessonQA({ lessonId, lessonContent, contentType }: Lesso
         })
       })
 
-      const data = await response.json()
-      if (data.answer) {
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.answer) {
+        // The API explains daily limits and provider failures; show that.
+        setError(data.error || 'No answer came back. Please try again.')
+      } else {
         setQaHistory([
           ...qaHistory,
           {
@@ -56,6 +61,7 @@ export default function LessonQA({ lessonId, lessonContent, contentType }: Lesso
       }
     } catch (error) {
       console.error('Error getting answer:', error)
+      setError('No answer came back. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -101,6 +107,12 @@ export default function LessonQA({ lessonId, lessonContent, contentType }: Lesso
               )}
             </Button>
           </div>
+
+          {error && !loading && (
+            <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
 
           {/* Q&A History */}
           {qaHistory.length > 0 && (

@@ -4,6 +4,7 @@ import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { cohortMemberQuerySchema } from '@/lib/validations/program'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { loadCohortMemberProgress, memberKey } from '@/lib/cohorts/member-progress'
 
 
 interface RouteParams {
@@ -111,6 +112,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (membersError) {
       console.error('Error fetching members:', membersError)
       return ApiErrors.internal('Failed to fetch members')
+    }
+
+    // progress_pct is a column nothing writes; fill it from real course progress.
+    const { data: cohortRow } = await supabaseAdmin
+      .from('cohorts')
+      .select('program_id')
+      .eq('id', cohortId)
+      .maybeSingle()
+    const memberProgress = await loadCohortMemberProgress(
+      [{ id: cohortId, program_id: cohortRow?.program_id ?? null }],
+      (members || []).map((m) => ({ cohort_id: cohortId, user_id: m.user_id }))
+    )
+    for (const m of members || []) {
+      m.progress_pct = memberProgress.get(memberKey(cohortId, m.user_id)) ?? 0
     }
 
     // Fetch user details separately
