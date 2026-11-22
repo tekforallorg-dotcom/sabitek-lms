@@ -468,6 +468,9 @@ export default function CourseDetailPage() {
             'warning'
           )
           return
+        case 'not_enrolled':
+          showModal('Enrol first', 'You need to be enrolled in this course to earn its certificate.', 'warning')
+          return
         case 'quizzes_required':
           showModal('Quizzes Required', 'Please pass all quizzes with at least 70% to earn your certificate.', 'warning')
           return

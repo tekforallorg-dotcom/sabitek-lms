@@ -14,9 +14,11 @@ export default function LessonSummary({ lessonId, lessonContent, contentType }: 
   const [summary, setSummary] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const generateSummary = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await authFetch('/api/ai/summary', {
         method: 'POST',
@@ -30,13 +32,17 @@ export default function LessonSummary({ lessonId, lessonContent, contentType }: 
         })
       })
 
-      const data = await response.json()
-      if (data.summary) {
+      const data = await response.json().catch(() => ({}))
+      if (response.ok && data.summary) {
         setSummary(data.summary)
         setIsExpanded(true)
+      } else {
+        // The API explains daily limits and provider failures; show that.
+        setError(data.error || 'The summary could not be created. Please try again.')
       }
     } catch (error) {
       console.error('Error generating summary:', error)
+      setError('The summary could not be created. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -68,6 +74,12 @@ export default function LessonSummary({ lessonId, lessonContent, contentType }: 
           </Button>
         )}
         
+        {error && !loading && (
+          <p role="alert" className="mt-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+
         {loading && (
           <div className="flex items-center justify-center py-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>

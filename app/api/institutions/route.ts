@@ -66,10 +66,30 @@ export async function GET(request: NextRequest) {
     // The creator's email is contact data: only the creator and platform
     // admins get it. Everyone else (including signed-out visitors browsing
     // approved institutions) sees the name only.
+    // Review notes, rejection reasons, who reviewed, contact details and the
+    // allowed email domains are for the institution's creator and platform
+    // admins. Everyone else, signed in or not, gets the public profile.
+    const PRIVATE_FIELDS = [
+      'review_notes',
+      'rejection_reason',
+      'reviewed_by',
+      'created_by',
+      'email_domain_allowlist',
+      'contact_email',
+      'contact_phone',
+      'address',
+      'kpi_pack',
+      'onboarding_pack',
+      'reporting_pack',
+      'required_fields_pack',
+      'vertical_metadata',
+      'creator',
+    ] as const
     const visible = (institutions || []).map((inst) => {
       if (isPlatformAdmin || (userId && inst.created_by === userId)) return inst
-      const creator = inst.creator ? { ...inst.creator, email: undefined } : inst.creator
-      return { ...inst, creator }
+      const publicProfile: Record<string, unknown> = { ...inst }
+      for (const field of PRIVATE_FIELDS) delete publicProfile[field]
+      return publicProfile
     })
 
     return apiSuccess({ institutions: visible, total: count || 0, page, limit })

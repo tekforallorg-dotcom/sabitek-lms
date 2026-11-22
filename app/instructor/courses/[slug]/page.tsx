@@ -609,18 +609,31 @@ export default function CourseManagementPage() {
         course_id: course.id,
         module_id: moduleIdToUse,
         title: lessonForm.title,
-        slug: generateSlug(lessonForm.title),
+        // Keep the address a lesson already has unless its title changed, and
+        // never reuse another lesson's address in this course: the lesson page
+        // finds lessons by address and would open the wrong one.
+        slug:
+          editingLesson && editingLesson.title === lessonForm.title
+            ? editingLesson.slug
+            : uniqueSlug(
+                generateSlug(lessonForm.title),
+                lessons.filter((l) => l.id !== editingLesson?.id).map((l) => l.slug)
+              ),
         content: lessonForm.content,
         content_type: lessonForm.content_type,
         youtube_url: lessonForm.youtube_url || null,
         pdf_url: lessonForm.pdf_url || null,
         powerpoint_url: lessonForm.powerpoint_url || null,
         duration_minutes: lessonForm.duration_minutes || null,
-        lesson_order: editingLesson ? editingLesson.lesson_order : (lessons.length + 1) * 10,
+        // Highest order in the course plus 10. Counting lessons instead gave a
+        // new lesson the same order as an existing one after a deletion, and
+        // two lessons with one order can lock a learner out.
+        lesson_order: editingLesson ? editingLesson.lesson_order : orderAfterAll(lessons),
       }
 
       if (editingLesson) {
         const { error } = await supabase.from('lessons').update(lessonData).eq('id', editingLesson.id)
+        if (error) throw error
 
         // A lesson moved into a module that ends in a quiz goes in front of the quiz.
         if (!error && !isModuleQuiz(editingLesson)) {
@@ -655,6 +668,7 @@ export default function CourseManagementPage() {
         }
       } else {
         const { error } = await supabase.from('lessons').insert(lessonData)
+        if (error) throw error
 
         if (!error) {
           // The module's quiz stays last: move it behind the lesson just added.
@@ -681,7 +695,7 @@ export default function CourseManagementPage() {
       fetchCourseData()
     } catch (error) {
       console.error('Error saving lesson:', error)
-      toast.error('Failed to save lesson')
+      toast.error('The lesson was not saved. Check your connection and try again.')
     }
   }
 
@@ -743,12 +757,17 @@ export default function CourseManagementPage() {
           onClick: async () => {
             closeModal()
             try {
-              const { error } = await supabase.from('lessons').delete().eq('id', lessonId)
+              const { data: deleted, error } = await supabase
+                .from('lessons')
+                .delete()
+                .eq('id', lessonId)
+                .select('id')
 
-              if (!error) {
-                showModal('Success', 'Lesson deleted successfully!', 'success')
-                fetchCourseData()
+              if (error || !deleted || deleted.length === 0) {
+                throw error ?? new Error('The lesson was not deleted')
               }
+              showModal('Success', 'Lesson deleted successfully!', 'success')
+              fetchCourseData()
             } catch (error) {
               console.error('Error deleting lesson:', error)
               showModal('Error', 'Failed to delete lesson', 'error')
@@ -791,7 +810,8 @@ export default function CourseManagementPage() {
         .update({ status: 'published', published_at: new Date().toISOString() })
         .eq('id', course.id)
 
-      if (!error) {
+      if (error) throw error
+      {
         if (course.institution_id) {
           toast.success('Published to your institution\'s Course Library. Your admin has been notified.')
           // Fire-and-forget: bell + email for the institution admins.
@@ -819,7 +839,8 @@ export default function CourseManagementPage() {
     try {
       const { error } = await supabase.from('courses').update({ status: 'draft' }).eq('id', course.id)
 
-      if (!error) {
+      if (error) throw error
+      {
         toast.success('Course unpublished. It is now hidden from learners.')
         setCourse({ ...course, status: 'draft' })
       }
@@ -835,6 +856,18 @@ export default function CourseManagementPage() {
 
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
     if (targetIndex < 0 || targetIndex >= lessons.length) return
+
+    // A module quiz stays at the end of its module, so it never swaps places
+    // with a lesson of the same module.
+    const moving = lessons[currentIndex]
+    const neighbour = lessons[targetIndex]
+    if (
+      (isModuleQuiz(moving) || isModuleQuiz(neighbour)) &&
+      (moving.module_id || null) === (neighbour.module_id || null)
+    ) {
+      toast.warning('A module quiz stays at the end of its module.')
+      return
+    }
 
     const newLessons = [...lessons]
     const temp = newLessons[currentIndex]

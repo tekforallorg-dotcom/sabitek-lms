@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { rememberReturnPath } from '@/lib/post-auth-redirect'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -28,6 +29,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [publicSignupOpen, setPublicSignupOpen] = useState(false)
   const { signIn } = useAuth()
+
+  // Pages that need an account link here with ?redirect=/where/they/were.
+  // Remember it so sign-in can send the person back there.
+  useEffect(() => {
+    rememberReturnPath(new URLSearchParams(window.location.search).get('redirect'))
+  }, [])
 
   // Ask the gate endpoint whether public signup is open, so the footer
   // link matches reality. Fail closed = show "Request Access".

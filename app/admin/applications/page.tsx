@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from '@/components/ui/toast'
 
 interface Application {
   id: string
@@ -127,15 +128,26 @@ export default function ApplicationsPage() {
         }),
       })
 
+      const json = await res.json().catch(() => ({}))
+
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}))
         console.error('Review failed:', json.error)
+        toast.error(json.error || 'The review was not saved. Please try again.')
         return
+      }
+
+      // Approval can succeed while the workspace or the welcome email fails.
+      // The API says so in its message; show it instead of refreshing silently.
+      if (action === 'approve' && (json.provisioned === false || json.email_sent === false)) {
+        toast.warning(json.message || 'Approved, but setting up the workspace did not finish.', 20000)
+      } else if (json.message) {
+        toast.success(json.message)
       }
 
       fetchApplications()
     } catch (err) {
       console.error('Error reviewing application:', err)
+      toast.error('The review was not saved. Check your connection and try again.')
     } finally {
       setActionLoading(null)
     }
