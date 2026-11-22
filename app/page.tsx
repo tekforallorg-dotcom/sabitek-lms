@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -23,48 +23,7 @@ import {
   FileQuestion,
   ShieldAlert,
 } from 'lucide-react'
-
-/* Scroll-reveal wrapper */
-function Reveal({
-  children,
-  delay = 0,
-  className = '',
-}: {
-  children: React.ReactNode
-  delay?: number
-  className?: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          io.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-      } ${className}`}
-    >
-      {children}
-    </div>
-  )
-}
+import { Reveal } from '@/components/marketing/primitives'
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
@@ -135,13 +94,13 @@ export default function HomePage() {
                     <>
                       <Link href="/dashboard">
                         <Button className="group relative overflow-hidden w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-5 text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all">
-                          Go to Dashboard
+                          Go to dashboard
                           <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                         </Button>
                       </Link>
                       <Link href="/courses">
                         <Button variant="outline" className="w-full sm:w-auto bg-white border-gray-200 hover:border-gray-200 hover:bg-white px-8 py-5 text-sm font-medium rounded-full shadow-sm transition-all">
-                          Browse Courses
+                          Browse courses
                         </Button>
                       </Link>
                     </>
@@ -149,13 +108,13 @@ export default function HomePage() {
                     <>
                       <Link href="/request-access">
                         <Button className="group relative overflow-hidden w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-5 text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all">
-                          Get Started Free
+                          Request access
                           <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                         </Button>
                       </Link>
                       <Link href="/auth/login">
                         <Button variant="outline" className="w-full sm:w-auto bg-white border-gray-200 hover:border-gray-200 hover:bg-white px-8 py-5 text-sm font-medium rounded-full shadow-sm transition-all">
-                          Sign In
+                          Sign in
                         </Button>
                       </Link>
                     </>
@@ -234,7 +193,7 @@ export default function HomePage() {
                 </div>
 
                 {/* floating certificate chip */}
-                <div className="absolute -right-2 sm:right-0 lg:-right-2 top-8">
+                <div className="hidden sm:block absolute -right-2 sm:right-0 lg:-right-2 top-8">
                   <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-red-600 shadow-sm flex items-center justify-center">
                       <Award className="w-4 h-4 text-white" />
@@ -247,7 +206,7 @@ export default function HomePage() {
                 </div>
 
                 {/* floating cohort report chip */}
-                <div className="absolute -left-2 sm:left-0 lg:-left-4 bottom-6">
+                <div className="hidden sm:block absolute -left-2 sm:left-0 lg:-left-4 bottom-6">
                   <div className="bg-white rounded-xl border border-gray-200 px-4 py-3">
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart3 className="w-3.5 h-3.5 text-red-500" />
@@ -283,9 +242,6 @@ export default function HomePage() {
       {/* ============================================ */}
       <section className="relative overflow-hidden bg-gray-900 py-16 sm:py-24">
         <span className="absolute top-0 inset-x-16 h-px bg-gray-200" aria-hidden="true" />
-        <span className="absolute -top-6 left-[3%] font-serif italic text-[16rem] leading-none text-red-500/[0.07] select-none pointer-events-none" aria-hidden="true">
-          &ldquo;
-        </span>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-20 items-center">
@@ -301,7 +257,7 @@ export default function HomePage() {
                     It fails at follow-through.
                   </span>
                 </h2>
-                <p className="text-base sm:text-lg text-red-100/70 leading-relaxed max-w-md">
+                <p className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-md">
                   Across Africa, serious programs still run on goodwill and group
                   chats. The teaching is real. The record of it is not, and funders,
                   employers and learners all pay for that gap.
@@ -324,7 +280,7 @@ export default function HomePage() {
                       </div>
                       <div className="pt-1">
                         <p className="text-base font-medium text-white/90">{row.title}</p>
-                        <p className="text-sm text-red-100/50 leading-relaxed">{row.desc}</p>
+                        <p className="text-sm text-gray-400 leading-relaxed">{row.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -334,9 +290,9 @@ export default function HomePage() {
                   <span className="absolute top-0 inset-x-6 h-px bg-gray-200" aria-hidden="true" />
                   <div className="flex items-start gap-3">
                     <ShieldCheck className="w-5 h-5 text-red-200 mt-1 flex-shrink-0" />
-                    <p className="text-sm text-red-50/90 leading-relaxed">
+                    <p className="text-sm text-gray-200 leading-relaxed">
                       <span className="font-medium text-white">Sabitek closes the loop:</span>{' '}
-                      sequenced lessons, checkpoints graded on the server, dropout
+                      sequenced lessons, automatically graded quizzes, dropout
                       flagged early, and credentials anyone can verify.
                     </p>
                   </div>
@@ -366,7 +322,7 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-fr">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             {/* Wide tile: the proof engine */}
             <Reveal className="md:col-span-4">
               <div className="group relative h-full overflow-hidden rounded-xl bg-gray-900 p-7 sm:p-8 ring-1 ring-white/10">
@@ -377,7 +333,7 @@ export default function HomePage() {
                       Completion you can{' '}
                       <span className="font-serif italic text-red-300">defend</span>
                     </h3>
-                    <p className="text-sm text-red-100/60 leading-relaxed max-w-sm">
+                    <p className="text-sm text-gray-300 leading-relaxed max-w-sm">
                       Lessons unlock in sequence, quizzes grade on the server, and
                       the certificate at the end carries a QR code anyone can check.
                       No JPEGs, no guesswork.
@@ -419,21 +375,21 @@ export default function HomePage() {
             {[
               {
                 chip: 'Learners',
-                chipClass: 'bg-green-50 text-green-700 ring-green-200',
+                chipClass: 'bg-gray-50 text-gray-700 ring-gray-200',
                 icon: GraduationCap,
                 title: 'Stay to the finish',
-                desc: 'Streaks, XP, badges and a daily goal ring built on the habit loops that make Duolingo work.',
+                desc: 'Streaks, points, badges and a daily goal keep learners coming back until the certificate.',
               },
               {
                 chip: 'Instructors',
-                chipClass: 'bg-red-50 text-red-700 ring-gray-200',
+                chipClass: 'bg-gray-50 text-gray-700 ring-gray-200',
                 icon: BookOpen,
                 title: 'See everything',
                 desc: 'A rich lesson composer, a drop-off funnel per lesson, and learner questions answered in place.',
               },
               {
                 chip: 'Institutions',
-                chipClass: 'bg-amber-50 text-amber-700 ring-amber-200',
+                chipClass: 'bg-gray-50 text-gray-700 ring-gray-200',
                 icon: Building2,
                 title: 'Run cohorts, not chaos',
                 desc: 'Branded workspace, sequenced programs, at-risk flags and CSV reports your funders can use.',
@@ -445,7 +401,7 @@ export default function HomePage() {
                     <span className={`text-xs font-medium uppercase tracking-wide px-3 py-1 rounded-full ring-1 ${tile.chipClass}`}>
                       {tile.chip}
                     </span>
-                    <div className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center transition-transform duration-300 group-hover:-rotate-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center">
                       <tile.icon className="w-5 h-5 text-white" />
                     </div>
                   </div>
@@ -519,19 +475,21 @@ export default function HomePage() {
           <div className="relative">
             {/* connecting line, desktop */}
             <span className="hidden md:block absolute top-[22px] left-[17%] right-[17%] h-px bg-red-200" aria-hidden="true" />
-            <div className="grid md:grid-cols-3 gap-10 md:gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               {[
-                { num: '1', title: 'Create your workspace', desc: 'Sign up as an instructor or apply as an institution. Free to start, no card required.' },
+                { num: '1', title: 'Apply for access', desc: 'Apply as an organisation or an independent instructor. Applications are reviewed within 2 to 5 working days.' },
                 { num: '2', title: 'Add your courses', desc: 'Build lessons in the composer, attach quizzes, arrange courses into a sequenced program.' },
                 { num: '3', title: 'Share one link', desc: 'Learners join at sabitek.app/c/yourname. Progress starts arriving live the same day.' },
               ].map((step, i) => (
                 <Reveal key={i} delay={i * 100}>
-                  <div className="text-center px-2">
-                    <div className="relative inline-flex w-11 h-11 rounded-full bg-red-600 ring-4 ring-[#fffcfb] items-center justify-center mb-4">
+                  <div className="flex gap-4 text-left md:block md:text-center md:px-2">
+                    <div className="relative inline-flex flex-shrink-0 w-11 h-11 rounded-full bg-red-600 ring-4 ring-[#fffcfb] items-center justify-center md:mb-4">
                       <span className="text-white font-medium">{step.num}</span>
                     </div>
-                    <h3 className="font-medium text-base mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed max-w-[32ch] mx-auto">{step.desc}</p>
+                    <div>
+                      <h3 className="font-medium text-base mb-2">{step.title}</h3>
+                      <p className="text-sm text-gray-500 leading-relaxed md:max-w-[32ch] md:mx-auto">{step.desc}</p>
+                    </div>
                   </div>
                 </Reveal>
               ))}
@@ -559,7 +517,7 @@ export default function HomePage() {
                     Built to prove outcomes to the{' '}
                     <span className="font-serif italic text-red-300">people who fund them</span>
                   </h2>
-                  <p className="text-red-100/70 leading-relaxed mb-7 max-w-md">
+                  <p className="text-gray-300 leading-relaxed mb-7 max-w-md">
                     When you sponsor a cohort on Sabitek, you do not get an attendance
                     sheet. You get verified completion, quiz-backed mastery, and dropout
                     caught early enough to act on.
@@ -567,18 +525,18 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link href="/request-access">
                       <Button className="group w-full sm:w-auto bg-white border border-gray-200 text-gray-900 hover:bg-red-50 px-7 py-5 text-sm font-medium rounded-full transition-all">
-                        Get Started Free
+                        Request access
                         <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                       </Button>
                     </Link>
                     <Link href="/about">
                       <Button variant="outline" className="w-full sm:w-auto bg-white/5 border border-white/25 text-white hover:bg-white/15 hover:text-white px-7 py-5 text-sm font-medium rounded-full transition-all">
-                        Partner With Us
+                        Partner with us
                       </Button>
                     </Link>
                   </div>
                   {!user && (
-                    <p className="text-sm text-red-100/50 mt-6">
+                    <p className="text-sm text-gray-400 mt-6">
                       Individual learner?{' '}
                       <Link href="/waitlist" className="text-red-200 underline underline-offset-4 hover:text-white font-medium">
                         Join the waitlist

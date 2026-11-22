@@ -52,8 +52,15 @@ export interface CohortSummary {
   }>
 }
 
-/** How many courses the grid shows before "Show all". Two rows on a laptop. */
-const FIRST_COURSES = 8
+/** How many courses the grid shows before "Show all". One row on a laptop. */
+const FIRST_COURSES = 4
+
+/** Dates as "2 Oct 2026": the same everywhere, and never mistaken for month/day. */
+const shortDate = (value: string) =>
+  new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+
+/** A text link with a touch target a thumb can hit (44px tall). */
+const actionLink = 'inline-flex min-h-11 items-center text-sm font-medium text-red-600 hover:text-red-700 hover:underline underline-offset-4'
 
 /** How many of a program's courses are listed before "and N more". */
 const PROGRAM_COURSES = 6
@@ -72,8 +79,8 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
       // A compact row on phones, a card with a cover from tablets up.
       className={`${PANEL} group flex h-full overflow-hidden transition-colors hover:border-gray-300 sm:flex-col`}
     >
-      <div className="relative w-24 flex-shrink-0 bg-gray-100 sm:h-28 sm:w-full">
-        {enrollment.course.cover_image_url ? (
+      {enrollment.course.cover_image_url && (
+        <div className="relative w-24 flex-shrink-0 bg-gray-100 sm:h-28 sm:w-full">
           <Image
             src={enrollment.course.cover_image_url}
             alt=""
@@ -81,11 +88,14 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
             sizes="(max-width: 640px) 96px, (max-width: 1280px) 50vw, 25vw"
             className="object-cover"
           />
-        ) : (
-          <BookOpen className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-gray-300" />
-        )}
-      </div>
+        </div>
+      )}
       <div className="flex min-w-0 flex-1 flex-col p-4">
+        {!enrollment.course.cover_image_url && (
+          <span className="mb-3 hidden h-10 w-10 items-center justify-center rounded-lg bg-gray-100 sm:flex" aria-hidden="true">
+            <BookOpen className="h-5 w-5 text-gray-400" />
+          </span>
+        )}
         <h3 className="text-sm font-medium leading-5 text-gray-900 line-clamp-2 group-hover:text-red-600">
           {enrollment.course.title}
         </h3>
@@ -111,17 +121,19 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
 function ProgramCard({ item }: { item: CohortSummary }) {
   return (
     <div className={`${PANEL} p-4 sm:p-6`}>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h3 className="truncate text-base font-medium leading-6 text-gray-900">{item.program?.name || 'Program'}</h3>
-          <p className="mt-1 flex items-center gap-1 text-xs leading-4 text-gray-500">
-            <Users className="h-3 w-3" aria-hidden="true" />
-            {item.cohort_name}
-            {item.sponsorship === 'institution_sponsored' && <span> · Sponsored access</span>}
+          <h3 className="text-base font-medium leading-6 text-gray-900">{item.program?.name || 'Program'}</h3>
+          <p className="mt-1 flex flex-wrap items-center gap-1 text-xs leading-4 text-gray-500">
+            <Users className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+            <span>
+              {item.cohort_name}
+              {item.sponsorship === 'institution_sponsored' && ' · Sponsored access'}
+            </span>
           </p>
         </div>
         <p className="flex-shrink-0 text-xs tabular-nums leading-4 text-gray-500">
-          {item.completed_courses} of {plural(item.total_courses, 'course')}
+          {item.completed_courses} of {plural(item.total_courses, 'course')} completed
         </p>
       </div>
 
@@ -136,14 +148,14 @@ function ProgramCard({ item }: { item: CohortSummary }) {
             const row = 'flex items-center gap-3 py-2 text-sm leading-5'
             if (course.locked) {
               return (
-                <li
-                  key={course.id}
-                  className={`${row} text-gray-400`}
-                  title="Unlocks after the previous course in your program"
-                >
-                  <Lock className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                  <span className="truncate">{course.title}</span>
-                  <span className="ml-auto flex-shrink-0 text-xs">Locked</span>
+                <li key={course.id} className={`${row} text-gray-500`}>
+                  <Lock className="h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                  <span className="min-w-0">
+                    <span className="block">{course.title}</span>
+                    <span className="block text-xs leading-4 text-gray-500">
+                      Complete the previous course to unlock
+                    </span>
+                  </span>
                 </li>
               )
             }
@@ -155,7 +167,7 @@ function ProgramCard({ item }: { item: CohortSummary }) {
                   ) : (
                     <BookOpen className="h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
                   )}
-                  <span className="truncate">{course.title}</span>
+                  <span className="min-w-0">{course.title}</span>
                   <span className="ml-auto flex-shrink-0 text-xs tabular-nums text-gray-500">
                     {done ? 'Completed' : course.progress ? `${course.progress}%` : 'Not started'}
                   </span>
@@ -176,7 +188,8 @@ function ProgramCard({ item }: { item: CohortSummary }) {
 
 /**
  * The learner's home page, in the order a returning learner needs it: the
- * next lesson, their courses, their programs, then everything else.
+ * next lesson, the programs their institution put them on, their courses,
+ * then everything else.
  *
  * It only arranges what it is given. app/dashboard/page.tsx loads the data
  * and passes the self-loading cards in through the three slots.
@@ -236,6 +249,23 @@ export default function LearnerHome({
 
       {resume}
 
+      {cohorts.length > 0 && (
+        <Section
+          title="My programs"
+          action={
+            <Link href="/cohorts/join" className={textLink}>
+              Join with a code
+            </Link>
+          }
+        >
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {cohorts.map((item) => (
+              <ProgramCard key={item.cohort_id} item={item} />
+            ))}
+          </div>
+        </Section>
+      )}
+
       <Section title="My courses">
         {enrolledCourses.length === 0 ? (
           <EmptyState
@@ -266,23 +296,6 @@ export default function LearnerHome({
         )}
       </Section>
 
-      {cohorts.length > 0 && (
-        <Section
-          title="My programs"
-          action={
-            <Link href="/cohorts/join" className={textLink}>
-              Join with a code
-            </Link>
-          }
-        >
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {cohorts.map((item) => (
-              <ProgramCard key={item.cohort_id} item={item} />
-            ))}
-          </div>
-        </Section>
-      )}
-
       {onboarding}
 
       {certificates.length > 0 && (
@@ -296,19 +309,21 @@ export default function LearnerHome({
         >
           <ul className={`${PANEL} divide-y divide-gray-200`}>
             {certificates.map((cert) => (
-              <li key={cert.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+              <li key={cert.id} className="flex flex-col gap-x-4 px-4 py-3 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium leading-5 text-gray-900">{cert.course.title}</p>
+                  <p className="text-sm font-medium leading-5 text-gray-900">{cert.course.title}</p>
                   <p className="text-xs tabular-nums leading-4 text-gray-500">
-                    Issued {new Date(cert.issued_at).toLocaleDateString()} · Grade {cert.grade_percentage}%
+                    Issued {shortDate(cert.issued_at)} · Grade {cert.grade_percentage}%
                   </p>
                 </div>
-                <Link href={`/certificates/${cert.id}`} className={textLink}>
-                  View
-                </Link>
-                <Link href={`/certificates/${cert.id}?download=true`} className={textLink}>
-                  Download
-                </Link>
+                <div className="flex flex-shrink-0 gap-4">
+                  <Link href={`/certificates/${cert.id}`} className={actionLink}>
+                    View
+                  </Link>
+                  <Link href={`/certificates/${cert.id}?download=true`} className={actionLink}>
+                    Download
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

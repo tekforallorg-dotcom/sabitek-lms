@@ -168,7 +168,7 @@ export default function RequestAccessPage() {
                     variant="ghost"
                     className="w-full h-11 text-gray-500 hover:text-red-600 hover:bg-gray-50 text-sm font-medium rounded-full transition-all"
                   >
-                    Back to Home
+                    Back to home
                   </Button>
                 </Link>
               </div>
@@ -194,9 +194,9 @@ export default function RequestAccessPage() {
             <span className="h-px w-10 bg-red-300" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-medium tracking-tight text-gray-900 mb-3">
-            Get started with{' '}
+            Apply for an organisation{' '}
             <span className="font-serif italic text-red-600">
-              Sabitek
+              workspace
             </span>
           </h1>
           <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto">
@@ -217,10 +217,12 @@ export default function RequestAccessPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className={labelClass}>Full name *</label>
+                  <label htmlFor="ra-name" className={labelClass}>Full name</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
+                      id="ra-name"
+                      autoComplete="name"
                       required
                       value={formData.fullName}
                       onChange={(e) => handleChange('fullName', e.target.value)}
@@ -231,10 +233,12 @@ export default function RequestAccessPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Work email *</label>
+                  <label htmlFor="ra-email" className={labelClass}>Work email</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
+                      id="ra-email"
+                      autoComplete="email"
                       type="email"
                       required
                       value={formData.email}
@@ -248,10 +252,12 @@ export default function RequestAccessPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className={labelClass}>Organisation name *</label>
+                  <label htmlFor="ra-organisation" className={labelClass}>Organisation name</label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
+                      id="ra-organisation"
+                      autoComplete="organization"
                       required
                       value={formData.organisation}
                       onChange={(e) => handleChange('organisation', e.target.value)}
@@ -262,10 +268,12 @@ export default function RequestAccessPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Your role</label>
+                  <label htmlFor="ra-role" className={labelClass}>Your role (optional)</label>
                   <div className="relative">
                     <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
+                      id="ra-role"
+                      autoComplete="organization-title"
                       value={formData.role}
                       onChange={(e) => handleChange('role', e.target.value)}
                       placeholder="e.g. Director, Program Manager"
@@ -277,10 +285,12 @@ export default function RequestAccessPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className={labelClass}>Country</label>
+                  <label htmlFor="ra-country" className={labelClass}>Country (optional)</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
+                      id="ra-country"
+                      autoComplete="country-name"
                       value={formData.country}
                       onChange={(e) => handleChange('country', e.target.value)}
                       placeholder="e.g. Nigeria"
@@ -290,8 +300,9 @@ export default function RequestAccessPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Organisation type *</label>
+                  <label htmlFor="ra-type" className={labelClass}>Organisation type</label>
                   <select
+                    id="ra-type"
                     required
                     value={formData.type}
                     onChange={(e) => handleChange('type', e.target.value)}
@@ -310,10 +321,12 @@ export default function RequestAccessPage() {
               </div>
 
               <div className="space-y-2">
-                <label className={labelClass}>Approximate number of learners</label>
+                <label htmlFor="ra-learners" className={labelClass}>Approximate number of learners (optional)</label>
                 <div className="relative">
                   <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
+                    id="ra-learners"
+                    autoComplete="off"
                     value={formData.learnerCount}
                     onChange={(e) => handleChange('learnerCount', e.target.value)}
                     placeholder="e.g. 50, 200, 1000+"
@@ -323,10 +336,12 @@ export default function RequestAccessPage() {
               </div>
 
               <div className="space-y-2">
-                <label className={labelClass}>What would you like to do with Sabitek? *</label>
+                <label htmlFor="ra-about" className={labelClass}>What would you like to do with Sabitek?</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <textarea
+                    id="ra-about"
+                    autoComplete="off"
                     required
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}
@@ -340,17 +355,17 @@ export default function RequestAccessPage() {
 
               <Button
                 type="submit"
-                disabled={submitting || !formData.fullName || !formData.email || !formData.organisation || !formData.type || !formData.description}
+                disabled={submitting}
                 className="group relative overflow-hidden w-full h-12 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
               >
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Submitting...
+                    Sending...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    Submit Application
+                    Send application
                     <Send className="w-4 h-4 transition-transform" />
                   </span>
                 )}
@@ -362,24 +377,22 @@ export default function RequestAccessPage() {
                 className="absolute top-0 inset-x-6 h-px bg-gray-200"
                 aria-hidden="true"
               />
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs text-gray-500">
+              <div className="flex flex-col items-center gap-2 text-sm text-gray-500">
                 <span>
                   Independent instructor?{' '}
-                  <Link href="/become-a-provider" className="text-red-500 hover:text-red-600 font-medium">
-                    Become a Provider
+                  <Link href="/become-a-provider" className="text-red-600 hover:text-red-700 font-medium">
+                    Apply as an instructor
                   </Link>
                 </span>
-                <span className="hidden sm:block w-1 h-1 rounded-full bg-red-300" aria-hidden="true" />
                 <span>
                   Already have an account?{' '}
-                  <Link href="/auth/login" className="text-red-500 hover:text-red-600 font-medium">
+                  <Link href="/auth/login" className="text-red-600 hover:text-red-700 font-medium">
                     Sign in
                   </Link>
                 </span>
-                <span className="hidden sm:block w-1 h-1 rounded-full bg-red-300" aria-hidden="true" />
                 <span>
                   Individual learner?{' '}
-                  <Link href="/waitlist" className="text-red-500 hover:text-red-600 font-medium">
+                  <Link href="/waitlist" className="text-red-600 hover:text-red-700 font-medium">
                     Join the waitlist
                   </Link>
                 </span>
@@ -388,9 +401,6 @@ export default function RequestAccessPage() {
           </div>
         </GlassCard>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          We review applications within 2-5 working days. No spam.
-        </p>
       </div>
     </div>
   )

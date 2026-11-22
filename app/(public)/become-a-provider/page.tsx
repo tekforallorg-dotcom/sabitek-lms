@@ -368,7 +368,7 @@ export default function BecomeProviderPage() {
                   <Building2 className="w-3.5 h-3.5 text-gray-400" />
                   Representing an institution?{' '}
                   <Link href="/request-access" className="text-red-500 hover:text-red-600 font-medium">
-                    Get Started here
+                    Request access
                   </Link>
                 </span>
                 <span className="hidden sm:block w-1 h-1 rounded-full bg-red-300" aria-hidden="true" />

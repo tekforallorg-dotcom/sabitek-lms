@@ -58,7 +58,7 @@ export default function SchoolsAndTutorsPage() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link href="/request-access">
                     <span className="group relative overflow-hidden inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all cursor-pointer">
-                      Get Started
+                      Request access
                       <ArrowRight className="w-4 h-4 transition-transform" />
                     </span>
                   </Link>
@@ -79,7 +79,7 @@ export default function SchoolsAndTutorsPage() {
                     <span className="w-2.5 h-2.5 rounded-full bg-red-200" />
                     <span className="w-2.5 h-2.5 rounded-full bg-red-100" />
                     <span className="w-2.5 h-2.5 rounded-full bg-red-50 border border-gray-200" />
-                    <span className="ml-3 text-xs font-medium text-gray-400">Cohort overview</span>
+                    <span className="ml-3 text-xs font-medium text-gray-400">Example cohort overview</span>
                   </div>
                   <div className="p-5 sm:p-6 space-y-4">
                     {[
@@ -122,42 +122,6 @@ export default function SchoolsAndTutorsPage() {
       </section>
 
       {/* ============================================ */}
-      {/* OUTCOMES — what you walk away with            */}
-      {/* ============================================ */}
-      <section className="py-12 sm:py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <Reveal>
-            <div className="text-center max-w-xl mx-auto mb-10">
-              <SectionLabel centered>What you get</SectionLabel>
-              <h2 className="text-2xl sm:text-4xl font-medium tracking-tight leading-snug">
-                Results you can{' '}
-                <span className="font-serif italic text-red-600">show, not tell</span>
-              </h2>
-            </div>
-          </Reveal>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: Rocket, title: 'Faster launches', desc: 'Upload videos, slides, and PDFs; AI turns them into quizzes and summaries. A full program in days.' },
-              { icon: BarChart3, title: 'No silent dropouts', desc: 'Live participation tracking flags who is behind while there is still time to act.' },
-              { icon: QrCode, title: 'Credible certificates', desc: 'QR-verified credentials that funders, boards, and employers can check in seconds.' },
-              { icon: Users, title: 'Learners who finish', desc: 'Structured paths plus AI support in 5 local languages keep completion high.' },
-            ].map((item, i) => (
-              <Reveal key={i} delay={i * 70}>
-                <div className="group h-full bg-white p-6 rounded-xl border border-gray-200 transition-all duration-300">
-                  <div className="w-11 h-11 rounded-xl bg-red-600 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-rotate-3">
-                    <item.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="font-medium text-base mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================ */}
       {/* TWO PATHS — institution vs independent        */}
       {/* ============================================ */}
       <section className="py-12 sm:py-14 bg-white">
@@ -184,7 +148,7 @@ export default function SchoolsAndTutorsPage() {
                   'Export participation evidence for funders and boards',
                 ],
                 link: '/request-access',
-                linkText: 'Get Started',
+                linkText: 'Request access',
                 primary: true,
               },
               {
@@ -197,7 +161,7 @@ export default function SchoolsAndTutorsPage() {
                   'Issue certificates under your own training brand',
                 ],
                 link: '/become-a-provider',
-                linkText: 'Become a Provider',
+                linkText: 'Apply as an instructor',
                 primary: false,
               },
             ].map((card, i) => (
@@ -241,6 +205,42 @@ export default function SchoolsAndTutorsPage() {
       </section>
 
       {/* ============================================ */}
+      {/* OUTCOMES — what you walk away with            */}
+      {/* ============================================ */}
+      <section className="py-12 sm:py-14 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <SectionLabel centered>What you get</SectionLabel>
+              <h2 className="text-2xl sm:text-4xl font-medium tracking-tight leading-snug">
+                Results you can{' '}
+                <span className="font-serif italic text-red-600">show, not tell</span>
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: Rocket, title: 'Faster launches', desc: 'Upload videos, slides, and PDFs; AI turns them into quizzes and summaries. A full program in days.' },
+              { icon: BarChart3, title: 'No silent dropouts', desc: 'Live participation tracking flags who is behind while there is still time to act.' },
+              { icon: QrCode, title: 'Credible certificates', desc: 'QR-verified credentials that funders, boards, and employers can check in seconds.' },
+              { icon: Users, title: 'Learners who finish', desc: 'Structured paths plus AI support in 5 local languages keep completion high.' },
+            ].map((item, i) => (
+              <Reveal key={i} delay={i * 70}>
+                <div className="group h-full bg-white p-6 rounded-xl border border-gray-200 transition-all duration-300">
+                  <div className="w-11 h-11 rounded-xl bg-red-600 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-rotate-3">
+                    <item.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-medium text-base mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
       {/* HOW IT WORKS — three steps                    */}
       {/* ============================================ */}
       <section className="py-12 sm:py-14 bg-white">
@@ -263,9 +263,6 @@ export default function SchoolsAndTutorsPage() {
             ].map((item, i) => (
               <Reveal key={i} delay={i * 90}>
                 <div className="relative h-full bg-white p-6 sm:p-7 rounded-xl border border-gray-200 overflow-hidden">
-                  <span className="absolute -right-2 -bottom-8 font-serif italic text-[5.5rem] leading-none text-red-100/70 select-none pointer-events-none" aria-hidden="true">
-                    {item.step}
-                  </span>
                   <div className="relative">
                     <item.icon className="w-5 h-5 text-red-500 mb-4" />
                     <h3 className="font-medium text-base mb-2">{item.title}</h3>
@@ -284,30 +281,26 @@ export default function SchoolsAndTutorsPage() {
       <section className="pb-16 pt-4 sm:pb-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
-            <div className="relative overflow-hidden rounded-xl bg-red-600 px-6 py-14 sm:px-14 sm:py-16 text-center ring-1 ring-white/20">
-              <div className="absolute inset-x-0 top-0 h-28" aria-hidden="true" />
-
-              <div className="relative">
-                <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-white mb-4">
-                  Your next cohort could start{' '}
-                  <span className="font-serif italic">next week.</span>
-                </h2>
-                <p className="text-base sm:text-lg text-white/85 mb-9 max-w-lg mx-auto">
-                  Apply today. Most applications are reviewed within 2-5 working days.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                  <Link href="/request-access">
-                    <span className="group inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-red-600 hover:bg-red-50 px-9 py-4 text-sm font-medium rounded-full transition-all cursor-pointer">
-                      Get Started
-                      <ArrowRight className="w-4 h-4 transition-transform" />
-                    </span>
-                  </Link>
-                  <Link href="/become-a-provider">
-                    <span className="inline-flex items-center justify-center gap-2 bg-white/10 border border-white/40 text-white hover:bg-white/20 px-9 py-4 text-sm font-medium rounded-full transition-all cursor-pointer">
-                      Become a Provider
-                    </span>
-                  </Link>
-                </div>
+            <div className="rounded-xl bg-white border border-gray-200 px-6 py-12 sm:px-14 sm:py-14 text-center">
+              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-gray-900 mb-4">
+                Your next cohort could start{' '}
+                <span className="font-serif italic text-red-600">next week.</span>
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-lg mx-auto">
+                Apply today. Most applications are reviewed within 2 to 5 working days.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <Link href="/request-access">
+                  <span className="group inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-9 py-4 text-sm font-medium rounded-full ring-1 ring-red-600/50 transition-all cursor-pointer">
+                    Request access
+                    <ArrowRight className="w-4 h-4 transition-transform" />
+                  </span>
+                </Link>
+                <Link href="/become-a-provider">
+                  <span className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-9 py-4 text-sm font-medium rounded-full transition-all cursor-pointer">
+                    Apply as an instructor
+                  </span>
+                </Link>
               </div>
             </div>
           </Reveal>

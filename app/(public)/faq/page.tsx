@@ -41,7 +41,7 @@ export default function FAQPage() {
         },
         {
           question: 'How do I sign up?',
-          answer: 'Click the "Get Started" button on our homepage. You can sign up with your email address or use Google authentication. Once registered, you\'ll have immediate access to our free courses and can explore all features.'
+          answer: 'Sabitek accounts are created by invitation. Organisations apply for a workspace with "Request access", and independent instructors apply as providers. Learners join through the invite link or cohort code their institution gives them. If you are learning on your own, you can join the learner waitlist.'
         },
         {
           question: 'Is Sabitek really free?',

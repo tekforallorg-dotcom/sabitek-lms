@@ -82,6 +82,17 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
+            {!user && (
+              <>
+                <NavLink href="/schools-and-tutors" active={pathname === '/schools-and-tutors'}>
+                  For organisations and instructors
+                </NavLink>
+                <NavLink href="/about" active={pathname === '/about'}>
+                  About
+                </NavLink>
+              </>
+            )}
+
             {user && (
               <>
                 <NavLink href="/courses" active={pathname === '/courses'}>
@@ -95,7 +106,7 @@ export default function Header() {
 
             {userProfile?.role === 'instructor' && (
               <NavLink href="/instructor/courses/create" active={pathname === '/instructor/courses/create'}>
-                Create Course
+                Create course
               </NavLink>
             )}
           </nav>
@@ -200,12 +211,12 @@ export default function Header() {
                     variant="outline"
                     className="rounded-full bg-white border-gray-200 hover:border-gray-200 hover:bg-white text-gray-700 text-sm font-medium px-5 shadow-sm transition-all"
                   >
-                    Login
+                    Sign in
                   </Button>
                 </Link>
-                <Link href="/auth/register">
+                <Link href="/request-access" className="hidden sm:block">
                   <Button className="group relative overflow-hidden rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-5 ring-1 ring-red-600/50 transition-all">
-                    Sign Up
+                    Request access
                   </Button>
                 </Link>
               </div>
@@ -262,6 +273,23 @@ export default function Header() {
                 </div>
               )}
 
+              {!user &&
+                [
+                  { href: '/schools-and-tutors', label: 'For organisations and instructors' },
+                  { href: '/about', label: 'About' },
+                  { href: '/support', label: 'Help centre' },
+                  { href: '/request-access', label: 'Request access' },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-xl transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+
               {user && (
                 <>
                   <Link
@@ -285,7 +313,7 @@ export default function Header() {
                     className="px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-xl transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    My Profile
+                    My profile
                   </Link>
 
                 </>
@@ -297,7 +325,7 @@ export default function Header() {
                   className="px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-xl transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Create Course
+                  Create course
                 </Link>
               )}
             </div>

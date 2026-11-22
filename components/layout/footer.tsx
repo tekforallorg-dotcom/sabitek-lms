@@ -5,26 +5,28 @@ import { Sparkles } from 'lucide-react'
 
 const COLUMNS: { heading: string; links: { label: string; href: string; external?: boolean }[] }[] = [
   {
-    heading: 'Quick Links',
+    heading: 'Sabitek',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Courses', href: '/courses' },
-      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'For organisations and instructors', href: '/schools-and-tutors' },
+      { label: 'Request access', href: '/request-access' },
+      { label: 'Learner waitlist', href: '/waitlist' },
+      { label: 'Sign in', href: '/auth/login' },
     ],
   },
   {
     heading: 'Support',
     links: [
-      { label: 'Help Center', href: '/support' },
-      { label: 'Contact Us', href: 'https://tekforall.org/contact', external: true },
+      { label: 'Help centre', href: '/support' },
+      { label: 'Contact us', href: 'https://tekforall.org/contact', external: true },
       { label: 'FAQs', href: '/faq' },
     ],
   },
   {
     heading: 'Legal',
     links: [
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Privacy policy', href: '/privacy' },
+      { label: 'Terms of service', href: '/terms' },
     ],
   },
 ]
@@ -100,7 +102,7 @@ export default function Footer() {
           />
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p className="text-center sm:text-left">
-              © 2025 Sabitek by TEK4ALL. All rights reserved.
+              © {new Date().getFullYear()} Sabitek by TEK4ALL. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               <Link href="/about" className="hover:text-red-600 transition-colors">

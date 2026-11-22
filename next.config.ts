@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
       { source: '/sabiwrite', destination: '/dashboard', permanent: false },
       { source: '/sabiwrite/:path*', destination: '/dashboard', permanent: false },
       { source: '/sabitools', destination: '/dashboard', permanent: false },
+      // The plans page offers a Pro plan that cannot be bought (no plans exist)
+      // and lists tools that are not offered. Nothing links to it. Until there
+      // is a real offer, send visitors to the page that explains the product.
+      // The page itself is kept in app/pricing; remove this line to bring it back.
+      { source: '/pricing', destination: '/schools-and-tutors', permanent: false },
     ]
   },
 

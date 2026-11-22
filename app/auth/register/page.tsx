@@ -324,7 +324,7 @@ function RegisterPageContent() {
             <Link href="/request-access" className="block">
               <Button className={authPrimaryBtnClass}>
                 <span className="flex items-center justify-center gap-2">
-                  Get Started
+                  Request access
                   <ArrowRight className="w-4 h-4 transition-transform" />
                 </span>
               </Button>

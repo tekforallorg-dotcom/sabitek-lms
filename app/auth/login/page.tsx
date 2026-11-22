@@ -11,11 +11,10 @@ import { Input } from '@/components/ui/input'
 import {
   AuthShell,
   AuthCard,
-  AuthDivider,
   authInputClass,
   authPrimaryBtnClass,
 } from '@/components/auth/AuthShell'
-import { Mail, Lock, ArrowRight, Building2, Award, Users, AlertCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Building2, Award, Users, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
@@ -27,6 +26,7 @@ type LoginInput = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
   const [publicSignupOpen, setPublicSignupOpen] = useState(false)
   const { signIn } = useAuth()
 
@@ -109,7 +109,7 @@ export default function LoginPage() {
       <AuthCard
         title="Sign"
         titleAccent="in"
-        description="Enter your credentials to access your account"
+        description="Enter your email and password"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {error && (
@@ -120,11 +120,13 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Email Address</label>
+            <label htmlFor="login-email" className="text-sm font-medium text-gray-700">Email address</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
                 {...register('email')}
+                id="login-email"
+                autoComplete="email"
                 type="email"
                 placeholder="name@example.com"
                 className={authInputClass}
@@ -134,16 +136,27 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="login-password" className="text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
               <Input
                 {...register('password')}
-                type="password"
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="Enter your password"
-                className={authInputClass}
+                className={`${authInputClass} pr-12`}
               />
+              {/* Typing a password on a phone is error-prone; let people check it. */}
+              <button
+                type="button"
+                onClick={() => setShowPassword((shown) => !shown)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                className="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+              </button>
             </div>
             {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
           </div>
@@ -165,13 +178,12 @@ export default function LoginPage() {
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
-                Sign In
+                Sign in
                 <ArrowRight className="w-4 h-4 transition-transform" />
               </span>
             )}
           </Button>
 
-          <AuthDivider />
 
           <div className="text-center">
             {publicSignupOpen ? (
@@ -185,7 +197,7 @@ export default function LoginPage() {
               <p className="text-sm text-gray-600">
                 New to Sabitek?{' '}
                 <Link href="/request-access" className="text-red-500 hover:text-red-600 font-medium">
-                  Get Started
+                  Request access
                 </Link>
               </p>
             )}
