@@ -34,7 +34,13 @@ function VerifyContent() {
 
       if (res.ok && data.success) {
         setStatus('success')
-        setMessage('Your Pro subscription is now active!')
+        setMessage(
+          data.type === 'course_purchase'
+            ? 'Payment confirmed. You are enrolled in the course.'
+            : data.message === 'Already processed'
+              ? 'This payment was already confirmed.'
+              : 'Your Pro subscription is now active!'
+        )
       } else {
         setStatus('failed')
         setMessage(data.error || 'Payment verification failed')

@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { UserProfile } from '@/types'
+import { takeReturnPath } from '@/lib/post-auth-redirect'
 
 interface AuthReturn {
   user: User | null
@@ -196,7 +197,8 @@ export function useAuth(): AuthReturn {
         setRouteResolving(true)
         await fetchUserProfile(data.user.id)
         const route = await resolvePostLoginRoute()
-        router.push(route)
+        // Go back to the page that asked for sign-in, if there was one.
+        router.push(takeReturnPath() ?? route)
         // Keep routeResolving true — the page navigation will unmount this
         // so we don't need to set it false. If push fails, fall through.
       }
@@ -252,7 +254,8 @@ export function useAuth(): AuthReturn {
         setRouteResolving(true)
         await fetchUserProfile(data.user.id)
         const route = await resolvePostLoginRoute()
-        router.push(route)
+        // Go back to the page that asked for sign-in, if there was one.
+        router.push(takeReturnPath() ?? route)
       }
 
       setLoading(false)

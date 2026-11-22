@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Create course purchase record
-      await supabaseAdmin
+      const { error: purchaseError } = await supabaseAdmin
         .from('course_purchases')
         .upsert({
           user_id: userId,
@@ -111,22 +111,47 @@ export async function POST(request: NextRequest) {
         })
 
       // Auto-enroll user in the course
-      const { data: existingEnrollment } = await supabaseAdmin
-        .from('course_enrollments')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('course_id', courseId)
-        .single()
-
-      if (!existingEnrollment) {
-        await supabaseAdmin
+      let enrolmentError: { message: string } | null = null
+      if (!purchaseError) {
+        const { data: existingEnrollment } = await supabaseAdmin
           .from('course_enrollments')
-          .insert({
-            user_id: userId,
-            course_id: courseId,
-            enrolled_at: new Date().toISOString(),
-            progress_percentage: 0,
-          })
+          .select('id')
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .maybeSingle()
+
+        if (!existingEnrollment) {
+          const { error } = await supabaseAdmin
+            .from('course_enrollments')
+            .insert({
+              user_id: userId,
+              course_id: courseId,
+              enrolled_at: new Date().toISOString(),
+              progress_percentage: 0,
+            })
+          enrolmentError = error
+        }
+      }
+
+      if (purchaseError || enrolmentError) {
+        // The money is in but the course is not unlocked. Give the claim back
+        // so the next call here, or the webhook, fulfils it. Leaving the
+        // transaction "successful" would make every retry stop at
+        // "Already processed" with the customer still locked out.
+        await supabaseAdmin
+          .from('transactions')
+          .update({ status: existingTx.status })
+          .eq('provider_tx_ref', reference)
+        console.error('Course purchase fulfilment failed after payment', {
+          reference,
+          userId,
+          courseId,
+          error: (purchaseError || enrolmentError)?.message,
+        })
+        return NextResponse.json(
+          { error: 'Payment received, but the course could not be unlocked yet. Refresh this page in a moment. If it keeps happening, contact support.' },
+          { status: 500 }
+        )
       }
 
       console.log(`Course ${courseId} purchased by user ${userId}`)

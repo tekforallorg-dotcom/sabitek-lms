@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import { takeReturnPath } from '@/lib/post-auth-redirect'
 
 function AuthCallbackHandler() {
   const router = useRouter()
@@ -61,7 +62,10 @@ function AuthCallbackHandler() {
 
           if (mounted) {
             setIsProcessing(false)
-            if (profile?.is_super_admin) {
+            const returnTo = takeReturnPath()
+            if (returnTo) {
+              router.push(returnTo)
+            } else if (profile?.is_super_admin) {
               router.push('/admin')
             } else if (profile?.role === 'instructor') {
               router.push('/instructor')
@@ -140,7 +144,10 @@ function AuthCallbackHandler() {
           // For other auth types, redirect immediately
           if (mounted) {
             setIsProcessing(false)
-            if (profile?.is_super_admin) {
+            const returnTo = takeReturnPath()
+            if (returnTo) {
+              router.push(returnTo)
+            } else if (profile?.is_super_admin) {
               router.push('/admin')
             } else if (profile?.role === 'instructor') {
               router.push('/instructor')
@@ -177,7 +184,10 @@ function AuthCallbackHandler() {
               .then(({ data: profile }) => {
                 if (mounted) {
                   setIsProcessing(false)
-                  if (profile?.is_super_admin) {
+                  const returnTo = takeReturnPath()
+                  if (returnTo) {
+                    router.push(returnTo)
+                  } else if (profile?.is_super_admin) {
                     router.push('/admin')
                   } else if (profile?.role === 'instructor') {
                     router.push('/instructor')

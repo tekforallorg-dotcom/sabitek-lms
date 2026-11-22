@@ -32,13 +32,25 @@ export interface LockInfo {
   blockingLessonId?: string
 }
 
+/**
+ * Order within a module: lesson order, then id. The id tie-break matches
+ * `is_lesson_unlocked` in the database, which compares
+ * (module order, lesson_order, id). Without it, two lessons that share an
+ * order could be unlocked in one order by the browser and the other by the
+ * database, and the learner could not complete either.
+ * Lowercase uuid strings sort the same way Postgres compares uuids.
+ */
+function byLessonOrder(a: GatingLesson, b: GatingLesson): number {
+  return a.lesson_order - b.lesson_order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+}
+
 /** Canonical course sequence: module order, then lesson order; unassigned last. */
 export function buildLessonSequence<T extends GatingLesson>(
   lessons: T[],
   modules: GatingModule[]
 ): T[] {
   if (!modules || modules.length === 0) {
-    return [...lessons].sort((a, b) => a.lesson_order - b.lesson_order)
+    return [...lessons].sort(byLessonOrder)
   }
 
   const byModule = new Map<string, T[]>()
@@ -56,15 +68,15 @@ export function buildLessonSequence<T extends GatingLesson>(
   const sequence: T[] = []
   const orderedModules = [...modules].sort((a, b) => a.order_index - b.order_index)
   for (const m of orderedModules) {
-    const arr = (byModule.get(m.id) || []).sort((a, b) => a.lesson_order - b.lesson_order)
+    const arr = (byModule.get(m.id) || []).sort(byLessonOrder)
     sequence.push(...arr)
     byModule.delete(m.id)
   }
   // Lessons pointing at modules we don't know about, then unassigned.
   for (const arr of byModule.values()) {
-    sequence.push(...arr.sort((a, b) => a.lesson_order - b.lesson_order))
+    sequence.push(...arr.sort(byLessonOrder))
   }
-  sequence.push(...unassigned.sort((a, b) => a.lesson_order - b.lesson_order))
+  sequence.push(...unassigned.sort(byLessonOrder))
   return sequence
 }
 

@@ -5,6 +5,7 @@ import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { getSanitizedLessonQuiz } from '@/lib/quizzes/sanitize'
 import { checkCourseAccess } from '@/lib/course-access'
 import { getProgramLockForCourse } from '@/lib/access/program-sequence'
+import { stripLessonBody } from '@/lib/access/lesson-payload'
 
 /**
  * GET /api/learner/lesson-data?courseSlug=&lessonSlug=
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Stage 1: resolve the course by slug.
     const { data: course, error: courseError } = await supabaseAdmin
       .from('courses')
-      .select('id, title, slug, instructor_id, instructor:users!courses_instructor_id_fkey(full_name)')
+      .select('id, title, slug, status, instructor_id, instructor:users!courses_instructor_id_fkey(full_name)')
       .eq('slug', courseSlug)
       .single()
 
@@ -72,7 +73,16 @@ export async function GET(request: NextRequest) {
       isInstructor ? Promise.resolve(null) : checkCourseAccess(supabaseAdmin, userId, course.id),
     ])
 
-    const lessons = lessonsRes.data || []
+    // Teaching material goes only to the people the lesson page will show it
+    // to: the instructor and enrolled learners. Enrolling is gated by the
+    // database, so anyone else gets the outline and the page's "Enrollment
+    // Required" screen, never the lesson bodies or the quiz.
+    const canView = isInstructor || !!enrollmentRes.data
+    if (!canView && course.status !== 'published') {
+      return NextResponse.json({ error: 'Course not found', code: 'course_not_found' }, { status: 404 })
+    }
+
+    const lessons = canView ? lessonsRes.data || [] : (lessonsRes.data || []).map(stripLessonBody)
     const currentLesson = lessons.find((l) => l.slug === lessonSlug)
     if (!currentLesson) {
       return NextResponse.json({ error: 'Lesson not found', code: 'lesson_not_found' }, { status: 404 })
@@ -120,7 +130,7 @@ export async function GET(request: NextRequest) {
       modules: modulesRes.data || [],
       completedLessonIds: (progressRes.data || []).map((p) => p.lesson_id),
       notes: notesData ? { id: notesData.id, content: noteText } : null,
-      quiz: quizData.quiz,
+      quiz: canView ? quizData.quiz : null,
       quizLessonIds: quizData.quizLessonIds,
       attempts: attemptsRes.data || [],
       programLock: programLock.locked

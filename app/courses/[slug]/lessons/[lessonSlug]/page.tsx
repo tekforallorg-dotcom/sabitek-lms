@@ -334,10 +334,16 @@ export default function LessonViewerPage() {
         module_id: l.module_id,
       }))
 
-      setLessons(mappedLessons)
-
       const modulesData: Module[] = data.modules || []
       setModules(modulesData)
+
+      // Keep the list in the order learners move through the course (module
+      // order first, then lesson order), the same order the locks use.
+      // Previous, Next and the lesson number all read this list. The API sorts
+      // by lesson_order alone, and a module quiz has the highest lesson_order
+      // in the course, so in that order "Next" after a module's last lesson
+      // skipped its quiz and pointed at a locked lesson.
+      setLessons(buildLessonSequence(mappedLessons, modulesData))
 
       const currentLesson = mappedLessons.find((l) => l.slug === params.lessonSlug)
       if (!currentLesson) {
@@ -1192,7 +1198,7 @@ export default function LessonViewerPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500 break-words">{course?.title}</p>
                 <h1 className="text-sm md:text-base font-medium tracking-tight text-gray-900 break-words">
-                  Lesson {currentIndex + 1}: {lesson?.title}
+                  {isQuizLesson ? lesson?.title : `Lesson ${currentIndex + 1}: ${lesson?.title}`}
                 </h1>
               </div>
             </div>

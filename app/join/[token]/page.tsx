@@ -438,7 +438,7 @@ export default function JoinByTokenPage() {
                     </Button>
                   </Link>
                   <Link
-                    href={`/auth/signup?redirect=/join/${encodeURIComponent(token)}`}
+                    href={`/auth/register?invite=${encodeURIComponent(token)}&redirect=/join/${encodeURIComponent(token)}`}
                     className="block"
                   >
                     <Button variant="outline" className="w-full rounded-xl">

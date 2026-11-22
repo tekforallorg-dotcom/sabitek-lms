@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { requireInstitutionAdmin } from '@/lib/api-auth'
+import { loadCohortMemberProgress, memberKey } from '@/lib/cohorts/member-progress'
 
 /**
  * Institution reports: the numbers an admin shows their board or funder.
@@ -52,9 +53,15 @@ export async function GET(
       cohortIds.length > 0
         ? await supabaseAdmin
             .from('cohort_members')
-            .select('cohort_id, status, progress_pct, courses_completed, completed_at, last_activity_at')
+            .select('cohort_id, user_id, status, progress_pct, courses_completed, completed_at, last_activity_at')
             .in('cohort_id', cohortIds)
         : { data: [] as any[] }
+
+    // progress_pct is a column nothing writes; fill it from real course progress.
+    const memberProgress = await loadCohortMemberProgress(cohorts, cohortMembers || [])
+    for (const m of cohortMembers || []) {
+      m.progress_pct = memberProgress.get(memberKey(m.cohort_id, m.user_id)) ?? 0
+    }
 
     const byCohort = new Map<string, any[]>()
     for (const m of cohortMembers || []) {
@@ -93,10 +100,9 @@ export async function GET(
       }
     })
 
-    const activeLearners = new Set(
-      (cohortMembers || []).filter((m) => m.status === 'active').map((m) => m.cohort_id + '')
-    )
     const allActiveMembers = (cohortMembers || []).filter((m) => m.status === 'active')
+    // One person in two cohorts is one learner.
+    const activeLearnerCount = new Set(allActiveMembers.map((m) => m.user_id)).size
 
     return apiSuccess({
       totals: {
@@ -105,7 +111,7 @@ export async function GET(
         courses: (coursesRes.data || []).length,
         published_courses: (coursesRes.data || []).filter((c) => c.status === 'published').length,
         team_members: (membersRes.data || []).filter((m) => m.status === 'active').length,
-        active_learners: allActiveMembers.length,
+        active_learners: activeLearnerCount,
         completions: allActiveMembers.filter((m) => m.completed_at).length,
         avg_progress:
           allActiveMembers.length > 0

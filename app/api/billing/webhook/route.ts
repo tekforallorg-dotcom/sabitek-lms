@@ -64,11 +64,7 @@ export async function POST(request: NextRequest) {
 
 async function handleChargeSuccess(data: any) {
   const reference = data.reference
-  const userId = data.metadata?.user_id
-  const planId = data.metadata?.plan_id
   const planCode = data.metadata?.plan_code
-  const transactionType = data.metadata?.transaction_type || 'subscription'
-  const courseId = data.metadata?.course_id
 
   // Wallet top-ups: credit them here, from the signed webhook, so the money
   // arrives even if the user closes the tab before the browser gets back to
@@ -91,23 +87,48 @@ async function handleChargeSuccess(data: any) {
     return
   }
 
-  if (!userId) {
-    console.error('Missing user_id in charge.success metadata')
+  // Only fulfil a payment this app started, for the person and the item
+  // recorded when it started. Paystack signs every charge on the account, and
+  // the metadata on a charge is whatever the payer's browser sent, so the
+  // metadata alone must never decide who gets what.
+  const { data: tx } = await supabaseAdmin
+    .from('transactions')
+    .select('id, user_id, amount, currency, status, transaction_type, plan_id, course_id')
+    .eq('provider_tx_ref', reference)
+    .maybeSingle()
+
+  if (!tx || !tx.user_id) {
+    console.error('charge.success for a reference this app did not create, ignored:', reference)
     return
   }
 
-  const { data: existingTx } = await supabaseAdmin
-    .from('transactions')
-    .select('status')
-    .eq('provider_tx_ref', reference)
-    .single()
-
-  if (existingTx?.status === 'successful') {
+  if (tx.status === 'successful') {
     console.log('Transaction already processed:', reference)
     return
   }
 
-  await supabaseAdmin
+  // What was paid must match what we asked for.
+  const expectedKobo = Math.round(Number(tx.amount) * 100)
+  const expectedCurrency = tx.currency || 'NGN'
+  if (data.amount !== expectedKobo || (data.currency || 'NGN') !== expectedCurrency) {
+    console.error('Webhook payment amount mismatch, not fulfilled', {
+      reference,
+      expectedKobo,
+      paidKobo: data.amount,
+      expectedCurrency,
+      paidCurrency: data.currency,
+    })
+    return
+  }
+
+  const userId: string = tx.user_id
+  const transactionType: string = tx.transaction_type || 'subscription'
+  const courseId: string | null = tx.course_id
+  const planId: string | null = tx.plan_id
+
+  // Claim in one statement, as /api/billing/verify does. Only the request
+  // that flips the row goes on to fulfil, so the two cannot both grant.
+  const { data: claimed } = await supabaseAdmin
     .from('transactions')
     .update({
       status: 'successful',
@@ -115,6 +136,13 @@ async function handleChargeSuccess(data: any) {
       raw_event: data,
     })
     .eq('provider_tx_ref', reference)
+    .neq('status', 'successful')
+    .select('id')
+
+  if (!claimed || claimed.length === 0) {
+    console.log('Transaction already processed:', reference)
+    return
+  }
 
   const { data: user } = await supabaseAdmin
     .from('users')
@@ -122,10 +150,19 @@ async function handleChargeSuccess(data: any) {
     .eq('id', userId)
     .single()
 
-  if (transactionType === 'course_purchase' && courseId) {
-    await handleCoursePurchase(data, userId, courseId, reference, user)
-  } else if (planId) {
-    await handleSubscriptionPurchase(data, userId, planId, planCode, reference, user)
+  try {
+    if (transactionType === 'course_purchase' && courseId) {
+      await handleCoursePurchase(data, userId, courseId, reference, user)
+    } else if (planId) {
+      await handleSubscriptionPurchase(data, userId, planId, planCode, reference, user)
+    }
+  } catch (error) {
+    // Give the claim back and answer 500 so Paystack sends the event again.
+    await supabaseAdmin
+      .from('transactions')
+      .update({ status: tx.status })
+      .eq('provider_tx_ref', reference)
+    throw error
   }
 }
 
@@ -203,21 +240,11 @@ async function handleCoursePurchase(
   reference: string,
   user: any
 ) {
-  const { data: existingPurchase } = await supabaseAdmin
+  // Upsert, not insert: a retry after a purchase was recorded but the
+  // enrolment failed must carry on and enrol, not stop at "already purchased".
+  const { error: purchaseError } = await supabaseAdmin
     .from('course_purchases')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('course_id', courseId)
-    .single()
-
-  if (existingPurchase) {
-    console.log('Course already purchased:', courseId)
-    return
-  }
-
-  await supabaseAdmin
-    .from('course_purchases')
-    .insert({
+    .upsert({
       user_id: userId,
       course_id: courseId,
       provider: 'paystack',
@@ -227,9 +254,14 @@ async function handleCoursePurchase(
       currency: data.currency || 'NGN',
       status: 'successful',
       purchased_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,course_id',
     })
+  if (purchaseError) {
+    throw new Error(`Course purchase ${reference} was not recorded: ${purchaseError.message}`)
+  }
 
-  await supabaseAdmin
+  const { error: enrolmentError } = await supabaseAdmin
     .from('course_enrollments')
     .upsert({
       user_id: userId,
@@ -238,6 +270,9 @@ async function handleCoursePurchase(
     }, {
       onConflict: 'user_id,course_id',
     })
+  if (enrolmentError) {
+    throw new Error(`Enrolment for purchase ${reference} failed: ${enrolmentError.message}`)
+  }
 
   const { data: course } = await supabaseAdmin
     .from('courses')

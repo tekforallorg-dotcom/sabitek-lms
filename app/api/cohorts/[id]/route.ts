@@ -3,6 +3,7 @@ import { extractBearerToken } from '@/lib/validations'
 import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { updateCohortSchema } from '@/lib/validations/program'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { loadCohortMemberProgress, memberKey } from '@/lib/cohorts/member-progress'
 
 
 interface RouteParams {
@@ -74,6 +75,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .from('cohort_members')
       .select(`
         id,
+        user_id,
         status,
         sponsorship,
         progress_pct,
@@ -83,6 +85,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     if (membersError) {
       console.error('Members fetch error:', membersError)
+    }
+
+    // progress_pct is a column nothing writes; fill it from real course progress.
+    const memberProgress = await loadCohortMemberProgress(
+      [{ id, program_id: cohort.program_id }],
+      (members || []).map((m) => ({ cohort_id: id, user_id: m.user_id }))
+    )
+    for (const m of members || []) {
+      m.progress_pct = memberProgress.get(memberKey(id, m.user_id)) ?? 0
     }
 
     // Fetch user details for members

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react'
+import { rememberReturnPath } from '@/lib/post-auth-redirect'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -57,6 +58,14 @@ function RegisterPageContent() {
 
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invite')
+
+  // A cohort invite link sends new people here with ?redirect=/join/<token>.
+  // Remember it: the account is confirmed by email in a new tab, and this is
+  // how that tab knows to go back to the invite.
+  const returnTo = searchParams.get('redirect')
+  useEffect(() => {
+    rememberReturnPath(returnTo)
+  }, [returnTo])
 
   const [gate, setGate] = useState<SignupGateDecision | null>(null)
   const [gateLoading, setGateLoading] = useState(true)

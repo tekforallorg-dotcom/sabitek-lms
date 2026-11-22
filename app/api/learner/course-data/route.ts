@@ -5,6 +5,7 @@ import { apiSuccess, ApiErrors } from '@/lib/api-response'
 import { parseQuizQuestions } from '@/lib/quizzes/sanitize'
 import { checkCourseAccess } from '@/lib/course-access'
 import { getProgramLockForCourse } from '@/lib/access/program-sequence'
+import { LESSON_OUTLINE_COLUMNS } from '@/lib/access/lesson-payload'
 
 type AccessResult = {
   hasAccess: boolean
@@ -75,8 +76,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Lessons + modules are needed for everyone (curriculum preview included).
+    // Outline columns only: this route answers anonymous visitors, and the
+    // course page never shows a lesson's body. The lesson page has its own
+    // loader, which checks enrolment before it returns any teaching material.
     const [lessonsRes, modulesRes] = await Promise.all([
-      supabaseAdmin.from('lessons').select('*').eq('course_id', course.id).order('lesson_order'),
+      supabaseAdmin
+        .from('lessons')
+        .select(LESSON_OUTLINE_COLUMNS)
+        .eq('course_id', course.id)
+        .order('lesson_order'),
       supabaseAdmin
         .from('modules')
         .select('id, course_id, title, description, order_index')
