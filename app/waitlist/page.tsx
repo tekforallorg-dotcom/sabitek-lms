@@ -208,7 +208,7 @@ export default function WaitlistPage() {
                   <p className="text-xs text-gray-500">
                     Representing an institution?{' '}
                     <Link href="/schools-and-tutors" className="text-red-500 hover:text-red-600 font-medium">
-                      Request Access
+                      Request access
                     </Link>
                   </p>
                 </div>

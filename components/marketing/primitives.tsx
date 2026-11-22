@@ -1,7 +1,17 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 
-/** Scroll-reveal wrapper (IntersectionObserver, respects reduced motion). */
+/**
+ * Fades a block in as it scrolls into view.
+ *
+ * The block is visible until proven otherwise. It used to start invisible and
+ * wait for a script to reveal it, so on a slow phone the headline and
+ * everything else on the page stayed blank until the script had loaded, and
+ * stayed blank for good if it failed. Now the page is readable as soon as the
+ * HTML arrives; after the script loads, only blocks that are still below the
+ * screen are hidden, and they fade in when reached. Anything on screen at
+ * load never animates, and people who ask for reduced motion get none.
+ */
 export function Reveal({
   children,
   delay = 0,
@@ -12,30 +22,42 @@ export function Reveal({
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const [phase, setPhase] = useState<'shown' | 'waiting' | 'revealed'>('shown')
 
   useEffect(() => {
     const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          io.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let io: IntersectionObserver | null = null
+    const frame = requestAnimationFrame(() => {
+      // Already on screen (or above it): leave it alone.
+      if (el.getBoundingClientRect().top < window.innerHeight) return
+      setPhase('waiting')
+      io = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setPhase('revealed')
+            io?.disconnect()
+          }
+        },
+        { threshold: 0.15 }
+      )
+      io.observe(el)
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+      io?.disconnect()
+    }
   }, [])
 
+  const animated = phase !== 'shown'
   return (
     <div
       ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+      style={animated ? { transitionDelay: `${delay}ms` } : undefined}
+      className={`${animated ? 'transition-all duration-700 ease-out ' : ''}${
+        phase === 'waiting' ? 'opacity-0 translate-y-6' : 'opacity-100 translate-y-0'
       } ${className}`}
     >
       {children}

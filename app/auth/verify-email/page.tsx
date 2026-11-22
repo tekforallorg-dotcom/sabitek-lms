@@ -116,7 +116,7 @@ function VerifyEmailContent() {
           <CardContent className="space-y-4">
             <Link href="/auth/register">
               <Button className="w-full h-11 bg-red-500 hover:bg-red-600 text-white">
-                Sign Up Again
+                Sign up again
               </Button>
             </Link>
             <Link href="/auth/login">

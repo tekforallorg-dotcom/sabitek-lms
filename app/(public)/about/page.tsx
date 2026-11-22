@@ -96,7 +96,7 @@ export default function AboutPage() {
                 result: 'Run programs at scale with full visibility',
                 desc: 'Schools, NGOs, and government programs track every cohort’s participation and export evidence of outcomes for funders and boards.',
                 link: '/request-access',
-                linkText: 'Get Started',
+                linkText: 'Request access',
               },
               {
                 icon: UserCheck,
@@ -104,7 +104,7 @@ export default function AboutPage() {
                 result: 'Turn your expertise into a digital academy',
                 desc: 'Verified instructors get their own workspace: publish structured tracks, manage cohorts, and issue credentials under your brand.',
                 link: '/become-a-provider',
-                linkText: 'Become a Provider',
+                linkText: 'Apply as an instructor',
               },
               {
                 icon: GraduationCap,
@@ -197,13 +197,13 @@ export default function AboutPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                   <Link href="/request-access">
                     <span className="group inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-red-600 hover:bg-red-50 px-9 py-4 text-sm font-medium rounded-full transition-all cursor-pointer">
-                      Get Started
+                      Request access
                       <ArrowRight className="w-4 h-4 transition-transform" />
                     </span>
                   </Link>
                   <Link href="/become-a-provider">
                     <span className="inline-flex items-center justify-center gap-2 bg-white/10 border border-white/40 text-white hover:bg-white/20 px-9 py-4 text-sm font-medium rounded-full transition-all cursor-pointer">
-                      Become a Provider
+                      Apply as an instructor
                     </span>
                   </Link>
                 </div>
