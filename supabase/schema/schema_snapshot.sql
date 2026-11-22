@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Sabitek database schema snapshot (public schema + storage.objects policies)
 -- =============================================================================
--- GENERATED on 2026-11-20 (after the phase 2 wallet ledger migration) from the live project by generate_snapshot.sql.
+-- GENERATED on 2026-11-22 (after the module quiz lesson type migration) from the live project by generate_snapshot.sql.
 -- Do not edit by hand; re-run the generator after schema changes.
 --
 -- Why this exists: most of this schema was created by hand in the SQL editor
@@ -1692,7 +1692,7 @@ alter table public.lesson_progress add constraint lesson_progress_user_id_lesson
 
 alter table public.lesson_questions add constraint lesson_questions_pkey PRIMARY KEY (id);
 
-alter table public.lessons add constraint lessons_content_type_check CHECK (((content_type)::text = ANY ((ARRAY['text'::character varying, 'video'::character varying, 'pdf'::character varying, 'powerpoint'::character varying, 'youtube'::character varying])::text[])));
+alter table public.lessons add constraint lessons_content_type_check CHECK (((content_type)::text = ANY (ARRAY['text'::text, 'video'::text, 'pdf'::text, 'powerpoint'::text, 'youtube'::text, 'quiz'::text])));
 
 alter table public.lessons add constraint lessons_pkey PRIMARY KEY (id);
 
