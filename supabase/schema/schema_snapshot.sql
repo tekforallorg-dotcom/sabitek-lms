@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Sabitek database schema snapshot (public schema + storage.objects policies)
 -- =============================================================================
--- GENERATED on 2026-11-22 (after the module quiz lesson type migration) from the live project by generate_snapshot.sql.
+-- GENERATED on 2026-11-23 (after the lesson write and enrolment rules migration) from the live project by generate_snapshot.sql.
 -- Do not edit by hand; re-run the generator after schema changes.
 --
 -- Why this exists: most of this schema was created by hand in the SQL editor
@@ -2779,22 +2779,30 @@ CREATE OR REPLACE FUNCTION public.can_complete_lesson(p_lesson_id uuid, p_user u
  STABLE SECURITY DEFINER
  SET search_path TO 'public'
 AS $function$
-SELECT public.is_lesson_unlocked(p_lesson_id, p_user)
-  AND (
-    EXISTS (
-      SELECT 1 FROM lessons l JOIN courses c ON c.id = l.course_id
-      WHERE l.id = p_lesson_id AND c.instructor_id = p_user
+select public.is_lesson_unlocked(p_lesson_id, p_user)
+  and (
+    exists (
+      select 1 from lessons l join courses c on c.id = l.course_id
+      where l.id = p_lesson_id and c.instructor_id = p_user
     )
-    OR EXISTS (SELECT 1 FROM users u WHERE u.id = p_user AND u.is_super_admin = true)
-    OR NOT EXISTS (
-      SELECT 1 FROM quizzes q
-      WHERE q.lesson_id = p_lesson_id
-        AND jsonb_typeof(q.questions) = 'array'
-        AND jsonb_array_length(q.questions) > 0
-    )
-    OR EXISTS (
-      SELECT 1 FROM quiz_attempts qa
-      WHERE qa.user_id = p_user AND qa.lesson_id = p_lesson_id AND qa.passed = true
+    or exists (select 1 from users u where u.id = p_user and u.is_super_admin = true)
+    or (
+      exists (
+        select 1 from lessons l join course_enrollments ce on ce.course_id = l.course_id
+        where l.id = p_lesson_id and ce.user_id = p_user
+      )
+      and (
+        not exists (
+          select 1 from quizzes q
+          where q.lesson_id = p_lesson_id
+            and jsonb_typeof(q.questions) = 'array'
+            and jsonb_array_length(q.questions) > 0
+        )
+        or exists (
+          select 1 from quiz_attempts qa
+          where qa.user_id = p_user and qa.lesson_id = p_lesson_id and qa.passed = true
+        )
+      )
     )
   );
 $function$
@@ -2997,6 +3005,22 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.course_enrollments_keep_identity()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+begin
+  if new.user_id is distinct from old.user_id
+     or new.course_id is distinct from old.course_id then
+    raise exception 'An enrolment cannot be moved to another course or person'
+      using errcode = '42501';
+  end if;
+  return new;
+end
 $function$
 ;
 
@@ -3945,6 +3969,8 @@ CREATE TRIGGER trigger_community_offers_updated_at BEFORE UPDATE ON public.commu
 
 CREATE TRIGGER community_profiles_updated_at BEFORE UPDATE ON public.community_profiles FOR EACH ROW EXECUTE FUNCTION update_community_profile_timestamp();
 
+CREATE TRIGGER course_enrollments_keep_identity BEFORE UPDATE ON public.course_enrollments FOR EACH ROW EXECUTE FUNCTION course_enrollments_keep_identity();
+
 CREATE TRIGGER trg_inst_apps_updated_at BEFORE UPDATE ON public.institution_applications FOR EACH ROW EXECUTE FUNCTION inst_apps_touch_updated_at();
 
 CREATE TRIGGER update_institution_members_updated_at BEFORE UPDATE ON public.institution_members FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -4657,18 +4683,18 @@ create policy lesson_questions_ask on public.lesson_questions as permissive for 
 create policy lesson_questions_select on public.lesson_questions as permissive for select to authenticated
   using (((user_id = auth.uid()) OR (answered_at IS NOT NULL)));
 
-create policy "Instructors can manage lessons in their modules" on public.lessons as permissive for all to public
-  using (((module_id IS NULL) OR (EXISTS ( SELECT 1
-   FROM (modules m
-     JOIN courses c ON ((c.id = m.course_id)))
-  WHERE ((m.id = lessons.module_id) AND (c.instructor_id = auth.uid()))))));
-
-create policy "Instructors can manage own lessons" on public.lessons as permissive for all to public
-  using ((auth.uid() = instructor_id))
-  with check ((auth.uid() = instructor_id));
-
 create policy lessons_select_tenancy on public.lessons as permissive for select to authenticated
   using (can_read_course(course_id, auth.uid()));
+
+create policy lessons_write_course_owner on public.lessons as permissive for all to authenticated
+  using ((EXISTS ( SELECT 1
+   FROM courses c
+  WHERE ((c.id = lessons.course_id) AND (c.instructor_id = ( SELECT auth.uid() AS uid))))))
+  with check (((EXISTS ( SELECT 1
+   FROM courses c
+  WHERE ((c.id = lessons.course_id) AND (c.instructor_id = ( SELECT auth.uid() AS uid))))) AND ((module_id IS NULL) OR (EXISTS ( SELECT 1
+   FROM modules m
+  WHERE ((m.id = lessons.module_id) AND (m.course_id = lessons.course_id)))))));
 
 create policy "Users can delete chunks of their materials" on public.material_chunks as permissive for delete to public
   using ((material_id IN ( SELECT sabiquiz_materials.id
